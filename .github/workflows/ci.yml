@@ -16,11 +16,19 @@ concurrency:
 jobs:
   process-tree:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - name: Install build dependencies and interpreter smoke targets
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends build-essential cmake python3 pypy3
+      - name: Install the tested Rust toolchain
+        run: rustup toolchain install 1.94.0 --profile minimal --component rustfmt --component clippy
+      - name: Validate the Rust collector and supervisor
+        run: |
+          cargo +1.94.0 fmt --all -- --check
+          cargo +1.94.0 clippy --locked --all-targets -- -D warnings
+          cargo +1.94.0 test --locked --all-targets
+          cargo +1.94.0 build --locked --release
       - name: Verify and extract the pinned DynamoRIO SDK
         run: python3 toolkit/fetch_sdk.py
       - name: Build the counter
@@ -30,9 +38,9 @@ jobs:
       - name: Validate lifecycle records and aggregation
         run: python3 -m unittest discover -s tests -v
       - name: Validate real native and interpreter process trees
-        run: python3 tests/smoke.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libworkmeter.so --output-dir .results/smoke
+        run: python3 tests/smoke.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libworkmeter.so --output-dir .results/smoke --collector-bin target/release/workmeter
       - name: Validate bounded address-space reservations
-        run: python3 tests/smoke.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libworkmeter.so --compact-vm --output-dir .results/smoke-compact
+        run: python3 tests/smoke.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libworkmeter.so --compact-vm --output-dir .results/smoke-compact --collector-bin target/release/workmeter --runner-bin target/release/workmeter
       - name: Preserve diagnostic test results
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
