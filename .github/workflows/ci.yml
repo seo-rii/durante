@@ -14,13 +14,47 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  secrets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          fetch-depth: 0
+      - name: Scan Git history with pinned Gitleaks
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          curl --fail --silent --show-error --location \
+            https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz \
+            --output "$RUNNER_TEMP/gitleaks.tar.gz"
+          printf '%s  %s\n' \
+            551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb \
+            "$RUNNER_TEMP/gitleaks.tar.gz" | sha256sum --check --status
+          tar -xzf "$RUNNER_TEMP/gitleaks.tar.gz" -C "$RUNNER_TEMP" gitleaks
+          printf '[extend]\nuseDefault = true\n' > "$RUNNER_TEMP/gitleaks.toml"
+          mkdir "$RUNNER_TEMP/empty-ignore"
+          env -u GITLEAKS_CONFIG -u GITLEAKS_CONFIG_TOML "$RUNNER_TEMP/gitleaks" git . \
+            --log-opts='--all --full-history' --config "$RUNNER_TEMP/gitleaks.toml" \
+            --gitleaks-ignore-path "$RUNNER_TEMP/empty-ignore" --ignore-gitleaks-allow \
+            --redact=100 --no-banner --no-color --report-format=json \
+            --report-path "$RUNNER_TEMP/gitleaks.json"
   process-tree:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - name: Install build dependencies and interpreter smoke targets
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends build-essential cmake python3 pypy3
+      - name: Install the tested Rust toolchain
+        run: rustup toolchain install 1.94.0 --profile minimal --component rustfmt --component clippy
+      - name: Validate the Rust collector and supervisor
+        run: |
+          cargo +1.94.0 fmt --all -- --check
+          cargo +1.94.0 clippy --locked --all-targets -- -D warnings
+          cargo +1.94.0 test --locked --all-targets
+          cargo +1.94.0 build --locked --release
       - name: Verify and extract the pinned DynamoRIO SDK
         run: python3 toolkit/fetch_sdk.py
       - name: Build the counter
@@ -30,9 +64,9 @@ jobs:
       - name: Validate lifecycle records and aggregation
         run: python3 -m unittest discover -s tests -v
       - name: Validate real native and interpreter process trees
-        run: python3 tests/smoke.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libworkmeter.so --output-dir .results/smoke
+        run: python3 tests/smoke.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libworkmeter.so --output-dir .results/smoke --collector-bin target/release/workmeter
       - name: Validate bounded address-space reservations
-        run: python3 tests/smoke.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libworkmeter.so --compact-vm --output-dir .results/smoke-compact
+        run: python3 tests/smoke.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libworkmeter.so --compact-vm --output-dir .results/smoke-compact --collector-bin target/release/workmeter --runner-bin target/release/workmeter
       - name: Preserve diagnostic test results
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
