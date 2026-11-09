@@ -39,4 +39,5 @@ jobs:
         with:
           name: process-tree-smoke
           path: .results/
-          if-no-files-found: ignore
+          include-hidden-files: true
+          if-no-files-found: error
