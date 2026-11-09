@@ -1,5 +1,6 @@
 DynamoRIO core/dynamo.c, core/unix/os.c, core/unix/signal.c,
-core/ir/decode_shared.c, and core/ir/x86/decode.c, based on commit
+core/unix/os_exports.h, core/arch/x86_code.c, core/ir/decode_shared.c, and
+core/ir/x86/decode.c, based on commit
 6847bb210bea0ca11d1bf47704383d6a075da490, with the decoder fix from commit
 c46d736f308e6e734bd0477f7b8a2dcbefb155d3.
 

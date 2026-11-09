@@ -180,6 +180,12 @@ transitions. A second fix prevents a queued syscall-restart signal from restorin
 an old execution position after application code has already advanced, and keeps
 other pending signals scheduled for delivery. It does not serialize application
 threads or change their syscalls, clone flags or work counters.
+The shared-VM spawn path also handles `clone3(CLONE_CLEAR_SIGHAND)`: caught
+application handlers reset to default, ignored dispositions remain ignored,
+and the runtime restores its own handlers before resuming the application.
+Fork-style `clone3(CLONE_CLEAR_SIGHAND)` remains unqualified and its accounting
+is rejected. These tests do not establish arbitrary asynchronous-signal
+compatibility during runtime initialization.
 
 Concurrent creation is tested with the patched runtime for successful exec,
 failed exec with default and `SA_RESTART` signal handlers, empty environments,
