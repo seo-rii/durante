@@ -21,7 +21,10 @@ source commit with the [concurrent process and signal patch](toolkit/patches/dyn
 The source archive is also hash-pinned. CMake, a C/C++ compiler and `patch` are
 needed for this one-time build; this adds no compilation to measured runs.
 The SDK's `.workmeter-runtime.json` records the source, patch and installed core
-hashes. Cached cores are reused only when those hashes match.
+hashes. Cached cores are reused only when those hashes match. The patch also
+backports [DynamoRIO #7321](https://github.com/DynamoRIO/dynamorio/pull/7321),
+which preserves the decoder context during early thread initialization and
+avoids a debug-runtime startup assertion.
 
 ```sh
 python3 toolkit/fetch_sdk.py

@@ -3,6 +3,8 @@ Base source commit: 6847bb210bea0ca11d1bf47704383d6a075da490
 Upstream copyright notices and BSD terms: LICENSE.DynamoRIO in this directory.
 Only a returning vfork parent may reclaim its own completed child's context.
 Restore interrupted syscalls before pending signal delivery can resume the app.
+Backport decoder initialization fix from upstream commit c46d736f308e6e734bd0477f7b8a2dcbefb155d3.
+Upstream PR: https://github.com/DynamoRIO/dynamorio/pull/7321
 
 --- a/core/dynamo.c
 +++ b/core/dynamo.c
@@ -54,11 +56,11 @@ Restore interrupted syscalls before pending signal delivery can resume the app.
 +     * reclaim this thread merely because it has reached this execve marker.
       */
      mark_thread_execve(dcontext->thread_record, true);
- 
+
 @@ -6381,31 +6378,25 @@
      }
  }
- 
+
 -/* i#237/PR 498284: to avoid accumulation of thread state we clean up a vfork
 - * child who invoked execve here so we have at most one outstanding thread.  we
 - * also clean up at process exit and before thread creation.  we could do this
@@ -99,7 +101,7 @@ Restore interrupted syscalls before pending signal delivery can resume the app.
 -    global_heap_free(threads,
 -                     num_threads * sizeof(thread_record_t *) HEAPACCT(ACCT_THREAD_MGT));
  }
- 
+
  static void
 @@ -7033,13 +7024,6 @@
      if ((flags & CLONE_VM) == 0) {
@@ -112,7 +114,7 @@ Restore interrupted syscalls before pending signal delivery can resume the app.
 -     * thread_initexit_lock there.
 -     */
 -    cleanup_after_vfork_execve(dcontext);
- 
+
      /* For thread creation clone syscalls a clone_record_t structure
       * containing the pc after the app's syscall instr and other data
 @@ -7500,7 +7484,6 @@
@@ -120,7 +122,7 @@ Restore interrupted syscalls before pending signal delivery can resume the app.
          LOG(THREAD, LOG_SYSCALLS, 2, "syscall: vfork\n");
          handle_clone(dcontext, flags);
 -        cleanup_after_vfork_execve(dcontext);
- 
+
          /* save for post_system_call, treated as if SYS_clone */
          dcontext->sys_param0 = (reg_t)flags;
 @@ -9117,6 +9100,11 @@
@@ -211,3 +213,95 @@ Restore interrupted syscalls before pending signal delivery can resume the app.
      }
      /* barrier to prevent compiler from moving the below write above the loop */
      __asm__ __volatile__("" : : : "memory");
+diff --git a/core/ir/decode_shared.c b/core/ir/decode_shared.c
+index 5380d80fd3..5a56d960fd 100644
+--- a/core/ir/decode_shared.c
++++ b/core/ir/decode_shared.c
+@@ -1,5 +1,5 @@
+ /* **********************************************************
+- * Copyright (c) 2011-2024 Google, Inc.  All rights reserved.
++ * Copyright (c) 2011-2025 Google, Inc.  All rights reserved.
+  * Copyright (c) 2001-2010 VMware, Inc.  All rights reserved.
+  * **********************************************************/
+
+@@ -253,8 +253,12 @@ dr_set_isa_mode(void *drcontext, dr_isa_mode_t new_mode,
+     dcontext_t *dcontext = (dcontext_t *)drcontext;
+     dr_isa_mode_t old_mode;
+     /* We would disallow but some early init routines need to use global heap */
+-    if (dcontext == GLOBAL_DCONTEXT)
++    if (dcontext == GLOBAL_DCONTEXT) {
+         dcontext = get_thread_private_dcontext();
++        /* If we're pre-thread-init, go back to GLOBAL_DCONTEXT. */
++        if (dcontext == NULL)
++            dcontext = GLOBAL_DCONTEXT;
++    }
+     /* Support GLOBAL_DCONTEXT or NULL for standalone/static modes */
+     if (dcontext == NULL || dcontext == GLOBAL_DCONTEXT) {
+ #if !defined(STANDALONE_DECODER)
+diff --git a/core/ir/x86/decode.c b/core/ir/x86/decode.c
+index efc1bbb1cd..ad839efb02 100644
+--- a/core/ir/x86/decode.c
++++ b/core/ir/x86/decode.c
+@@ -1,5 +1,5 @@
+ /* **********************************************************
+- * Copyright (c) 2011-2024 Google, Inc.  All rights reserved.
++ * Copyright (c) 2011-2025 Google, Inc.  All rights reserved.
+  * Copyright (c) 2000-2010 VMware, Inc.  All rights reserved.
+  * **********************************************************/
+
+@@ -965,8 +965,9 @@ read_prefix_ext(const instr_info_t *info, decode_info_t *di)
+  * Returns NULL on an invalid instruction
+  */
+ static byte *
+-read_instruction(byte *pc, byte *orig_pc, const instr_info_t **ret_info,
+-                 decode_info_t *di, bool just_opcode _IF_DEBUG(bool report_invalid))
++read_instruction(dcontext_t *dcontext, byte *pc, byte *orig_pc,
++                 const instr_info_t **ret_info, decode_info_t *di,
++                 bool just_opcode _IF_DEBUG(bool report_invalid))
+ {
+     DEBUG_DECLARE(byte *post_suffix_pc = NULL;)
+     byte instr_byte;
+@@ -1307,7 +1308,6 @@ read_instruction(byte *pc, byte *orig_pc, const instr_info_t **ret_info,
+                         di->start_pc, info->opcode);
+                 } else {
+                     int i;
+-                    dcontext_t *dcontext = get_thread_private_dcontext();
+                     IF_X64(bool old_mode = set_x86_mode(dcontext, di->x86_mode);)
+                     int sz = decode_sizeof(dcontext, di->start_pc, NULL _IF_X64(NULL));
+                     IF_X64(set_x86_mode(dcontext, old_mode));
+@@ -1351,7 +1351,6 @@ read_instruction(byte *pc, byte *orig_pc, const instr_info_t **ret_info,
+               if (spurious) {
+                   char bytes[17 * 3];
+                   int i;
+-                  dcontext_t *dcontext = get_thread_private_dcontext();
+                   IF_X64(bool old_mode = set_x86_mode(dcontext, di->x86_mode);)
+                   int sz = decode_sizeof(dcontext, di->start_pc, NULL _IF_X64(NULL));
+                   IF_X64(set_x86_mode(dcontext, old_mode));
+@@ -2509,7 +2508,8 @@ decode_eflags_usage(void *drcontext, byte *pc, uint *usage, dr_opnd_query_flags_
+     IF_X64(di.x86_mode = get_x86_mode(dcontext));
+
+     /* don't decode immeds, instead use decode_next_pc, it's faster */
+-    read_instruction(pc, pc, &info, &di, true /* just opcode */ _IF_DEBUG(true));
++    read_instruction(dcontext, pc, pc, &info, &di,
++                     true /* just opcode */ _IF_DEBUG(true));
+
+     *usage = instr_eflags_conditionally(
+         info->eflags, decode_predicate_from_instr_info(info->type, info), flags);
+@@ -2544,7 +2544,7 @@ decode_opcode(dcontext_t *dcontext, byte *pc, instr_t *instr)
+      * so have to call decode_next_pc, but that ends up being faster
+      * than decoding immeds!
+      */
+-    read_instruction(pc, pc, &info, &di,
++    read_instruction(dcontext, pc, pc, &info, &di,
+                      true /* just opcode */
+                      _IF_DEBUG(!TEST(INSTR_IGNORE_INVALID, instr->flags)));
+     sz = decode_sizeof_ex(dcontext, pc, NULL, &rip_rel_pos);
+@@ -2616,7 +2616,7 @@ decode_common(dcontext_t *dcontext, byte *pc, byte *orig_pc, instr_t *instr)
+                   "decode: instr is already decoded, may need to call instr_reset()");
+
+     IF_X64(di.x86_mode = get_x86_mode(dcontext));
+-    next_pc = read_instruction(pc, orig_pc, &info, &di,
++    next_pc = read_instruction(dcontext, pc, orig_pc, &info, &di,
+                                false /* not just opcode,
+                                         decode operands too */
+                                _IF_DEBUG(!TEST(INSTR_IGNORE_INVALID, instr->flags)));
