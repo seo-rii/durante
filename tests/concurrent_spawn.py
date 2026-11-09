@@ -158,7 +158,7 @@ def run_case(args, work, executable, leaf, mode, index, iterations):
     if row["stdout"].strip() != "concurrent-spawn-ok":
         errors.append("fixture output mismatch")
     children = args.threads * args.rounds
-    expected_images = 1 + children * (1 if mode == "failed-exec" else 2)
+    expected_images = 1 + children * (1 if mode.startswith("failed-exec") else 2)
     if measurement["process_count"] != 1 + children or measurement["image_count"] != expected_images:
         errors.append("missing, duplicated, or unexpected process/image count")
     processes = measurement["processes"]
@@ -171,7 +171,7 @@ def run_case(args, work, executable, leaf, mode, index, iterations):
                     if s["pid"] != root["pid"] and s["exit_code"] is not None]
     if len(final_leaves) != children:
         errors.append("missing child terminal images")
-    if mode == "failed-exec":
+    if mode.startswith("failed-exec"):
         if any(p["exit_code"] != 127 or p["images"] != 1
                for p in processes if p["pid"] != root["pid"]):
             errors.append("failed-exec child status or image count mismatch")
@@ -197,8 +197,8 @@ def main():
     parser.add_argument("--threads", type=bounded_number(2, 16), default=3)
     parser.add_argument("--rounds", type=bounded_number(1, 64), default=8)
     parser.add_argument("--timeout-ms", type=bounded_number(1000, 60000), default=5000)
-    parser.add_argument("--modes", nargs="+", choices=("success", "failed-exec", "empty-env", "orphan"),
-                        default=["success", "failed-exec", "empty-env", "orphan"])
+    parser.add_argument("--modes", nargs="+", choices=("success", "failed-exec", "failed-exec-handler", "empty-env", "orphan"),
+                        default=["success", "failed-exec", "failed-exec-handler", "empty-env", "orphan"])
     parser.add_argument("--diagnostic", action="store_true", help="record baseline failures without claiming qualification")
     parser.add_argument("--engine-debug", action="store_true", help="exercise the SDK's debug core and assertions")
     args = parser.parse_args()

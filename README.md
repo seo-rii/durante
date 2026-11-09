@@ -17,7 +17,7 @@ The pinned SDK is DynamoRIO 11.3.0-1 (source revision
 `6847bb210bea0ca11d1bf47704383d6a075da490`). The fetcher verifies its release
 archive SHA-256 before extracting the required build/runtime subset.
 It then builds the 64-bit release and debug runtime cores from the same pinned
-source commit with the [vfork lifetime patch](toolkit/patches/dynamorio-vfork-lifetime.patch).
+source commit with the [concurrent process and signal patch](toolkit/patches/dynamorio-vfork-lifetime.patch).
 The source archive is also hash-pinned. CMake, a C/C++ compiler and `patch` are
 needed for this one-time build; this adds no compilation to measured runs.
 The SDK's `.workmeter-runtime.json` records the source, patch and installed core
@@ -173,11 +173,14 @@ The unpatched upstream runtime intermittently crashes during concurrent
 another parent's process-creation path reclaim that child's context too early.
 The bundled patch reclaims only the matching child after its own parent's
 `vfork`/`CLONE_VFORK` syscall returns. It also permits multiple pending exec
-transitions. It does not serialize application threads or change their syscalls,
-clone flags or work counters.
+transitions. A second fix prevents a queued syscall-restart signal from restoring
+an old execution position after application code has already advanced, and keeps
+other pending signals scheduled for delivery. It does not serialize application
+threads or change their syscalls, clone flags or work counters.
 
 Concurrent creation is tested with the patched runtime for successful exec,
-failed exec, empty environments and parents that finish all spawn operations
+failed exec with default and `SA_RESTART` signal handlers, empty environments,
+and parents that finish all spawn operations
 before exiting without waiting for their children. The stress fixture checks
 exact static-leaf instruction counts, complete process/image counts and Rust /
 reference-collector equality. Abrupt process-wide exit while other threads are
