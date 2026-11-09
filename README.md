@@ -16,6 +16,12 @@ resource limits, output validation and complete-tree cleanup.
 The pinned SDK is DynamoRIO 11.3.0-1 (source revision
 `6847bb210bea0ca11d1bf47704383d6a075da490`). The fetcher verifies its release
 archive SHA-256 before extracting the required build/runtime subset.
+It then builds the 64-bit release and debug runtime cores from the same pinned
+source commit with the [vfork lifetime patch](toolkit/patches/dynamorio-vfork-lifetime.patch).
+The source archive is also hash-pinned. CMake, a C/C++ compiler and `patch` are
+needed for this one-time build; this adds no compilation to measured runs.
+The SDK's `.workmeter-runtime.json` records the source, patch and installed core
+hashes. Cached cores are reused only when those hashes match.
 
 ```sh
 python3 toolkit/fetch_sdk.py
@@ -162,14 +168,29 @@ exec, and successful exec from a multithreaded process remain unsupported or
 incomplete. The collector rejects their accounting rather than silently omitting
 work. Ordinary thread creation is aggregated separately from process creation.
 
-Concurrent `posix_spawn` from several parent threads is **unqualified**. A
-40-run comparison reproduced DynamoRIO crashes with both direct launch (2/20)
-and the Rust supervisor (1/20). The engine's shared-VM child-context cleanup is a
-suspected cause, not a confirmed root cause. The smoke suite retains this cohort
-as explicitly unsupported diagnostics, separate from passing qualification
-counts; every failed run must have an invalid measurement with no partial total.
-Use an outer wall deadline and cleanup policy for this path. Rust supervision
-contains these observed failures but does not repair the instrumentation engine.
+The unpatched upstream runtime intermittently crashes during concurrent
+`posix_spawn`. It marks a shared-VM child before its `execve` syscall, then lets
+another parent's process-creation path reclaim that child's context too early.
+The bundled patch reclaims only the matching child after its own parent's
+`vfork`/`CLONE_VFORK` syscall returns. It also permits multiple pending exec
+transitions. It does not serialize application threads or change their syscalls,
+clone flags or work counters.
+
+Concurrent creation is tested with the patched runtime for successful exec,
+failed exec, empty environments and parents that finish all spawn operations
+before exiting without waiting for their children. The stress fixture checks
+exact static-leaf instruction counts, complete process/image counts and Rust /
+reference-collector equality. Abrupt process-wide exit while other threads are
+still inside shared-VM creation remains unqualified; incomplete trees must not
+produce partial totals. Use the default SDK preparation above for this fix;
+`--upstream-only` is for fresh, unpatched diagnostic comparisons.
+
+```sh
+python3 tests/concurrent_spawn.py \
+  --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libworkmeter.so \
+  --runner-bin target/release/workmeter --output-dir .results/concurrent-spawn \
+  --repeats 20
+```
 
 Python `subprocess.run(["/bin/true"])` with its default descriptor-closing path
 timed out in a local diagnostic. Ordinary Python execution and the dedicated
