@@ -63,6 +63,10 @@ jobs:
           cmake --build build -j2
       - name: Validate lifecycle records and aggregation
         run: python3 -m unittest discover -s tests -v
+      - name: Validate clone3 cleared handlers and rejected fork-style accounting
+        run: python3 tests/clone_clear_sighand.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libworkmeter.so --runner-bin target/release/workmeter --output-dir .results/clone-clear --repeats 3 --require-clone3
+      - name: Validate cleared handlers with debug runtime assertions
+        run: python3 tests/clone_clear_sighand.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libworkmeter.so --runner-bin target/release/workmeter --output-dir .results/clone-clear-debug --engine-debug --modes normal failed-exec --repeats 3 --require-clone3
       - name: Validate real native and interpreter process trees
         run: python3 tests/smoke.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libworkmeter.so --output-dir .results/smoke --collector-bin target/release/workmeter
       - name: Validate bounded address-space reservations
