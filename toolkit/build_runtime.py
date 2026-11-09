@@ -35,7 +35,10 @@ STOCK_HASHES = {
 }
 ARTIFACTS = tuple(path + suffix for path in STOCK_HASHES for suffix in ("", ".debug"))
 CMAKE_OPTIONS = [
-    "-DCMAKE_C_STANDARD=17", "-DVERSION_NUMBER=11.3.0", "-DBUILD_NUMBER=1",
+    # The upstream CMake 3.7 policy otherwise probes types in the compiler
+    # default dialect (C23 on GCC 15), then builds its targets as C17.
+    "-DCMAKE_POLICY_DEFAULT_CMP0067=NEW", "-DCMAKE_C_STANDARD=17",
+    "-DCMAKE_C_STANDARD_REQUIRED=ON", "-DVERSION_NUMBER=11.3.0", "-DBUILD_NUMBER=1",
     *[f"-DBUILD_{part}=OFF" for part in ("EXT", "TOOLS", "DOCS", "TESTS", "SAMPLES", "CLIENTS")],
 ]
 
