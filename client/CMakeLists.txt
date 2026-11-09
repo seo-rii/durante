@@ -1,0 +1,15 @@
+cmake_minimum_required(VERSION 3.16)
+project(workmeter C)
+
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux" OR NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
+  message(FATAL_ERROR "This diagnostic client currently supports Linux x86-64 only")
+endif()
+find_package(DynamoRIO 11.3 EXACT REQUIRED)
+add_library(workmeter SHARED workmeter.c)
+configure_DynamoRIO_client(workmeter)
+use_DynamoRIO_extension(workmeter drmgr)
+use_DynamoRIO_extension(workmeter drreg)
+# SDK 11.3 defines bool itself; GCC 15 defaults to C23, where it is a keyword.
+set_target_properties(workmeter PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS YES)
+target_compile_options(workmeter PRIVATE -Wall -Wextra -Werror)
+target_compile_definitions(workmeter PRIVATE WORKMETER_SDK_VERSION="11.3.0")
