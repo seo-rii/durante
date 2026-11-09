@@ -89,6 +89,12 @@ exec, and successful exec from a multithreaded process remain unsupported or
 incomplete. The collector rejects their accounting rather than silently omitting
 work. Ordinary thread creation is aggregated separately from process creation.
 
+Python `subprocess.run(["/bin/true"])` with its default descriptor-closing path
+timed out in a local diagnostic. Ordinary Python execution and the dedicated
+fork/vfork/posix_spawn fixtures do not establish support for this path. Python
+subprocess creation remains unqualified; the collector rejects its incomplete
+records.
+
 Observed signals are reported as `quality: signals_observed`. A whole basic block
 is charged at entry, so signal delivery can charge an unexecuted tail. This is
 explicitly a basic-block-entry work metric. A killed process lacks a final record
