@@ -303,8 +303,8 @@ static dr_emit_flags_t analyze_block(void *drcontext, void *tag,
 /* Optional byte demand is deliberately separate from instruction count.  A
  * clean call only at REP MOVS/STOS observes the architectural repeat register
  * at that instruction, after any application instructions earlier in the BB.
- * Signals invalidate the complete report, so faulted partial transfers cannot
- * be mistaken for a completed byte measurement.  CMPS/SCAS can stop early and
+ * Signals mark quality explicitly; requested bytes are not completed memory
+ * transfers. CMPS/SCAS can stop early and
  * are counted as unsupported entries instead of charging their initial RCX.
  */
 static void observe_rep(int bytes, int count_reg) {
