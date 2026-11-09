@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Fetch the pinned official SDK and retain a small build/runtime subset."""
+"""Fetch the pinned SDK and build its corrected process-lifetime runtime."""
+import argparse
 import hashlib
 import json
 from pathlib import Path
@@ -18,6 +19,10 @@ EXPECTED_BYTES = 428589887
 EXPECTED_SHA256 = "ae02049df5c4daeb82d4087aaa0d38bf58cdd26b38fb6042dccf27cbc32ceed9"
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--upstream-only", action="store_true",
+                        help="extract the unpatched runtime for diagnostic comparisons only")
+    args = parser.parse_args()
     archive = ROOT / NAME
     if not archive.exists():
         if shutil.disk_usage(ROOT).free < 3 * 1024**3:
@@ -88,6 +93,11 @@ def main():
         "digest_origin": "Computed from official GitHub HTTPS asset; API digest unavailable",
     }
     (ROOT / "sdk.lock.json").write_text(json.dumps(metadata, indent=2) + "\n")
+    from build_runtime import build_runtime, verify_upstream_runtime
+    if args.upstream_only:
+        verify_upstream_runtime(sdk_root)
+    else:
+        build_runtime(sdk_root, ROOT / ".sdk" / "runtime")
     print(f"sdk_directory={sdk_root}", flush=True)
 
 if __name__ == "__main__":
