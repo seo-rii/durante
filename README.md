@@ -201,6 +201,13 @@ fork/vfork/posix_spawn fixtures do not establish support for this path. Python
 subprocess creation remains unqualified; the collector rejects its incomplete
 records.
 
+Additional blocking-read diagnostics reproduce two existing signal limitations
+with both stock and patched runtimes: an ignored signal can expose `EINTR`, and
+`sigpending()` can omit a signal held in DynamoRIO's pending queue. A separate
+plain-fork diagnostic also trips the debug runtime's child memory-leak check.
+These paths remain unqualified; complete work records alone do not establish
+application signal-semantics compatibility.
+
 Observed signals are reported as `quality: signals_observed`. A whole basic block
 is charged at entry, so signal delivery can charge an unexecuted tail. This is
 explicitly a basic-block-entry work metric. A killed process lacks a final record
