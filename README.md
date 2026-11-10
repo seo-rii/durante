@@ -204,11 +204,28 @@ python3 tests/concurrent_spawn.py \
   --repeats 20
 ```
 
-Python `subprocess.run(["/bin/true"])` with its default descriptor-closing path
-timed out in a local diagnostic. Ordinary Python execution and the dedicated
-fork/vfork/posix_spawn fixtures do not establish support for this path. Python
-subprocess creation remains unqualified; the collector rejects its incomplete
-records.
+The pinned upstream runtime walks every integer descriptor in `close_range`,
+including Python's `[3, UINT_MAX]` requests. Its signed loop can run indefinitely.
+The bundled patch splits the kernel operation around the small set of protected
+runtime descriptors instead. It validates flags before closing any descriptor,
+applies `CLOSE_RANGE_UNSHARE` once, preserves `CLOSE_RANGE_CLOEXEC`, and updates
+signalfd bookkeeping without holding the protected-descriptor lock. Lifecycle
+streams use protected DynamoRIO descriptors, so ordinary application `close` and
+`close_range` calls cannot close the counter's output stream.
+
+`tests/close_range.py` compares full and empty ranges, invalid flags/reversed
+ranges, close-on-exec, thread-local unsharing and signalfd reuse against native
+controls. It also exercises CPython's default subprocess creation, pipe input /
+output, explicitly passed descriptors and failed exec. These cases preserve the
+application's descriptor-closing behavior; they do not disable `close_fds` or
+substitute syscall results. They establish coverage for these cases rather than
+arbitrary Python subprocess and signal combinations.
+
+```sh
+python3 tests/close_range.py \
+  --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so \
+  --runner-bin target/release/durante --output-dir .results/close-range
+```
 
 Additional blocking-read diagnostics reproduce two existing signal limitations
 with both stock and patched runtimes: an ignored signal can expose `EINTR`, and

@@ -492,3 +492,165 @@ index efc1bbb1cd..ad839efb02 100644
                                 false /* not just opcode,
                                          decode operands too */
                                 _IF_DEBUG(!TEST(INSTR_IGNORE_INVALID, instr->flags)));
+--- a/core/unix/os.c
++++ b/core/unix/os.c
+@@ -6501,13 +6501,7 @@
+                                     true /*set_return_val*/);
+ }
+
+-#ifdef SYS_close_range
+-static bool
+-handle_close_range_pre(dcontext_t *dcontext, file_t fd)
+-{
+-    return handle_close_generic_pre(dcontext, fd, false /*set_return_val*/);
+-}
+-#endif
++
+
+ /***************************************************************************/
+
+@@ -7964,67 +7958,69 @@
+ #endif
+ #ifdef SYS_close_range
+     case SYS_close_range: {
+-        /* client.file_io indeed tests this for all arch, but it hasn't yet been
+-         * run on an AArchXX machine that has close_range available.
+-         */
+-        IF_AARCHXX(ASSERT_NOT_TESTED());
+         uint first_fd = sys_param(dcontext, 0), last_fd = sys_param(dcontext, 1);
+         uint flags = sys_param(dcontext, 2);
+         bool is_cloexec = TEST(CLOSE_RANGE_CLOEXEC, flags);
+-        if (is_cloexec) {
+-            /* client.file_io has a test for CLOSE_RANGE_CLOEXEC, but it hasn't been
+-             * verified on a system with kernel version >= 5.11 yet.
+-             */
+-            ASSERT_NOT_TESTED();
+-        }
+-        /* We do not let the app execute their own close_range ever. Instead we
+-         * make multiple close_range syscalls ourselves, one for each contiguous
+-         * sub-range of non-DR-private fds in [first, last].
+-         */
++        ptr_int_t ret;
++        uint64 cursor, closed_end = first_fd;
+         execute_syscall = false;
+         if (first_fd > last_fd) {
+             set_failure_return_val(dcontext, EINVAL);
+             DODEBUG({ dcontext->expect_last_syscall_to_fail = true; });
+             break;
+         }
+-        uint cur_range_first_fd = 0;
+-        uint cur_range_last_fd = 0;
+-        bool cur_range_valid = false;
+-        int ret = 0;
+-        for (int i = first_fd; i <= last_fd; i++) {
+-            /* Do not allow any changes to DR-owned FDs. */
+-            if ((is_cloexec && fd_is_dr_owned(i)) ||
+-                (!is_cloexec && !handle_close_range_pre(dcontext, i))) {
+-                SYSLOG_INTERNAL_WARNING_ONCE("app trying to close private fd(s)");
+-                if (cur_range_valid) {
+-                    cur_range_valid = false;
+-                    ret = dynamorio_syscall(SYS_close_range, 3, cur_range_first_fd,
+-                                            cur_range_last_fd, flags);
++        /* Validate all flags in the kernel before touching any descriptor.
++         * UINT_MAX is outside Linux's signed-int descriptor domain. This also
++         * performs UNSHARE once, including when the range contains only private
++         * descriptors. Repeating UNSHARE for each split range is unnecessary.
++         */
++        ret = dynamorio_syscall(SYS_close_range, 3, UINT_MAX, UINT_MAX, flags);
++        if (ret == 0) {
++            flags &= ~CLOSE_RANGE_UNSHARE;
++            if (!is_cloexec) {
++                if (first_fd == 0)
++                    handle_close_generic_pre(dcontext, STDIN, false);
++                if (first_fd <= STDOUT && last_fd >= STDOUT)
++                    handle_close_generic_pre(dcontext, STDOUT, false);
++                if (first_fd <= STDERR && last_fd >= STDERR)
++                    handle_close_generic_pre(dcontext, STDERR, false);
++            }
++            /* Work is bounded by the number of private descriptors, not the
++             * numeric size of the range (which is commonly [3, UINT_MAX]).
++             * Keep the table locked so a new client file cannot appear inside
++             * a range while it is being closed by the kernel.
++             */
++            TABLE_RWLOCK(fd_table, read, lock);
++            cursor = first_fd;
++            while (cursor <= last_fd) {
++                ptr_uint_t key;
++                uint64 next = (uint64)last_fd + 1;
++                int iter = 0;
++                while ((iter = generic_hash_iterate_next(GLOBAL_DCONTEXT, fd_table,
++                                                        iter, &key, NULL)) >= 0) {
++                    if (key >= cursor && key < next)
++                        next = key;
++                }
++                if (cursor < next) {
++                    ret = dynamorio_syscall(SYS_close_range, 3, (uint)cursor,
++                                            (uint)(next - 1), flags);
+                     if (ret != 0)
+                         break;
++                    closed_end = next;
+                 }
+-            } else {
++                cursor = next + 1;
++            }
++            TABLE_RWLOCK(fd_table, read, unlock);
+ #    ifdef LINUX
+-                if (!is_cloexec) {
+-                    signal_handle_close(dcontext, i);
+-                }
++            /* Releasing a signalfd can close its protected backing pipes, so
++             * this must run after releasing fd_table (lock order).
++             */
++            if (!is_cloexec && closed_end > first_fd)
++                signal_handle_close_range(dcontext, first_fd, (uint)(closed_end - 1));
+ #    endif
+-                if (cur_range_valid) {
+-                    ASSERT(cur_range_last_fd == i - 1);
+-                    cur_range_last_fd = i;
+-                } else {
+-                    cur_range_first_fd = i;
+-                    cur_range_last_fd = i;
+-                    cur_range_valid = true;
+-                }
+-            }
+-        }
+-        if (cur_range_valid) {
+-            ret = dynamorio_syscall(SYS_close_range, 3, cur_range_first_fd,
+-                                    cur_range_last_fd, flags);
+         }
+         if (ret != 0) {
+-            set_failure_return_val(dcontext, ret);
++            set_failure_return_val(dcontext, -ret);
+             DODEBUG({ dcontext->expect_last_syscall_to_fail = true; });
+         } else {
+             set_success_return_val(dcontext, 0);
+--- a/core/unix/os_private.h
++++ b/core/unix/os_private.h
+@@ -384,6 +384,9 @@
+
+ void
+ signal_handle_close(dcontext_t *dcontext, file_t fd);
++
++void
++signal_handle_close_range(dcontext_t *dcontext, uint first, uint last);
+ #endif
+
+ void
+--- a/core/unix/signal_linux.c
++++ b/core/unix/signal_linux.c
+@@ -562,3 +562,15 @@
+     }
+     TABLE_RWLOCK(sigfd_table, write, unlock);
+ }
++
++/* Remove only tracked signalfds, rather than walking every integer in a
++ * potentially UINT_MAX-sized close_range request. The table owns pipe refs.
++ */
++void
++signal_handle_close_range(dcontext_t *dcontext, uint first, uint last)
++{
++    TABLE_RWLOCK(sigfd_table, write, lock);
++    generic_hash_range_remove(GLOBAL_DCONTEXT, sigfd_table, first,
++                              (ptr_uint_t)last + 1);
++    TABLE_RWLOCK(sigfd_table, write, unlock);
++}
