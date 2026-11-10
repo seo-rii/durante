@@ -4,8 +4,10 @@
 use serde_json::{json, Value};
 use std::ffi::OsString;
 use std::fs::{self, DirBuilder, File, OpenOptions};
-use std::io::{self, Read, Write};
-use std::os::unix::fs::{DirBuilderExt, OpenOptionsExt, PermissionsExt};
+use std::io::{self, Read, Seek, Write};
+use std::os::fd::AsRawFd;
+use std::os::unix::ffi::OsStrExt;
+use std::os::unix::fs::{DirBuilderExt, MetadataExt, OpenOptionsExt, PermissionsExt};
 use std::os::unix::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
@@ -15,6 +17,7 @@ use std::time::{Duration, Instant};
 const CLEANUP_TIMEOUT: Duration = Duration::from_secs(3);
 const POLL_INTERVAL: Duration = Duration::from_millis(5);
 const CHILD_LIST_BYTES: u64 = 65_536;
+const REAP_BATCH: usize = 64;
 static CANCEL_SIGNAL: AtomicI32 = AtomicI32::new(0);
 
 pub struct Options {
@@ -30,6 +33,16 @@ pub struct Options {
 extern "C" fn cancelled(signal: libc::c_int) {
     // A lock-free atomic is the only operation performed in the signal handler.
     let _ = CANCEL_SIGNAL.compare_exchange(0, signal, Ordering::Relaxed, Ordering::Relaxed);
+}
+
+fn protect_supervisor() -> io::Result<()> {
+    // The dedicated CLI stays non-dumpable until exit, including if cleanup
+    // leaves a live target. This does not isolate signals or the filesystem.
+    // SAFETY: prctl uses immediate integer arguments only.
+    if unsafe { libc::prctl(libc::PR_SET_DUMPABLE, 0, 0, 0, 0) } < 0 {
+        return Err(io::Error::last_os_error());
+    }
+    Ok(())
 }
 
 struct ProcessOwner {
@@ -120,16 +133,14 @@ impl Drop for ProcessOwner {
 struct Records {
     path: PathBuf,
     keep: bool,
+    directory: File,
 }
 
 impl Records {
     fn create(requested: Option<&Path>, keep: bool) -> io::Result<Self> {
         if let Some(path) = requested {
             DirBuilder::new().mode(0o700).create(path)?;
-            return Ok(Self {
-                path: fs::canonicalize(path)?,
-                keep: true,
-            });
+            return Self::opened(fs::canonicalize(path)?, true);
         }
         let base = fs::canonicalize(std::env::temp_dir())?;
         let mut random = File::open("/dev/urandom")?;
@@ -139,7 +150,7 @@ impl Records {
             let name: String = nonce.iter().map(|byte| format!("{byte:02x}")).collect();
             let path = base.join(format!("durante-{}-{name}", std::process::id()));
             match DirBuilder::new().mode(0o700).create(&path) {
-                Ok(()) => return Ok(Self { path, keep }),
+                Ok(()) => return Self::opened(path, keep),
                 Err(error) if error.kind() == io::ErrorKind::AlreadyExists => continue,
                 Err(error) => return Err(error),
             }
@@ -150,10 +161,54 @@ impl Records {
         ))
     }
 
+    fn opened(path: PathBuf, keep: bool) -> io::Result<Self> {
+        let directory = OpenOptions::new()
+            .read(true)
+            .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
+            .open(&path)?;
+        Ok(Self {
+            path,
+            keep,
+            directory,
+        })
+    }
+
     fn cleanup(&mut self) -> io::Result<()> {
         if !self.keep {
-            fs::remove_dir_all(&self.path)?;
-            self.keep = true; // Already removed; do not retry in Drop.
+            // Never recursively walk application-created directories or retry
+            // failed cleanup from Drop. Preserve unexpected contents for an
+            // external resource owner instead of doing unbounded attacker work.
+            self.keep = true;
+            let original = self.directory.metadata()?;
+            let same_directory = || -> io::Result<()> {
+                let current = fs::symlink_metadata(&self.path)?;
+                if !current.is_dir()
+                    || current.dev() != original.dev()
+                    || current.ino() != original.ino()
+                {
+                    return Err(io::Error::other("record directory was replaced"));
+                }
+                Ok(())
+            };
+            same_directory()?;
+            let alias = format!("/proc/self/fd/{}", self.directory.as_raw_fd());
+            let mut names = Vec::new();
+            for entry in fs::read_dir(alias)? {
+                let entry = entry?;
+                if names.len() >= durante::collect::MAX_PROCESSES || !entry.file_type()?.is_file() {
+                    return Err(io::Error::other("unexpected record cleanup contents"));
+                }
+                names.push(std::ffi::CString::new(entry.file_name().as_bytes())?);
+            }
+            for name in names {
+                // SAFETY: each name is one directory leaf, and the held FD pins
+                // the created directory even if its pathname is replaced.
+                if unsafe { libc::unlinkat(self.directory.as_raw_fd(), name.as_ptr(), 0) } < 0 {
+                    return Err(io::Error::last_os_error());
+                }
+            }
+            same_directory()?;
+            fs::remove_dir(&self.path)?;
         }
         Ok(())
     }
@@ -162,7 +217,7 @@ impl Records {
 impl Drop for Records {
     fn drop(&mut self) {
         if !self.keep {
-            let _ = fs::remove_dir_all(&self.path);
+            let _ = self.cleanup();
         }
     }
 }
@@ -176,7 +231,7 @@ struct WaitState {
 // Returns true while at least one direct/reparented child is still live. The
 // runner is a dedicated single-threaded process and has no unrelated children.
 fn reap(root_pid: u32, state: &mut WaitState) -> io::Result<bool> {
-    loop {
+    for _ in 0..REAP_BATCH {
         let mut status = 0;
         // SAFETY: valid status pointer; no signal handler or other thread waits.
         let pid = unsafe { libc::waitpid(-1, &mut status, libc::WNOHANG) };
@@ -196,6 +251,9 @@ fn reap(root_pid: u32, state: &mut WaitState) -> io::Result<bool> {
             }
         }
     }
+    // A busy producer of exited children must not starve the caller's deadline
+    // or cancellation checks. EINTR consumes the same bounded operation budget.
+    Ok(true)
 }
 
 fn kill_owned_children() -> io::Result<()> {
@@ -216,6 +274,7 @@ fn kill_owned_children() -> io::Result<()> {
     for token in bytes[..complete_end]
         .split(|byte| byte.is_ascii_whitespace())
         .filter(|token| !token.is_empty())
+        .take(REAP_BATCH)
     {
         let child = std::str::from_utf8(token)
             .ok()
@@ -283,6 +342,7 @@ pub fn run(options: Options) -> Result<i32, String> {
         .map_err(|_| "launcher must be a trusted regular executable".to_owned())?;
     let client = trusted_installation(&options.client, false)
         .map_err(|_| "client must be a trusted regular file".to_owned())?;
+    protect_supervisor().map_err(|_| "cannot protect supervisor process access".to_owned())?;
     let mut output = OpenOptions::new()
         .write(true)
         .create_new(true)
@@ -294,6 +354,7 @@ pub fn run(options: Options) -> Result<i32, String> {
         })?;
     let started = Instant::now();
     let mut result = json!({"schema":1,"authority":"diagnostic_only",
+        "security":{"counter_integrity":"application_mutable","isolation":"external_required"},
         "execution":{"state":"launch_failed","root_pid":null,"exit_code":null,
             "signal":null,"cancel_signal":null,"wall_time_ms":0,"cleanup_time_ms":0,
             "cleanup_complete":true,"records_cleanup_complete":true,
@@ -309,12 +370,36 @@ pub fn run(options: Options) -> Result<i32, String> {
             1
         }
     };
+    verify_report_path(&output, &options.report, 0)
+        .map_err(|_| "final report path was replaced or linked".to_owned())?;
     serde_json::to_writer_pretty(&mut output, &result)
         .map_err(|_| "cannot write report".to_owned())?;
     writeln!(output)
         .and_then(|()| output.sync_data())
         .map_err(|_| "cannot finish report".to_owned())?;
+    let written = output
+        .stream_position()
+        .map_err(|_| "cannot verify report length".to_owned())?;
+    verify_report_path(&output, &options.report, written)
+        .map_err(|_| "final report path changed during publication".to_owned())?;
     Ok(exit)
+}
+
+fn verify_report_path(output: &File, path: &Path, expected_length: u64) -> io::Result<()> {
+    let held = output.metadata()?;
+    let named = fs::symlink_metadata(path)?;
+    if !named.is_file()
+        || held.dev() != named.dev()
+        || held.ino() != named.ino()
+        || held.nlink() != 1
+        || named.nlink() != 1
+        || held.len() != expected_length
+        || named.len() != expected_length
+        || named.permissions().mode() & 0o077 != 0
+    {
+        return Err(io::Error::other("unsafe report publication"));
+    }
+    Ok(())
 }
 
 fn execute(
@@ -361,6 +446,15 @@ fn execute(
                 if libc::sigaction(signal, &action, std::ptr::null_mut()) < 0 {
                     return Err(io::Error::last_os_error());
                 }
+            }
+            if libc::prctl(libc::PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) < 0 {
+                return Err(io::Error::last_os_error());
+            }
+            // Mark, do not close: Rust's exec-error pipe must remain usable
+            // until exec. On unsupported kernels fail closed rather than leak
+            // a caller's non-CLOEXEC secrets into the measured application.
+            if libc::syscall(libc::SYS_close_range, 3_u32, u32::MAX, 4_u32) < 0 {
+                return Err(io::Error::last_os_error());
             }
             if libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGKILL, 0, 0, 0) < 0 {
                 return Err(io::Error::last_os_error());
