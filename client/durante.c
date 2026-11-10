@@ -98,7 +98,7 @@ static void write_event(int fd, size_t *bytes, uint64_t *sequence,
     fail("record size exceeded");
   ssize_t n;
   do {
-    n = write(fd, buffer, (size_t)length);
+    n = dr_write_file(fd, buffer, (size_t)length);
   } while (n < 0 && errno == EINTR);
   if (n != length)
     fail("incomplete lifecycle write");
@@ -125,8 +125,20 @@ static int open_pid_file(process_id_t process, size_t *bytes) {
       st.st_nlink != 1 || st.st_uid != geteuid() || st.st_size < 0 ||
       st.st_size >= MAX_STREAM_BYTES)
     fail("unsafe or oversized report stream");
+  /* Open the already validated inode through a kernel-owned fd alias, so
+   * DynamoRIO reserves/protects the stream from application close/close_range.
+   * Keep the no-follow/openat checks above: dr_open_file by pathname alone would
+   * permit the application to redirect this write through a symlink. */
+  char alias[64];
+  dr_snprintf(alias, sizeof(alias), "/proc/self/fd/%d", fd);
+  file_t protected_fd = dr_open_file(alias, DR_FILE_WRITE_APPEND);
+  struct stat protected_st;
+  if (protected_fd == INVALID_FILE || fstat(protected_fd, &protected_st) != 0 ||
+      protected_st.st_dev != st.st_dev || protected_st.st_ino != st.st_ino)
+    fail("cannot protect lifecycle stream");
+  close(fd);
   *bytes = (size_t)st.st_size;
-  return fd;
+  return protected_fd;
 }
 static void child_event(thread_data_t *d, const char *kind,
                         const char *fields) {
@@ -481,7 +493,7 @@ static bool pre_syscall(void *ctx, int number) {
   if (d->child_pid && d->child_exit_seen)
     snapshot_event("end", ctx, false);
   if (d->child_pid && (exec || d->child_exit_seen) && d->child_file >= 0) {
-    close(d->child_file);
+    dr_close_file(d->child_file);
     d->child_file = -1;
   }
   dr_mutex_unlock(state_lock);
@@ -527,7 +539,7 @@ static void fork_init(void *ctx) {
   char previous[80];
   memcpy(previous, segment, sizeof(previous));
   if (report_file >= 0)
-    close(report_file);
+    dr_close_file(report_file);
   report_file = -1;
   /* Mutex and all completed/other-thread state inherited from the parent must
    * not contribute to the child's work. DR restores the surviving TLS slot. */
@@ -559,7 +571,7 @@ static void process_exit(void) {
     report_written = true;
   }
   if (report_file >= 0) {
-    close(report_file);
+    dr_close_file(report_file);
     report_file = -1;
   }
   dr_mutex_unlock(state_lock);

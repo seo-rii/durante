@@ -85,6 +85,12 @@ def main():
     run(name,[program],rep=rep,expected=5017+1000*n)
    threads=compile(mode+'-threads',THREADS,['-pthread']);r=run(mode+'-threads',[threads],rep=rep)['result']
    assert r['segments'][0]['threads']==5,r
+  # Lifecycle streams must survive normal descriptor cleanup by the target.
+  # The baseline raw-open stream is closed here and cannot emit its end record.
+  close_fds=compile('close-fds','#include <unistd.h>\nint main(void) { for (int fd=3; fd<256; ++fd) close(fd); return 0; }\n')
+  run('close-fds',[close_fds],processes=1,images=1)
+  close_range=compile('close-range','#define _GNU_SOURCE\n#include <unistd.h>\n#include <sys/syscall.h>\n#include <errno.h>\nint main(void) { long r=syscall(SYS_close_range,3u,255u,0u); return r==0 || errno==ENOSYS ? 0 : 1; }\n')
+  run('close-range',[close_range],processes=1,images=1)
   source=(ROOT/'tests/tree_fixture.c').read_text()
   tree=compile('tree',source)
   for mode,np,ni in [('fork',2,2),('nested',3,3),('fork-exec',2,3),('exec',1,2),('exec-chain',1,3),('failed-exec',1,1),('exec-empty-env',1,2),('vfork',2,3),('posix-spawn',2,3),('vfork-exit',2,2),('vfork-failed-exec',2,2)]:
@@ -140,6 +146,8 @@ def main():
     if images is not None:assert result['image_count']==images,row
     return row
    run_supervised('exact-loop',[loop],expected=300005,processes=1,images=1)
+   run_supervised('close-fds',[close_fds],processes=1,images=1)
+   run_supervised('close-range',[close_range],processes=1,images=1)
    rep_program=compile('runner-rep',REP,[*asm,'-DREP_COUNT=8192'])
    assert run_supervised('rep',[rep_program],expected=7)['result']['rep_bytes']==8192
    jit_program=compile('runner-jit',JIT,[*asm,'-DNOP_COUNT=32'])
