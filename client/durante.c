@@ -117,9 +117,13 @@ static int open_pid_file(process_id_t process, size_t *bytes) {
   dr_snprintf(name, sizeof(name), "process-%d.jsonl", (int)process);
   int fd = openat(
       dir, name,
-      O_WRONLY | O_CREAT | O_EXCL | O_APPEND | O_NOFOLLOW | O_CLOEXEC, 0600);
+      O_WRONLY | O_CREAT | O_EXCL | O_APPEND | O_NOFOLLOW | O_CLOEXEC | O_NONBLOCK,
+      0600);
   if (fd < 0 && errno == EEXIST)
-    fd = openat(dir, name, O_WRONLY | O_APPEND | O_NOFOLLOW | O_CLOEXEC);
+    /* Validate the opened inode, but do not block before reaching fstat when a
+     * target replaces its earlier image's stream pathname with a FIFO. */
+    fd = openat(dir, name,
+                O_WRONLY | O_APPEND | O_NOFOLLOW | O_CLOEXEC | O_NONBLOCK);
   close(dir);
   struct stat st;
   if (fd < 0 || fstat(fd, &st) != 0 || !S_ISREG(st.st_mode) ||
