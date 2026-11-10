@@ -46,7 +46,7 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - name: Install build dependencies and interpreter smoke targets
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends build-essential cmake python3 pypy3
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends build-essential cmake patch python3 pypy3
       - name: Install the tested Rust toolchain
         run: rustup toolchain install 1.94.0 --profile minimal --component rustfmt --component clippy
       - name: Validate the Rust collector and supervisor
@@ -55,7 +55,7 @@ jobs:
           cargo +1.94.0 clippy --locked --all-targets -- -D warnings
           cargo +1.94.0 test --locked --all-targets
           cargo +1.94.0 build --locked --release
-      - name: Verify and extract the pinned DynamoRIO SDK
+      - name: Build the pinned DynamoRIO runtime with concurrency fixes
         run: python3 toolkit/fetch_sdk.py
       - name: Build the counter
         run: |
@@ -63,10 +63,18 @@ jobs:
           cmake --build build -j2
       - name: Validate lifecycle records and aggregation
         run: python3 -m unittest discover -s tests -v
+      - name: Validate clone3 cleared handlers and rejected fork-style accounting
+        run: python3 tests/clone_clear_sighand.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/clone-clear --repeats 3 --require-clone3
+      - name: Validate cleared handlers with debug runtime assertions
+        run: python3 tests/clone_clear_sighand.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/clone-clear-debug --engine-debug --modes normal failed-exec --repeats 3 --require-clone3
       - name: Validate real native and interpreter process trees
         run: python3 tests/smoke.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --output-dir .results/smoke --collector-bin target/release/durante
       - name: Validate bounded address-space reservations
         run: python3 tests/smoke.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --compact-vm --output-dir .results/smoke-compact --collector-bin target/release/durante --runner-bin target/release/durante
+      - name: Stress concurrent process creation and exact child work
+        run: python3 tests/concurrent_spawn.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/concurrent-spawn --repeats 20 --timeout-ms 20000
+      - name: Check debug runtime assertions during concurrent process creation
+        run: python3 tests/concurrent_spawn.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/concurrent-spawn-debug --repeats 3 --engine-debug --timeout-ms 20000
       - name: Preserve diagnostic test results
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

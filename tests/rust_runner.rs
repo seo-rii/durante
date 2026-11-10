@@ -262,7 +262,7 @@ fn cancellation_reaps_a_descendant_that_escaped_the_process_group() {
             "--",
             "/bin/sh",
             "-c",
-            "setsid /bin/sh -c 'printf %s $$ > \"$1\"; exec sleep 30' sh \"$1\" & wait",
+            "setsid /bin/sh -c 'printf %s $$ > \"$1.tmp\"; mv -- \"$1.tmp\" \"$1\"; exec sleep 30' sh \"$1\" & wait",
             "sh",
         ])
         .arg(&pidfile)
@@ -270,6 +270,8 @@ fn cancellation_reaps_a_descendant_that_escaped_the_process_group() {
         .stderr(Stdio::null())
         .spawn()
         .unwrap();
+    // Publish only the complete PID: existence alone does not imply that the
+    // shell has written into a freshly created redirection target yet.
     await_file(&pidfile, &mut child);
     let escaped: u32 = fs::read_to_string(&pidfile).unwrap().parse().unwrap();
     // SAFETY: PID is our running child process.

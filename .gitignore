@@ -5,3 +5,5 @@ build/
 .results/
 
 /target/
+/toolkit/sdk/
+/toolkit/DynamoRIO-Linux-11.3.0.tar.gz

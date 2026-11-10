@@ -46,6 +46,7 @@
 #define CLONE_VM_FLAG UINT64_C(0x00000100)
 #define CLONE_VFORK_FLAG UINT64_C(0x00004000)
 #define CLONE_FILES_FLAG UINT64_C(0x00000400)
+#define CLONE_CLEAR_SIGHAND_FLAG UINT64_C(0x100000000)
 #define MAX_STREAM_BYTES (1024 * 1024)
 #define MAX_EVENTS 4096
 
@@ -467,6 +468,10 @@ static bool pre_syscall(void *ctx, int number) {
     /* Non-thread shared-address-space clones have no isolated TLS accounting.
      */
     if (spawn && (flags & CLONE_VM_FLAG) && !(flags & CLONE_VFORK_FLAG))
+      d->pending_unsupported = true;
+    /* The runtime fix restores cleared handlers for shared-VM spawn children.
+     * Fork-style clone3 uses a separate signal initialization path. */
+    if (spawn && (flags & CLONE_CLEAR_SIGHAND_FLAG) && !(flags & CLONE_VM_FLAG))
       d->pending_unsupported = true;
   }
   if (d->child_pid && spawn)

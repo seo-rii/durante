@@ -111,9 +111,7 @@ def main():
   run('killed-child',[tree,'kill-child'],valid=False)
   spawn_threads=compile('spawn-threads',(ROOT/'tests/spawn_threads.c').read_text(),['-pthread'])
   for rep in [False,True]:
-   # Concurrent vfork/exec has an observed engine failure. Keep evidence,
-   # but never count this cohort as qualified or accept failed partial totals.
-   r=run('spawn-threads-'+str(rep),[spawn_threads],rep=rep,processes=7,images=13,qualified=False)['result']
+   r=run('spawn-threads-'+str(rep),[spawn_threads],rep=rep,processes=7,images=13)['result']
    if r['valid']:
     parent=next(s for s in r['segments'] if s['pid']==r['root_pid'])
     assert parent['threads']==4,r
@@ -154,7 +152,7 @@ def main():
    run_supervised('jit',[jit_program],expected=37017)
    for mode,np,ni in [('fork',2,2),('nested',3,3),('fork-exec',2,3),('exec-chain',1,3),('failed-exec',1,1),('exec-empty-env',1,2),('vfork',2,3),('posix-spawn',2,3),('vfork-exit',2,2),('vfork-failed-exec',2,2)]:
     run_supervised(mode,[tree,mode],processes=np,images=ni)
-   run_supervised('spawn-threads',[spawn_threads],processes=7,images=13,timeout=3000,qualified=False)
+   run_supervised('spawn-threads',[spawn_threads],processes=7,images=13,timeout=3000)
    run_supervised('nonzero-exit',[tree,'nonzero'],code=7)
    assert run_supervised('handled-signal',[tree,'signal'])['result']['quality']=='signals_observed'
    run_supervised('killed-child',[tree,'kill-child'],valid=False)
