@@ -47,7 +47,7 @@ impl Fixture {
         }
     }
     fn command(&self, timeout: u64) -> Command {
-        let mut command = Command::new(env!("CARGO_BIN_EXE_workmeter"));
+        let mut command = Command::new(env!("CARGO_BIN_EXE_durante"));
         command
             .args(["run", "--drrun"])
             .arg(&self.launcher)
@@ -159,7 +159,7 @@ fn records_are_private_explicit_and_collectable_without_python() {
         0o700
     );
     let report = f.result();
-    let collect = Command::new(env!("CARGO_BIN_EXE_workmeter"))
+    let collect = Command::new(env!("CARGO_BIN_EXE_durante"))
         .args(["collect", "--dir"])
         .arg(&records)
         .arg("--root-pid")

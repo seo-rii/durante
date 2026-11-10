@@ -40,7 +40,7 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 #ifndef X86_64
-#error "workmeter supports Linux x86-64 only"
+#error "durante supports Linux x86-64 only"
 #endif
 #define CLONE_THREAD_FLAG UINT64_C(0x00010000)
 #define CLONE_VM_FLAG UINT64_C(0x00000100)
@@ -76,7 +76,7 @@ static int app_exit_code;
 static size_t file_bytes;
 
 static void fail(const char *m) {
-  dr_fprintf(STDERR, "workmeter: %s\n", m);
+  dr_fprintf(STDERR, "durante: %s\n", m);
   dr_abort();
 }
 
@@ -576,11 +576,11 @@ static void process_exit(void) {
 }
 DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
   (void)id;
-  dr_set_client_name("Workmeter process-tree BB work",
+  dr_set_client_name("Durante process-tree BB work",
                      "https://dynamorio.org/");
   if ((argc != 3 && argc != 4) || strcmp(argv[1], "-outdir") ||
       (argc == 4 && strcmp(argv[3], "-rep_bytes")))
-    fail("usage: -c libworkmeter.so -outdir NEW_PRIVATE_DIRECTORY [-rep_bytes] "
+    fail("usage: -c libdurante.so -outdir NEW_PRIVATE_DIRECTORY [-rep_bytes] "
          "-- program");
   if (strlen(argv[2]) >= sizeof(outdir) || argv[2][0] != '/')
     fail("report directory must be absolute");

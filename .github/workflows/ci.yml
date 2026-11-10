@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: workmeter-${{ github.workflow }}-${{ github.ref }}
+  group: durante-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -64,9 +64,9 @@ jobs:
       - name: Validate lifecycle records and aggregation
         run: python3 -m unittest discover -s tests -v
       - name: Validate real native and interpreter process trees
-        run: python3 tests/smoke.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libworkmeter.so --output-dir .results/smoke --collector-bin target/release/workmeter
+        run: python3 tests/smoke.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --output-dir .results/smoke --collector-bin target/release/durante
       - name: Validate bounded address-space reservations
-        run: python3 tests/smoke.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libworkmeter.so --compact-vm --output-dir .results/smoke-compact --collector-bin target/release/workmeter --runner-bin target/release/workmeter
+        run: python3 tests/smoke.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --compact-vm --output-dir .results/smoke-compact --collector-bin target/release/durante --runner-bin target/release/durante
       - name: Preserve diagnostic test results
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

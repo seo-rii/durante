@@ -1,9 +1,9 @@
+use durante::collect::{collect, MAX_EVENTS, MAX_FILE_BYTES, MAX_LINE_BYTES, MAX_PROCESSES};
 use serde_json::{json, Value};
 use std::fs;
 use std::os::unix::ffi::OsStrExt;
 use std::os::unix::fs::symlink;
 use std::path::Path;
-use workmeter::collect::{collect, MAX_EVENTS, MAX_FILE_BYTES, MAX_LINE_BYTES, MAX_PROCESSES};
 
 fn event(pid: u32, image: u64, seq: u64, kind: &str) -> Value {
     json!({"schema":1,"client_version":1,"authority":"diagnostic_only",
@@ -331,7 +331,7 @@ fn total_file_budget_is_enforced_before_aggregation() {
 #[test]
 fn malformed_names_root_ids_and_missing_root_are_rejected() {
     assert_invalid(&collect(
-        Path::new("/does-not-exist/workmeter-collector-fixture"),
+        Path::new("/does-not-exist/durante-collector-fixture"),
         1,
     ));
     for name in [

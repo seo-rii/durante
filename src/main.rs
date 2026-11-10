@@ -28,7 +28,7 @@ enum Command {
         /// Trusted DynamoRIO launcher executable.
         #[arg(long)]
         drrun: PathBuf,
-        /// Trusted native Workmeter client shared library.
+        /// Trusted native Durante client shared library.
         #[arg(long)]
         client: PathBuf,
         /// New JSON report file; an existing file is never replaced.
@@ -90,13 +90,13 @@ fn main() {
                 }
                 _ => "invalid command-line option or value",
             };
-            eprintln!("workmeter: {hint}; use --help for usage");
+            eprintln!("durante: {hint}; use --help for usage");
             std::process::exit(2);
         }
     };
     let result = match cli.command {
         Command::Collect { dir, root_pid } => {
-            let result = workmeter::collect::collect(&dir, root_pid);
+            let result = durante::collect::collect(&dir, root_pid);
             let stdout = io::stdout();
             let mut output = stdout.lock();
             match serde_json::to_writer(&mut output, &result)
@@ -143,14 +143,14 @@ fn main() {
                     keep_records,
                     command,
                 );
-                Err("workmeter run requires Linux x86-64".to_owned())
+                Err("durante run requires Linux x86-64".to_owned())
             }
         }
     };
     match result {
         Ok(code) => std::process::exit(code),
         Err(reason) => {
-            eprintln!("workmeter: {reason}");
+            eprintln!("durante: {reason}");
             std::process::exit(1);
         }
     }

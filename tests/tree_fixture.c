@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
   if (!strcmp(mode, "nonzero"))
     return 7;
   if (!strcmp(mode, "failed-exec")) {
-    execl("/workmeter-nonexistent-executable", "bad", (char *)0);
+    execl("/durante-nonexistent-executable", "bad", (char *)0);
     if (errno != ENOENT)
       return 8;
     work(1000);
@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
     pid_t p = vfork();
     if (!p) {
       if (!strcmp(mode, "vfork-failed-exec"))
-        execl("/workmeter-nonexistent-executable", "bad", (char *)0);
+        execl("/durante-nonexistent-executable", "bad", (char *)0);
       work(CHILD_WORK);
       _exit(0);
     }

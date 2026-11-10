@@ -1,6 +1,6 @@
-# Workmeter DynamoRIO client
+# Durante DynamoRIO client
 
-Build `libworkmeter.so` using the [repository instructions](../README.md).
+Build `libdurante.so` using the [repository instructions](../README.md).
 Launch it with `-outdir ABSOLUTE_PRIVATE_DIRECTORY`, optionally followed by
 `-rep_bytes`. The earlier single-file `drmeter -o REPORT` interface is not used.
 

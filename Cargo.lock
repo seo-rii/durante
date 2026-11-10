@@ -323,7 +323,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "workmeter"
+name = "durante"
 version = "0.1.0"
 dependencies = [
  "clap",

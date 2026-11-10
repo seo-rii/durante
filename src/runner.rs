@@ -137,7 +137,7 @@ impl Records {
             let mut nonce = [0_u8; 16];
             random.read_exact(&mut nonce)?;
             let name: String = nonce.iter().map(|byte| format!("{byte:02x}")).collect();
-            let path = base.join(format!("workmeter-{}-{name}", std::process::id()));
+            let path = base.join(format!("durante-{}-{name}", std::process::id()));
             match DirBuilder::new().mode(0o700).create(&path) {
                 Ok(()) => return Ok(Self { path, keep }),
                 Err(error) if error.kind() == io::ErrorKind::AlreadyExists => continue,
@@ -442,7 +442,7 @@ fn execute(
         result["measurement"] = invalid_measurement(Some(root_pid), "root did not exit normally");
         code = 1;
     } else {
-        let mut measurement = workmeter::collect::collect(&records.path, root_pid);
+        let mut measurement = durante::collect::collect(&records.path, root_pid);
         if measurement["valid"] == true && measurement["complete"] == true {
             let recorded_exit = measurement["processes"]
                 .as_array()

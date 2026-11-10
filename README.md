@@ -1,6 +1,6 @@
-# Workmeter
+# Durante
 
-Workmeter records software work performed by a Linux x86-64 process tree under
+Durante records software work performed by a Linux x86-64 process tree under
 DynamoRIO. It counts application instructions at basic-block entry and optionally
 records REP MOVS/STOS requested bytes. It follows ordinary forks, Linux vfork /
 posix_spawn paths and exec image changes, then sums complete process/image records
@@ -25,10 +25,10 @@ cmake --build build -j2
 python3 -m unittest discover -s tests -v
 python3 tests/smoke.py \
   --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 \
-  --client build/libworkmeter.so --output-dir .results/smoke
+  --client build/libdurante.so --output-dir .results/smoke
 python3 tests/smoke.py \
   --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 \
-  --client build/libworkmeter.so --compact-vm --output-dir .results/smoke-compact
+  --client build/libdurante.so --compact-vm --output-dir .results/smoke-compact
 ```
 
 `--compact-vm` verifies the same suite with DynamoRIO `-vm_size 32M
@@ -50,9 +50,9 @@ Build the client above, then build the Linux x86-64 CLI with Rust 1.94 or newer:
 
 ```sh
 cargo build --locked --release
-target/release/workmeter run \
+target/release/durante run \
   --drrun "$PWD/toolkit/sdk/DynamoRIO-Linux-11.3.0-1/bin64/drrun" \
-  --client "$PWD/build/libworkmeter.so" \
+  --client "$PWD/build/libdurante.so" \
   --report result.json --timeout-ms 30000 \
   -- /path/to/program args
 ```
@@ -89,7 +89,7 @@ counts remain `diagnostic_only`, not trusted security enforcement or CPU-ms.
 To collect an already finished and fully reaped tree without launching it:
 
 ```sh
-target/release/workmeter collect --dir /absolute/record-directory --root-pid 1234
+target/release/durante collect --dir /absolute/record-directory --root-pid 1234
 ```
 
 This prints the protocol aggregate to stdout and exits 0 for a complete result,
@@ -106,9 +106,9 @@ cargo fmt --all -- --check
 cargo clippy --locked --all-targets -- -D warnings
 cargo test --locked --all-targets
 python3 tests/smoke.py \
-  --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libworkmeter.so \
+  --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so \
   --compact-vm --output-dir .results/rust-smoke \
-  --collector-bin target/release/workmeter --runner-bin target/release/workmeter
+  --collector-bin target/release/durante --runner-bin target/release/durante
 ```
 
 ## Integrate
@@ -118,7 +118,7 @@ launches the original executable with its existing arguments and environment:
 
 ```sh
 toolkit/sdk/DynamoRIO-Linux-11.3.0-1/bin64/drrun \
-  -quiet -follow_children -c "$PWD/build/libworkmeter.so" \
+  -quiet -follow_children -c "$PWD/build/libdurante.so" \
   -outdir /absolute/private/new-directory -rep_bytes -- /path/to/program args
 ```
 
@@ -126,7 +126,7 @@ Track that launched process's PID. After it **and all descendants** have exited
 and been reaped, collect the records:
 
 ```sh
-target/release/workmeter collect --dir /absolute/private/new-directory --root-pid TARGET_PID
+target/release/durante collect --dir /absolute/private/new-directory --root-pid TARGET_PID
 ```
 
 `collect.py` remains a standard-library Python reference implementation used for

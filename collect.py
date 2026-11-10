@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bounded reference collector for diagnostic Workmeter process-tree records.
+"""Bounded reference collector for diagnostic Durante process-tree records.
 
 Never use these application-address-space counters as a security boundary.
 The caller must finish and reap the complete target tree before collecting.

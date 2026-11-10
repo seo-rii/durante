@@ -1,11 +1,11 @@
 [package]
-name = "workmeter"
+name = "durante"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.94"
 license = "BSD-3-Clause"
 description = "Diagnostic software-work measurement for Linux process trees"
-repository = "https://github.com/seo-rii/workmeter"
+repository = "https://github.com/seo-rii/durante"
 publish = false
 
 [dependencies]

@@ -1,4 +1,4 @@
-# Workmeter lifecycle protocol, schema 1
+# Durante lifecycle protocol, schema 1
 
 The client is launched with `-outdir DIR [-rep_bytes]`. DIR must already exist,
 be empty, private and writable by the target. `drrun -follow_children` must be

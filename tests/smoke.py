@@ -29,7 +29,7 @@ def main():
  if args.runner_bin:args.runner_bin=args.runner_bin.resolve()
  args.sdk=args.sdk.resolve();args.client=args.client.resolve();args.output_dir.mkdir(parents=True,exist_ok=True)
  rows=[]
- with tempfile.TemporaryDirectory(prefix='workmeter-smoke-',dir=args.output_dir) as directory:
+ with tempfile.TemporaryDirectory(prefix='durante-smoke-',dir=args.output_dir) as directory:
   tmp=Path(directory)
   def compile(name,source,flags=()):
    f=tmp/(name+('.S' if '-nostdlib' in flags else '.c'));f.write_text(source);out=tmp/name
