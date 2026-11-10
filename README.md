@@ -11,6 +11,11 @@ instructions, a memory limit, or a trusted security boundary. Its counters share
 the measured program's address space. A caller must retain its own sandbox,
 resource limits, output validation and complete-tree cleanup.
 
+See [SECURITY.md](SECURITY.md) for confirmed tampering limits, supervisor
+hardening, containment requirements and reproducible sanitizer fuzzing. A
+structurally valid result is still application-mutable and must not authorize
+trusted time, billing or security decisions.
+
 ## Build and test
 
 The pinned SDK is DynamoRIO 11.3.0-1 (source revision
@@ -66,7 +71,9 @@ target/release/durante run \
   -- /path/to/program args
 ```
 
-The target inherits stdin/stdout/stderr. The JSON report goes to a **new** file;
+The target inherits stdin/stdout/stderr. Other inherited descriptors are closed
+on exec, and `no_new_privs` prevents privilege gain through exec. The CLI requires
+Linux `close_range(CLOSE_RANGE_CLOEXEC)` support (Linux 5.11 or newer). The JSON report goes to a **new** file;
 an existing file or symlink is never overwritten. Each run creates a private
 record directory, removed after collection unless `--keep-records` is supplied.
 Alternatively, `--records-dir NEW_DIRECTORY` creates and retains a directory at
