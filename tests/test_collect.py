@@ -139,4 +139,33 @@ class CollectorTests(unittest.TestCase):
   rows[1][-1]['rep_bytes']=1
   with self.assertRaises(m.Invalid):m.aggregate(rows,1)
 
+ def test_numeric_lexemes_match_native_scalar_contract(self):
+  cases=[('extra','1.7976931348623158e308',True),
+         ('extra','1.7976931348623157e308',True),
+         ('extra','0e999999999999999999999',True),
+         ('extra','1e-999999999999999999999',True),
+         ('extra',str(int(float.fromhex('0x1.fffffffffffffp+1023'))),True),
+         ('extra','9'*500,False),('extra','-'+'9'*500,False),
+         ('extra','9'*100,True),('extra','-'+'9'*100,True),
+         ('extra','18446744073709551615',True),
+         ('extra','18446744073709551616',True),
+         ('extra','-9223372036854775808',True),
+         ('extra','-9223372036854775809',True),('extra','-0',True),
+         ('parent_pid','-0',False),('parent_pid','0',True),
+         ('parent_pid','0.0',False),('parent_pid','0e0',False),
+         ('result','-0',False),('result','0',True),
+         ('result','9223372036854775807',True),
+         ('result','9223372036854775808',False),
+         ('result','-9223372036854775808',True),
+         ('result','-9223372036854775809',False)]
+  with tempfile.TemporaryDirectory() as d:
+   directory=Path(d);path=directory/'process-1.jsonl'
+   for field,token,expected in cases:
+    with self.subTest(field=field,token=token[:30]):
+     initial=start(1);initial.pop(field,None)
+     first=json.dumps(initial,separators=(',',':'))
+     first=first[:-1]+','+json.dumps(field)+':'+token+'}'
+     path.write_text(first+'\n'+json.dumps(end(1))+'\n')
+     self.assertEqual(m.collect(directory,1)['valid'],expected)
+
 if __name__=='__main__':unittest.main()

@@ -49,6 +49,20 @@ def unique_object(pairs):
     return result
 
 
+def parse_integer(raw):
+    # Match the native decoder's i64/u64 integers and correctly rounded f64
+    # fallback (serde_json float_roundtrip). Lexical -0 is a float and must not
+    # become an admissible integer protocol field merely through Python int().
+    if raw == '-0':
+        return -0.0
+    value = int(raw)
+    if -(1 << 63) <= value <= U64_MAX:
+        return value
+    value = float(raw)
+    require(math.isfinite(value), 'nonfinite JSON')
+    return value
+
+
 UINT_FIELDS = ('schema', 'client_version', 'pid', 'seq', 'parent_pid', 'child_pid',
                'syscall', *FIELDS, 'threads_started', 'threads_finished', 'app_exit_code')
 TEXT_FIELDS = ('authority', 'metric', 'segment', 'event', 'origin', 'parent_segment',
@@ -107,6 +121,7 @@ def parse_records(process, data):
                 objects += 1
                 require(objects == 1, 'nested JSON value')
         record = json.loads(line.decode('utf-8'), object_pairs_hook=unique_object,
+                            parse_int=parse_integer,
                             parse_constant=lambda _: (_ for _ in ()).throw(Invalid('nonfinite JSON')))
         validate_field_types(record)
         require(record.get('pid') == process, 'record pid mismatch')
