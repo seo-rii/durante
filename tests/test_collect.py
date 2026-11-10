@@ -119,4 +119,24 @@ class CollectorTests(unittest.TestCase):
  def test_file_count_bound(self):
   with self.assertRaises(m.Invalid):m.aggregate({i:[start(i),end(i)] for i in range(1,258)},1)
 
+ def test_flat_grammar_and_deep_nesting_fail_closed(self):
+  with tempfile.TemporaryDirectory() as d:
+   p=Path(d);f=p/'process-1.jsonl'
+   valid=''.join(json.dumps(x)+'\n' for x in [start(1),end(1)])
+   for raw in [valid.replace('\n','\r\n'),
+               '{"pid":1,"extra":'+'['*1100+'0'+']'*1100+'}\n',
+               '{"pid":1,"extra":'+('{"a":'*400)+'0'+'}'*400+'}\n']:
+    f.write_text(raw);self.assertFalse(m.collect(p,1)['valid'])
+   for extra in ['{"nested":1}','[1]','1e999','"\\ud800"']:
+    f.write_text(valid.replace('"pid": 1', '"extra":'+extra+',"pid": 1',1))
+    self.assertFalse(m.collect(p,1)['valid'])
+ def test_optional_known_fields_have_exact_scalar_types(self):
+  for field,value in [('child_pid',True),('supported',1),('result',-(1<<63)-1),('parent_segment',False)]:
+   rows={1:[start(1),end(1)]};rows[1][-1][field]=value
+   with self.assertRaises(m.Invalid):m.aggregate(rows,1)
+ def test_rep_bytes_require_a_rep_entry(self):
+  rows={1:[start(1),end(1)]};rows[1][0]['rep_bytes_enabled']=True
+  rows[1][-1]['rep_bytes']=1
+  with self.assertRaises(m.Invalid):m.aggregate(rows,1)
+
 if __name__=='__main__':unittest.main()
