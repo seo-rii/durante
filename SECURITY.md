@@ -35,7 +35,8 @@ death and descendant ownership are not a kernel-enforced containment boundary.
 
 For untrusted code, an external sandbox must supply distinct credentials and
 capability dropping, protected output/workspace mounts, filesystem and network
-policy, signal/PID isolation, CPU/RSS/process/storage limits and a separately
+policy, an explicit environment allowlist with no host credentials, signal/PID
+isolation, CPU/RSS/process/storage limits and a separately
 owned watchdog that kills the entire kernel-controlled execution group. An
 in-process counter remains mutable even with that execution sandbox.
 
@@ -65,7 +66,10 @@ in-process counter remains mutable even with that execution sandbox.
 Rust and Python collectors enforce bounded files, total bytes, lines, events and
 processes. Flat scalar JSON is required; duplicate keys, nested structures,
 invalid encodings/types, impossible REP telemetry, inconsistent process graphs
-and integer overflow fail closed without aggregate counters. Filesystem checks
+and integer overflow fail closed without aggregate counters. Correctly rounded
+JSON floats and explicit integer normalization keep the reference and native
+decoders consistent at negative-zero and overflow boundaries; counter fields
+still require integers. Filesystem checks
 reject symlinks, hardlinks, FIFOs and nonregular records. Client stream opens
 are nonblocking before validating inode type, preventing a replaced FIFO from
 stalling instrumentation on exec.
@@ -99,4 +103,11 @@ CI runs both with AddressSanitizer and retains failing inputs. A successful
 bounded campaign is coverage evidence, not proof of absence of vulnerabilities;
 native engine code, concurrent filesystem races and OS containment require
 separate validation. Generated corpora, build outputs and crash inputs are local
-artifacts rather than committed source.
+artifacts rather than committed source; the small fixed seed corpus is committed.
+
+`tests/differential_collect.py --collector-bin target/release/durante --cases 512
+--seed 20261111` also mutates the same temporary records for the production Rust
+CLI and Python reference. It checks matching validity, exact complete results and
+absence of totals on rejection. Structured numeric boundaries are mixed with raw
+framing/encoding mutations so malformed graphs cannot mask scalar-parser
+differences. CI runs this bounded cross-language check before building the SDK.

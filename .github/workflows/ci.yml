@@ -55,6 +55,8 @@ jobs:
           cargo +1.94.0 clippy --locked --all-targets -- -D warnings
           cargo +1.94.0 test --locked --all-targets
           cargo +1.94.0 build --locked --release
+      - name: Differential-fuzz hostile records against both collectors
+        run: python3 tests/differential_collect.py --collector-bin target/release/durante --cases 512 --seed 20261111
       - name: Build the pinned DynamoRIO runtime with concurrency fixes
         run: python3 toolkit/fetch_sdk.py
       - name: Build the counter
