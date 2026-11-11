@@ -15,7 +15,7 @@ use std::sync::atomic::{AtomicI32, Ordering};
 use std::time::{Duration, Instant};
 
 const CLEANUP_TIMEOUT: Duration = Duration::from_secs(3);
-const POLL_INTERVAL: Duration = Duration::from_millis(5);
+pub(crate) const POLL_INTERVAL: Duration = Duration::from_millis(5);
 const CHILD_LIST_BYTES: u64 = 65_536;
 const REAP_BATCH: usize = 64;
 static CANCEL_SIGNAL: AtomicI32 = AtomicI32::new(0);
@@ -24,6 +24,7 @@ pub struct Options {
     pub drrun: PathBuf,
     pub client: PathBuf,
     pub report: PathBuf,
+    pub report_existing: bool,
     pub timeout_ms: u64,
     pub records_dir: Option<PathBuf>,
     pub keep_records: bool,
@@ -35,7 +36,7 @@ extern "C" fn cancelled(signal: libc::c_int) {
     let _ = CANCEL_SIGNAL.compare_exchange(0, signal, Ordering::Relaxed, Ordering::Relaxed);
 }
 
-fn protect_supervisor() -> io::Result<()> {
+pub(crate) fn protect_supervisor() -> io::Result<()> {
     // The dedicated CLI stays non-dumpable until exit, including if cleanup
     // leaves a live target. This does not isolate signals or the filesystem.
     // SAFETY: prctl uses immediate integer arguments only.
@@ -45,7 +46,7 @@ fn protect_supervisor() -> io::Result<()> {
     Ok(())
 }
 
-struct ProcessOwner {
+pub(crate) struct ProcessOwner {
     old_subreaper: libc::c_int,
     old_signals: Vec<(libc::c_int, libc::sigaction)>,
     old_mask: libc::sigset_t,
@@ -53,7 +54,7 @@ struct ProcessOwner {
 }
 
 impl ProcessOwner {
-    fn new() -> io::Result<Self> {
+    pub(crate) fn new() -> io::Result<Self> {
         let mut old_subreaper = 0;
         // SAFETY: PR_GET_CHILD_SUBREAPER writes one c_int to a valid local.
         if unsafe { libc::prctl(libc::PR_GET_CHILD_SUBREAPER, &mut old_subreaper, 0, 0, 0) } < 0 {
@@ -130,14 +131,14 @@ impl Drop for ProcessOwner {
     }
 }
 
-struct Records {
-    path: PathBuf,
+pub(crate) struct Records {
+    pub(crate) path: PathBuf,
     keep: bool,
     directory: File,
 }
 
 impl Records {
-    fn create(requested: Option<&Path>, keep: bool) -> io::Result<Self> {
+    pub(crate) fn create(requested: Option<&Path>, keep: bool) -> io::Result<Self> {
         if let Some(path) = requested {
             DirBuilder::new().mode(0o700).create(path)?;
             return Self::opened(fs::canonicalize(path)?, true);
@@ -223,14 +224,14 @@ impl Drop for Records {
 }
 
 #[derive(Default)]
-struct WaitState {
-    root_status: Option<i32>,
-    reaped: usize,
+pub(crate) struct WaitState {
+    pub(crate) root_status: Option<i32>,
+    pub(crate) reaped: usize,
 }
 
 // Returns true while at least one direct/reparented child is still live. The
 // runner is a dedicated single-threaded process and has no unrelated children.
-fn reap(root_pid: u32, state: &mut WaitState) -> io::Result<bool> {
+pub(crate) fn reap(root_pid: u32, state: &mut WaitState) -> io::Result<bool> {
     for _ in 0..REAP_BATCH {
         let mut status = 0;
         // SAFETY: valid status pointer; no signal handler or other thread waits.
@@ -297,7 +298,7 @@ fn kill_owned_children() -> io::Result<()> {
     Ok(())
 }
 
-fn cleanup_tree(root_pid: u32, state: &mut WaitState) -> bool {
+pub(crate) fn cleanup_tree(root_pid: u32, state: &mut WaitState) -> bool {
     let started = Instant::now();
     loop {
         match reap(root_pid, state) {
@@ -321,7 +322,7 @@ fn invalid_measurement(root_pid: Option<u32>, reason: &str) -> Value {
         "root_pid":root_pid,"reason":reason})
 }
 
-fn trusted_installation(path: &Path, executable: bool) -> io::Result<PathBuf> {
+pub(crate) fn trusted_installation(path: &Path, executable: bool) -> io::Result<PathBuf> {
     let path = fs::canonicalize(path)?;
     let metadata = fs::metadata(&path)?;
     let mode = metadata.permissions().mode();
@@ -343,15 +344,19 @@ pub fn run(options: Options) -> Result<i32, String> {
     let client = trusted_installation(&options.client, false)
         .map_err(|_| "client must be a trusted regular file".to_owned())?;
     protect_supervisor().map_err(|_| "cannot protect supervisor process access".to_owned())?;
-    let mut output = OpenOptions::new()
+    let mut output_options = OpenOptions::new();
+    output_options
         .write(true)
-        .create_new(true)
         .mode(0o600)
-        .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
-        .open(&options.report)
-        .map_err(|_| {
-            "cannot create a new report file (existing paths are never replaced)".to_owned()
-        })?;
+        .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC | libc::O_NONBLOCK);
+    if !options.report_existing {
+        output_options.create_new(true);
+    }
+    let mut output = output_options.open(&options.report).map_err(|_| {
+        "cannot create a new report file (existing paths are never replaced)".to_owned()
+    })?;
+    verify_report_path(&output, &options.report, 0)
+        .map_err(|_| "report must be a new or explicitly supplied empty private file".to_owned())?;
     let started = Instant::now();
     let mut result = json!({"schema":1,"authority":"diagnostic_only",
         "security":{"counter_integrity":"application_mutable","isolation":"external_required"},
@@ -385,7 +390,11 @@ pub fn run(options: Options) -> Result<i32, String> {
     Ok(exit)
 }
 
-fn verify_report_path(output: &File, path: &Path, expected_length: u64) -> io::Result<()> {
+pub(crate) fn verify_report_path(
+    output: &File,
+    path: &Path,
+    expected_length: u64,
+) -> io::Result<()> {
     let held = output.metadata()?;
     let named = fs::symlink_metadata(path)?;
     if !named.is_file()
@@ -400,6 +409,10 @@ fn verify_report_path(output: &File, path: &Path, expected_length: u64) -> io::R
         return Err(io::Error::other("unsafe report publication"));
     }
     Ok(())
+}
+
+pub(crate) fn cancellation_signal() -> i32 {
+    CANCEL_SIGNAL.load(Ordering::Relaxed)
 }
 
 fn execute(
