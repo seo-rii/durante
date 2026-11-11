@@ -45,11 +45,29 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
-      - name: Install build dependencies and interpreter smoke targets
+      - name: Select cached PyPy
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         timeout-minutes: 5
+        with:
+          python-version: 'pypy3.10-v7.3.19'
+      - name: Select CPython for the harness and reference collector
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        timeout-minutes: 5
+        with:
+          python-version: '3.12'
+      - name: Verify runner build tools and required runtimes
+        shell: bash
         run: |
-          sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20 -o APT::Update::Error-Mode=any update
-          sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20 install -y --no-install-recommends build-essential cmake patch python3 pypy3 nodejs openjdk-17-jdk-headless
+          set -euo pipefail
+          for tool in gcc g++ cmake patch python3 pypy3 node; do command -v "$tool"; done
+          test -x "$JAVA_HOME_17_X64/bin/java"
+          test -x "$JAVA_HOME_17_X64/bin/javac"
+          gcc --version
+          cmake --version
+          python3 --version
+          pypy3 --version
+          node --version
+          "$JAVA_HOME_17_X64/bin/java" -version
       - name: Install the tested Rust toolchain
         run: rustup toolchain install 1.94.0 --profile minimal --component rustfmt --component clippy
       - name: Validate the Rust collector and supervisor
@@ -71,7 +89,7 @@ jobs:
       - name: Qualify exact SIMD counts and preserved arithmetic results
         run: python3 tests/simd.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/simd --require-isa sse2 --repeats 2
       - name: Qualify interpreter and JIT fixtures against native and engine controls
-        run: python3 tests/runtime_compat.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/runtime-compat --require-runtime cpython --require-runtime pypy --require-runtime node --require-runtime java --java /usr/lib/jvm/java-17-openjdk-amd64/bin/java --javac /usr/lib/jvm/java-17-openjdk-amd64/bin/javac --timeout-ms 20000
+        run: python3 tests/runtime_compat.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/runtime-compat --require-runtime cpython --require-runtime pypy --require-runtime node --require-runtime java --java "$JAVA_HOME_17_X64/bin/java" --javac "$JAVA_HOME_17_X64/bin/javac" --timeout-ms 20000
       - name: Validate clone3 cleared handlers and rejected fork-style accounting
         run: python3 tests/clone_clear_sighand.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/clone-clear --repeats 3 --require-clone3
       - name: Validate cleared handlers with debug runtime assertions
