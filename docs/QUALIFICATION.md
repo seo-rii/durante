@@ -96,8 +96,10 @@ python3 tests/runtime_compat.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 \
 ```
 
 Use fresh output directories. Omit optional runtime-presence requirements for a
-local partial run; its missing runtimes remain visible as skips. CI installs all
-four runtimes and requires their presence. SIMD baseline coverage is required;
+local partial run; its missing runtimes remain visible as skips. CI pins its qualification runner to Ubuntu 24.04, installs all four runtimes
+and requires their presence. It selects the installed OpenJDK 17 executable and
+compiler explicitly rather than relying on the runner's default Java alternative.
+Package refresh failures fail closed, with bounded retries and a step deadline. SIMD baseline coverage is required;
 AVX2 and AVX-512 execution depends on that runner's CPU and OS feature mask.
 Running a runtime with JIT enabled does not prove a particular hot function was
 compiled. The separately asserted generated-code fixture in `tests/smoke.py`
