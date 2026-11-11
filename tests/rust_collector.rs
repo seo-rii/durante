@@ -351,3 +351,36 @@ fn malformed_names_root_ids_and_missing_root_are_rejected() {
         assert_invalid(&collect(dir.path(), root));
     }
 }
+
+#[test]
+fn byte_collection_matches_files_and_rejects_duplicate_streams_and_impossible_rep() {
+    use durante::collect::collect_bytes;
+    let dir = tempfile::tempdir().unwrap();
+    let rows = [start(1, 1), end(1, 1, 2, 100)];
+    write_rows(dir.path(), 1, &rows);
+    let bytes = fs::read(dir.path().join("process-1.jsonl")).unwrap();
+    assert_eq!(collect_bytes(&[(1, &bytes)], 1), collect(dir.path(), 1));
+    assert_invalid(&collect_bytes(&[(1, &bytes), (1, &bytes)], 1));
+    assert_invalid(&collect_bytes(&[], 1));
+    assert_invalid(&collect_bytes(&[(0, &bytes)], 0));
+    let mut rows = rows;
+    rows[0]["rep_bytes_enabled"] = json!(true);
+    rows[1]["rep_bytes"] = json!(1);
+    write_rows(dir.path(), 1, &rows);
+    assert_invalid(&collect(dir.path(), 1));
+}
+
+#[test]
+fn deeply_nested_unknown_fields_never_recurse_or_expose_totals() {
+    use durante::collect::collect_bytes;
+    for token in ["[", "{"] {
+        let close = if token == "[" { "]" } else { "}" };
+        let nested = if token == "[" {
+            format!("{}0{}", token.repeat(1100), close.repeat(1100))
+        } else {
+            format!("{}0{}", "{\"a\":".repeat(400), close.repeat(400))
+        };
+        let bytes = format!("{{\"pid\":1,\"extra\":{nested}}}\n");
+        assert_invalid(&collect_bytes(&[(1, bytes.as_bytes())], 1));
+    }
+}

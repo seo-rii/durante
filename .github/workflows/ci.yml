@@ -55,6 +55,8 @@ jobs:
           cargo +1.94.0 clippy --locked --all-targets -- -D warnings
           cargo +1.94.0 test --locked --all-targets
           cargo +1.94.0 build --locked --release
+      - name: Differential-fuzz hostile records against both collectors
+        run: python3 tests/differential_collect.py --collector-bin target/release/durante --cases 512 --seed 20261111
       - name: Build the pinned DynamoRIO runtime with concurrency fixes
         run: python3 toolkit/fetch_sdk.py
       - name: Build the counter
@@ -73,6 +75,10 @@ jobs:
         run: python3 tests/smoke.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --compact-vm --output-dir .results/smoke-compact --collector-bin target/release/durante --runner-bin target/release/durante
       - name: Validate descriptor cleanup and default Python subprocesses
         run: python3 tests/close_range.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/close-range --repeats 2
+      - name: Check hostile filesystem entries and unqualified exec paths
+        run: python3 tests/adversarial_native.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/adversarial-native --demonstrate-report-forgery
+      - name: Reject compatibility-ABI accounting omissions
+        run: python3 tests/compat_syscalls.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/compat-syscalls
       - name: Validate descriptor cleanup with debug runtime assertions
         run: python3 tests/close_range.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/close-range-debug --repeats 1 --engine-debug
       - name: Stress concurrent process creation and exact child work

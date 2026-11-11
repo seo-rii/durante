@@ -6,6 +6,7 @@ The caller must finish and reap the complete target tree before collecting.
 """
 import argparse
 import json
+import math
 import itertools
 import os
 from pathlib import Path
@@ -48,6 +49,86 @@ def unique_object(pairs):
     return result
 
 
+def parse_integer(raw):
+    # Match the native decoder's i64/u64 integers and correctly rounded f64
+    # fallback (serde_json float_roundtrip). Lexical -0 is a float and must not
+    # become an admissible integer protocol field merely through Python int().
+    if raw == '-0':
+        return -0.0
+    value = int(raw)
+    if -(1 << 63) <= value <= U64_MAX:
+        return value
+    value = float(raw)
+    require(math.isfinite(value), 'nonfinite JSON')
+    return value
+
+
+UINT_FIELDS = ('schema', 'client_version', 'pid', 'seq', 'parent_pid', 'child_pid',
+               'syscall', *FIELDS, 'threads_started', 'threads_finished', 'app_exit_code')
+TEXT_FIELDS = ('authority', 'metric', 'segment', 'event', 'origin', 'parent_segment',
+               'sdk_version', 'quality')
+BOOL_FIELDS = ('rep_bytes_enabled', 'supported', 'valid', 'accounting_error',
+               'threads_complete', 'app_exit_seen')
+
+
+def validate_field_types(record):
+    require(type(record) is dict, 'event must be a flat object')
+    for key, value in record.items():
+        require(type(key) is str, 'invalid JSON key')
+        key.encode('utf-8')
+        require(value is None or type(value) in (bool, int, float, str), 'nested JSON value')
+        if type(value) is str:
+            value.encode('utf-8')  # Reject lone surrogates as the Rust decoder does.
+        if type(value) is float:
+            require(math.isfinite(value), 'nonfinite JSON')
+        if key in UINT_FIELDS:
+            uint(value, key)
+        elif key in TEXT_FIELDS:
+            require(type(value) is str, 'invalid string field')
+        elif key in BOOL_FIELDS:
+            require(type(value) is bool, 'invalid boolean field')
+        elif key == 'result':
+            require(type(value) is int and -(1 << 63) <= value < (1 << 63),
+                    'invalid signed integer field')
+
+
+def parse_records(process, data):
+    require(type(data) is bytes and 0 < len(data) <= MAX_FILE_BYTES, 'report size outside bound')
+    require(data.endswith(b'\n'), 'incomplete or growing report')
+    lines = data[:-1].split(b'\n')
+    require(0 < len(lines) <= MAX_EVENTS, 'event count exceeded')
+    records = []
+    for line in lines:
+        require(0 < len(line) < MAX_LINE_BYTES and b'\r' not in line,
+                'event size or line ending outside contract')
+        # Reject containers before json.loads can recurse. Structural bytes in
+        # JSON strings (including escaped quotes/backslashes) are data only.
+        quoted = escaped = False
+        objects = 0
+        for byte in line:
+            if quoted:
+                if escaped:
+                    escaped = False
+                elif byte == 92:
+                    escaped = True
+                elif byte == 34:
+                    quoted = False
+            elif byte == 34:
+                quoted = True
+            elif byte == 91:
+                raise Invalid('nested JSON value')
+            elif byte == 123:
+                objects += 1
+                require(objects == 1, 'nested JSON value')
+        record = json.loads(line.decode('utf-8'), object_pairs_hook=unique_object,
+                            parse_int=parse_integer,
+                            parse_constant=lambda _: (_ for _ in ()).throw(Invalid('nonfinite JSON')))
+        validate_field_types(record)
+        require(record.get('pid') == process, 'record pid mismatch')
+        records.append(record)
+    return records
+
+
 def load_records(directory):
     flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
     root = os.open(directory, flags)
@@ -79,16 +160,7 @@ def load_records(directory):
                         (st.st_size, st.st_mtime_ns, st.st_ctime_ns, 1), 'report changed during collection')
             finally:
                 os.close(fd)
-            lines = data.splitlines()
-            # The bound applies to a process stream, including all exec images.
-            require(0 < len(lines) <= MAX_EVENTS, 'event count exceeded')
-            records = []
-            for line in lines:
-                require(0 < len(line) < MAX_LINE_BYTES, 'event size outside bound')
-                record = json.loads(line.decode('utf-8'), object_pairs_hook=unique_object,
-                                    parse_constant=lambda _: (_ for _ in ()).throw(Invalid('nonfinite JSON')))
-                require(type(record) is dict and type(record.get('pid')) is int and record['pid'] == process, 'record pid mismatch')
-                records.append(record)
+            records = parse_records(process, data)
             streams[process] = records
         return streams
     finally:
@@ -106,6 +178,7 @@ def terminal(record, is_exec, rep_enabled):
     require(values['instructions'] > 0, 'zero work')
     require(record.get('quality') == ('signals_observed' if values['signals_observed'] else 'uninterrupted'),
             'signal quality mismatch')
+    require(values['rep_bytes'] == 0 or values['rep_entries'] > 0, 'REP bytes without REP entries')
     if not rep_enabled:
         require(values['rep_bytes'] == values['rep_entries'] == values['unsupported_rep_entries'] == 0,
                 'REP counters without REP mode')
@@ -125,6 +198,7 @@ def aggregate(streams, root_pid):
         state = None; pending_exec = None; ended = False; first = None; summaries = []
         sequence = 0
         for record in records:
+            validate_field_types(record)
             require(type(record.get('schema')) is int and record['schema'] == 1 and
                     type(record.get('client_version')) is int and record['client_version'] == 1 and
                     record.get('authority') == 'diagnostic_only' and
@@ -207,7 +281,7 @@ def aggregate(streams, root_pid):
 def collect(directory, root_pid):
     try:
         return aggregate(load_records(directory), root_pid)
-    except (OSError, ValueError, TypeError, KeyError, UnicodeError) as error:
+    except (OSError, ValueError, TypeError, KeyError, UnicodeError, RecursionError) as error:
         return {'schema': 1, 'authority': 'diagnostic_only', 'metric': 'bb_entry_app_instructions',
                 'scope': 'process_tree_user_code', 'valid': False, 'complete': False,
                 'root_pid': root_pid, 'reason': str(error)[:300]}

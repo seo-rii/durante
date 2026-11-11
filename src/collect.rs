@@ -38,14 +38,7 @@ pub fn collect(directory: &Path, root_pid: u32) -> Value {
     } else {
         Err("invalid root PID")
     };
-    result.unwrap_or_else(|reason| {
-        json!({
-            "schema": 1, "authority": "diagnostic_only",
-            "metric": "bb_entry_app_instructions", "scope": "process_tree_user_code",
-            "valid": false, "complete": false, "root_pid": root_pid,
-            "reason": reason,
-        })
-    })
+    result.unwrap_or_else(|reason| invalid(root_pid, reason))
 }
 
 fn valid_pid(pid: u64) -> bool {
@@ -215,25 +208,69 @@ fn load_records(directory: &Path) -> Result<Streams, Error> {
             same_stat(&before, &file_stat(file.as_raw_fd())?),
             "report changed during collection",
         )?;
-        let mut records = Vec::new();
-        // Exclude the one mandatory final LF; any empty intermediate line or
-        // CRLF is rejected, rather than interpreted differently by consumers.
-        for line in data[..data.len() - 1].split(|byte| *byte == b'\n') {
-            require(
-                !line.is_empty() && line.len() < MAX_LINE_BYTES && !line.contains(&b'\r'),
-                "event size or line ending outside contract",
-            )?;
-            require(records.len() < MAX_EVENTS, "event count exceeded")?;
-            let text = std::str::from_utf8(line).map_err(|_| "invalid report UTF-8")?;
-            let record: FlatEvent =
-                serde_json::from_str(text).map_err(|_| "invalid or duplicate report JSON field")?;
-            validate_field_types(&record.0)?;
-            require(uint(&record.0, "pid")? == pid as u64, "record PID mismatch")?;
-            records.push(record.0);
-        }
-        streams.push((pid, records));
+        streams.push((pid, decode_stream(pid, &data)?));
     }
     Ok(streams)
+}
+
+/// Collect bounded, caller-supplied process-stream bytes without filesystem I/O.
+/// This uses the same decoder and lifecycle validator as [`collect`]. It checks
+/// every stream boundary before parsing and never exposes partial totals.
+pub fn collect_bytes(streams: &[(u32, &[u8])], root_pid: u32) -> Value {
+    let result = (|| {
+        require(valid_pid(root_pid.into()), "invalid root PID")?;
+        require(
+            !streams.is_empty() && streams.len() <= MAX_PROCESSES,
+            "process file count outside bound",
+        )?;
+        let mut seen = BTreeSet::new();
+        let mut total = 0usize;
+        let mut records = Vec::with_capacity(streams.len());
+        for &(pid, data) in streams {
+            require(
+                valid_pid(pid.into()) && seen.insert(pid),
+                "duplicate or invalid stream PID",
+            )?;
+            total = total
+                .checked_add(data.len())
+                .ok_or("total report size exceeded")?;
+            require(total <= MAX_TOTAL_BYTES, "total report size exceeded")?;
+            records.push((pid, decode_stream(pid, data)?));
+        }
+        records.sort_by_key(|(pid, _)| format!("process-{pid}.jsonl"));
+        aggregate(records, root_pid)
+    })();
+    result.unwrap_or_else(|reason| invalid(root_pid, reason))
+}
+
+fn invalid(root_pid: u32, reason: Error) -> Value {
+    json!({"schema": 1, "authority": "diagnostic_only",
+        "metric": "bb_entry_app_instructions", "scope": "process_tree_user_code",
+        "valid": false, "complete": false, "root_pid": root_pid, "reason": reason})
+}
+
+fn decode_stream(pid: u32, data: &[u8]) -> Result<Vec<Event>, Error> {
+    require(
+        !data.is_empty() && data.len() <= MAX_FILE_BYTES,
+        "report size outside bound",
+    )?;
+    require(data.last() == Some(&b'\n'), "incomplete or growing report")?;
+    let mut records = Vec::new();
+    // Exclude the mandatory final LF; reject CRLF and empty intermediate lines.
+    for line in data[..data.len() - 1].split(|byte| *byte == b'\n') {
+        require(
+            !line.is_empty() && line.len() < MAX_LINE_BYTES && !line.contains(&b'\r'),
+            "event size or line ending outside contract",
+        )?;
+        require(records.len() < MAX_EVENTS, "event count exceeded")?;
+        let text = std::str::from_utf8(line).map_err(|_| "invalid report UTF-8")?;
+        let record: FlatEvent =
+            serde_json::from_str(text).map_err(|_| "invalid or duplicate report JSON field")?;
+        validate_field_types(&record.0)?;
+        require(uint(&record.0, "pid")? == pid as u64, "record PID mismatch")?;
+        records.push(record.0);
+    }
+    Ok(records)
 }
 
 // Deserialize flat objects directly. Value's default map implementation would
@@ -406,6 +443,10 @@ fn terminal(event: &Event, is_exec: bool, rep_enabled: bool) -> Result<Terminal,
                 "signals_observed"
             },
         "signal quality mismatch",
+    )?;
+    require(
+        counters[1] == 0 || counters[2] > 0,
+        "REP bytes without REP entries",
     )?;
     if !rep_enabled {
         require(counters[1..4] == [0, 0, 0], "REP counters without REP mode")?;
