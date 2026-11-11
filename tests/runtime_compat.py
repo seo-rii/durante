@@ -129,15 +129,32 @@ def inspect_accounting(measurement, records, root_pid, processes, rep_enabled):
         errors.append("image count differs from the fixed parent/fork/exec tree")
     for key in ("instructions", "rep_bytes", "rep_entries", "unsupported_rep_entries", "signals_observed"):
         value = measurement.get(key)
-        if not isinstance(value, int) or isinstance(value, bool) or value < 0:
-            errors.append("invalid total counter")
+        values = [value, *(p.get(key) for p in measurement["processes"]),
+                  *(segment.get(key) for segment in measurement["segments"])]
+        if any(not isinstance(number, int) or isinstance(number, bool)
+               or not 0 <= number <= (1 << 64) - 1 for number in values):
+            errors.append("invalid or overflowing counter")
             continue
         if value != sum(p[key] for p in measurement["processes"]) or value != sum(
                 segment[key] for segment in measurement["segments"]):
             errors.append("process/image counter totals disagree")
-    if measurement.get("instructions", 0) <= 0 or measurement.get("unsupported_rep_entries") != 0:
-        errors.append("zero work or unsupported REP operation")
+    if not isinstance(measurement.get("instructions"), int) or measurement["instructions"] <= 0:
+        errors.append("zero or invalid instruction work")
+    if not rep_enabled and any(measurement.get(key) != 0 for key in (
+            "rep_bytes", "rep_entries", "unsupported_rep_entries")):
+        errors.append("disabled REP mode exposed telemetry")
+    if measurement.get("rep_entries") == 0 and measurement.get("rep_bytes") != 0:
+        errors.append("REP byte total has no MOVS/STOS entries")
     return errors, bool(errors)
+
+
+def telemetry_status(measurement, rep_enabled, accounting_ok):
+    """Report optional byte-extension coverage separately from instruction work."""
+    if not accounting_ok:
+        return "unavailable"
+    if not rep_enabled:
+        return "disabled"
+    return "partial" if measurement["unsupported_rep_entries"] > 0 else "movs_stos_only"
 
 
 def run_case(args, work, name, runtime, target, expected, processes, index):
@@ -158,7 +175,8 @@ def run_case(args, work, name, runtime, target, expected, processes, index):
             command += ["--", *target]
         row = run_process(command, directory, args.timeout_ms)
         row.update({"runtime": runtime, "fixture": name, "mode": mode,
-                    "command": command, "diagnostic_integrity_failure": False})
+                    "command": command, "diagnostic_integrity_failure": False,
+                    "telemetry_status": "unavailable" if mode.startswith("rep-") else "not-requested"})
         row["functional_ok"] = (row.get("stdout") == expected and row["exit_code"] == 0
                                 and not row["timeout"] and row["cleanup_complete"])
         if not row["functional_ok"]:
@@ -173,9 +191,11 @@ def run_case(args, work, name, runtime, target, expected, processes, index):
                 row["errors"].extend(errors)
                 row["diagnostic_integrity_failure"] = integrity_failure
                 row["accounting_ok"] = not errors
+                row["telemetry_status"] = telemetry_status(measurement, mode == "rep-on", not errors)
                 if not row["functional_ok"] and measurement.get("valid"):
                     row["errors"].append("failed fixture produced a usable work total")
                     row["diagnostic_integrity_failure"] = True
+                    row["telemetry_status"] = "unavailable"
             except (OSError, ValueError, KeyError, TypeError, subprocess.TimeoutExpired) as error:
                 row["errors"].append("accounting inspection failed: " + str(error))
                 row["diagnostic_integrity_failure"] = True
@@ -310,7 +330,13 @@ def main():
     code = int(bool(fatal or not cleaned or not unchanged or required_missing or regressions))
     counts = {status: sum(row["status"] == status for row in results)
               for status in ("passed", "known-unqualified", "skip", "regression")}
-    summary = {"schema": 1, "qualification_counts": counts, "authority": "diagnostic_only", "exit_code": code,
+    partial_rep = [{"runtime": case["runtime"], "fixture": case["fixture"],
+                    "mode": row["mode"],
+                    "unsupported_rep_entries": row["measurement"]["unsupported_rep_entries"]}
+                   for case in results for row in case.get("rows", [])
+                   if row["telemetry_status"] == "partial"]
+    summary = {"schema": 1, "qualification_counts": counts,
+               "partial_rep_observations": len(partial_rep), "partial_rep_cases": partial_rep, "authority": "diagnostic_only", "exit_code": code,
                "required_missing": required_missing, "missing_runtimes": missing,
                "regressions": regressions, "fatal_error": fatal,
                "harness_cleanup_complete": cleaned, "sources_unchanged": unchanged,
@@ -319,7 +345,9 @@ def main():
                "limitations": ["fixed fixtures only", "not production timing or trusted counters",
                                "known-unqualified is not passed compatibility",
                                "JIT-enabled mode does not prove a particular function compiled",
-                               "SIGCHLD quality remains explicit in subprocess accounting"]}
+                               "SIGCHLD quality remains explicit in subprocess accounting",
+                               "instruction qualification can include partial optional REP-byte telemetry",
+                               "MOVS/STOS bytes never claim coverage of every REP operation"]}
     (args.output_dir / "results.json").write_text(json.dumps(summary, indent=2) + "\n")
     print(json.dumps({k: v for k, v in summary.items() if k not in (
         "inputs", "binary_sha256", "results", "runtimes")}))
