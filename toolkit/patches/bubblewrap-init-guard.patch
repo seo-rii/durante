@@ -1,0 +1,16 @@
+--- a/bubblewrap.c
++++ b/bubblewrap.c
+@@ -3444,6 +3444,13 @@
+        * need some process to own these.
+        */
+ 
++      /* Protect the trusted reaper before the untrusted child can run.
++       * Both inherit this setting; normal exec makes the application dumpable
++       * again, while pid 1 retains its private memory and monitor descriptors.
++       */
++      if (prctl (PR_SET_DUMPABLE, 0, 0, 0, 0) != 0)
++        die_with_error ("Can't protect pid 1");
++
+       pid = fork ();
+       if (pid == -1)
+         die_with_error ("Can't fork for pid 1");
