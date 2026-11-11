@@ -60,6 +60,14 @@ extension coverage does not qualify NumPy, BLAS or every native extension. Prese
 silently treated as coverage. Functional outputs and process-tree completeness
 are checked; instruction totals between different execution modes need not agree.
 
+Instruction accounting and REP-byte telemetry have separate qualification
+states. A valid complete instruction report may observe REP forms outside the
+MOVS/STOS byte extension. Such a run retains its exact
+`unsupported_rep_entries` and an explicit partial-telemetry label; it does not
+claim complete REP-byte coverage. Node 22 on the CI host exercised this case in
+both default and `--jitless` modes. REP-off must still expose no REP telemetry,
+and malformed, inconsistent or incomplete accounting remains a failure.
+
 A failed instrumentation case is not a successful runtime qualification merely
 because its counter is invalid. Known unsupported cases are reported separately
 from qualified passes and skipped runtimes. In particular, Java startup previously
