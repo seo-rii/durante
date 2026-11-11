@@ -118,7 +118,8 @@ def protected_init(binary):
     process = subprocess.run(options(binary) + ['--', '/usr/bin/python3', '-I', '-S', '-c', PROBE],
                              stdin=subprocess.DEVNULL, capture_output=True, timeout=5)
     if process.returncode != 0 or len(process.stdout) > 4096:
-        raise AssertionError('protected-init fixture failed')
+        raise AssertionError('protected-init fixture failed (exit=' + str(process.returncode)
+                             + '): ' + process.stderr[:2048].decode('utf-8', errors='replace'))
     result = json.loads(process.stdout)
     result['case'] = 'protected-init-and-no-monitor-fd'
     result['passed'] = (result['pid'] == 2 and result['parent'] == 1 and result['dumpable'] == 1
