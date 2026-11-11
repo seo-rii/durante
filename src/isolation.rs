@@ -67,7 +67,20 @@ fn verify_stdio_fd(fd: RawFd) -> io::Result<()> {
     }
     let info = unsafe { info.assume_init() };
     let filesystem = unsafe { filesystem.assume_init() };
-    if [0x9fa0, 0x6265_6572, 0x6367_7270, 0x0027_e0eb].contains(&filesystem.f_type) {
+    if [
+        0x9fa0,
+        0x6265_6572,
+        0x6367_7270,
+        0x0027_e0eb,
+        0x0904_1934,
+        0x5049_4446,
+        0x7363_6673,
+        0x6462_6720,
+        0x7472_6163,
+        0x6265_6570,
+    ]
+    .contains(&filesystem.f_type)
+    {
         return Err(problem(
             "stdio must not expose proc, sysfs or cgroup control handles",
         ));
@@ -77,15 +90,13 @@ fn verify_stdio_fd(fd: RawFd) -> io::Result<()> {
         return Ok(());
     }
     if kind == libc::S_IFCHR {
-        // SAFETY: isatty only examines the supplied descriptor.
-        if unsafe { libc::isatty(fd) } == 1
-            || [
-                libc::makedev(1, 3),
-                libc::makedev(1, 5),
-                libc::makedev(1, 8),
-                libc::makedev(1, 9),
-            ]
-            .contains(&info.st_rdev)
+        if [
+            libc::makedev(1, 3),
+            libc::makedev(1, 5),
+            libc::makedev(1, 8),
+            libc::makedev(1, 9),
+        ]
+        .contains(&info.st_rdev)
         {
             return Ok(());
         }
