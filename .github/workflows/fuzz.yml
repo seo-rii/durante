@@ -29,6 +29,8 @@ jobs:
         run: cargo +nightly-2026-04-22 fuzz run raw_stream -- -max_total_time=45 -max_len=65536 -timeout=3 -rss_limit_mb=1024
       - name: Fuzz lifecycle graphs and aggregation invariants
         run: cargo +nightly-2026-04-22 fuzz run lifecycle_tree -- -max_total_time=45 -max_len=65536 -timeout=3 -rss_limit_mb=1024
+      - name: Fuzz real filesystem record boundaries
+        run: cargo +nightly-2026-04-22 fuzz run filesystem -- -max_total_time=45 -max_len=4096 -timeout=3 -rss_limit_mb=1024
       - name: Preserve reproducer inputs
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

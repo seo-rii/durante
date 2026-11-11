@@ -83,6 +83,16 @@ they are not certified as supported paths. Its optional
 `--demonstrate-report-forgery` case records the known integrity counterexample
 separately from attacks prevented.
 
+The client only accounts for the native Linux x86-64 syscall ABI. An executed
+`int 0x80` fork previously created a child while the result incorrectly reported
+one complete process. Runtime guards now invalidate executed compatibility
+syscall instructions and x32 syscall identifiers, even when REP telemetry is
+disabled. The original syscall and its result are preserved; unsupported ABI
+execution yields no usable aggregate. Merely containing unreachable compatibility
+bytes does not invalidate a run. `tests/compat_syscalls.py` compares 18 bounded
+cases against native controls, including ordinary ENOSYS calls. Actual x32
+execution remains unqualified on hosts without that kernel ABI.
+
 ## Fuzzing
 
 The committed targets call the production decoder and lifecycle aggregator.
@@ -91,15 +101,21 @@ framing. `lifecycle_tree` generates and mutates fork/exec graphs, ordering,
 duplicates, types and overflow boundaries. Assertions check that invalid results
 never expose totals and accepted segment/process/tree sums agree; ordering and
 duplicate-stream metamorphisms exercise aggregation invariants.
+`filesystem` also calls the production path-based collector on exclusively owned
+temporary fixtures: regular records, FIFOs, symlinks, hardlinks, directories,
+sparse oversized files, malformed names and symlinked roots. A valid sentinel
+ensures that accidentally following a link cannot be masked by invalid JSON;
+sentinel contents must remain unchanged and unsafe inode types must be rejected.
 
 ```sh
 rustup toolchain install nightly-2026-04-22 --profile minimal
 cargo +nightly-2026-04-22 install cargo-fuzz --version 0.13.2 --locked
 cargo +nightly-2026-04-22 fuzz run raw_stream -- -max_total_time=60 -max_len=65536 -timeout=3 -rss_limit_mb=1024
 cargo +nightly-2026-04-22 fuzz run lifecycle_tree -- -max_total_time=60 -max_len=65536 -timeout=3 -rss_limit_mb=1024
+cargo +nightly-2026-04-22 fuzz run filesystem -- -max_total_time=60 -max_len=4096 -timeout=3 -rss_limit_mb=1024
 ```
 
-CI runs both with AddressSanitizer and retains failing inputs. A successful
+CI runs all three with AddressSanitizer and retains failing inputs. A successful
 bounded campaign is coverage evidence, not proof of absence of vulnerabilities;
 native engine code, concurrent filesystem races and OS containment require
 separate validation. Generated corpora, build outputs and crash inputs are local
