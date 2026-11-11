@@ -47,6 +47,7 @@
 #define CLONE_VFORK_FLAG UINT64_C(0x00004000)
 #define CLONE_FILES_FLAG UINT64_C(0x00000400)
 #define CLONE_CLEAR_SIGHAND_FLAG UINT64_C(0x100000000)
+#define X32_SYSCALL_BIT 0x40000000U
 #define MAX_STREAM_BYTES (1024 * 1024)
 #define MAX_EVENTS 4096
 
@@ -354,6 +355,20 @@ static void observe_rep(int bytes, int count_reg) {
   ++data->rep_entries;
 }
 
+/* The client implements the Linux x86-64 syscall ABI only. In particular an
+ * int 0x80 fork can create a child without either the native spawn callback or
+ * the child's client running. Preserve the application instruction, but never
+ * publish a complete partial tree after a compatibility ABI is executed. */
+static void unsupported_syscall_abi(void) {
+  dr_mutex_lock(state_lock);
+  accounting_error = true;
+  dr_mutex_unlock(state_lock);
+}
+
+static bool x32_syscall(int number) {
+  return number >= 0 && (((unsigned int)number & X32_SYSCALL_BIT) != 0);
+}
+
 static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
                                         instrlist_t *bb, instr_t *where,
                                         bool for_trace, bool translating,
@@ -361,6 +376,14 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
   (void)tag;
   (void)for_trace;
   (void)translating;
+  if (instr_is_app(where) && instr_is_syscall(where) &&
+      (instr_get_opcode(where) != OP_syscall ||
+       instr_get_isa_mode(where) != DR_ISA_AMD64)) {
+    /* This is a runtime clean call at the actual instruction. Merely having
+     * unreachable compatibility bytes in a module must not taint a run. */
+    dr_insert_clean_call(drcontext, bb, where,
+                         (void *)unsupported_syscall_abi, false, 0);
+  }
   if (drmgr_is_first_instr(drcontext, where) && user_data != NULL) {
     drmgr_disable_auto_predication(drcontext, bb);
     reg_id_t reg;
@@ -428,7 +451,8 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
 
 static bool filter_syscall(void *ctx, int number) {
   (void)ctx;
-  return number == SYS_fork || number == SYS_vfork || number == SYS_clone ||
+  return x32_syscall(number) ||
+         number == SYS_fork || number == SYS_vfork || number == SYS_clone ||
          number == SYS_execve || number == SYS_exit || number == SYS_exit_group
 #ifdef SYS_clone3
          || number == SYS_clone3
@@ -442,6 +466,8 @@ static bool pre_syscall(void *ctx, int number) {
   thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
   if (!d)
     fail("syscall without TLS");
+  if (x32_syscall(number))
+    unsupported_syscall_abi();
   d->pending_spawn = false;
   d->pending_exec = false;
   d->pending_unsupported = false;
