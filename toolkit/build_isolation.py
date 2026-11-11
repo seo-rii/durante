@@ -28,7 +28,7 @@ SOURCE_URL = f"https://github.com/containers/bubblewrap/releases/download/v{VERS
 SOURCE_BYTES = 126452
 SOURCE_SHA256 = "9760d007363e3abba7c747489910f9f82d9fca53ba3bd3282e396fa3c97a3314"
 PATCH = ROOT / "patches/bubblewrap-init-guard.patch"
-PATCH_SHA256 = "624bf41de9308836fed6434a656ea54c8aae4765e710ee557f95330523a5eb97"
+PATCH_SHA256 = "617e143716b533c36535fea64be9192bc46b3c2d52d140c3dbbded90487b1b54"
 OPTIONS = ["--buildtype=release", "-Dtests=false", "-Dman=disabled",
            "-Dselinux=disabled", "-Dbash_completion=disabled", "-Dzsh_completion=disabled"]
 

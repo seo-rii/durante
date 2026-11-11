@@ -1,6 +1,95 @@
 --- a/bubblewrap.c
 +++ b/bubblewrap.c
-@@ -3444,6 +3444,13 @@
+@@ -32,6 +32,7 @@
+ #include <sys/signalfd.h>
+ #include <sys/capability.h>
+ #include <sys/prctl.h>
++#include <sys/syscall.h>
+ #include <linux/sched.h>
+ #include <linux/seccomp.h>
+ #include <linux/filter.h>
+@@ -373,6 +374,30 @@
+     die_with_error ("prctl");
+ }
+ 
++/* The numeric parent pid is 0 in a fresh PID namespace. An inherited
++ * pidfd identifies the original outside monitor even if it has already died
++ * and this child was reparented. Arm before polling to cover both orderings.
++ */
++static void
++monitor_parent_guard (int monitor_pidfd)
++{
++  struct pollfd descriptor;
++  int result;
++
++  if (monitor_pidfd == -1)
++    return;
++
++  handle_die_with_parent ();
++  descriptor.fd = monitor_pidfd;
++  descriptor.events = POLLIN;
++  descriptor.revents = 0;
++  result = TEMP_FAILURE_RETRY (poll (&descriptor, 1, 0));
++  if (result < 0)
++    die_with_error ("poll monitor pidfd");
++  if (result != 0)
++    die ("Isolation monitor exited before namespace startup completed");
++}
++
+ static void
+ block_sigchild (void)
+ {
+@@ -2851,6 +2876,7 @@
+   pid_t pid;
+   int event_fd = -1;
+   int child_wait_fd = -1;
++  int monitor_pidfd = -1;
+   int setup_finished_pipe[] = {-1, -1};
+   const char *new_cwd;
+   uid_t ns_uid;
+@@ -3072,6 +3098,16 @@
+       create_pid_socketpair (intermediate_pids_sockets);
+     }
+ 
++  /* This guard is deliberately scoped to the default private PID namespace
++   * profile. External --pidns intermediates have a different parent topology.
++   */
++  if (opt_die_with_parent && opt_unshare_pid && !opt_as_pid_1 && opt_pidns_fd == -1)
++    {
++      monitor_pidfd = syscall (SYS_pidfd_open, getpid (), 0);
++      if (monitor_pidfd < 0)
++        die_with_error ("pidfd_open monitor");
++    }
++
+   pid = raw_clone (clone_flags, NULL);
+   if (pid == -1)
+     {
+@@ -3095,6 +3131,12 @@
+   if (pid != 0)
+     {
+       /* Parent, outside sandbox, privileged (initially) */
++
++      if (monitor_pidfd != -1)
++        {
++          close (monitor_pidfd);
++          monitor_pidfd = -1;
++        }
+ 
+       if (intermediate_pids_sockets[0] != -1)
+         {
+@@ -3193,6 +3235,11 @@
+ 
+   if (opt_json_status_fd != -1)
+     close (opt_json_status_fd);
++
++  /* Do this before the first blocking wait: an eventfd does not signal that
++   * its original writer died. The pidfd check also covers death before prctl.
++   */
++  monitor_parent_guard (monitor_pidfd);
+ 
+   /* Wait for the parent to init uid/gid maps and drop caps */
+   res = read (child_wait_fd, &val, 8);
+@@ -3444,6 +3491,24 @@
         * need some process to own these.
         */
  
@@ -10,6 +99,17 @@
 +       */
 +      if (prctl (PR_SET_DUMPABLE, 0, 0, 0, 0) != 0)
 +        die_with_error ("Can't protect pid 1");
++
++      /* Credential setup can reset PDEATHSIG. Re-arm and check after setup,
++       * then remove the outside-parent capability before the payload fork.
++       */
++      monitor_parent_guard (monitor_pidfd);
++      if (monitor_pidfd != -1)
++        {
++          if (close (monitor_pidfd) != 0 && errno != EINTR)
++            die_with_error ("close monitor pidfd");
++          monitor_pidfd = -1;
++        }
 +
        pid = fork ();
        if (pid == -1)
