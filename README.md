@@ -253,6 +253,11 @@ certification. In particular, Java 17 currently crashes during JVM startup with
 this counter while the engine-only control succeeds; JVM use is unqualified.
 Generated-code unit tests do not establish JVM compatibility.
 
+[SIMD and interpreter/JIT qualification](docs/QUALIFICATION.md) explains the
+additional native-control, output-preservation and exact-count tests. Per-run
+reports distinguish tested features, unsupported runtime paths and missing CPU
+features; a skipped ISA or a fail-closed crash is not a qualified pass.
+
 Instruction work and REP bytes have separate units. Kernel work is excluded;
 SIMD and scalar instructions have different costs, and CPU-specific library
 implementations can perform the same task with radically different counts. No
