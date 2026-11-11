@@ -67,6 +67,15 @@ fn verify_stdio_fd(fd: RawFd) -> io::Result<()> {
     }
     let info = unsafe { info.assume_init() };
     let filesystem = unsafe { filesystem.assume_init() };
+    if !stdio_kind_permitted(info.st_mode, info.st_rdev, filesystem.f_type) {
+        return Err(problem(
+            "stdio cannot carry terminal, socket, directory or control capabilities",
+        ));
+    }
+    Ok(())
+}
+
+fn stdio_kind_permitted(mode: libc::mode_t, device: libc::dev_t, filesystem: libc::c_long) -> bool {
     if [
         0x9fa0,
         0x6265_6572,
@@ -79,31 +88,22 @@ fn verify_stdio_fd(fd: RawFd) -> io::Result<()> {
         0x7472_6163,
         0x6265_6570,
     ]
-    .contains(&filesystem.f_type)
+    .contains(&filesystem)
     {
-        return Err(problem(
-            "stdio must not expose proc, sysfs or cgroup control handles",
-        ));
+        return false;
     }
-    let kind = info.st_mode & libc::S_IFMT;
+    let kind = mode & libc::S_IFMT;
     if kind == libc::S_IFREG || kind == libc::S_IFIFO {
-        return Ok(());
+        return true;
     }
-    if kind == libc::S_IFCHR {
-        if [
+    kind == libc::S_IFCHR
+        && [
             libc::makedev(1, 3),
             libc::makedev(1, 5),
             libc::makedev(1, 8),
             libc::makedev(1, 9),
         ]
-        .contains(&info.st_rdev)
-        {
-            return Ok(());
-        }
-    }
-    Err(problem(
-        "stdio cannot carry directory, socket or arbitrary device capabilities",
-    ))
+        .contains(&device)
 }
 
 fn safe_file(path: &Path, maximum: u64, executable: bool) -> io::Result<File> {
@@ -978,5 +978,31 @@ mod tests {
         assert!(verify_stdio_fd(null.as_raw_fd()).is_ok());
         let ordinary = File::create(temporary.path().join("ordinary")).unwrap();
         assert!(verify_stdio_fd(ordinary.as_raw_fd()).is_ok());
+    }
+
+    #[test]
+    fn stdio_policy_rejects_anonymous_control_files_and_terminal_devices() {
+        for filesystem in [
+            0x0904_1934,
+            0x5049_4446,
+            0x7363_6673,
+            0x6462_6720,
+            0x7472_6163,
+            0x6265_6570,
+        ] {
+            assert!(!stdio_kind_permitted(libc::S_IFREG, 0, filesystem));
+        }
+        assert!(!stdio_kind_permitted(
+            libc::S_IFCHR,
+            libc::makedev(136, 0),
+            0x1cd1
+        ));
+        assert!(stdio_kind_permitted(
+            libc::S_IFCHR,
+            libc::makedev(1, 3),
+            0x0102_1994
+        ));
+        assert!(stdio_kind_permitted(libc::S_IFIFO, 0, 0x5049_5045));
+        assert!(stdio_kind_permitted(libc::S_IFREG, 0, 0xef53));
     }
 }
