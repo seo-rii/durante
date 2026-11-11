@@ -21,7 +21,12 @@ namespaces must be available. Distribution policies may deny them. The profile
 fails closed rather than changing host sysctls, AppArmor or security policy.
 The controlled Docker regression job explicitly relaxes its disposable outer
 container's masking/seccomp/AppArmor to permit the inner namespace setup; those
-flags are test configuration, not instructions to weaken a shared host.
+flags are test configuration, not instructions to weaken a shared host. The
+job uses Ubuntu 22.04 without changing host policy: Ubuntu 24.04's default
+[unprivileged-userns AppArmor restrictions](https://documentation.ubuntu.com/release-notes/24.04/)
+deny capabilities in unconfined user namespaces even when creation succeeds.
+An unsupported deployment must be explicitly configured by its operator; the
+CLI never installs an exception itself.
 
 Use operator-owned, immutable CLI, client, patched SDK and launcher installations.
 The manifests and binary hashes detect inconsistent local installations; they
