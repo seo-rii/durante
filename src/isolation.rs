@@ -63,13 +63,15 @@ fn verify_stdio_fd(fd: RawFd) -> io::Result<()> {
     if unsafe { libc::fstat(fd, info.as_mut_ptr()) } < 0
         || unsafe { libc::fstatfs(fd, filesystem.as_mut_ptr()) } < 0
     {
-        return Err(problem("isolation requires open ordinary stdio handles"));
+        return Err(problem(
+            "isolation requires pipes or safe null-style stdio devices",
+        ));
     }
     let info = unsafe { info.assume_init() };
     let filesystem = unsafe { filesystem.assume_init() };
     if !stdio_kind_permitted(info.st_mode, info.st_rdev, filesystem.f_type) {
         return Err(problem(
-            "stdio cannot carry terminal, socket, directory or control capabilities",
+            "stdio must use anonymous pipes or null-style devices, not host file capabilities",
         ));
     }
     Ok(())
@@ -93,8 +95,11 @@ fn stdio_kind_permitted(mode: libc::mode_t, device: libc::dev_t, filesystem: lib
         return false;
     }
     let kind = mode & libc::S_IFMT;
-    if kind == libc::S_IFREG || kind == libc::S_IFIFO {
-        return true;
+    // An inherited regular file can be reopened through /proc/self/fd with
+    // broader access than the original read-only FD. Keep host filesystem
+    // capabilities out of the guest entirely, including named filesystem FIFOs.
+    if kind == libc::S_IFIFO {
+        return filesystem == 0x5049_5045; // PIPEFS_MAGIC: anonymous pipes only.
     }
     kind == libc::S_IFCHR
         && [
@@ -392,6 +397,31 @@ fn policy(path: &Path) -> io::Result<File> {
         jump(0x45, 0x4000_0000, 0, 1),
         statement(0x06, 0x8000_0000),
     ];
+    // Rust's exec-error/pidfd handshake uses connected AF_UNIX stream/seqpacket
+    // pairs. Datagram pairs can send to a named socket and are not permitted.
+    // Reconnection/binding is independently denied below.
+    rules.extend([
+        jump(0x15, libc::SYS_socketpair as u32, 0, 8),
+        statement(0x20, 16), // seccomp_data.args[0], native little-endian ABI.
+        jump(0x15, libc::AF_UNIX as u32, 0, 5),
+        statement(0x20, 24), // args[1]: mask SOCK_CLOEXEC/SOCK_NONBLOCK flags.
+        statement(0x54, 0xf),
+        jump(0x15, libc::SOCK_STREAM as u32, 1, 0),
+        jump(0x15, libc::SOCK_SEQPACKET as u32, 0, 1),
+        statement(0x06, 0x7fff_0000),
+        statement(0x06, 0x0005_0000 | libc::EPERM as u32),
+    ]);
+    // CPython uses FIOCLEX when opening script files. These two operations
+    // change only this process's descriptor flags, never the underlying inode.
+    // All other ioctls (including reflink/filesystem mutation) remain denied.
+    rules.extend([
+        jump(0x15, libc::SYS_ioctl as u32, 0, 5),
+        statement(0x20, 24),
+        jump(0x15, libc::FIOCLEX as u32, 1, 0),
+        jump(0x15, libc::FIONCLEX as u32, 0, 1),
+        statement(0x06, 0x7fff_0000),
+        statement(0x06, 0x0005_0000 | libc::EPERM as u32),
+    ]);
     let denied = [
         libc::SYS_ptrace,
         libc::SYS_process_vm_readv,
@@ -415,10 +445,25 @@ fn policy(path: &Path) -> io::Result<File> {
         libc::SYS_io_getevents,
         333, // io_pgetevents on AMD64 (not exposed by this libc crate).
         libc::SYS_socket,
-        libc::SYS_socketpair,
+        libc::SYS_connect,
+        libc::SYS_bind,
+        libc::SYS_listen,
+        libc::SYS_accept,
+        libc::SYS_accept4,
         libc::SYS_keyctl,
         libc::SYS_add_key,
         libc::SYS_request_key,
+        libc::SYS_setxattr,
+        libc::SYS_lsetxattr,
+        libc::SYS_fsetxattr,
+        libc::SYS_chmod,
+        libc::SYS_fchmod,
+        libc::SYS_fchmodat,
+        libc::SYS_fchmodat2,
+        libc::SYS_chown,
+        libc::SYS_fchown,
+        libc::SYS_lchown,
+        libc::SYS_fchownat,
     ];
     for syscall in denied {
         rules.push(jump(0x15, syscall as u32, 0, 1));
@@ -923,6 +968,16 @@ fn execute(
     }
     if !success {
         result["execution"]["state"] = json!("isolation_failed");
+        // Diagnostic text only. Never promote a failed wrapper's report,
+        // execution claims or counters into a successful outer result.
+        if let Ok(bytes) = read_bounded(capture, MAX_REPORT) {
+            if let Ok(inner) = serde_json::from_slice::<Value>(&bytes) {
+                if let Some(reason) = inner["measurement"]["reason"].as_str() {
+                    result["untrusted_failure_reason"] =
+                        json!(reason.chars().take(300).collect::<String>());
+                }
+            }
+        }
         return Ok(1);
     }
     let data = read_bounded(capture, MAX_REPORT)
@@ -942,6 +997,112 @@ fn execute(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn serialized_seccomp_program_preserves_only_reviewed_local_ipc() {
+        // Interpret the serialized classic-BPF subset independently of its
+        // builder. Real namespace tests also exercise these rules in-kernel.
+        let temporary = tempfile::tempdir().unwrap();
+        let mut file = policy(&temporary.path().join("policy")).unwrap();
+        let mut raw = Vec::new();
+        file.read_to_end(&mut raw).unwrap();
+        assert_eq!(raw.len() % 8, 0);
+        let evaluate = |arch: u32, nr: u32, first: u64, second: u64| {
+            let mut data = [0_u8; 64];
+            data[..4].copy_from_slice(&nr.to_ne_bytes());
+            data[4..8].copy_from_slice(&arch.to_ne_bytes());
+            data[16..24].copy_from_slice(&first.to_ne_bytes());
+            data[24..32].copy_from_slice(&second.to_ne_bytes());
+            let (mut pc, mut accumulator) = (0, 0);
+            for _ in 0..=raw.len() / 8 {
+                let rule = &raw[pc * 8..pc * 8 + 8];
+                let code = u16::from_ne_bytes(rule[..2].try_into().unwrap());
+                let k = u32::from_ne_bytes(rule[4..8].try_into().unwrap());
+                match code {
+                    0x20 => {
+                        accumulator =
+                            u32::from_ne_bytes(data[k as usize..k as usize + 4].try_into().unwrap())
+                    }
+                    0x54 => accumulator &= k,
+                    0x15 | 0x45 => {
+                        let yes = if code == 0x15 {
+                            accumulator == k
+                        } else {
+                            accumulator & k != 0
+                        };
+                        pc += if yes { rule[2] } else { rule[3] } as usize;
+                    }
+                    0x06 => return k,
+                    _ => panic!("unreviewed BPF opcode"),
+                }
+                pc += 1;
+            }
+            panic!("policy does not terminate");
+        };
+        const ARCH: u32 = 0xc000_003e;
+        const ALLOW: u32 = 0x7fff_0000;
+        const DENY: u32 = 0x0005_0000 | libc::EPERM as u32;
+        for syscall in [
+            libc::SYS_read,
+            libc::SYS_write,
+            libc::SYS_clone,
+            libc::SYS_execve,
+            libc::SYS_close_range,
+        ] {
+            assert_eq!(evaluate(ARCH, syscall as u32, 0, 0), ALLOW);
+        }
+        for kind in [
+            libc::SOCK_STREAM,
+            libc::SOCK_SEQPACKET | libc::SOCK_CLOEXEC | libc::SOCK_NONBLOCK,
+        ] {
+            assert_eq!(
+                evaluate(
+                    ARCH,
+                    libc::SYS_socketpair as u32,
+                    libc::AF_UNIX as u64,
+                    kind as u64
+                ),
+                ALLOW
+            );
+        }
+        for (domain, kind) in [
+            (libc::AF_UNIX, libc::SOCK_DGRAM),
+            (libc::AF_INET, libc::SOCK_STREAM),
+        ] {
+            assert_eq!(
+                evaluate(
+                    ARCH,
+                    libc::SYS_socketpair as u32,
+                    domain as u64,
+                    kind as u64
+                ),
+                DENY
+            );
+        }
+        for request in [libc::FIOCLEX as u64, libc::FIONCLEX as u64] {
+            assert_eq!(evaluate(ARCH, libc::SYS_ioctl as u32, 0, request), ALLOW);
+        }
+        for request in [0x5412, 0x4004_9409, libc::TCGETS as u64] {
+            assert_eq!(evaluate(ARCH, libc::SYS_ioctl as u32, 0, request), DENY);
+        }
+        for syscall in [
+            libc::SYS_connect,
+            libc::SYS_bind,
+            libc::SYS_socket,
+            libc::SYS_ptrace,
+            libc::SYS_process_vm_writev,
+            libc::SYS_fallocate,
+            libc::SYS_io_submit,
+            libc::SYS_ioctl,
+            libc::SYS_fsetxattr,
+            libc::SYS_fchmod,
+            libc::SYS_keyctl,
+        ] {
+            assert_eq!(evaluate(ARCH, syscall as u32, 0, 0), DENY);
+        }
+        assert_eq!(evaluate(0x4000_0003, 2, 0, 0), 0x8000_0000);
+        assert_eq!(evaluate(ARCH, 0x4000_0027, 0, 0), 0x8000_0000);
+    }
     #[test]
     fn resource_profile_rejects_unbounded_or_excessive_controls() {
         assert!(parse_limits("1073741824\n", "64\n", "100000 100000\n").is_ok());
@@ -1022,7 +1183,7 @@ mod tests {
         let null = File::open("/dev/null").unwrap();
         assert!(verify_stdio_fd(null.as_raw_fd()).is_ok());
         let ordinary = File::create(temporary.path().join("ordinary")).unwrap();
-        assert!(verify_stdio_fd(ordinary.as_raw_fd()).is_ok());
+        assert!(verify_stdio_fd(ordinary.as_raw_fd()).is_err());
     }
 
     #[test]
@@ -1048,6 +1209,7 @@ mod tests {
             0x0102_1994
         ));
         assert!(stdio_kind_permitted(libc::S_IFIFO, 0, 0x5049_5045));
-        assert!(stdio_kind_permitted(libc::S_IFREG, 0, 0xef53));
+        assert!(!stdio_kind_permitted(libc::S_IFREG, 0, 0xef53));
+        assert!(!stdio_kind_permitted(libc::S_IFIFO, 0, 0xef53));
     }
 }
