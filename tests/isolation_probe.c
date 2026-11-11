@@ -66,13 +66,14 @@ int main(int argc, char **argv) {
     char line[256];
     int caps = 0;
     while (fgets(line, sizeof(line), status)) {
-        if (!strncmp(line, "CapEff:", 7)) {
+        if (!strncmp(line, "CapEff:", 7) || !strncmp(line, "CapPrm:", 7) ||
+            !strncmp(line, "CapInh:", 7) || !strncmp(line, "CapAmb:", 7)) {
             unsigned long long value = 1;
             CHECK(sscanf(line+7, "%llx", &value) == 1 && value == 0);
-            caps = 1;
+            caps++;
         }
     }
-    CHECK(fclose(status) == 0 && caps);
+    CHECK(fclose(status) == 0 && caps == 4);
     puts("contained");
     return 0;
 }

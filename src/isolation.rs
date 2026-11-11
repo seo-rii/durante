@@ -16,7 +16,7 @@ use std::process::{Command, Stdio};
 use std::time::{Duration, Instant};
 
 const SOURCE_SHA: &str = "9760d007363e3abba7c747489910f9f82d9fca53ba3bd3282e396fa3c97a3314";
-const PATCH_SHA: &str = "624bf41de9308836fed6434a656ea54c8aae4765e710ee557f95330523a5eb97";
+const PATCH_SHA: &str = "617e143716b533c36535fea64be9192bc46b3c2d52d140c3dbbded90487b1b54";
 const SOURCE_URL: &str =
     "https://github.com/containers/bubblewrap/releases/download/v0.12.0/bubblewrap-0.12.0.tar.xz";
 const MAX_FILES: usize = 256;
@@ -197,6 +197,54 @@ fn directory(path: &Path) -> io::Result<File> {
         .read(true)
         .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
         .open(path)
+}
+
+fn verify_sdk(root: &Path) -> io::Result<()> {
+    // Mount only the prepared public SDK package, never a broad installation
+    // prefix such as a home directory or the host filesystem root.
+    let allowed = [
+        ".durante-runtime.json",
+        ".durante-runtime.lock",
+        "License.txt",
+        "README",
+        "bin64",
+        "cmake",
+        "ext",
+        "include",
+        "lib32",
+        "lib64",
+        "samples",
+        "tools",
+    ];
+    let mut count = 0;
+    for entry in fs::read_dir(root)? {
+        count += 1;
+        let name = entry?.file_name();
+        if count > allowed.len() || !allowed.iter().any(|known| name == *known) {
+            return Err(problem("SDK directory contains unrelated host files"));
+        }
+    }
+    let manifest: Value =
+        serde_json::from_slice(&read_bounded(&root.join(".durante-runtime.json"), 65536)?)
+            .map_err(|_| problem("invalid SDK provenance"))?;
+    if manifest["schema"] != 1
+        || manifest["inputs"]["source_commit"] != "6847bb210bea0ca11d1bf47704383d6a075da490"
+        || manifest["inputs"]["source_sha256"]
+            != "e2b7d3f1917ff64e644b81efd96a610a3c622f4857c75593fef5d5e581c231f6"
+        || manifest["inputs"]["patch_sha256"]
+            != "7b2fbaca84e259aeeafdfc4902ce7a330c48cec51e16804fe74ee3b99ea39f6d"
+        || manifest["inputs"]["recipe"] != 1
+    {
+        return Err(problem(
+            "SDK source inputs differ from the reviewed runtime",
+        ));
+    }
+    let bytes = read_bounded(&root.join("lib64/release/libdynamorio.so"), 64 << 20)?;
+    let expected = format!("{:x}", Sha256::digest(&bytes));
+    if manifest["artifacts"]["lib64/release/libdynamorio.so"] != expected {
+        return Err(problem("SDK release runtime differs from its manifest"));
+    }
+    Ok(())
 }
 
 fn child_open(parent: RawFd, name: &std::ffi::OsStr) -> io::Result<File> {
@@ -653,6 +701,7 @@ pub fn run(options: Options) -> Result<i32, String> {
         .parent()
         .and_then(Path::parent)
         .ok_or("invalid SDK layout")?;
+    verify_sdk(sdk).map_err(|_| "prepared public SDK with matching provenance required")?;
     let client = runner::trusted_installation(&options.client, false)
         .map_err(|_| "trusted client required")?;
     let current = runner::trusted_installation(
@@ -677,7 +726,7 @@ pub fn run(options: Options) -> Result<i32, String> {
     let capture = scratch.path.join("inner.json");
     let policy_path = scratch.path.join("policy.bpf");
     let started = Instant::now();
-    let mut result = json!({"schema":1,"authority":"diagnostic_only", "security":{
+    let mut result = json!({"schema":1,"authority":"diagnostic_only","integrity_verified":false, "security":{
         "counter_integrity":"application_mutable","isolation":PROFILE,
         "external_resource_limits_required":true,"cgroup_limits":resources},
         "execution":{"state":"launch_failed","wrapper_exit_code":null,
@@ -1079,10 +1128,10 @@ mod tests {
                 DENY
             );
         }
-        for request in [libc::FIOCLEX as u64, libc::FIONCLEX as u64] {
+        for request in [libc::FIOCLEX, libc::FIONCLEX] {
             assert_eq!(evaluate(ARCH, libc::SYS_ioctl as u32, 0, request), ALLOW);
         }
-        for request in [0x5412, 0x4004_9409, libc::TCGETS as u64] {
+        for request in [0x5412, 0x4004_9409, libc::TCGETS] {
             assert_eq!(evaluate(ARCH, libc::SYS_ioctl as u32, 0, request), DENY);
         }
         for syscall in [

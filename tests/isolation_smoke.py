@@ -82,6 +82,7 @@ def main():
                         and result['execution'].get('cleanup_complete') is True
                         and result['execution'].get('scratch_cleanup_complete') is True
                         and result['authority'] == 'diagnostic_only'
+                        and result.get('integrity_verified') is False
                         and result['security'].get('counter_integrity') == 'application_mutable')
                 if mode in ('probe', 'python'):
                     expected = 'contained\n' if mode == 'probe' else 'python-contained\n'
