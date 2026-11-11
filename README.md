@@ -274,3 +274,10 @@ this exact build; earlier single-process overhead numbers do not qualify it.
 The counter is derived from DynamoRIO's BSD-licensed `inscount.cpp` and
 `countcalls.c` examples. Original notices are retained in the client source and
 [LICENSE](LICENSE). The SDK is distributed separately under its upstream license.
+
+## Optional execution isolation
+
+The experimental `durante isolate` command adds a pinned namespace supervisor,
+read-only inputs, seccomp and an outer deadline. It requires externally configured
+resource containment; counters remain application-mutable. See the
+[operator requirements and tested boundary](docs/ISOLATION.md).

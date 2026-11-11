@@ -4,6 +4,8 @@ use std::io::{self, Write};
 use std::path::PathBuf;
 
 #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+mod isolation;
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
 mod runner;
 
 /// Diagnostic software-work measurement; not a sandbox or trusted judge.
@@ -34,6 +36,9 @@ enum Command {
         /// New JSON report file; an existing file is never replaced.
         #[arg(long)]
         report: PathBuf,
+        /// Internal capture file provided by the isolation controller.
+        #[arg(long, hide = true)]
+        report_existing: bool,
         /// Total wall deadline for the root and all descendants, in milliseconds.
         #[arg(long, default_value_t = 30_000, value_parser = parse_timeout)]
         timeout_ms: u64,
@@ -44,6 +49,26 @@ enum Command {
         #[arg(long)]
         keep_records: bool,
         /// Target executable and arguments, passed directly without a shell.
+        #[arg(required = true, last = true, num_args = 1..)]
+        command: Vec<OsString>,
+    },
+    /// Run the diagnostic CLI inside a pinned, resource-bounded namespace profile.
+    Isolate {
+        /// Pinned launcher produced by toolkit/build_isolation.py.
+        #[arg(long)]
+        launcher: PathBuf,
+        #[arg(long)]
+        drrun: PathBuf,
+        #[arg(long)]
+        client: PathBuf,
+        /// Input directory copied into the read-only /work guest directory.
+        #[arg(long)]
+        workspace: PathBuf,
+        /// New host-side report; this path is never mounted into the guest.
+        #[arg(long)]
+        report: PathBuf,
+        #[arg(long, default_value_t = 30_000, value_parser = parse_timeout)]
+        timeout_ms: u64,
         #[arg(required = true, last = true, num_args = 1..)]
         command: Vec<OsString>,
     },
@@ -115,6 +140,7 @@ fn main() {
             drrun,
             client,
             report,
+            report_existing,
             timeout_ms,
             records_dir,
             keep_records,
@@ -126,6 +152,7 @@ fn main() {
                     drrun,
                     client,
                     report,
+                    report_existing,
                     timeout_ms,
                     records_dir,
                     keep_records,
@@ -138,12 +165,42 @@ fn main() {
                     drrun,
                     client,
                     report,
+                    report_existing,
                     timeout_ms,
                     records_dir,
                     keep_records,
                     command,
                 );
                 Err("durante run requires Linux x86-64".to_owned())
+            }
+        }
+        Command::Isolate {
+            launcher,
+            drrun,
+            client,
+            workspace,
+            report,
+            timeout_ms,
+            command,
+        } => {
+            #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+            {
+                isolation::run(isolation::Options {
+                    launcher,
+                    drrun,
+                    client,
+                    workspace,
+                    report,
+                    timeout_ms,
+                    command,
+                })
+            }
+            #[cfg(not(all(target_os = "linux", target_arch = "x86_64")))]
+            {
+                let _ = (
+                    launcher, drrun, client, workspace, report, timeout_ms, command,
+                );
+                Err("durante isolate requires Linux x86-64".to_owned())
             }
         }
     };

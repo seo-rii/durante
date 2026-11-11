@@ -1,0 +1,98 @@
+name: isolation
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: durante-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bounded-namespace:
+    # Ubuntu 24.04's default unconfined-userns policy denies namespace
+    # capabilities even inside the disposable Docker wrapper. Keep host policy
+    # intact and test the supported nonroot profile on this runner instead.
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Verify preinstalled host tools
+        run: |
+          for tool in cc c++ cmake patch curl docker; do
+            command -v "$tool"
+          done
+      - name: Build the CLI and pinned runtimes
+        run: |
+          rustup toolchain install 1.94.0 --profile minimal
+          cargo +1.94.0 build --release --locked
+          python3 toolkit/fetch_sdk.py
+          cmake -S client -B build -DCMAKE_BUILD_TYPE=Release -DDynamoRIO_DIR="$PWD/toolkit/sdk/DynamoRIO-Linux-11.3.0-1/cmake"
+          cmake --build build -j2
+          mkdir -p "$RUNNER_TEMP/isolation-bin" .results
+          cp target/release/durante "$RUNNER_TEMP/isolation-bin/durante"
+          cc -O2 -Wall -Wextra -Werror tests/isolation_probe.c -o "$RUNNER_TEMP/isolation-bin/probe"
+      - name: Build disposable helper and runtime images
+        run: |
+          docker build -f docker/isolation-test.Dockerfile --target builder -t durante-isolation-builder .
+          docker build -f docker/isolation-test.Dockerfile --target runtime -t durante-isolation-test .
+      - name: Build the pinned helper in a bounded nonroot container
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -m 700 "$RUNNER_TEMP/isolation-tool" "$RUNNER_TEMP/isolation-build"
+          archive="$RUNNER_TEMP/bubblewrap-0.12.0.tar.xz"
+          curl --fail --location --connect-timeout 20 --max-time 120 --retry 2 --retry-delay 2 \
+            --output "$archive" \
+            https://github.com/containers/bubblewrap/releases/download/v0.12.0/bubblewrap-0.12.0.tar.xz
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --user "$(id -u):$(id -g)" \
+            --memory=1g --pids-limit=64 --cpus=2 \
+            --tmpfs /tmp:rw,exec,mode=1777,size=134217728 \
+            -e TMPDIR=/tmp -e HOME=/tmp -e XDG_CACHE_HOME=/tmp/.cache \
+            --mount "type=bind,src=$PWD,dst=/source,readonly" \
+            --mount "type=bind,src=$archive,dst=/source.tar.xz,readonly" \
+            --mount "type=bind,src=$RUNNER_TEMP/isolation-tool,dst=/output" \
+            --mount "type=bind,src=$RUNNER_TEMP/isolation-build,dst=/work" \
+            --entrypoint /usr/bin/python3 durante-isolation-builder \
+            /source/toolkit/build_isolation.py --source-archive /source.tar.xz \
+            --output /output/bwrap --work-dir /work
+      - name: Exercise the boundary in a finite private cgroup
+        shell: bash
+        run: |
+          set -euo pipefail
+          sdk="$PWD/toolkit/sdk/DynamoRIO-Linux-11.3.0-1"
+          sandbox=(docker run --rm --network none --user "$(id -u):$(id -g)" \
+            --memory=1g --pids-limit=64 --cpus=1 --cgroupns=private \
+            --security-opt systempaths=unconfined \
+            --security-opt seccomp=unconfined --security-opt apparmor=unconfined \
+            --tmpfs /tmp:rw,exec,mode=1777,size=268435456 -e TMPDIR=/tmp \
+            --mount "type=bind,src=$RUNNER_TEMP/isolation-bin,dst=/validation,readonly" \
+            --mount "type=bind,src=$RUNNER_TEMP/isolation-tool,dst=/isolation-tool,readonly" \
+            --mount "type=bind,src=$sdk,dst=$sdk,readonly" \
+            --mount "type=bind,src=$PWD/build,dst=$PWD/build,readonly" \
+            --mount "type=bind,src=$PWD,dst=/source,readonly" \
+            --mount "type=bind,src=$PWD/.results,dst=/results" \
+            --entrypoint /usr/bin/python3 durante-isolation-test)
+          "${sandbox[@]}" /source/tests/isolation_helper_lifecycle.py \
+            --launcher /isolation-tool/bwrap --output-dir /results/isolation-helper-lifecycle --repeats 4
+          "${sandbox[@]}" /source/tests/isolation_smoke.py --runner-bin /validation/durante \
+            --launcher /isolation-tool/bwrap --sdk "$sdk" \
+            --client "$PWD/build/libdurante.so" --probe-binary /validation/probe \
+            --output-dir /results/isolation
+      - name: Preserve boundary results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: isolation-regressions
+          path: .results/
+          include-hidden-files: true
+          if-no-files-found: warn
