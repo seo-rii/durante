@@ -39,7 +39,7 @@ jobs:
         run: |
           set -euo pipefail
           sdk="$PWD/toolkit/sdk/DynamoRIO-Linux-11.3.0-1"
-          docker run --rm --network none --user "$(id -u):$(id -g)" \
+          sandbox=(docker run --rm --network none --user "$(id -u):$(id -g)" \
             --memory=1g --pids-limit=64 --cpus=1 --cgroupns=private \
             --security-opt systempaths=unconfined \
             --security-opt seccomp=unconfined --security-opt apparmor=unconfined \
@@ -50,8 +50,10 @@ jobs:
             --mount "type=bind,src=$PWD/build,dst=$PWD/build,readonly" \
             --mount "type=bind,src=$PWD,dst=/source,readonly" \
             --mount "type=bind,src=$PWD/.results,dst=/results" \
-            --entrypoint /usr/bin/python3 durante-isolation-test \
-            /source/tests/isolation_smoke.py --runner-bin /validation/durante \
+            --entrypoint /usr/bin/python3 durante-isolation-test)
+          "${sandbox[@]}" /source/tests/isolation_helper_lifecycle.py \
+            --launcher /isolation-tool/bwrap --output-dir /results/isolation-helper-lifecycle --repeats 4
+          "${sandbox[@]}" /source/tests/isolation_smoke.py --runner-bin /validation/durante \
             --launcher /isolation-tool/bwrap --sdk "$sdk" \
             --client "$PWD/build/libdurante.so" --probe-binary /validation/probe \
             --output-dir /results/isolation

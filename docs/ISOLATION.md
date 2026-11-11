@@ -75,7 +75,11 @@ accepted diagnostic report under `untrusted_inner_report`. Timeout, killed inner
 supervision or cleanup failure produces no accepted inner report. Error text
 copied from the guest is explicitly untrusted. The patched namespace PID 1 is
 non-dumpable before the guest forks, blocking guest access to its memory and
-inherited descriptors. A separate external owner remains required for forced
+inherited descriptors. A private pidfd guard arms parent-death handling before
+the initial namespace setup wait and verifies that the outside monitor is alive;
+it is rearmed and closed before the guest forks. Startup monitor-death regressions
+exercise that window without exposing the host pidfd to the guest. A separate
+external owner remains required for forced
 controller death and kernel resource failures.
 
 `tests/isolation_smoke.py` exercises native and Python subprocess execution,
