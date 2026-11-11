@@ -210,6 +210,51 @@ fn child_open(parent: RawFd, name: &std::ffi::OsStr) -> io::Result<File> {
     Ok(unsafe { File::from_raw_fd(fd) })
 }
 
+fn snapshot_open(parent: RawFd, name: &std::ffi::OsStr) -> io::Result<File> {
+    let name = CString::new(name.as_bytes())?;
+    // O_PATH inspects a node without opening a device or waiting on a FIFO.
+    // SAFETY: name is one readdir leaf and parent remains live through openat.
+    let fd = unsafe {
+        libc::openat(
+            parent,
+            name.as_ptr(),
+            libc::O_PATH | libc::O_NOFOLLOW | libc::O_CLOEXEC,
+        )
+    };
+    if fd < 0 {
+        return Err(io::Error::last_os_error());
+    }
+    let pinned = unsafe { File::from_raw_fd(fd) };
+    let before = pinned.metadata()?;
+    if !(before.is_dir() || before.is_file() && before.nlink() == 1) {
+        return Err(problem(
+            "workspace node must be a directory or single-link regular file",
+        ));
+    }
+    // Only reopen the kernel-owned alias of this pinned inode. A pathname race
+    // cannot substitute a symlink or device between validation and read-open.
+    let mut options = OpenOptions::new();
+    options.read(true).custom_flags(
+        libc::O_CLOEXEC
+            | libc::O_NONBLOCK
+            | if before.is_dir() {
+                libc::O_DIRECTORY
+            } else {
+                0
+            },
+    );
+    let readable = options.open(format!("/proc/self/fd/{fd}"))?;
+    let after = readable.metadata()?;
+    if before.dev() != after.dev()
+        || before.ino() != after.ino()
+        || before.file_type() != after.file_type()
+        || (before.is_file() && !unchanged(&before, &after))
+    {
+        return Err(problem("workspace node changed before reading"));
+    }
+    Ok(readable)
+}
+
 fn children(file: &File) -> io::Result<fs::ReadDir> {
     fs::read_dir(format!("/proc/self/fd/{}", file.as_raw_fd()))
 }
@@ -235,7 +280,7 @@ fn copy_workspace(
         if budget.entries > MAX_FILES {
             return Err(problem("workspace entry limit exceeded"));
         }
-        let mut input = child_open(source.as_raw_fd(), &name)?;
+        let mut input = snapshot_open(source.as_raw_fd(), &name)?;
         let before = input.metadata()?;
         let target = destination.join(&name);
         if before.is_dir() {
