@@ -127,3 +127,12 @@ CLI and Python reference. It checks matching validity, exact complete results an
 absence of totals on rejection. Structured numeric boundaries are mixed with raw
 framing/encoding mutations so malformed graphs cannot mask scalar-parser
 differences. CI runs this bounded cross-language check before building the SDK.
+
+## Optional namespace profile
+
+`durante isolate` adds an outer watchdog and a patched, non-dumpable namespace
+PID 1, with read-only inputs and a bounded capability/syscall profile. It requires
+an externally owned, finite cgroup v2 execution environment and output limits.
+Its nested counter report remains explicitly untrusted. See
+[ISOLATION.md](docs/ISOLATION.md) for prerequisites, compatibility restrictions and
+remaining host/kernel and forced-controller-death responsibilities.
