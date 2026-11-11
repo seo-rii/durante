@@ -137,6 +137,7 @@ name = "durante-fuzz"
 version = "0.0.0"
 dependencies = [
  "durante",
+ "libc",
  "libfuzzer-sys",
  "serde_json",
 ]
