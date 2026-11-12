@@ -36,8 +36,9 @@ The pinned SDK is DynamoRIO 11.3.0-1 (source revision
 archive SHA-256 before extracting the required build/runtime subset.
 It then builds the 64-bit release and debug runtime cores from the same pinned
 source commit with the [concurrent process and signal patch](toolkit/patches/dynamorio-vfork-lifetime.patch).
-The source archive is also hash-pinned. CMake, a C/C++ compiler and `patch` are
-needed for this one-time build; this adds no compilation to measured runs.
+The source archive is also hash-pinned. Python 3.11 or newer, CMake, a C/C++
+compiler and `patch` are needed for this one-time build; this adds no compilation
+to measured runs.
 The SDK's `.durante-runtime.json` records the source, patch and installed core
 hashes. Cached cores are reused only when those hashes match. The patch also
 backports [DynamoRIO #7321](https://github.com/DynamoRIO/dynamorio/pull/7321),
@@ -62,9 +63,10 @@ python3 tests/smoke.py \
 -vmheap_size 32M`, a bounded reservation configuration for embedding applications. This setting
 reduces address-space reservations; it does not waive target limits.
 
-The build requires GCC or Clang, CMake and Linux x86-64. Tests additionally use
-Python 3 and GCC; PyPy is tested when installed, and absence is reported as a
-coverage gap. No SDK or generated executable is committed.
+Build and test on Linux x86-64. The client supports GCC or Clang; native test
+fixtures additionally require GCC. Development scripts use Python 3.11 or newer,
+including the SDK fetcher. PyPy is tested when installed, and absence is reported
+as a coverage gap. No SDK or generated executable is committed.
 
 ## Rust command-line tool
 
@@ -260,11 +262,13 @@ explicitly a basic-block-entry work metric. A killed process lacks a final recor
 and invalidates the tree. Nonzero **normal** exits can have complete work records;
 the caller still applies its original execution/verdict policy.
 
-CPython, native Go/Rust and selected Node/shell fixtures have separate compatibility
-checks in the embedding project's qualification. They are not universal language
-certification. In particular, Java 17 currently crashes during JVM startup with
-this counter while the engine-only control succeeds; JVM use is unqualified.
-Generated-code unit tests do not establish JVM compatibility.
+The repository's runtime checks cover CPython/PyPy arithmetic, native libraries
+and subprocesses, Node with JIT enabled and disabled, and OpenJDK 17 startup,
+tiered execution and `-Xint` fixtures. Clean-call state preservation fixes the
+reproduced OpenJDK 17.0.21 startup crash; CI now requires all Java fixtures to
+pass. These are fixture-specific results, not universal language certification
+or qualification of the separate `isolate` profile. Generated-code unit tests
+alone do not establish JVM compatibility.
 
 [SIMD and interpreter/JIT qualification](docs/QUALIFICATION.md) explains the
 additional native-control, output-preservation and exact-count tests. Per-run
