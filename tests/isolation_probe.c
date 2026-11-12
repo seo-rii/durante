@@ -9,6 +9,7 @@
 #include <sys/prctl.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
 #define CHECK(x) do { if (!(x)) { fprintf(stderr, "probe check line %d errno %d\n", __LINE__, errno); return 2; } } while (0)
@@ -24,6 +25,36 @@ int main(int argc, char **argv) {
     CHECK(argc == 5);
     CHECK(different_namespace("pid", argv[3]));
     CHECK(different_namespace("net", argv[4]));
+    if (!strcmp(argv[1], "capture-exact")) {
+        char out[4096], err[4096];
+        memset(out, 'O', sizeof(out)); memset(err, 'E', sizeof(err));
+        out[0] = 0; err[0] = (char)0xff;
+        CHECK(write(STDOUT_FILENO, out, sizeof(out)) == (ssize_t)sizeof(out));
+        CHECK(write(STDERR_FILENO, err, sizeof(err)) == (ssize_t)sizeof(err));
+        return 0;
+    }
+    if (!strcmp(argv[1], "capture-flood")) {
+        pid_t child = fork();
+        CHECK(child >= 0);
+        char data[4096]; memset(data, child ? 'E' : 'O', sizeof(data));
+        for (int i = 0; i < 64; i++)
+            CHECK(write(child ? STDERR_FILENO : STDOUT_FILENO, data, sizeof(data)) == (ssize_t)sizeof(data));
+        if (child) CHECK(waitpid(child, NULL, 0) == child);
+        return 0;
+    }
+    if (!strcmp(argv[1], "capture-hold") || !strcmp(argv[1], "capture-close")) {
+        if (!strcmp(argv[1], "capture-close")) {
+            CHECK(close(STDOUT_FILENO) == 0); CHECK(close(STDERR_FILENO) == 0);
+        } else CHECK(write(STDOUT_FILENO, "held\n", 5) == 5);
+        pid_t child = fork();
+        CHECK(child >= 0);
+        if (!child) {
+            CHECK(setsid() >= 0);
+            const struct timespec delay = {2, 0};
+            nanosleep(&delay, NULL);
+        }
+        return 0;
+    }
     if (!strcmp(argv[1], "sleep")) { for (;;) pause(); }
     if (!strcmp(argv[1], "kill-inner")) {
         CHECK(getppid() == 2);

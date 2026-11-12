@@ -11,6 +11,12 @@ instructions, a memory limit, or a trusted security boundary. Its counters share
 the measured program's address space. A caller must retain its own sandbox,
 resource limits, output validation and complete-tree cleanup.
 
+The optional isolation profile supports bounded stdout/stderr capture with
+`--output-dir NEW_DIR --output-limit-bytes N`. Exceeding the combined quota stops
+the owned tree and omits accepted diagnostic counts. See
+[bounded output capture](docs/ISOLATION.md#bounded-output-capture) for result
+states and the remaining external resource-owner requirements.
+
 See [SECURITY.md](SECURITY.md) for confirmed tampering limits, supervisor
 hardening, containment requirements and reproducible sanitizer fuzzing. A
 structurally valid result is still application-mutable and must not authorize
