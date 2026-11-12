@@ -69,3 +69,37 @@ fn internal_existing_report_refuses_nonempty_capture_before_launch() {
     assert!(!marker.exists());
     assert_eq!(fs::read(report).unwrap(), b"existing content");
 }
+
+#[test]
+fn output_quota_requires_capture_and_rejects_unbounded_values() {
+    for extra in [
+        vec!["--output-limit-bytes", "1"],
+        vec!["--output-dir", "/unused", "--output-limit-bytes", "0"],
+        vec![
+            "--output-dir",
+            "/unused",
+            "--output-limit-bytes",
+            "67108865",
+        ],
+    ] {
+        let output = Command::new(env!("CARGO_BIN_EXE_durante"))
+            .args([
+                "isolate",
+                "--launcher",
+                "/unused",
+                "--drrun",
+                "/unused",
+                "--client",
+                "/unused",
+                "--workspace",
+                "/unused",
+                "--report",
+                "/unused",
+            ])
+            .args(extra)
+            .args(["--", "/bin/true"])
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(2), "{output:?}");
+    }
+}

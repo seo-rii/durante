@@ -12,8 +12,9 @@ An external execution owner must first supply a private unified cgroup v2
 namespace, with finite `memory.max` (at most 4 GiB), `pids.max` (at most 256), and
 `cpu.max` (at most eight cores). The CLI checks these kernel files and refuses
 unsupported configurations. It does not create, migrate or modify host cgroups.
-The external owner must enforce aggregate lifetime, output byte quotas, disk/I/O
-limits and teardown if the outer controller is killed or OOM-killed. Namespaces
+The external owner must enforce aggregate lifetime, disk/I/O limits and teardown
+if the outer controller is killed or OOM-killed. It must also enforce output byte
+quotas unless bounded capture is enabled as described below. Namespaces
 share the host kernel; use an independently maintained VM boundary when needed.
 
 Unprivileged user namespaces and nested PID, network, mount, IPC and UTS
@@ -57,6 +58,60 @@ inherited stdio: `/proc/self/fd` can expose capabilities beyond ordinary reads o
 writes. Anonymous pipes and the exact null/zero/random/urandom devices are
 accepted. Extra inherited descriptors are closed on exec.
 
+## Bounded output capture
+
+Use `--output-dir NEW_DIR` to keep target stdout/stderr behind anonymous pipes and
+collect a bounded prefix into new private host files. The directory must not
+exist; the CLI creates mode 0700 with mode-0600 `stdout` and `stderr` files. The
+directory is not added to the guest's mounts, and no output-file descriptor is
+passed to the guest. Keep it outside the SDK and exposed system directory trees
+so their existing read-only mounts cannot expose the empty capture files.
+`--output-limit-bytes`
+requires `--output-dir` and caps the **combined** bytes from both streams, with a
+default of 1 MiB and a range of 1 byte through 64 MiB:
+
+```sh
+durante isolate --launcher /trusted/bwrap \
+  --drrun /trusted/sdk/bin64/drrun --client /trusted/libdurante.so \
+  --workspace ./input --report ./new-report.json --timeout-ms 5000 \
+  --output-dir ./new-output --output-limit-bytes 1048576 \
+  -- /usr/bin/python3 /work/main.py </dev/null
+```
+
+Captured stdout/stderr are not forwarded to the caller's standard descriptors;
+those descriptors may consequently be terminals or files in this mode. Stdin
+still follows the safe-handle restrictions above. The caller must choose an
+externally protected report/output parent directory and a responsive filesystem.
+
+The owner alternates nonblocking reads from both streams with a fixed budget per
+watchdog tick. At most the quota is retained, with two pre-reserved buffers each
+bounded by that quota. Data is persisted only after owned children have been
+reaped, so destination-file writes cannot block the active guest's watchdog.
+The CLI writes at most the quota in total across the two files. Their split depends on pipe
+scheduling; the files do not establish a combined ordering between stdout and
+stderr. Exceeding the quota yields `execution.state: "output_limit"`, CLI exit
+125, bounded tree cleanup, and no accepted `untrusted_inner_report`. Exactly the
+quota followed by EOF is accepted. Pipe/publication failure yields
+`output_failed`; cleanup failure remains `cleanup_failed`.
+
+The outer `output` object reports the configured `limit_bytes`, both
+`*_captured_bytes`, `observed_bytes`, `truncated`, `published`, and `complete`.
+`observed_bytes` counts only bytes actually read, including the first over-limit
+read; it is not a claim about all bytes the target attempted to emit. A forced
+stop may leave queued bytes unread. `published` means both captured files passed
+inode, link-count, permissions and length checks before and after writing.
+`complete` additionally requires EOF on both streams without truncation; it
+says nothing about measurement integrity or target success. Failed publication
+can leave partial files with `published: false`; no unsafe path is deleted or
+overwritten during recovery. Without `--output-dir`, `output.mode` is `inherited`
+and `external_quota_required` remains true.
+
+This closes the output-memory/storage-byte gap for a live controller. It does
+not create a guardian outside the execution cgroup, prevent that controller from
+being OOM-killed, impose aggregate disk/I/O bandwidth limits, or guarantee a
+report after SIGKILL. The external service owner must still provide those
+resource and death/teardown policies. Instruction counters remain diagnostic.
+
 ## Boundary and results
 
 The input becomes a read-only snapshot at `/work`, limited to 256 entries, 64 MiB
@@ -91,4 +146,7 @@ controller death and kernel resource failures.
 PID/network separation, supervisor memory/descriptor denial, read-only mounts,
 missing host secrets, seccomp restrictions, inner-supervisor SIGKILL, an outer
 watchdog deadline, unsafe input nodes and inherited regular-file rejection.
+Capture regressions also exercise binary output at the exact quota, concurrent
+stdout/stderr flooding, descendants retaining or closing pipes, repeated
+cancellation, and killed inner supervision without accepted counts.
 These bounded regressions establish the tested cases, not absence of escapes.

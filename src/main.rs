@@ -6,6 +6,8 @@ use std::path::PathBuf;
 #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
 mod isolation;
 #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+mod output;
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
 mod runner;
 
 /// Diagnostic software-work measurement; not a sandbox or trusted judge.
@@ -69,6 +71,12 @@ enum Command {
         report: PathBuf,
         #[arg(long, default_value_t = 30_000, value_parser = parse_timeout)]
         timeout_ms: u64,
+        /// Capture stdout/stderr into this fresh private host directory.
+        #[arg(long)]
+        output_dir: Option<PathBuf>,
+        /// Combined captured-byte limit (default 1 MiB, at most 64 MiB).
+        #[arg(long, requires = "output_dir", value_parser = parse_output_limit)]
+        output_limit_bytes: Option<u64>,
         #[arg(required = true, last = true, num_args = 1..)]
         command: Vec<OsString>,
     },
@@ -88,6 +96,14 @@ fn parse_timeout(value: &str) -> Result<u64, String> {
         .ok()
         .filter(|value| (1..=86_400_000).contains(value))
         .ok_or_else(|| "timeout must be between 1 and 86400000 milliseconds".to_owned())
+}
+
+fn parse_output_limit(value: &str) -> Result<u64, String> {
+    value
+        .parse::<u64>()
+        .ok()
+        .filter(|value| (1..=64 << 20).contains(value))
+        .ok_or_else(|| "output limit must be between 1 and 67108864 bytes".to_owned())
 }
 
 fn main() {
@@ -181,6 +197,8 @@ fn main() {
             workspace,
             report,
             timeout_ms,
+            output_dir,
+            output_limit_bytes,
             command,
         } => {
             #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
@@ -192,13 +210,23 @@ fn main() {
                     workspace,
                     report,
                     timeout_ms,
+                    output_dir,
+                    output_limit_bytes: output_limit_bytes.unwrap_or(output::DEFAULT_LIMIT),
                     command,
                 })
             }
             #[cfg(not(all(target_os = "linux", target_arch = "x86_64")))]
             {
                 let _ = (
-                    launcher, drrun, client, workspace, report, timeout_ms, command,
+                    launcher,
+                    drrun,
+                    client,
+                    workspace,
+                    report,
+                    timeout_ms,
+                    command,
+                    output_dir,
+                    output_limit_bytes,
                 );
                 Err("durante isolate requires Linux x86-64".to_owned())
             }

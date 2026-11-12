@@ -1,5 +1,5 @@
 //! Opt-in kernel namespace execution. Counters remain application-mutable.
-use crate::runner;
+use crate::{output, runner};
 use serde::Deserialize;
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
@@ -31,6 +31,8 @@ pub struct Options {
     pub workspace: PathBuf,
     pub launcher: PathBuf,
     pub timeout_ms: u64,
+    pub output_dir: Option<PathBuf>,
+    pub output_limit_bytes: u64,
     pub command: Vec<OsString>,
 }
 
@@ -681,10 +683,13 @@ fn cleanup_tree_bounded(root: &Path, depth: usize, entries: &mut usize) -> io::R
 }
 
 pub fn run(options: Options) -> Result<i32, String> {
-    if options.command.is_empty() || !(1..=86_400_000).contains(&options.timeout_ms) {
+    if options.command.is_empty()
+        || !(1..=86_400_000).contains(&options.timeout_ms)
+        || !(1..=output::MAX_LIMIT).contains(&options.output_limit_bytes)
+    {
         return Err("target command and bounded timeout required".into());
     }
-    for fd in 0..=2 {
+    for fd in 0..=if options.output_dir.is_some() { 0 } else { 2 } {
         verify_stdio_fd(fd)
             .map_err(|_| "isolation requires ordinary safe stdin/stdout/stderr handles")?;
     }
@@ -731,6 +736,11 @@ pub fn run(options: Options) -> Result<i32, String> {
         "external_resource_limits_required":true,"cgroup_limits":resources},
         "execution":{"state":"launch_failed","wrapper_exit_code":null,
         "cleanup_complete":true,"scratch_cleanup_complete":true,"wall_time_ms":0}});
+    result["output"] = match &options.output_dir {
+        Some(path) => json!({"mode":"capture_requested", "directory":path,
+            "limit_bytes":options.output_limit_bytes, "published":false, "complete":false}),
+        None => json!({"mode":"inherited", "external_quota_required":true}),
+    };
     let outcome = execute(
         &options,
         &launcher,
@@ -928,6 +938,19 @@ fn execute(
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
         .process_group(0);
+    let mut output = options
+        .output_dir
+        .as_ref()
+        .map(|path| {
+            let mut output = output::Capture::create(path, options.output_limit_bytes)
+                .map_err(|_| "output directory must be fresh, private and writable")?;
+            output
+                .configure(&mut command)
+                .map_err(|_| "cannot prepare bounded output pipes")?;
+            result["output"] = output.summary();
+            Ok::<_, &'static str>(output)
+        })
+        .transpose()?;
     let parent = std::process::id() as libc::pid_t;
     let policy_fd = filter.as_raw_fd();
     let cpu = options.timeout_ms.div_ceil(1000) + 1;
@@ -974,6 +997,9 @@ fn execute(
     let child = command
         .spawn()
         .map_err(|_| "isolation launch failed; no unisolated fallback")?;
+    // Command retains its configured pipe writers; close these parent copies
+    // before monitoring EOF. Only the child should keep the write descriptors.
+    drop(command);
     let pid = child.id();
     drop(child);
     result["execution"]["wrapper_pid"] = json!(pid);
@@ -984,13 +1010,23 @@ fn execute(
         if signal != 0 {
             break ("cancelled", 128 + signal, true);
         }
-        match runner::reap(pid, &mut waited) {
-            Ok(false) => break ("complete", 0, false),
-            Err(_) => break ("wait_failed", 1, true),
-            Ok(true) => {}
-        }
         if Instant::now() >= deadline {
             break ("timed_out", 124, true);
+        }
+        if let Some(output) = &mut output {
+            match output.drain_tick() {
+                Ok(true) => break ("output_limit", 125, true),
+                Ok(false) => {}
+                Err(_) => break ("output_failed", 1, true),
+            }
+        }
+        match runner::reap(pid, &mut waited) {
+            Ok(false) if output.as_ref().is_none_or(output::Capture::eof) => {
+                break ("complete", 0, false)
+            }
+            Ok(false) => {}
+            Err(_) => break ("wait_failed", 1, true),
+            Ok(true) => {}
         }
         std::thread::sleep(runner::POLL_INTERVAL);
     };
@@ -998,9 +1034,6 @@ fn execute(
     result["execution"]["state"] = json!(state);
     result["execution"]["cleanup_complete"] = json!(cleaned);
     result["execution"]["supervisor_reaped_processes"] = json!(waited.reaped);
-    let success = waited
-        .root_status
-        .is_some_and(|status| libc::WIFEXITED(status) && libc::WEXITSTATUS(status) == 0);
     if let Some(status) = waited.root_status {
         if libc::WIFEXITED(status) {
             result["execution"]["wrapper_exit_code"] = json!(libc::WEXITSTATUS(status));
@@ -1008,6 +1041,23 @@ fn execute(
             result["execution"]["wrapper_signal"] = json!(libc::WTERMSIG(status));
         }
     }
+    if let Some(output) = &mut output {
+        // A forced stop preserves a bounded prefix; it need not read everything
+        // that was queued. Never let final draining delay process cleanup.
+        if cleaned && forced {
+            let _ = output.drain_tick();
+        }
+        output.close_pipes();
+        if cleaned && output.publish().is_err() {
+            result["output"] = output.summary();
+            result["execution"]["state"] = json!("output_failed");
+            return Ok(1);
+        }
+        result["output"] = output.summary();
+    }
+    let success = waited
+        .root_status
+        .is_some_and(|status| libc::WIFEXITED(status) && libc::WEXITSTATUS(status) == 0);
     if !cleaned {
         result["execution"]["state"] = json!("cleanup_failed");
         return Ok(1);

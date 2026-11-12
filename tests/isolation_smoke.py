@@ -5,12 +5,13 @@ import json
 import os
 from pathlib import Path
 import shutil
+import signal
 import subprocess
 import time
 from concurrent_spawn import cleanup_orphans, own_subreaper
 
 
-def run_bounded(command, directory, timeout_ms, input_file=None):
+def run_bounded(command, directory, timeout_ms, input_file=None, cancel=False):
     # Pipes expose bytes, not host regular-file/directory capabilities, to the
     # guest. These fixed fixtures produce bounded output; this is not a generic
     # untrusted-output collector for a public service.
@@ -20,6 +21,17 @@ def run_bounded(command, directory, timeout_ms, input_file=None):
     with subprocess.Popen(command, stdin=input_file if input_file is not None else subprocess.DEVNULL, stdout=subprocess.PIPE,
                           stderr=subprocess.PIPE) as process:
         try:
+            if cancel:
+                # Once the wrapper exists the outer CLI has installed its
+                # cancellation handlers. Touch only this harness's child PID.
+                ready_until = time.monotonic() + 3
+                children = Path(f'/proc/{process.pid}/task/{process.pid}/children')
+                while process.poll() is None and time.monotonic() < ready_until:
+                    if children.read_bytes().strip():
+                        for _ in range(3):
+                            process.send_signal(signal.SIGTERM)
+                        break
+                    time.sleep(0.005)
             stdout, stderr = process.communicate(timeout=timeout_ms / 1000)
         except subprocess.TimeoutExpired:
             timed_out = True
@@ -128,6 +140,55 @@ def main():
         row.update(case='regular-stdio', passed=row['exit_code'] == 1 and not row['harness_timeout']
                    and row['harness_cleanup_complete'] and row['stdout'] == '')
         rows.append(row)
+        for mode, limit in [('capture-exact', 8192), ('capture-flood', 4096),
+                            ('capture-hold', 8192), ('capture-close', 8192),
+                            ('capture-cancel', 8192), ('capture-kill-inner', 8192)]:
+            case = output / mode
+            timeout = 500 if mode in ('capture-hold', 'capture-close') else 10000
+            target_mode = {'capture-cancel': 'sleep', 'capture-kill-inner': 'kill-inner'}.get(mode, mode)
+            command = [str(args.runner_bin.resolve()), 'isolate', '--launcher', str(args.launcher.resolve()),
+                       '--drrun', str(args.sdk.resolve() / 'bin64/drrun'), '--client', str(args.client.resolve()),
+                       '--workspace', str(workspace), '--report', str(case / 'report.json'),
+                       '--timeout-ms', str(timeout), '--output-dir', str(case / 'captured'),
+                       '--output-limit-bytes', str(limit),
+                       '--', '/work/Main', target_mode, str(secret), pidns, netns]
+            row = run_bounded(command, case, timeout + 5000, cancel=mode == 'capture-cancel')
+            row.update(case=mode, passed=False)
+            report = case / 'report.json'
+            if report.is_file() and report.stat().st_size:
+                result = json.loads(report.read_text())
+                row['report'] = result
+                captured = result.get('output', {})
+                files = [case / 'captured' / name for name in ('stdout', 'stderr')]
+                data = [file.read_bytes() for file in files] if all(file.is_file() for file in files) else []
+                safe = (not row['harness_timeout'] and row['harness_cleanup_complete']
+                        and result['execution'].get('cleanup_complete') is True
+                        and result['execution'].get('scratch_cleanup_complete') is True
+                        and result.get('integrity_verified') is False
+                        and result['authority'] == 'diagnostic_only'
+                        and captured.get('published') is True and len(data) == 2
+                        and sum(map(len, data)) <= limit
+                        and captured.get('stdout_captured_bytes') == len(data[0])
+                        and captured.get('stderr_captured_bytes') == len(data[1])
+                        and row['stdout'] == '' and row['stderr'] == '')
+                if mode == 'capture-exact':
+                    row['passed'] = (safe and row['exit_code'] == 0 and captured.get('complete') is True
+                                     and data == [b'\x00' + b'O' * 4095, b'\xff' + b'E' * 4095]
+                                     and result.get('untrusted_inner_report', {}).get('measurement', {}).get('valid') is True)
+                else:
+                    expected_state, expected_code = {
+                        'capture-flood': ('output_limit', 125),
+                        'capture-hold': ('timed_out', 124), 'capture-close': ('timed_out', 124),
+                        'capture-cancel': ('cancelled', 128 + signal.SIGTERM),
+                        'capture-kill-inner': ('isolation_failed', 1)}[mode]
+                    row['passed'] = (safe and row['exit_code'] == expected_code
+                                     and result['execution']['state'] == expected_state
+                                     and 'untrusted_inner_report' not in result)
+                    if mode == 'capture-flood':
+                        row['passed'] = (row['passed'] and captured.get('truncated') is True
+                                         and captured.get('complete') is False and sum(map(len, data)) == limit
+                                         and limit < captured['observed_bytes'] <= limit + 8192)
+            rows.append(row)
         assert secret.read_text() == 'owned fixture data, not a host credential\n'
     finally:
         cleaned = cleanup_orphans()
