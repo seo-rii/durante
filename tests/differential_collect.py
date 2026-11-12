@@ -87,7 +87,11 @@ def mutate(case, index, rng):
 def no_partial_totals(result):
     if result.get('authority') != 'diagnostic_only':
         raise AssertionError('authority was promoted')
+    if result.get('integrity_verified') is not False or result.get('measurement_contract') != reference.measurement_contract():
+        raise AssertionError('measurement contract was missing or promoted')
     if result.get('valid') is not True:
+        if result.get('rep_telemetry_status') != 'unavailable':
+            raise AssertionError('invalid result exposed REP coverage')
         if result.get('complete') is not False:
             raise AssertionError('invalid result was marked complete')
         if any(key in result for key in ('instructions', 'rep_bytes', 'rep_entries',

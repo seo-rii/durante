@@ -46,6 +46,12 @@ fn assert_invalid(result: &Value) {
     assert_eq!(result["valid"], false, "{result}");
     assert_eq!(result["complete"], false, "{result}");
     assert_eq!(result["authority"], "diagnostic_only");
+    assert_eq!(result["integrity_verified"], false);
+    assert_eq!(
+        result["measurement_contract"]["trusted_verdict_eligible"],
+        false
+    );
+    assert_eq!(result["rep_telemetry_status"], "unavailable");
     assert!(result["reason"]
         .as_str()
         .is_some_and(|s| !s.is_empty() && s.len() <= 300));
@@ -62,6 +68,52 @@ fn assert_invalid(result: &Value) {
             result.get(field).is_none(),
             "invalid aggregate exposed partial {field}: {result}"
         );
+    }
+}
+
+#[test]
+fn forged_trust_claims_cannot_promote_diagnostic_counts_or_rep_coverage() {
+    let dir = tempfile::tempdir().unwrap();
+    for (enabled, unsupported, expected) in [
+        (false, 0, "disabled"),
+        (true, 0, "movs_stos_only"),
+        (true, 3, "partial"),
+    ] {
+        let mut rows = [start(1, 1), end(1, 1, 2, 100)];
+        rows[0]["rep_bytes_enabled"] = json!(enabled);
+        rows[1]["unsupported_rep_entries"] = json!(unsupported);
+        for row in &mut rows {
+            row["integrity_verified"] = json!(true);
+            row["trusted_verdict_eligible"] = json!(true);
+            row["rep_telemetry_status"] = json!("complete");
+        }
+        write_rows(dir.path(), 1, &rows);
+        let result = collect(dir.path(), 1);
+        assert_eq!(result["valid"], true);
+        assert_eq!(result["instructions"], 100);
+        assert_eq!(result["integrity_verified"], false);
+        assert_eq!(result["measurement_contract"]["version"], 1);
+        assert_eq!(result["measurement_contract"]["backend"], "dynamorio");
+        assert_eq!(
+            result["measurement_contract"]["counter_integrity"],
+            "application_mutable"
+        );
+        assert_eq!(
+            result["measurement_contract"]["trusted_verdict_eligible"],
+            false
+        );
+        assert_eq!(
+            result["measurement_contract"]["instruction_semantics"],
+            "basic_block_entry"
+        );
+        assert_eq!(
+            result["measurement_contract"]["simd_weighting"],
+            "one_per_instruction"
+        );
+        assert!(result["measurement_contract"]["cpu_time_conversion"].is_null());
+        assert_eq!(result["rep_telemetry_status"], expected);
+        fs::write(dir.path().join("process-1.jsonl"), b"{}\n").unwrap();
+        assert_invalid(&collect(dir.path(), 1));
     }
 }
 
@@ -109,6 +161,8 @@ fn one_process_matches_reference_shape() {
         segment[key] = value.clone();
     }
     let mut expected = json!({"schema":1,"authority":"diagnostic_only","metric":"bb_entry_app_instructions",
+     "integrity_verified":false,"measurement_contract":durante::report::measurement_contract(),
+     "rep_telemetry_status":"disabled",
      "scope":"process_tree_user_code","valid":true,"complete":true,"root_pid":1,
      "process_count":1,"image_count":1,"rep_bytes_enabled":false,"quality":"uninterrupted",
      "processes":[process],"segments":[segment],

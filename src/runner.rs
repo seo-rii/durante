@@ -318,6 +318,8 @@ pub(crate) fn cleanup_tree(root_pid: u32, state: &mut WaitState) -> bool {
 
 fn invalid_measurement(root_pid: Option<u32>, reason: &str) -> Value {
     json!({"schema":1,"authority":"diagnostic_only","metric":"bb_entry_app_instructions",
+        "integrity_verified":false,"measurement_contract":durante::report::measurement_contract(),
+        "rep_telemetry_status":"unavailable",
         "scope":"process_tree_user_code","valid":false,"complete":false,
         "root_pid":root_pid,"reason":reason})
 }
@@ -359,6 +361,7 @@ pub fn run(options: Options) -> Result<i32, String> {
         .map_err(|_| "report must be a new or explicitly supplied empty private file".to_owned())?;
     let started = Instant::now();
     let mut result = json!({"schema":1,"authority":"diagnostic_only",
+        "integrity_verified":false,"measurement_contract":durante::report::measurement_contract(),
         "security":{"counter_integrity":"application_mutable","isolation":"external_required"},
         "execution":{"state":"launch_failed","root_pid":null,"exit_code":null,
             "signal":null,"cancel_signal":null,"wall_time_ms":0,"cleanup_time_ms":0,

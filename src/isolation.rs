@@ -535,6 +535,8 @@ fn policy(path: &Path) -> io::Result<File> {
 fn valid_inner(value: &Value) -> bool {
     let base = value["schema"] == 1
         && value["authority"] == "diagnostic_only"
+        && value["integrity_verified"] == false
+        && value["measurement_contract"] == durante::report::measurement_contract()
         && value["security"]["counter_integrity"] == "application_mutable"
         && value["execution"]["state"] == "complete"
         && value["execution"]["cleanup_complete"] == true
@@ -542,6 +544,8 @@ fn valid_inner(value: &Value) -> bool {
         && value["measurement"]["valid"] == true
         && value["measurement"]["complete"] == true
         && value["measurement"]["authority"] == "diagnostic_only"
+        && value["measurement"]["integrity_verified"] == false
+        && value["measurement"]["measurement_contract"] == durante::report::measurement_contract()
         && value["measurement"]["instructions"]
             .as_u64()
             .is_some_and(|n| n > 0);
@@ -635,10 +639,12 @@ fn valid_inner(value: &Value) -> bool {
     let Some(rep) = measurement["rep_bytes_enabled"].as_bool() else {
         return false;
     };
-    if (!rep && totals[2] != 0) || (totals[2] == 0 && totals[1] != 0) {
+    if (!rep && (totals[1] != 0 || totals[2] != 0 || totals[3] != 0))
+        || (totals[2] == 0 && totals[1] != 0)
+    {
         return false;
     }
-    if totals[3] != 0
+    if measurement["rep_telemetry_status"] != durante::report::rep_telemetry_status(rep, totals[3])
         || measurement["quality"]
             != if totals[4] == 0 {
                 "uninterrupted"
@@ -729,6 +735,7 @@ pub fn run(options: Options) -> Result<i32, String> {
     let mut result = json!({"schema":1,"authority":"diagnostic_only","integrity_verified":false, "security":{
         "counter_integrity":"application_mutable","isolation":PROFILE,
         "external_resource_limits_required":true,"cgroup_limits":resources},
+        "measurement_contract":durante::report::measurement_contract(),
         "execution":{"state":"launch_failed","wrapper_exit_code":null,
         "cleanup_complete":true,"scratch_cleanup_complete":true,"wall_time_ms":0}});
     let outcome = execute(
@@ -1205,10 +1212,16 @@ mod tests {
         }
         let measurement = durante::collect::collect_bytes(&[(1, &data)], 1);
         let valid = json!({"schema":1,"authority":"diagnostic_only",
+            "integrity_verified":false,"measurement_contract":durante::report::measurement_contract(),
             "security":{"counter_integrity":"application_mutable"},
             "execution":{"state":"complete","cleanup_complete":true,"records_cleanup_complete":true},
             "measurement":measurement});
         assert!(valid_inner(&valid));
+        let mut unknown = valid.clone();
+        unknown["measurement_contract"]["version"] = json!(2);
+        assert!(!valid_inner(&unknown));
+        unknown["measurement_contract"] = Value::Null;
+        assert!(!valid_inner(&unknown));
         let mut wrong = valid.clone();
         wrong["measurement"]["instructions"] = json!(u64::MAX);
         assert!(!valid_inner(&wrong));
@@ -1217,6 +1230,23 @@ mod tests {
         assert!(!valid_inner(&partial));
         let mut unsupported = valid;
         unsupported["measurement"]["unsupported_rep_entries"] = json!(1);
+        assert!(!valid_inner(&unsupported));
+        unsupported["measurement"]["rep_bytes_enabled"] = json!(true);
+        unsupported["measurement"]["processes"][0]["unsupported_rep_entries"] = json!(1);
+        unsupported["measurement"]["segments"][0]["unsupported_rep_entries"] = json!(1);
+        unsupported["measurement"]["rep_telemetry_status"] = json!("partial");
+        assert!(valid_inner(&unsupported));
+        for pointer in [
+            "/integrity_verified",
+            "/measurement/integrity_verified",
+            "/measurement_contract/trusted_verdict_eligible",
+            "/measurement/measurement_contract/trusted_verdict_eligible",
+        ] {
+            let mut promoted = unsupported.clone();
+            *promoted.pointer_mut(pointer).unwrap() = json!(true);
+            assert!(!valid_inner(&promoted));
+        }
+        unsupported["measurement"]["rep_telemetry_status"] = json!("movs_stos_only");
         assert!(!valid_inner(&unsupported));
     }
 

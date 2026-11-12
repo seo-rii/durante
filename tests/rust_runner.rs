@@ -62,7 +62,21 @@ impl Fixture {
         self.command(2000).arg("--").args(args).output().unwrap()
     }
     fn result(&self) -> Value {
-        serde_json::from_slice(&fs::read(&self.report).unwrap()).unwrap()
+        let result: Value = serde_json::from_slice(&fs::read(&self.report).unwrap()).unwrap();
+        assert_eq!(result["integrity_verified"], false);
+        assert_eq!(
+            result["measurement_contract"]["trusted_verdict_eligible"],
+            false
+        );
+        assert_eq!(
+            result["measurement"]["measurement_contract"],
+            result["measurement_contract"]
+        );
+        assert_eq!(result["measurement"]["integrity_verified"], false);
+        if result["measurement"]["valid"] == false {
+            assert_eq!(result["measurement"]["rep_telemetry_status"], "unavailable");
+        }
+        result
     }
 }
 fn absent(pid: u32) -> bool {

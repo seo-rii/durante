@@ -245,6 +245,8 @@ pub fn collect_bytes(streams: &[(u32, &[u8])], root_pid: u32) -> Value {
 
 fn invalid(root_pid: u32, reason: Error) -> Value {
     json!({"schema": 1, "authority": "diagnostic_only",
+        "integrity_verified": false, "measurement_contract": crate::report::measurement_contract(),
+        "rep_telemetry_status": "unavailable",
         "metric": "bb_entry_app_instructions", "scope": "process_tree_user_code",
         "valid": false, "complete": false, "root_pid": root_pid, "reason": reason})
 }
@@ -663,9 +665,11 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
     )?;
     let mut result = json!({
         "schema": 1, "authority": "diagnostic_only", "metric": "bb_entry_app_instructions",
+        "integrity_verified": false, "measurement_contract": crate::report::measurement_contract(),
         "scope": "process_tree_user_code", "valid": true, "complete": true,
         "root_pid": root_pid, "process_count": processes.len(), "image_count": all_segments.len(),
         "rep_bytes_enabled": rep_mode.ok_or("missing REP mode")?,
+        "rep_telemetry_status": crate::report::rep_telemetry_status(rep_mode.ok_or("missing REP mode")?, totals[3]),
         "quality": if totals[4] == 0 { "uninterrupted" } else { "signals_observed" },
         "processes": processes.into_values().collect::<Vec<_>>(), "segments": all_segments,
         "limits": {"max_processes": MAX_PROCESSES, "max_file_bytes": MAX_FILE_BYTES,
