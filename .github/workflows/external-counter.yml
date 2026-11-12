@@ -35,8 +35,11 @@ jobs:
         shell: bash
         run: |
           set -uo pipefail
-          python3 experiments/external_perf.py --output-dir .results/external-counter --repeats 3
-          result=$?
+          if python3 experiments/external_perf.py --output-dir .results/external-counter --repeats 3; then
+            result=0
+          else
+            result=$?
+          fi
           if [ "$result" -eq 77 ]; then
             echo '::notice::Hardware counter unavailable; this host did not qualify the external backend. See result.json.'
           elif [ "$result" -ne 0 ]; then
