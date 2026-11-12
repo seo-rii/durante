@@ -153,7 +153,7 @@ fn unchanged(a: &fs::Metadata, b: &fs::Metadata) -> bool {
         && b.nlink() == 1
 }
 
-fn verify_launcher(path: &Path) -> io::Result<PathBuf> {
+pub(crate) fn verify_launcher(path: &Path) -> io::Result<PathBuf> {
     let marker = path.with_file_name(format!(
         "{}.durante-isolation.json",
         path.file_name()
@@ -201,7 +201,7 @@ fn directory(path: &Path) -> io::Result<File> {
         .open(path)
 }
 
-fn verify_sdk(root: &Path) -> io::Result<()> {
+pub(crate) fn verify_sdk(root: &Path) -> io::Result<()> {
     // Mount only the prepared public SDK package, never a broad installation
     // prefix such as a home directory or the host filesystem root.
     let allowed = [
@@ -374,7 +374,7 @@ fn copy_workspace(
 
 // A pre-existing, bounded cgroup namespace is an operator prerequisite. This
 // code neither creates host cgroups nor trusts look-alike files on another FS.
-fn resource_limits() -> io::Result<Value> {
+pub(crate) fn resource_limits() -> io::Result<Value> {
     if fs::read("/proc/self/cgroup")? != b"0::/\n" {
         return Err(problem(
             "isolation requires a private bounded cgroup v2 namespace",

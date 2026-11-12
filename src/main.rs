@@ -1,8 +1,10 @@
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
 use std::ffi::OsString;
 use std::io::{self, Write};
 use std::path::PathBuf;
 
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+mod doctor;
 #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
 mod isolation;
 #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
@@ -20,6 +22,18 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Inspect prerequisites without launching targets or changing host policy.
+    Doctor {
+        #[arg(long, value_enum, default_value_t = DoctorProfile::Run)]
+        profile: DoctorProfile,
+        #[arg(long)]
+        drrun: Option<PathBuf>,
+        #[arg(long)]
+        client: Option<PathBuf>,
+        /// Pinned launcher and adjacent manifest, required for the isolate profile.
+        #[arg(long)]
+        launcher: Option<PathBuf>,
+    },
     /// Collect records only after the entire measured process tree has stopped.
     Collect {
         #[arg(long)]
@@ -82,6 +96,12 @@ enum Command {
     },
 }
 
+#[derive(Clone, Copy, ValueEnum)]
+enum DoctorProfile {
+    Run,
+    Isolate,
+}
+
 fn parse_pid(value: &str) -> Result<u32, String> {
     value
         .parse::<u32>()
@@ -136,6 +156,27 @@ fn main() {
         }
     };
     let result = match cli.command {
+        Command::Doctor {
+            profile,
+            drrun,
+            client,
+            launcher,
+        } => {
+            #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+            {
+                doctor::run(doctor::Options {
+                    isolation: matches!(profile, DoctorProfile::Isolate),
+                    drrun,
+                    client,
+                    launcher,
+                })
+            }
+            #[cfg(not(all(target_os = "linux", target_arch = "x86_64")))]
+            {
+                let _ = (profile, drrun, client, launcher);
+                Err("durante doctor requires Linux x86-64".to_owned())
+            }
+        }
         Command::Collect { dir, root_pid } => {
             let result = durante::collect::collect(&dir, root_pid);
             let stdout = io::stdout();
