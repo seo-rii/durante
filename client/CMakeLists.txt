@@ -8,7 +8,6 @@ find_package(DynamoRIO 11.3 EXACT REQUIRED)
 add_library(durante SHARED durante.c)
 configure_DynamoRIO_client(durante)
 use_DynamoRIO_extension(durante drmgr)
-use_DynamoRIO_extension(durante drreg)
 # SDK 11.3 defines bool itself; GCC 15 defaults to C23, where it is a keyword.
 set_target_properties(durante PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS YES)
 target_compile_options(durante PRIVATE -Wall -Wextra -Werror)

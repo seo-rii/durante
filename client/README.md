@@ -5,8 +5,12 @@ Launch it with `-outdir ABSOLUTE_PRIVATE_DIRECTORY`, optionally followed by
 `-rep_bytes`. The earlier single-file `drmeter -o REPORT` interface is not used.
 
 Each application basic block adds its instruction count to thread-local state.
-Register and arithmetic-flag reservations use `drreg`. A carry accumulator detects
-64-bit per-thread instruction overflow; aggregation checks all additional sums.
+A DynamoRIO clean call preserves application registers and arithmetic flags,
+including values observed by a signal handler even when linear analysis considers
+them dead. A checked addition marks per-thread instruction overflow permanently
+invalid; aggregation checks all additional sums. This state preservation costs
+more than the earlier inline counter and must be included in future overhead
+benchmarks.
 REP MOVS/STOS byte demand is read at the REP instruction after earlier register
 updates, with one clean call per REP entry. Conditional REP forms are separately
 reported as unsupported byte demand, without inventing a byte charge.

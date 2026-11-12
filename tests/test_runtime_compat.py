@@ -5,10 +5,21 @@ from pathlib import Path
 import unittest
 from unittest.mock import patch
 
-from runtime_compat import classify_case, inspect_accounting, telemetry_status
+from runtime_compat import (classify_case, inspect_accounting, telemetry_status,
+                            unqualified_required_runtimes)
 
 
 class RuntimeClassificationTests(unittest.TestCase):
+    def test_required_qualification_does_not_accept_presence_or_known_failure(self):
+        for status in ("known-unqualified", "skip", "regression"):
+            with self.subTest(status=status):
+                rows = [{"runtime": "java", "status": "passed"},
+                        {"runtime": "java", "status": status}]
+                self.assertEqual(unqualified_required_runtimes(rows, ["java"]), ["java"])
+        self.assertEqual(unqualified_required_runtimes([], ["java"]), ["java"])
+        self.assertEqual(unqualified_required_runtimes([
+            {"runtime": "java", "status": "passed"},
+            {"runtime": "pypy", "status": "skip"}], ["java"]), [])
     def startup_failure(self):
         controls = [{"passed": True, "infrastructure_ok": True, "cleanup_complete": True,
                      "diagnostic_integrity_failure": False} for _ in range(2)]
@@ -55,6 +66,17 @@ class RuntimeClassificationTests(unittest.TestCase):
 
 
 class RuntimeTelemetryTests(unittest.TestCase):
+    def test_handled_startup_signal_stays_visible_in_opted_in_fixture(self):
+        measurement = self.measurement()
+        measurement["quality"] = "signals_observed"
+        for counters in (measurement, *measurement["processes"], *measurement["segments"]):
+            counters["signals_observed"] = 1
+        self.assertTrue(self.inspect(measurement)[0])
+        with patch("runtime_compat.collector.collect", return_value=measurement):
+            self.assertEqual(inspect_accounting(measurement, Path("unused"), 1, 1,
+                                               True, allow_handled_signals=True), ([], False))
+        self.assertEqual(measurement["quality"], "signals_observed")
+        self.assertEqual(measurement["signals_observed"], 1)
     def measurement(self, rep_enabled=True, unsupported=0):
         counters = {"instructions": 1000, "rep_bytes": 64 if rep_enabled else 0,
                     "rep_entries": 2 if rep_enabled else 0,
