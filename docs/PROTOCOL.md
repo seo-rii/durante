@@ -97,3 +97,49 @@ A successful result has `schema: 1`, `authority: "diagnostic_only"`,
 `segments` preserve the selected components for auditing. No CPU-ms conversion
 is performed. Failure returns `valid: false`, `complete: false` and a bounded
 reason; it must not expose partial totals as a valid measurement.
+
+## Result contract and consumers
+
+The collector, `run` envelope and `isolate` envelope all emit
+`integrity_verified: false` and this locally constructed `measurement_contract`:
+
+```json
+{
+  "version": 1,
+  "backend": "dynamorio",
+  "counter_integrity": "application_mutable",
+  "trusted_verdict_eligible": false,
+  "instruction_semantics": "basic_block_entry",
+  "simd_weighting": "one_per_instruction",
+  "cpu_time_conversion": null
+}
+```
+
+These are additive schema-1 result fields; the raw lifecycle event format is
+unchanged. They describe semantics, not an attestation. A target can forge a
+structurally complete stream. `valid` and `complete` only report structural and
+lifecycle consistency; they never imply tamper resistance, exact retired
+instructions or an eligible trusted verdict. Successful containment also leaves
+the contract unchanged. Unknown or absent contracts must not acquire trust by
+default. A caller must not derive TLE, billing or a security decision from these
+counts even when all validation fields indicate success. Signal interruption can
+charge the unexecuted tail of an entered basic block. SIMD width and active lanes
+do not multiply its instruction charge; CPU milliseconds have no defined
+conversion.
+
+Every aggregate also emits `rep_telemetry_status`, calculated from validated
+counters rather than target-supplied labels:
+
+| Value | Meaning |
+| --- | --- |
+| `disabled` | REP mode is off and all three REP counters are zero. |
+| `movs_stos_only` | REP mode is on and no unsupported REP entries were observed; coverage is limited to requested MOVS/STOS bytes. |
+| `partial` | REP mode is on and `unsupported_rep_entries` is positive. Instruction accounting can still be complete. |
+| `unavailable` | The measurement failed validation or execution; no counter totals are exposed. |
+
+`movs_stos_only` does not certify all REP forms or successful completion of each
+requested transfer. A partial result retains its unsupported-entry total, and
+`isolate` accepts it only when all component sums and its explicit coverage label
+agree. A missing status in an older schema-1 report means unspecified coverage;
+it must not be interpreted as complete coverage. Execution status, instruction
+validity, REP coverage and counter integrity are separate decisions.
