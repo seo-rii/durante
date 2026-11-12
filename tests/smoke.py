@@ -71,9 +71,15 @@ def main():
    if images is not None:assert result['image_count']==images,row
    return row
   asm=['-static','-nostdlib','-no-pie']
+  signal_context=compile('signal-context',(ROOT/'tests/signal_context.c').read_text())
+  native_context=subprocess.run([str(signal_context)],capture_output=True,text=True,timeout=5)
+  assert native_context.returncode==0 and native_context.stdout=='signal-context-ok\n',native_context
   loop=compile('loop',LOOP,asm)
   for rep in [False,True]:
    mode='rep' if rep else 'count'
+   context_row=run(mode+'-signal-context',[signal_context],rep=rep,processes=1,images=1)
+   assert context_row['stdout']=='signal-context-ok\n' and context_row['result']['signals_observed']==2,context_row
+   assert context_row['result']['quality']=='signals_observed',context_row
    for i in range(3):run(f'{mode}-exact-loop-{i}',[loop],rep=rep,expected=300005,processes=1,images=1)
    for op in ['movs','stos']:
     for suffix,width in [('b',1),('w',2),('l',4),('q',8)]:
@@ -144,6 +150,8 @@ def main():
     if images is not None:assert result['image_count']==images,row
     return row
    run_supervised('exact-loop',[loop],expected=300005,processes=1,images=1)
+   context_row=run_supervised('signal-context',[signal_context],processes=1,images=1)
+   assert context_row['stdout']=='signal-context-ok\n' and context_row['result']['signals_observed']==2,context_row
    run_supervised('close-fds',[close_fds],processes=1,images=1)
    run_supervised('close-range',[close_range],processes=1,images=1)
    rep_program=compile('runner-rep',REP,[*asm,'-DREP_COUNT=8192'])

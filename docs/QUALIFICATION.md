@@ -71,9 +71,34 @@ and malformed, inconsistent or incomplete accounting remains a failure.
 A failed instrumentation case is not a successful runtime qualification merely
 because its counter is invalid. Known unsupported cases are reported separately
 from qualified passes and skipped runtimes. In particular, Java startup previously
-crashed with this client while an engine-only control succeeded; Java probes must
-remain diagnostic until their particular native/control/instrumented paths pass.
+crashed with this client while an engine-only control succeeded. Using a DynamoRIO
+clean call for the entry counter preserves application state and fixes the
+reproduced OpenJDK 17.0.21 startup crash. The suite includes
+a `java -version` startup fixture plus tiered and `-Xint` arithmetic fixtures,
+each with native/engine-only controls and REP off/on. CI now requires all Java
+fixtures to pass via `--require-qualified-runtime java`; the historical
+known-unqualified classification cannot satisfy that requirement. Java probes
+remain diagnostic even after their particular paths pass.
 A newly passing fixture establishes only that fixture on its reported runtime.
+
+HotSpot deliberately handles startup faults while probing CPU/OS state (see its
+[CPU probe](https://github.com/openjdk/jdk17u/blob/master/src/hotspot/cpu/x86/vm_version_x86.cpp)
+and [Linux signal handler](https://github.com/openjdk/jdk17u/blob/master/src/hotspot/os_cpu/linux_x86/os_linux_x86.cpp)).
+Successful Java fixtures therefore retain `signals_observed` quality instead of
+requiring zero signals. Output, normal exit, cleanup and complete component sums
+remain mandatory. This does not turn interrupted BB-entry charging into exact
+retired-instruction accounting. Each runtime invocation is still bounded; CI
+allows 40 seconds because interpreted Java runs substantially more instrumented
+work than its native control.
+
+The independent native `signal_context.c` regression also checks registers and
+flags that linear analysis would consider dead: a SIGSEGV handler inspects the
+saved state and resumes past a future clobber. The old client changes that state.
+The counter therefore uses clean-call state preservation for every block.
+A restoration barrier alone fixes Java startup but does not preserve dead flags
+in this native regression; the pinned drreg implementation elides their save. Both direct REP modes and the supervisor must preserve exact
+fixture output and record both handled signals. These tests do not establish all
+possible signal-context transitions as supported.
 
 Optional `durante isolate` execution has additional syscall, filesystem and
 resource restrictions. Passing these ordinary execution tests does not establish

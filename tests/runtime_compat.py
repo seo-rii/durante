@@ -102,7 +102,7 @@ def collect_records(args, directory, root_pid):
     return aggregate
 
 
-def inspect_accounting(measurement, records, root_pid, processes, rep_enabled):
+def inspect_accounting(measurement, records, root_pid, processes, rep_enabled, allow_handled_signals=False):
     errors = []
     # A known runtime crash must never turn partial or stale records into a total.
     if not measurement.get("valid"):
@@ -116,9 +116,10 @@ def inspect_accounting(measurement, records, root_pid, processes, rep_enabled):
         errors.append("Rust and reference collectors disagree")
     if not measurement.get("complete") or measurement.get("quality") not in ("uninterrupted", "signals_observed"):
         errors.append("process-tree accounting was not complete")
-    # Waiting on a subprocess delivers SIGCHLD normally. Keep the signal quality
-    # explicit; complete lifecycle accounting does not mean exact retired work.
-    if measurement.get("quality") == "signals_observed" and processes == 1:
+    # SIGCHLD accompanies subprocesses. HotSpot also handles deliberate startup
+    # faults while probing CPU/OS state. Keep their signal quality explicit;
+    # successful output and complete BB-entry accounting are not retired work.
+    if measurement.get("quality") == "signals_observed" and processes == 1 and not allow_handled_signals:
         errors.append("unexpected signal in a single-process fixture")
     if measurement.get("rep_bytes_enabled") is not rep_enabled:
         errors.append("REP collection mode mismatch")
@@ -187,7 +188,7 @@ def run_case(args, work, name, runtime, target, expected, processes, index):
                 row["measurement"] = measurement
                 errors, integrity_failure = inspect_accounting(measurement, records,
                                                                row["root_pid"], processes,
-                                                               mode == "rep-on")
+                                                               mode == "rep-on", allow_handled_signals=runtime == "java")
                 row["errors"].extend(errors)
                 row["diagnostic_integrity_failure"] = integrity_failure
                 row["accounting_ok"] = not errors
@@ -225,6 +226,14 @@ def classify_case(runtime, rows):
             and all(documented_jvm_startup_failure(row) for row in failed_clients)):
         status = "known-unqualified"
     return status
+
+
+def unqualified_required_runtimes(results, required):
+    """Presence and known-unqualified diagnostics are not qualification passes."""
+    return sorted(runtime for runtime in set(required)
+                  if not any(row["runtime"] == runtime for row in results)
+                  or any(row["runtime"] == runtime and row["status"] != "passed"
+                         for row in results))
 
 
 def runtime_commands(args, work):
@@ -273,6 +282,9 @@ def runtime_commands(args, work):
             cases.append(("node-" + label, "node", [paths["node"], *flags,
                           str(FIXTURES / "arithmetic.js")], "1571328\n", 1))
     if paths["java"]:
+        cases.append(("java-startup", "java", [paths["java"], "-Xmx128m", "-Xss256k",
+                      "-XX:CompressedClassSpaceSize=32m", "-XX:ReservedCodeCacheSize=32m",
+                      "-version"], "", 1))
         for label, flags in (("tiered", []), ("interpreted", ["-Xint"])):
             cases.append(("java-" + label, "java", [paths["java"], "-Xmx128m", "-Xss256k",
                           "-XX:CompressedClassSpaceSize=32m", "-XX:ReservedCodeCacheSize=32m",
@@ -285,6 +297,8 @@ def main():
     for name in ("sdk", "client", "runner-bin", "output-dir"):
         parser.add_argument("--" + name, type=Path, required=True)
     parser.add_argument("--require-runtime", choices=RUNTIMES, action="append", default=[])
+    parser.add_argument("--require-qualified-runtime", choices=RUNTIMES, action="append", default=[],
+                        help="require every fixture for this runtime to pass, not skip or remain known-unqualified")
     for name, default in (("cpython", "python3"), ("pypy", "pypy3"), ("node", "node"),
                           ("java", "java"), ("javac", "javac")):
         parser.add_argument("--" + name, default=default)
@@ -326,8 +340,9 @@ def main():
     unchanged = all(hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == digest
                     for path, digest in source_hashes.items())
     required_missing = sorted(set(missing) & set(args.require_runtime))
+    required_unqualified = unqualified_required_runtimes(results, args.require_qualified_runtime)
     regressions = [r["fixture"] for r in results if r["status"] == "regression"]
-    code = int(bool(fatal or not cleaned or not unchanged or required_missing or regressions))
+    code = int(bool(fatal or not cleaned or not unchanged or required_missing or required_unqualified or regressions))
     counts = {status: sum(row["status"] == status for row in results)
               for status in ("passed", "known-unqualified", "skip", "regression")}
     partial_rep = [{"runtime": case["runtime"], "fixture": case["fixture"],
@@ -337,7 +352,8 @@ def main():
                    if row["telemetry_status"] == "partial"]
     summary = {"schema": 1, "qualification_counts": counts,
                "partial_rep_observations": len(partial_rep), "partial_rep_cases": partial_rep, "authority": "diagnostic_only", "exit_code": code,
-               "required_missing": required_missing, "missing_runtimes": missing,
+               "required_missing": required_missing, "required_unqualified": required_unqualified,
+               "missing_runtimes": missing,
                "regressions": regressions, "fatal_error": fatal,
                "harness_cleanup_complete": cleaned, "sources_unchanged": unchanged,
                "inputs": source_hashes, "binary_sha256": binary_hashes,
