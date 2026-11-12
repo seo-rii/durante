@@ -22,6 +22,13 @@ hardening, containment requirements and reproducible sanitizer fuzzing. A
 structurally valid result is still application-mutable and must not authorize
 trusted time, billing or security decisions.
 
+All collector and supervisor results carry a versioned `measurement_contract`
+with `trusted_verdict_eligible: false` and `integrity_verified: false`.
+`rep_telemetry_status` distinguishes disabled, MOVS/STOS-only, partial and
+unavailable byte telemetry independently of instruction validity. See the
+[result contract](docs/PROTOCOL.md#result-contract-and-consumers) before consuming
+reports; a valid count is not a trusted verdict or a CPU-time conversion.
+
 ## Build and test
 
 The pinned SDK is DynamoRIO 11.3.0-1 (source revision

@@ -23,6 +23,14 @@ U64_MAX = (1 << 64) - 1
 FIELDS = ('instructions', 'rep_bytes', 'rep_entries', 'unsupported_rep_entries', 'signals_observed')
 
 
+def measurement_contract():
+    # Construct these fields locally. Target-supplied claims cannot promote trust.
+    return {'version': 1, 'backend': 'dynamorio',
+            'counter_integrity': 'application_mutable', 'trusted_verdict_eligible': False,
+            'instruction_semantics': 'basic_block_entry',
+            'simd_weighting': 'one_per_instruction', 'cpu_time_conversion': None}
+
+
 class Invalid(ValueError):
     pass
 
@@ -270,9 +278,12 @@ def aggregate(streams, root_pid):
         visited |= {child for child, (parent, _) in spawn_edges.items() if parent in visited}
     require(visited == set(processes), 'disconnected process graph')
     return {'schema': 1, 'authority': 'diagnostic_only', 'metric': 'bb_entry_app_instructions',
+            'integrity_verified': False, 'measurement_contract': measurement_contract(),
             'scope': 'process_tree_user_code', 'valid': True, 'complete': True,
             'root_pid': root_pid, 'process_count': len(processes), 'image_count': images,
             'rep_bytes_enabled': rep_mode, 'quality': 'signals_observed' if total['signals_observed'] else 'uninterrupted',
+            'rep_telemetry_status': ('disabled' if not rep_mode else
+                                     'partial' if total['unsupported_rep_entries'] else 'movs_stos_only'),
             **total, 'processes': [processes[p] for p in sorted(processes)], 'segments': all_segments,
             'limits': {'max_processes': MAX_PROCESSES, 'max_file_bytes': MAX_FILE_BYTES,
                        'max_total_bytes': MAX_TOTAL_BYTES, 'max_events_per_process': MAX_EVENTS}}
@@ -283,6 +294,8 @@ def collect(directory, root_pid):
         return aggregate(load_records(directory), root_pid)
     except (OSError, ValueError, TypeError, KeyError, UnicodeError, RecursionError) as error:
         return {'schema': 1, 'authority': 'diagnostic_only', 'metric': 'bb_entry_app_instructions',
+                'integrity_verified': False, 'measurement_contract': measurement_contract(),
+                'rep_telemetry_status': 'unavailable',
                 'scope': 'process_tree_user_code', 'valid': False, 'complete': False,
                 'root_pid': root_pid, 'reason': str(error)[:300]}
 

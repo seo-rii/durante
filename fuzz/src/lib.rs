@@ -5,7 +5,17 @@ use serde_json::Value;
 pub fn assert_outcome(result: &Value) {
     assert_eq!(result["schema"], 1);
     assert_eq!(result["authority"], "diagnostic_only");
+    assert_eq!(result["integrity_verified"], false);
+    assert_eq!(
+        result["measurement_contract"]["trusted_verdict_eligible"],
+        false
+    );
+    assert_eq!(
+        result["measurement_contract"]["counter_integrity"],
+        "application_mutable"
+    );
     if result["valid"] != true {
+        assert_eq!(result["rep_telemetry_status"], "unavailable");
         assert_eq!(result["complete"], false);
         for key in [
             "instructions",
@@ -21,6 +31,14 @@ pub fn assert_outcome(result: &Value) {
         return;
     }
     assert_eq!(result["complete"], true);
+    let expected_telemetry = if result["rep_bytes_enabled"] == false {
+        "disabled"
+    } else if result["unsupported_rep_entries"].as_u64().unwrap() > 0 {
+        "partial"
+    } else {
+        "movs_stos_only"
+    };
+    assert_eq!(result["rep_telemetry_status"], expected_telemetry);
     let processes = result["processes"].as_array().unwrap();
     let segments = result["segments"].as_array().unwrap();
     assert!(!processes.is_empty() && processes.len() <= durante::collect::MAX_PROCESSES);

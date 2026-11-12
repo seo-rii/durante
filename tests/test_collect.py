@@ -31,6 +31,23 @@ def fork_tree():
 
 
 class CollectorTests(unittest.TestCase):
+ def test_claimed_trust_and_coverage_are_not_copied_from_records(self):
+  for enabled,unsupported,expected in [(False,0,'disabled'),(True,0,'movs_stos_only'),(True,3,'partial')]:
+   rows=[start(1),end(1)]
+   rows[0]['rep_bytes_enabled']=enabled;rows[1]['unsupported_rep_entries']=unsupported
+   for row in rows:row.update(integrity_verified=True,trusted_verdict_eligible=True,rep_telemetry_status='complete')
+   a=m.aggregate({1:rows},1)
+   self.assertTrue(a['valid']);self.assertEqual(a['instructions'],100)
+   self.assertIs(a['integrity_verified'],False)
+   self.assertEqual(a['measurement_contract'],{'version':1,'backend':'dynamorio',
+    'counter_integrity':'application_mutable','trusted_verdict_eligible':False,
+    'instruction_semantics':'basic_block_entry','simd_weighting':'one_per_instruction','cpu_time_conversion':None})
+   self.assertEqual(a['rep_telemetry_status'],expected)
+  with tempfile.TemporaryDirectory() as d:
+   a=m.collect(Path(d),1)
+   self.assertFalse(a['valid']);self.assertIs(a['integrity_verified'],False)
+   self.assertIs(a['measurement_contract']['trusted_verdict_eligible'],False)
+   self.assertEqual(a['rep_telemetry_status'],'unavailable')
  def test_shared_protocol_vectors(self):
   vectors=json.loads((ROOT/'tests/protocol_vectors.json').read_text())['cases']
   for case in vectors:
