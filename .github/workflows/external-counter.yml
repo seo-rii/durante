@@ -1,0 +1,52 @@
+name: external-counter-experiment
+
+on:
+  pull_request:
+    paths:
+      - experiments/external_perf.*
+      - tests/test_external_perf.py
+      - docs/EXTERNAL_COUNTER.md
+      - .github/workflows/external-counter.yml
+  push:
+    branches: [main]
+    paths:
+      - experiments/external_perf.*
+      - tests/test_external_perf.py
+      - docs/EXTERNAL_COUNTER.md
+      - .github/workflows/external-counter.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: durante-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  feasibility:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - name: Validate rejection policy
+        run: python3 -m unittest discover -s tests -p 'test_external_perf.py' -v
+      - name: Run native controls and attempt actual hardware observations
+        shell: bash
+        run: |
+          set -uo pipefail
+          python3 experiments/external_perf.py --output-dir .results/external-counter --repeats 3
+          result=$?
+          if [ "$result" -eq 77 ]; then
+            echo '::notice::Hardware counter unavailable; this host did not qualify the external backend. See result.json.'
+          elif [ "$result" -ne 0 ]; then
+            exit "$result"
+          fi
+      - name: Preserve the explicit qualification state and provenance
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: external-counter-experiment
+          path: .results/external-counter/result.json
+          include-hidden-files: true
+          if-no-files-found: error
