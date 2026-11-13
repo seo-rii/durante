@@ -22,6 +22,8 @@ host Python process owns each container and verifies that its own cgroup is
 outside the job's cgroup. A trusted PID 1 fixture driver launches the actual
 outer `durante isolate` process. It intentionally stays alive after injecting
 the fault, so killing Durante alone cannot make the teardown check pass.
+The native fixture announces readiness only after its child confirms through
+an alarm-bounded pipe handshake that `setsid` succeeded.
 
 | Case | Required observation |
 | --- | --- |
@@ -67,7 +69,8 @@ the owner can inspect. An unavailable environment or failed positive control
 fails the suite; it is never reported as successful fault coverage. Each case
 retains the controller observation, bounded output/report, cgroup evidence and
 owner outcome. Source, fixture and installation hashes must be unchanged across
-the run. `results.json` must report all five cases passed and complete
+the run. The selected local Docker image is resolved to an immutable image ID
+before execution and recorded in the evidence. `results.json` must report all five cases passed and complete
 cleanup. Failed/killed/stopped cases always have `accepted_counts: false`.
 
 This does not qualify a crashed external owner, a failed Docker daemon, host

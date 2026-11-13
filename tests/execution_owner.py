@@ -363,6 +363,12 @@ def main():
         setattr(args, name, getattr(args, name).resolve())
     if args.launcher.name != "bwrap" or args.client.name != "libdurante.so":
         parser.error("prepared installation names bwrap and libdurante.so are required")
+    requested_image = args.image
+    image_id = docker("image", "inspect", "--format", "{{.Id}}", requested_image).stdout.decode().strip()
+    if (len(image_id) != 71 or not image_id.startswith("sha256:") or
+            any(character not in "0123456789abcdef" for character in image_id[7:])):
+        parser.error("cannot establish the exact local Docker image identity")
+    args.image = image_id  # A mutable image tag must not change between cases.
     args.output_dir.mkdir(mode=0o700, parents=True, exist_ok=False)
     inputs = {path: ROOT / path for path in ("tests/execution_owner.py", "tests/execution_owner_probe.c")}
     inputs.update(runner=args.validation_bin / "durante", fixture=args.validation_bin / "owner-probe",
@@ -379,6 +385,7 @@ def main():
                "cases": len(rows), "checks_passed": sum(row["passed"] for row in rows),
                "cleanup_complete": all(row["cleanup_complete"] and row["container_removed"] for row in rows),
                "inputs_unchanged": unchanged, "input_sha256": identities, "rows": rows,
+               "image_requested": requested_image, "image_id": image_id,
                "limitations": ["trusted fixed fixtures and local Docker daemon only",
                                "no external-owner crash, hostile daemon or host failure qualification",
                                "storage case exhausts private scratch before target launch",

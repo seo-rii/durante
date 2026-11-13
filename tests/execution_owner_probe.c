@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include <errno.h>
+#include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
@@ -36,13 +37,22 @@ int main(int argc, char **argv) {
         return 6; /* The configured task limit did not actually bind. */
     }
     if (strcmp(argv[1], "hold")) return 2;
+    int ready[2];
+    if (pipe2(ready, O_CLOEXEC) < 0) return 9;
     pid_t child = fork();
     if (child < 0) return 7;
     if (!child) {
         alarm(30);
+        if (close(ready[0]) < 0) _exit(10);
         if (setsid() < 0) _exit(8);
+        if (write(ready[1], "R", 1) != 1 || close(ready[1]) < 0) _exit(11);
         for (;;) pause();
     }
+    if (close(ready[1]) < 0) return 12;
+    /* The inherited parent alarm bounds this read even if the child stalls.
+     * Do not claim a detached descendant until its setsid has succeeded. */
+    char byte = 0;
+    if (read(ready[0], &byte, 1) != 1 || byte != 'R' || close(ready[0]) < 0) return 13;
     puts("owner-running");
     if (fflush(stdout)) return 4;
     for (;;) pause();
