@@ -1,4 +1,5 @@
 """Strict isolation gates without requiring a Docker daemon or runtime build."""
+import argparse
 import copy
 import json
 from pathlib import Path
@@ -26,6 +27,7 @@ class IsolatedRuntimeTests(unittest.TestCase):
             "pids.max": "128\n",
             "pids.events": "max 5\n",
             "cpu.max": "200000 100000\n",
+            "cpuset.cpus.effective": "0-3,6\n",
             "cpu.stat": "usage_usec 100\nuser_usec 60\nsystem_usec 40\nnr_periods 8\nnr_throttled 2\nthrottled_usec 10\n",
         }
         for name, text in contents.items():
@@ -139,6 +141,77 @@ class IsolatedRuntimeTests(unittest.TestCase):
                 self.assertTrue(isolated.matrix_errors(cases, failed))
         self.assertTrue(isolated.matrix_errors(cases, rows[:4] * 3))
 
+    def test_cpu_placement_accepts_lists_and_ranges_and_rejects_malformed_values(self):
+        for value in ("0", "0,1", "0-3,6", "2-2"):
+            with self.subTest(value=value):
+                self.assertEqual(isolated.cpu_set(value), value)
+        for value in ("", "-1", "+1", "1,", ",1", "1,,2", "1-", "1--2",
+                      "3-1", "1-2-3", "0, 1", " 1", "1 ", "1.0", "cpu1"):
+            with self.subTest(value=value):
+                with self.assertRaises(argparse.ArgumentTypeError):
+                    isolated.cpu_set(value)
+
+    def test_owner_forwards_optional_cpu_placement_and_requires_requested_evidence(self):
+        for requested, effective, expected_pass in (
+                (None, "0-3,6", True), (None, None, True),
+                ("0,1", "0-1", True), ("0,1", None, False)):
+            with self.subTest(requested=requested, effective=effective):
+                with tempfile.TemporaryDirectory() as directory:
+                    root = Path(directory)
+                    cgroup = root / "cgroup"
+                    cgroup.mkdir()
+                    self.cgroup_files(cgroup)
+                    resources = isolated.resource_snapshot(cgroup)
+                    resources["cpuset_cpus_effective"] = effective
+                    profile = root / "relocated-bundle"
+                    args = SimpleNamespace(output_dir=root, driver=root / "driver", image="fixed-image",
+                                           java_major=21, suite="java-children", cpuset_cpus=requested)
+                    identity = "a" * 64
+                    commands = []
+
+                    def docker(*command):
+                        commands.append(command)
+                        if command[0] == "create":
+                            return SimpleNamespace(stdout=identity.encode())
+                        if command[0] == "start":
+                            isolated.publish(profile / "worker.json", {
+                                "passed": True, "cleanup_complete": True, "errors": []})
+                            return SimpleNamespace(stdout=b"")
+                        if command[0] == "inspect":
+                            return SimpleNamespace(stdout=json.dumps({"Running": True, "Pid": 12345}).encode())
+                        self.fail("unexpected Docker operation: " + command[0])
+
+                    read_text = Path.read_text
+
+                    def proc_cgroup(path, *arguments, **keywords):
+                        if path == Path("/proc/12345/cgroup"):
+                            return "0::/owned-test-job\n"
+                        if path == Path("/proc/self/cgroup"):
+                            return "0::/external-owner\n"
+                        return read_text(path, *arguments, **keywords)
+
+                    teardown = {"errors": [], "cleanup_complete": True, "container_removed": True,
+                                "live_before_owner_stop": True, "owner_kill_succeeded": True}
+                    with patch.object(isolated, "docker", side_effect=docker), \
+                            patch.object(Path, "read_text", proc_cgroup), \
+                            patch.object(isolated, "resource_snapshot", return_value=resources), \
+                            patch.object(isolated, "cgroup_state", return_value={"populated": "1"}), \
+                            patch.object(isolated, "stop_owned_container", return_value=teardown) as stop:
+                        row = isolated.execute_profile(args, "relocated-bundle", root / "bundle")
+                    create = next(command for command in commands if command[0] == "create")
+                    self.assertEqual(create.count("--cpus"), 1)
+                    self.assertEqual(create[create.index("--cpus") + 1], "2")
+                    if requested is None:
+                        self.assertNotIn("--cpuset-cpus", create)
+                    else:
+                        self.assertEqual(create.count("--cpuset-cpus"), 1)
+                        self.assertEqual(create[create.index("--cpuset-cpus") + 1], requested)
+                    self.assertEqual(row["requested_cpuset_cpus"], requested)
+                    self.assertEqual(row["passed"], expected_pass)
+                    self.assertEqual(bool(row["errors"]), not expected_pass)
+                    self.assertTrue(row["cleanup_complete"])
+                    stop.assert_called_once()
+
     def test_resource_snapshot_preserves_usage_limits_and_complete_counters(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -147,7 +220,7 @@ class IsolatedRuntimeTests(unittest.TestCase):
             self.assertEqual(snapshot, {
                 "memory_current_bytes": 2048, "memory_peak_bytes": 8192,
                 "memory_max": "1073741824", "pids_current": 3, "pids_max": "128",
-                "cpu_max": "200000 100000",
+                "cpu_max": "200000 100000", "cpuset_cpus_effective": "0-3,6",
                 "memory_events": {"low": 0, "high": 1, "max": 2, "oom": 3, "oom_kill": 4, "oom_group_kill": 0},
                 "pids_events": {"max": 5},
                 "cpu_stat": {"usage_usec": 100, "user_usec": 60, "system_usec": 40,
@@ -158,6 +231,13 @@ class IsolatedRuntimeTests(unittest.TestCase):
             unlimited = isolated.resource_snapshot(root)
             self.assertEqual(unlimited["memory_max"], "max")
             self.assertEqual(unlimited["pids_max"], "max")
+
+    def test_missing_optional_effective_cpu_placement_is_explicit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.cgroup_files(root)
+            (root / "cpuset.cpus.effective").unlink()
+            self.assertIsNone(isolated.resource_snapshot(root)["cpuset_cpus_effective"])
 
     def test_missing_optional_peak_is_explicit_and_missing_required_evidence_fails(self):
         with tempfile.TemporaryDirectory() as directory:
