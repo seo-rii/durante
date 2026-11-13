@@ -8,7 +8,7 @@ known-failure exceptions or optional-runtime skips in this harness.
 
 | Workload | Independent result and checks |
 | --- | --- |
-| Threads | Two joined workers calculate `sum(1..10000) * (1 + 2)`, producing `threads:150015000`. Worker exceptions and nonzero exits fail the parent. |
+| Threads | Two workers wait until both are ready, then calculate `sum(1..10000) * (1 + 2)`, producing `threads:150015000`. Both must finish normally; worker exceptions and nonzero exits fail the parent. |
 | Allocation and GC | Allocate 2,048 1-KiB buffers with complementary endpoint bytes, producing a checksum of 522,240. Explicit collection must be observed, and the final 128 retained buffers must preserve their endpoint data and checksum 32,640. |
 | Child processes | Two sequential child runtimes receive seeds 7 and 11. Their individually checked outputs contribute `seed² + 17`, producing `processes:204`. Each child must exit normally. |
 
@@ -19,6 +19,18 @@ performance entries after explicit GC, using the documented
 The number and timing of collections are deliberately absent from the output
 oracle. The fixtures do not assert that a particular method was JIT compiled or
 that deoptimization occurred.
+
+Each thread fixture has a readiness barrier, ensuring that both application
+workers are alive before either starts its calculation. This establishes
+overlapping worker lifetimes, without requiring simultaneous CPU execution.
+Node uses explicit ready/start messages through the
+[worker message ports](https://nodejs.org/api/worker_threads.html#workerparentport),
+checks each worker's result and normal exit, and rejects missing, duplicate or
+out-of-order messages. On failure it terminates and joins every worker already
+created, including a peer still waiting to start. The harness's outer deadline
+also bounds a worker that never sends a message. The minimum recorded thread
+count alone cannot establish this overlap because runtimes have background
+threads of their own.
 
 ## Execution controls and accounting
 
@@ -167,6 +179,7 @@ this added workload suite does not claim PyPy GC or threading qualification.
 ```sh
 python3 -m unittest discover -s tests -p 'test_runtime_workloads.py' -v
 python3 -m unittest discover -s tests -p 'test_java_process_fixture.py' -v
+python3 -m unittest discover -s tests -p 'test_node_thread_fixture.py' -v
 ```
 
 The unit suite executes the real CPython workloads and checks the actual inherited
@@ -177,6 +190,12 @@ The Java fixture tests compile and execute the real parent with deterministic
 child executables. They check successful output, failures at either child seed,
 nonzero exits, binary output and the 128-byte diagnostic bound. Both Java 17 and
 Java 21 workflow jobs run these tests with their selected JDK.
+The Node tests run the actual workloads and use real workers with a test-only
+preloader to force startup ordering and failures. They verify overlapping worker
+lifetimes independently of timing, reject incomplete or incorrect worker results,
+and require failure cleanup to let the parent exit within the test's deadline.
+Both managed-workload CI jobs require these tests as well as the instrumented
+workload matrix.
 
 ## Bounds, provenance and interpretation
 

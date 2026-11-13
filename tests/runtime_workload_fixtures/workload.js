@@ -4,19 +4,44 @@ const { spawnSync } = require('node:child_process');
 const { PerformanceObserver } = require('node:perf_hooks');
 
 async function threads() {
-  const values = await Promise.all([0, 1].map(index => new Promise((resolve, reject) => {
-    const worker = new Worker(__filename, { workerData: index, resourceLimits: {
-      maxOldGenerationSizeMb: 32, maxYoungGenerationSizeMb: 2, codeRangeSizeMb: 16, stackSizeMb: 1,
-    } });
-    let value;
-    worker.on('message', message => { value = message; });
-    worker.on('error', reject);
-    worker.on('exit', code => {
-      if (code !== 0 || !Number.isSafeInteger(value)) reject(new Error('worker output or exit mismatch'));
-      else resolve(value);
-    });
-  })));
-  console.log('threads:' + values.reduce((left, right) => left + right, 0));
+  const workers = [];
+  let readyCount = 0;
+  let started = false;
+  try {
+    const values = await Promise.all([0, 1].map(index => new Promise((resolve, reject) => {
+      const worker = new Worker(__filename, { workerData: index, resourceLimits: {
+        maxOldGenerationSizeMb: 32, maxYoungGenerationSizeMb: 2, codeRangeSizeMb: 16, stackSizeMb: 1,
+      } });
+      workers.push(worker);
+      let ready = false;
+      let value;
+      worker.on('message', message => {
+        if (message === 'ready' && !ready && !started) {
+          ready = true;
+          if (++readyCount === 2) {
+            // Both workers keep their start listener alive until this barrier opens.
+            started = true;
+            for (const peer of workers) peer.postMessage('start');
+          }
+        } else if (started && value === undefined && message === 50005000 * (index + 1)) {
+          value = message;
+        } else {
+          reject(new Error('worker message mismatch: index=' + index));
+        }
+      });
+      worker.once('error', reject);
+      worker.once('messageerror', reject);
+      worker.once('exit', code => {
+        if (code !== 0 || value === undefined)
+          reject(new Error('worker output or exit mismatch: index=' + index + ' exit=' + code));
+        else resolve(value);
+      });
+    })));
+    console.log('threads:' + values.reduce((left, right) => left + right, 0));
+  } finally {
+    // A failed startup or constructor must not leave its peer waiting for start.
+    await Promise.all(workers.map(worker => worker.terminate()));
+  }
 }
 
 async function allocationGc() {
@@ -64,9 +89,14 @@ function processes() {
 }
 
 if (!isMainThread) {
-  let value = 0;
-  for (let item = 1; item <= 10000; ++item) value += item * (workerData + 1);
-  parentPort.postMessage(value);
+  parentPort.once('message', message => {
+    if (message !== 'start') throw new Error('worker start message mismatch');
+    let value = 0;
+    for (let item = 1; item <= 10000; ++item) value += item * (workerData + 1);
+    parentPort.postMessage(value);
+    parentPort.close();
+  });
+  parentPort.postMessage('ready');
 } else {
   Promise.resolve().then(() => {
     const mode = process.argv[2];

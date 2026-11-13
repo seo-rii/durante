@@ -62,6 +62,7 @@ jobs:
           jdk_variable="JAVA_HOME_${JAVA_MAJOR}_X64"
           jdk_root="${!jdk_variable}"
           PATH="$jdk_root/bin:$PATH" python3 -m unittest discover -s tests -p 'test_java_process_fixture.py' -v
+          python3 -m unittest discover -s tests -p 'test_node_thread_fixture.py' -v
           python3 -m unittest discover -s tests -p 'test_runtime_workloads.py' -v
           python3 -m unittest discover -s tests -p 'test_runtime_exit_faults.py' -v
       - name: Require Java, CPython and Node workloads through Durante
