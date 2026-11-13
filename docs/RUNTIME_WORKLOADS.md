@@ -39,10 +39,50 @@ thread-state errors and a runtime crash with it enabled. Turning off that
 optimization does not claim to repair its implementation.
 
 The prepared runtime also aborts before terminal client callbacks when its exit
-barrier reports that application threads could not be synchronized. That failure
+barrier reports that application threads could not be synchronized, or when an
+OS suspend, context-query or resume operation returns failure during that barrier. That failure
 must not publish a successful end record while a thread can still execute client
 code. CI runs the separate deterministic `runtime_exit_failure.py` regression
 before these workload checks and retains its result alongside the workload matrix.
+
+The OS-failure policy applies only to process-exit synchronization. It terminates
+the whole process with exit code 40 without cleanup. Earlier successful iterations
+may already have freed thread records, so trying to resume that partially cleaned
+set is unsafe. Other suspension and detach callers retain their existing policy.
+
+`runtime_exit_faults.py` builds a separate test-only runtime and injects each of
+the three failures before any worker cleanup and after one worker has been
+cleaned. Both release and debug cores run the actual Durante client and Rust
+collector. All twelve injected observations must reach the selected fault,
+exit 40, retain a start record, omit the terminal `end` record and yield invalid
+accounting without partial totals. Four controls cover joined workers and normal
+exit with live workers. Each target has an eight-second outer deadline, two
+workers and the usual `prlimit` bounds. The existing separate barrier test covers
+exhausted synchronization retries.
+
+The injection code is compiled only into that test SDK. Its production manifest
+is removed and replaced with an explicit test-only marker containing input and
+artifact hashes; it cannot qualify as a prepared production runtime. CI runs this
+sixteen-observation matrix once, in the Java 17 job. Build outputs stay outside the
+uploaded result directory; raw records, diagnostics and provenance are retained.
+The fixed debug fixture records the exact known `Unknown processor cache size`
+diagnostic when present; every other unexpected diagnostic still fails.
+
+To reproduce after building the production SDK, counter and CLI:
+
+```sh
+python3 tests/runtime_exit_faults.py \
+  --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so \
+  --runner-bin target/release/durante --output-dir .results/runtime-exit-faults \
+  --build-dir /absolute/fresh/runtime-exit-fault-build
+```
+
+`--prepared-test-sdk` can reuse the retained test SDK for a fresh observation;
+its marker, patch and injection identities and both core hashes must still match.
+`--runtime-patch` permits an explicit older-patch comparison without presenting
+that runtime as production-qualified. Neither returned-failure injection nor the
+retry test proves termination when an OS primitive itself never returns. Keep
+an external execution owner and its resource/deadline enforcement.
 
 All four modes must produce the independent expected output and empty stderr.
 The supervisor must also report a normal target exit, complete descendant and
