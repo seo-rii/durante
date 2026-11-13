@@ -49,6 +49,8 @@ avoids a debug-runtime startup assertion.
 The counter requires Durante's private replay ABI 1 in the prepared runtime.
 Rebuild the SDK, client and CLI together when updating: an old/stock core cannot
 load this client, and isolate rejects a missing or different replay-patch digest.
+For operator-owned deployment, the [versioned runtime bundle guide](docs/BUNDLE.md)
+packages matching components, verifies relocated installations and documents rollback.
 The [generated-code checks](docs/JIT_LIFECYCLE.md) cover exact RWX replacement,
 partial REP retries and application-register preservation during self-modification.
 

@@ -1,0 +1,53 @@
+name: bundle
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: durante-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  relocated-runtime:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - name: Select the harness Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Verify existing build tools
+        run: |
+          for tool in gcc g++ cmake patch readelf; do command -v "$tool"; done
+      - name: Build the pinned CLI and runtime components
+        run: |
+          rustup toolchain install 1.94.0 --profile minimal
+          cargo +1.94.0 build --locked --release
+          python3 toolkit/fetch_sdk.py
+          cmake -S client -B build -DCMAKE_BUILD_TYPE=Release -DDynamoRIO_DIR="$PWD/toolkit/sdk/DynamoRIO-Linux-11.3.0-1/cmake"
+          cmake --build build -j2
+      - name: Reject unsafe archives and mismatched inventories
+        run: python3 -m unittest discover -s tests -p 'test_bundle.py' -v
+      - name: Execute the relocated bundle without its build SDK
+        run: |
+          python3 tests/bundle_smoke.py \
+            --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so \
+            --cli target/release/durante --output-dir "$RUNNER_TEMP/bundle-smoke" --hide-sdk
+      - name: Preserve bundle and bounded deployment evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: durante-runtime-bundle-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/bundle-smoke/bundle.tar.gz
+            ${{ runner.temp }}/bundle-smoke/results.json
+            ${{ runner.temp }}/bundle-smoke/run.json
+            ${{ runner.temp }}/bundle-smoke/maps.txt
+          if-no-files-found: error
