@@ -77,7 +77,16 @@ jobs:
           cargo +1.94.0 test --locked --all-targets
           cargo +1.94.0 build --locked --release
       - name: Differential-fuzz hostile records against both collectors
-        run: python3 tests/differential_collect.py --collector-bin target/release/durante --cases 512 --seed 20261111
+        id: differential
+        run: python3 tests/differential_collect.py --collector-bin target/release/durante --cases 512 --seed 20261111 --failure-dir .results/differential-failure
+      - name: Preserve a differential failure for exact replay
+        if: failure() && steps.differential.outcome == 'failure'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: differential-failure
+          path: .results/differential-failure/
+          include-hidden-files: true
+          if-no-files-found: warn
       - name: Build the pinned DynamoRIO runtime with concurrency fixes
         run: python3 toolkit/fetch_sdk.py
       - name: Build the counter

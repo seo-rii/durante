@@ -137,6 +137,10 @@ CLI and Python reference. It checks matching validity, exact complete results an
 absence of totals on rejection. Structured numeric boundaries are mixed with raw
 framing/encoding mutations so malformed graphs cannot mask scalar-parser
 differences. CI runs this bounded cross-language check before building the SDK.
+On disagreement or collector failure it retains the exact raw records, root PID,
+both output streams and tool identities in a private, size-bounded bundle. See
+[differential fuzz replay](docs/DIFFERENTIAL_FUZZING.md) for standalone replay,
+artifact bounds and the limits of this diagnostic evidence.
 
 ## Optional namespace profile
 
