@@ -101,6 +101,8 @@ jobs:
         run: python3 tests/signal_state.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/signal-state --require-isa sse2 --repeats 2
       - name: Qualify interpreter and JIT fixtures against native and engine controls
         run: python3 tests/runtime_compat.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/runtime-compat --require-runtime cpython --require-runtime pypy --require-runtime node --require-qualified-runtime java --java "$JAVA_HOME_17_X64/bin/java" --javac "$JAVA_HOME_17_X64/bin/javac" --timeout-ms 40000
+      - name: Repeat default tiered Java execution against the production runtime
+        run: python3 tests/java_tiered.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --java "$JAVA_HOME_17_X64/bin/java" --javac "$JAVA_HOME_17_X64/bin/javac" --output-dir .results/java-tiered --repeats 30
       - name: Qualify generated-code permission changes and RWX rewriting
         run: python3 tests/jit_lifecycle.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/jit-lifecycle --require-qualified-mode protect --require-qualified-mode remap --require-qualified-mode rwx-rewrite
       - name: Preserve exact work and registers across code-cache replay

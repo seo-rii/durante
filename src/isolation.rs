@@ -236,7 +236,7 @@ pub(crate) fn verify_sdk(root: &Path) -> io::Result<()> {
         || manifest["inputs"]["source_sha256"]
             != "e2b7d3f1917ff64e644b81efd96a610a3c622f4857c75593fef5d5e581c231f6"
         || manifest["inputs"]["patch_sha256"]
-            != "55549776bb61b25b429a4b28b425d4ba20e07e5609db169eb3bd4e3125dc5099"
+            != "4aad57bdf679e18a97836f1472b2a5e2a1a5bf2907ecfa017377bc140d53b646"
         || manifest["inputs"]["code_replay_patch_sha256"] != SDK_REPLAY_PATCH_SHA
         || manifest["inputs"]["recipe"] != 1
     {
