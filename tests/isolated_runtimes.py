@@ -41,7 +41,8 @@ def pipe_run(command, directory, timeout_ms=TIMEOUT_MS):
     started = time.monotonic()
     with subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
                           stderr=subprocess.PIPE, start_new_session=True, cwd=directory,
-                          env={"PATH": os.defpath, "LANG": "C", "LC_ALL": "C"}) as process:
+                          env={"PATH": os.defpath, "LANG": "C", "LC_ALL": "C",
+                               "MALLOC_ARENA_MAX": "2"}) as process:
         try:
             with selectors.DefaultSelector() as ready:
                 for name in buffers:

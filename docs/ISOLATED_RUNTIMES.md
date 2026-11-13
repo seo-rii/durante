@@ -23,6 +23,13 @@ container has 1 GiB memory, 128 tasks, two CPUs, no network and a read-only root
 Each fixture gets a 120-second execution deadline and a 64 KiB capture quota;
 the external owner imposes an independent ten-minute deadline on each profile.
 
+The fixed guest environment sets `MALLOC_ARENA_MAX=2`, and native controls use
+the same setting. This bounds glibc's allocator arenas: their address-space
+reservations can otherwise exhaust the 1 GiB ceiling while resident memory is
+still small. The two JavaScript workers, Node heap/code-range limits and JIT
+remain enabled. Allocator sharing can increase contention in allocation-heavy
+threaded programs; this setting is part of the explicit isolation profile.
+
 Debian's JDK normally links configuration files into `/etc`. The image copies
 its own default JDK configuration into its JDK tree under `/usr/lib/jvm`, which
 the existing isolation profile already exposes. It does not bind extra host

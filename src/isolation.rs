@@ -866,6 +866,9 @@ fn execute(
         "TMPDIR",
         "/tmp",
         "--setenv",
+        "MALLOC_ARENA_MAX",
+        "2",
+        "--setenv",
         "DYNAMORIO_CONFIGDIR",
         "/tmp",
     ]);
