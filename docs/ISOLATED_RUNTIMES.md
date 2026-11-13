@@ -103,6 +103,13 @@ the [shared workload diagnostics](RUNTIME_WORKLOADS.md#execution-controls-and-ac
 `cleanup_complete` true. Missing reports and partial matrices never count as
 successful coverage.
 
+Passing CI does not qualify every local build. Additional Java 21 child-process
+observations with a locally built runtime have intermittently failed with an
+engine signal-handler crash or a child output/exit mismatch; their cause remains
+unresolved. Retain those failed reports when comparing another build or run.
+The child diagnostics above help distinguish the outcomes; a later passing run
+alone does not establish a fix.
+
 All reports retain `authority: diagnostic_only` and `integrity_verified: false`.
 Containment and complete arithmetic results do not make application-mutable
 instruction totals trusted CPU time, TLE or billing evidence. Follow the
