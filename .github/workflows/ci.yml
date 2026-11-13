@@ -90,8 +90,6 @@ jobs:
         run: python3 tests/simd.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/simd --require-isa sse2 --repeats 2
       - name: Qualify interpreter and JIT fixtures against native and engine controls
         run: python3 tests/runtime_compat.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/runtime-compat --require-runtime cpython --require-runtime pypy --require-runtime node --require-qualified-runtime java --java "$JAVA_HOME_17_X64/bin/java" --javac "$JAVA_HOME_17_X64/bin/javac" --timeout-ms 40000
-      - name: Validate overhead experiment oracles and result schema
-        run: python3 experiments/overhead.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/overhead --warmups 1 --repeats 1
       - name: Validate clone3 cleared handlers and rejected fork-style accounting
         run: python3 tests/clone_clear_sighand.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/clone-clear --repeats 3 --require-clone3
       - name: Validate cleared handlers with debug runtime assertions
@@ -112,6 +110,8 @@ jobs:
         run: python3 tests/concurrent_spawn.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/concurrent-spawn --repeats 20 --timeout-ms 20000
       - name: Check debug runtime assertions during concurrent process creation
         run: python3 tests/concurrent_spawn.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/concurrent-spawn-debug --repeats 3 --engine-debug --timeout-ms 20000
+      - name: Validate overhead experiment oracles and result schema
+        run: python3 experiments/overhead.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/overhead --warmups 1 --repeats 1
       - name: Preserve diagnostic test results
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
