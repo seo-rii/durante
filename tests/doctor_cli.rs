@@ -62,7 +62,9 @@ fn fixture(root: &Path) {
     let manifest = json!({"schema":1,"inputs":{
         "source_commit":"6847bb210bea0ca11d1bf47704383d6a075da490",
         "source_sha256":"e2b7d3f1917ff64e644b81efd96a610a3c622f4857c75593fef5d5e581c231f6",
-        "patch_sha256":"7b2fbaca84e259aeeafdfc4902ce7a330c48cec51e16804fe74ee3b99ea39f6d",
+        "patch_sha256":format!("{:x}", Sha256::digest(include_bytes!(
+            "../toolkit/patches/dynamorio-vfork-lifetime.patch"
+        ))),
         "recipe":1},"artifacts":{
             "lib64/release/libdynamorio.so": format!("{:x}", Sha256::digest(b"test core"))}});
     fs::write(
