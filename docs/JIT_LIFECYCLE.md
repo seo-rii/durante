@@ -102,7 +102,16 @@ option can state an explicit requirement; the entire default matrix is strict.
 
 Debug selection precedes forwarded engine options. Direct engine invocations
 use the release default critical/error stderr mask (`12`) to suppress debug
-information banners; remaining diagnostics fail the matrix.
+information banners. The fixed direct debug controls classify the exact single
+line `<Unknown processor cache size>` as `cpu_cache_size_unknown`: the pinned
+core's `proc_set_cache_size` cannot name some hosts' CPUID cache sizes and leaves
+its cache-size enum unknown. It does not change the instruction-count oracle.
+Raw stderr remains in every row and `stderr.txt`; the summary reports
+`cpu_cache_notices`. Repeated, truncated, additional or different diagnostics
+still fail, as does this notice from a native, release or supervisor execution.
+Normal exit, exact output, instruction/REP counts, input identities and cleanup
+remain mandatory. This exception applies only to these fixed test fixtures,
+not arbitrary target stderr or production report acceptance.
 
 The actual client state machine also has bounded C tests with small host stubs:
 

@@ -17,6 +17,10 @@ if the outer controller is killed or OOM-killed. It must also enforce output byt
 quotas unless bounded capture is enabled as described below. Namespaces
 share the host kernel; use an independently maintained VM boundary when needed.
 
+See the [external execution-owner guide](EXECUTION_OWNER.md) for the bounded
+controller-failure tests, required teardown evidence and scenarios that remain
+unqualified. The guide is also included in versioned runtime bundles.
+
 Unprivileged user namespaces and nested PID, network, mount, IPC and UTS
 namespaces must be available. Distribution policies may deny them. The profile
 fails closed rather than changing host sysctls, AppArmor or security policy.

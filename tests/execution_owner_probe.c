@@ -4,6 +4,8 @@
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/mman.h>
+#include <sys/prctl.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -16,6 +18,27 @@ int main(int argc, char **argv) {
         return 0;
     }
     alarm(30);
+    if (!strcmp(argv[1], "oom") || !strcmp(argv[1], "publish")) {
+        /* The worker can observe this stop even when stdout is buffered by
+         * Durante's capture. No pressure or publication starts before the
+         * outside owner requests continuation of the actual native fixture. */
+        if (prctl(PR_SET_NAME, "owner-ready", 0, 0, 0) < 0 || raise(SIGSTOP)) return 14;
+        if (!strcmp(argv[1], "publish")) {
+            puts("owner-publication");
+            return fflush(stdout) ? 4 : 0;
+        }
+        /* 24 finite mappings, 16 MiB each, exceed the job's 256 MiB ceiling.
+         * Touch every page so virtual reservation or ENOMEM cannot count as
+         * OOM coverage. The external owner also requires kernel oom_kill. */
+        for (unsigned chunk = 0; chunk < 24; ++chunk) {
+            volatile unsigned char *memory = mmap(NULL, 16U << 20, PROT_READ | PROT_WRITE,
+                                                  MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+            if (memory == MAP_FAILED) return 15;
+            for (unsigned offset = 0; offset < (16U << 20); offset += 4096)
+                memory[offset] = (unsigned char)(chunk + 1);
+        }
+        return 16; /* Allocating the bounded ceiling is not a successful fault. */
+    }
     if (!strcmp(argv[1], "pids")) {
         unsigned children = 0;
         for (; children < 48; ++children) {

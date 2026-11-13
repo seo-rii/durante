@@ -76,8 +76,11 @@ the matching CLI, client, SDK and optional launcher paths:
 ```
 
 `isolate` additionally requires the same external execution owner and bounded
-cgroup environment described in `docs/ISOLATION.md`. The bundle does not supply a
-guardian, aggregate lifetime/disk/I/O enforcement or controller-death recovery.
+cgroup environment described in [isolation prerequisites](ISOLATION.md).
+The included [execution-owner guide](EXECUTION_OWNER.md) describes the owner's
+responsibilities, tested recovery scenarios and remaining qualification limits.
+The bundle does not supply a guardian, aggregate lifetime/disk/I/O enforcement
+or controller-death recovery.
 The raw CLI remains at `bin/durante`; `collect`, `--version` and `--help` are also
 available through the wrapper. Python is needed for packaging/verification only,
 not for launching an installed bundle. Host glibc/system libraries, kernel and
@@ -104,5 +107,5 @@ case, not support for every application or an escape-free sandbox.
 An operator-managed pointer can be switched atomically by the deployment system,
 but this tool does not update it or delete older versions. Store result/report
 files outside version directories and retain bounded failure evidence according
-to `docs/OPERATIONS.md`. Successful verification, smoke tests and rollback all
+to [operator recovery](OPERATIONS.md). Successful verification, smoke tests and rollback all
 retain `authority: diagnostic_only` and `integrity_verified: false`.

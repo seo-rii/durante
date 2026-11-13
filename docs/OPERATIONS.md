@@ -6,6 +6,11 @@ not execute the SDK launcher, isolation launcher or a target. It does not create
 cgroups/namespaces, change sysctls/security policy, repair installations, or
 write report/workspace files.
 
+For isolated execution, the [external execution-owner guide](EXECUTION_OWNER.md)
+defines who enforces aggregate limits and removes the entire job after controller
+failure. Its recovery tests and documented limits complement the installation
+checks below; a successful `doctor` result does not test owner recovery.
+
 ```sh
 durante doctor --drrun /trusted/sdk/bin64/drrun --client /trusted/libdurante.so
 durante doctor --profile isolate --drrun /trusted/sdk/bin64/drrun \
