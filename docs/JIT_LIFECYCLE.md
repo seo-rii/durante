@@ -100,6 +100,8 @@ commands, expectations and errors remain in `results.json`. Exit 0 requires ever
 row, identity and cleanup check to pass. The retained `--require-qualified-mode`
 option can state an explicit requirement; the entire default matrix is strict.
 
+Both lifecycle and replay matrices share the same diagnostic classification;
+the replay harness also records the imported classifier's source identity.
 Debug selection precedes forwarded engine options. Direct engine invocations
 use the release default critical/error stderr mask (`12`) to suppress debug
 information banners. The fixed direct debug controls classify the exact single

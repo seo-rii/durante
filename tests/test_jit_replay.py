@@ -1,7 +1,8 @@
 """Strict independent-oracle and complete-matrix policies for replay fixtures."""
 import unittest
 
-from jit_replay import (EXECUTIONS, FIXTURES, accounting_errors, expected_instructions,
+from jit_replay import (EXECUTIONS, FIXTURES, OUTPUT, accounting_errors,
+                        diagnostic_classification, execution_errors, expected_instructions,
                         matrix_errors)
 
 
@@ -17,6 +18,81 @@ def disassembly(loop=False):
 
 
 class JitReplayPolicyTests(unittest.TestCase):
+    def test_quiet_success_remains_valid_in_every_execution_mode(self):
+        for mode, core, _ in EXECUTIONS:
+            with self.subTest(mode=mode, core=core):
+                row = {"exit_code": 0, "stdout": OUTPUT, "stderr": "",
+                       "execution_mode": mode, "core": core}
+                self.assertEqual(execution_errors(row), [])
+                self.assertEqual(diagnostic_classification(row), "none")
+
+    def test_exact_cpu_cache_notice_is_classified_in_direct_debug_controls(self):
+        # The retained CI failures had this exact line, exit zero and the fixed
+        # replay output. Classification must retain the original diagnostic.
+        notice = "<Unknown processor cache size>\n"
+        for mode in ("engine", "counter-off", "counter-on"):
+            with self.subTest(mode=mode):
+                row = {"exit_code": 0, "stdout": OUTPUT, "stderr": notice,
+                       "execution_mode": mode, "core": "debug"}
+                self.assertEqual(execution_errors(row), [])
+                self.assertEqual(diagnostic_classification(row), "cpu_cache_size_unknown")
+                self.assertEqual(row["stderr"], notice)
+
+    def test_cpu_cache_notice_is_not_accepted_outside_direct_debug_controls(self):
+        for mode, core in (("native", None), ("native", "debug"),
+                           ("supervisor", "release"), ("supervisor", "debug"),
+                           ("engine", "release"), ("counter-off", "release"),
+                           ("counter-on", "release"), ("engine", None),
+                           ("unknown", "debug")):
+            with self.subTest(mode=mode, core=core):
+                row = {"exit_code": 0, "stdout": OUTPUT,
+                       "stderr": "<Unknown processor cache size>\n",
+                       "execution_mode": mode, "core": core}
+                self.assertEqual(diagnostic_classification(row), "unexpected")
+                self.assertIn("unexpected runtime or application diagnostic", execution_errors(row))
+
+    def test_cache_notice_matching_does_not_strip_or_suppress_other_diagnostics(self):
+        notice = "<Unknown processor cache size>\n"
+        for stderr in (notice * 2, notice.rstrip("\n"), notice.replace("\n", "\r\n"),
+                       " " + notice, notice + "\n", notice + "assertion failed\n",
+                       "assertion failed\n" + notice, "<Unknown processor cache size!>\n",
+                       "Option parsing error : unknown option -debug. Continuing\n",
+                       notice + "Option parsing error : unknown option -debug. Continuing\n"):
+            with self.subTest(stderr=stderr):
+                row = {"exit_code": 0, "stdout": OUTPUT, "stderr": stderr,
+                       "execution_mode": "counter-on", "core": "debug"}
+                self.assertEqual(diagnostic_classification(row), "unexpected")
+                self.assertIn("unexpected runtime or application diagnostic", execution_errors(row))
+                self.assertEqual(row["stderr"], stderr)
+
+    def test_classified_notice_cannot_hide_failed_exit_or_incorrect_output(self):
+        row = {"exit_code": 0, "stdout": OUTPUT,
+               "stderr": "<Unknown processor cache size>\n",
+               "execution_mode": "counter-on", "core": "debug"}
+        for change in ({"exit_code": 1}, {"exit_code": -11}, {"exit_code": None},
+                       {"stdout": ""}, {"stdout": OUTPUT.rstrip("\n")},
+                       {"stdout": "jit-lifecycle-ok\n"}, {"stdout": OUTPUT * 2}):
+            with self.subTest(change=change):
+                changed = {**row, **change}
+                self.assertEqual(diagnostic_classification(changed), "cpu_cache_size_unknown")
+                self.assertIn("fixture output or exit oracle failed", execution_errors(changed))
+
+    def test_classified_notice_leaves_accounting_failures_strict(self):
+        row = {"exit_code": 0, "stdout": OUTPUT,
+               "stderr": "<Unknown processor cache size>\n",
+               "execution_mode": "counter-on", "core": "debug"}
+        self.assertEqual(execution_errors(row), [])
+        measurement = {"valid": True, "complete": True, "instructions": 123,
+                       "rep_bytes": 16, "rep_entries": 2,
+                       "unsupported_rep_entries": 0, "signals_observed": 0}
+        self.assertEqual(accounting_errors(measurement, 123, "rep-forward", True), [])
+        for change in ({"instructions": 124}, {"rep_bytes": 12}, {"rep_entries": 3},
+                       {"valid": 1}, {"complete": False}, {"signals_observed": 1}):
+            with self.subTest(change=change):
+                errors = execution_errors(row)
+                errors.extend(accounting_errors({**measurement, **change}, 123, "rep-forward", True))
+                self.assertTrue(errors)
+
     def test_independent_static_path_expands_fixed_generated_calls(self):
         for fixture in FIXTURES:
             with self.subTest(fixture=fixture):
