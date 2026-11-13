@@ -103,6 +103,18 @@ bytes does not invalidate a run. `tests/compat_syscalls.py` compares 18 bounded
 cases against native controls, including ordinary ENOSYS calls. Actual x32
 execution remains unqualified on hosts without that kernel ABI.
 
+The [generated-code checks](docs/JIT_LIFECYCLE.md) require exact instruction and
+REP totals through RWX replacement, partial REP retries and inline self-modifying
+code. The prepared runtime reports actual dispatch re-entry, distinguishes a
+faulting write from a completed write and a pre-entry check, and restores the
+application registers before a fault retry. Thread-local checkpoints correct
+only the unexecuted suffix and retain the original REP demand once. Unknown or
+ambiguous replay, lost checkpoints, interrupted pending retries and arithmetic
+errors invalidate the measurement, including thread/exec/vfork snapshots.
+The client requires the private runtime ABI; no broad restore-state heuristic
+or accepted overcount signature remains. These are fixed diagnostic fixtures,
+not a guarantee for concurrent code patching or protection from report forgery.
+
 ## Fuzzing
 
 The committed targets call the production decoder and lifecycle aggregator.

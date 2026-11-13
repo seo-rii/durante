@@ -178,3 +178,11 @@ AVX2 and AVX-512 execution depends on that runner's CPU and OS feature mask.
 Running a runtime with JIT enabled does not prove a particular hot function was
 compiled. The separately asserted generated-code fixture in `tests/smoke.py`
 provides a smaller, deterministic check that executed JIT bytes are counted.
+
+[Generated-code lifecycle qualification](JIT_LIFECYCLE.md) adds permission
+transitions, RWX replacement and same-address remapping. Separate strict replay
+fixtures cover scalar writes, modification inside the current block, partial
+forward/backward MOVSB and STOSB, and repeated rewrites across the runtime's
+adaptive threshold. Native/release/debug controls check application behavior;
+every counter result must match independent instruction and REP oracles. There
+is no known-overcount exception. Unknown or ambiguous recovery fails closed.

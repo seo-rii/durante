@@ -35,15 +35,22 @@ The pinned SDK is DynamoRIO 11.3.0-1 (source revision
 `6847bb210bea0ca11d1bf47704383d6a075da490`). The fetcher verifies its release
 archive SHA-256 before extracting the required build/runtime subset.
 It then builds the 64-bit release and debug runtime cores from the same pinned
-source commit with the [concurrent process and signal patch](toolkit/patches/dynamorio-vfork-lifetime.patch).
+source commit with the [concurrent process and signal patch](toolkit/patches/dynamorio-vfork-lifetime.patch)
+and [code replay patch](toolkit/patches/dynamorio-code-replay.patch).
 The source archive is also hash-pinned. Python 3.11 or newer, CMake, a C/C++
 compiler and `patch` are needed for this one-time build; this adds no compilation
 to measured runs.
-The SDK's `.durante-runtime.json` records the source, patch and installed core
+The SDK's `.durante-runtime.json` records the source, both patches and installed core
 hashes. Cached cores are reused only when those hashes match. The patch also
 backports [DynamoRIO #7321](https://github.com/DynamoRIO/dynamorio/pull/7321),
 which preserves the decoder context during early thread initialization and
 avoids a debug-runtime startup assertion.
+
+The counter requires Durante's private replay ABI 1 in the prepared runtime.
+Rebuild the SDK, client and CLI together when updating: an old/stock core cannot
+load this client, and isolate rejects a missing or different replay-patch digest.
+The [generated-code checks](docs/JIT_LIFECYCLE.md) cover exact RWX replacement,
+partial REP retries and application-register preservation during self-modification.
 
 ```sh
 python3 toolkit/fetch_sdk.py
@@ -278,6 +285,11 @@ is charged at entry, so signal delivery can charge an unexecuted tail. This is
 explicitly a basic-block-entry work metric. A killed process lacks a final record
 and invalidates the tree. Nonzero **normal** exits can have complete work records;
 the caller still applies its original execution/verdict policy.
+
+Confirmed internal code-cache re-entry receives a narrower correction: only the
+unexecuted suffix is removed before the new entry charge, and a restarted REP
+keeps its original requested bytes once. Ambiguous recovery invalidates counts;
+this does not make signal-interrupted work exact or application-mutable reports trusted.
 
 The repository's runtime checks cover CPython/PyPy arithmetic, native libraries
 and subprocesses, Node with JIT enabled and disabled, and OpenJDK 17 startup,
