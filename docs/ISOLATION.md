@@ -72,6 +72,16 @@ inherited stdio: `/proc/self/fd` can expose capabilities beyond ordinary reads o
 writes. Anonymous pipes and the exact null/zero/random/urandom devices are
 accepted. Extra inherited descriptors are closed on exec.
 
+## Fixed runtime environment
+
+The fixed guest environment includes `MALLOC_ARENA_MAX=2` to limit glibc's
+allocator arenas under the per-process 1 GiB address-space ceiling. Without
+this setting, concurrent runtimes can reserve most of that address space for
+allocator arenas despite using little resident memory. Sharing fewer arenas
+can increase allocator lock contention. This does not change the address-space,
+resident-memory or CPU ceilings, and does not configure allocators that ignore
+this glibc setting. The non-isolated `run` mode keeps the caller's environment.
+
 ## Bounded output capture
 
 Use `--output-dir NEW_DIR` to keep target stdout/stderr behind anonymous pipes and

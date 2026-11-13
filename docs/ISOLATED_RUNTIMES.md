@@ -23,6 +23,13 @@ container has 1 GiB memory, 128 tasks, two CPUs, no network and a read-only root
 Each fixture gets a 120-second execution deadline and a 64 KiB capture quota;
 the external owner imposes an independent ten-minute deadline on each profile.
 
+The fixed guest environment sets `MALLOC_ARENA_MAX=2`, and native controls use
+the same setting. This bounds glibc's allocator arenas: their address-space
+reservations can otherwise exhaust the 1 GiB ceiling while resident memory is
+still small. The two JavaScript workers, Node heap/code-range limits and JIT
+remain enabled. Allocator sharing can increase contention in allocation-heavy
+threaded programs; this setting is part of the explicit isolation profile.
+
 Debian's JDK normally links configuration files into `/etc`. The image copies
 its own default JDK configuration into its JDK tree under `/usr/lib/jvm`, which
 the existing isolation profile already exposes. It does not bind extra host
@@ -96,9 +103,19 @@ outputs, isolated reports and captured files, runtime versions, per-case failure
 reasons, source/artifact hashes before and after the run, and independent owner
 cleanup observations. Both original inputs and the actual staged driver,
 relocated CLI/launcher/manifests/runtime libraries must remain unchanged.
+For Java child failures, inspect the case's `captured/stderr`: the fixture records
+the child seed, exit code and up to 128 stdout bytes as Base64, as described in
+the [shared workload diagnostics](RUNTIME_WORKLOADS.md#execution-controls-and-accounting).
 `results.json` must have both `passed` and
 `cleanup_complete` true. Missing reports and partial matrices never count as
 successful coverage.
+
+Passing CI does not qualify every local build. Additional Java 21 child-process
+observations with a locally built runtime have intermittently failed with an
+engine signal-handler crash or a child output/exit mismatch; their cause remains
+unresolved. Retain those failed reports when comparing another build or run.
+The child diagnostics above help distinguish the outcomes; a later passing run
+alone does not establish a fix.
 
 All reports retain `authority: diagnostic_only` and `integrity_verified: false`.
 Containment and complete arithmetic results do not make application-mutable
