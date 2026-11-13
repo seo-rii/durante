@@ -4,10 +4,38 @@ from pathlib import Path
 import tempfile
 
 from concurrent_spawn import collector
-from jit_lifecycle import accounting_errors, accounting_status, expected_instructions, execution_errors, OUTPUT
+from jit_lifecycle import (accounting_errors, accounting_status, diagnostic_classification,
+                           expected_instructions, execution_errors, OUTPUT)
 
 
 class JitPolicyTests(unittest.TestCase):
+    def test_cache_size_notice_does_not_invalidate_debug_fixture_execution(self):
+        # Captured from the failed main CI run: the fixed fixture and accounting
+        # passed, but the debug core could not name this host's CPUID cache size.
+        for mode in ("engine", "counter-off", "counter-on"):
+            with self.subTest(mode=mode):
+                row = {"exit_code": 0, "stdout": OUTPUT,
+                       "stderr": "<Unknown processor cache size>\n",
+                       "core": "debug", "execution_mode": mode}
+                self.assertEqual(execution_errors(row), [])
+                self.assertEqual(diagnostic_classification(row), "cpu_cache_size_unknown")
+                self.assertEqual(row["stderr"], "<Unknown processor cache size>\n")
+
+    def test_cache_notice_cannot_hide_other_diagnostics_or_failed_execution(self):
+        notice = "<Unknown processor cache size>\n"
+        row = {"exit_code": 0, "stdout": OUTPUT, "stderr": notice,
+               "core": "debug", "execution_mode": "counter-on"}
+        for change in (
+                {"stderr": notice + "Option parsing error : unknown option -debug. Continuing\n"},
+                {"stderr": "assertion failed\n" + notice},
+                {"stderr": notice * 2}, {"stderr": notice.rstrip("\n")},
+                {"stderr": notice.replace("\n", "\r\n")},
+                {"exit_code": 40}, {"stdout": "incorrect result\n"},
+                {"core": "release"}, {"core": None},
+                {"execution_mode": "supervisor"}, {"execution_mode": "native"}):
+            with self.subTest(change=change):
+                self.assertTrue(execution_errors({**row, **change}))
+
     def test_ignored_engine_option_cannot_be_a_qualified_debug_run(self):
         row = {"exit_code": 0, "stdout": OUTPUT, "stderr": ""}
         self.assertEqual(execution_errors(row), [])

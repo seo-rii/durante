@@ -55,11 +55,25 @@ def accounting_status(measurement, expected, extra_nops, rep, mode):
     return "regression"
 
 
+def diagnostic_classification(row):
+    if row.get("stderr", "") == "":
+        return "none"
+    # The pinned core's proc_set_cache_size reports an unenumerated CPUID cache
+    # size in INTERNAL/debug builds. This does not change the fixture oracle.
+    # Accept only its exact standalone line in the fixed direct debug controls;
+    # other messages, repeated notices and release/native output still fail.
+    if (row.get("core") == "debug"
+            and row.get("execution_mode") in ("engine", "counter-off", "counter-on")
+            and row.get("stderr") == "<Unknown processor cache size>\n"):
+        return "cpu_cache_size_unknown"
+    return "unexpected"
+
+
 def execution_errors(row):
     errors = []
     if row["exit_code"] != 0 or row.get("stdout") != OUTPUT:
         errors.append("fixture did not execute both generated-code versions correctly")
-    if row.get("stderr"):
+    if diagnostic_classification(row) == "unexpected":
         errors.append("unexpected runtime or application diagnostic")
     return errors
 
@@ -155,6 +169,7 @@ def main():
                                       args.prlimit)
                     row.update(case=case, mode=mode, extra_nops=nops, execution_mode=label,
                                core=core, expected_instructions=expected)
+                    row["diagnostic_classification"] = diagnostic_classification(row)
                     errors = row["errors"]
                     errors.extend(execution_errors(row))
                     status = "control_passed"
@@ -210,6 +225,8 @@ def main():
                "qualified_cases": sum(row["status"] == "qualified" for row in rows),
                "required_unqualified": required_unqualified,
                "controls_passed": sum(row["status"] == "control_passed" for row in rows),
+               "cpu_cache_notices": sum(row["diagnostic_classification"] == "cpu_cache_size_unknown"
+                                        for row in rows),
                "cleanup_complete": cleaned, "inputs_unchanged": unchanged,
                "input_provenance": {"files": provenance.files, "errors": provenance.errors},
                "fixtures": fixtures, "failures": failures, "rows": rows,
