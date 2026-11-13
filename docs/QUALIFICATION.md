@@ -100,6 +100,11 @@ in this native regression; the pinned drreg implementation elides their save. Bo
 fixture output and record both handled signals. These tests do not establish all
 possible signal-context transitions as supported.
 
+[Signal vector and floating-point state qualification](SIGNAL_STATE.md) adds
+nested alternate-stack and bounded asynchronous delivery checks, including
+vector register contexts, x87 and MXCSR state, with native/engine/client controls
+for both release and debug runtimes. ISA availability and skips remain explicit.
+
 Optional `durante isolate` execution has additional syscall, filesystem and
 resource restrictions. Passing these ordinary execution tests does not establish
 compatibility with that separate profile.

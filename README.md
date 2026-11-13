@@ -209,6 +209,14 @@ Fork-style `clone3(CLONE_CLEAR_SIGHAND)` remains unqualified and its accounting
 is rejected. These tests do not establish arbitrary asynchronous-signal
 compatibility during runtime initialization.
 
+The patch also preserves x87 exception status in delayed and nested signal
+frames when the kernel includes extra XSAVE state. The original runtime could
+overwrite the saved precision flag after clearing live FPU exceptions.
+[Signal-state qualification](docs/SIGNAL_STATE.md) checks the saved frame,
+restored registers and arithmetic with native, engine-only and client controls.
+Updating this patch requires rebuilding the prepared SDK and CLI together;
+`isolate` checks the reviewed patch digest.
+
 Concurrent creation is tested with the patched runtime for successful exec,
 failed exec with default and `SA_RESTART` signal handlers, empty environments,
 and parents that finish all spawn operations

@@ -234,7 +234,7 @@ fn verify_sdk(root: &Path) -> io::Result<()> {
         || manifest["inputs"]["source_sha256"]
             != "e2b7d3f1917ff64e644b81efd96a610a3c622f4857c75593fef5d5e581c231f6"
         || manifest["inputs"]["patch_sha256"]
-            != "7b2fbaca84e259aeeafdfc4902ce7a330c48cec51e16804fe74ee3b99ea39f6d"
+            != "6314414fb19ac17c485558299a0d331185b854d82a48b3aeb90c187cb9ea0f9b"
         || manifest["inputs"]["recipe"] != 1
     {
         return Err(problem(
@@ -1103,6 +1103,58 @@ fn execute(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn sdk_provenance_accepts_the_current_patch_and_rejects_prior_or_changed_inputs() {
+        let temporary = tempfile::tempdir().unwrap();
+        let sdk = temporary.path();
+        let core = sdk.join("lib64/release/libdynamorio.so");
+        fs::create_dir_all(core.parent().unwrap()).unwrap();
+        fs::write(&core, b"fixture runtime").unwrap();
+        let manifest_path = sdk.join(".durante-runtime.json");
+        let mut manifest = json!({
+            "schema": 1,
+            "inputs": {
+                "source_commit": "6847bb210bea0ca11d1bf47704383d6a075da490",
+                "source_sha256": "e2b7d3f1917ff64e644b81efd96a610a3c622f4857c75593fef5d5e581c231f6",
+                "patch_sha256": format!("{:x}", Sha256::digest(include_bytes!(
+                    "../toolkit/patches/dynamorio-vfork-lifetime.patch"
+                ))),
+                "recipe": 1
+            },
+            "artifacts": {
+                "lib64/release/libdynamorio.so": format!("{:x}", Sha256::digest(b"fixture runtime"))
+            }
+        });
+        // Include additional reviewed patch inputs when these branches combine.
+        match fs::read(
+            Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("toolkit/patches/dynamorio-code-replay.patch"),
+        ) {
+            Ok(bytes) => {
+                manifest["inputs"]["code_replay_patch_sha256"] =
+                    json!(format!("{:x}", Sha256::digest(bytes)));
+            }
+            Err(error) if error.kind() == io::ErrorKind::NotFound => {}
+            Err(error) => panic!("cannot read replay patch fixture: {error}"),
+        }
+        let publish = |manifest: &Value| {
+            fs::write(&manifest_path, serde_json::to_vec(manifest).unwrap()).unwrap();
+        };
+        publish(&manifest);
+        assert!(verify_sdk(sdk).is_ok());
+
+        let current = manifest["inputs"]["patch_sha256"].clone();
+        manifest["inputs"]["patch_sha256"] =
+            json!("7b2fbaca84e259aeeafdfc4902ce7a330c48cec51e16804fe74ee3b99ea39f6d");
+        publish(&manifest);
+        assert!(verify_sdk(sdk).is_err());
+
+        manifest["inputs"]["patch_sha256"] = current;
+        publish(&manifest);
+        fs::write(&core, b"changed runtime").unwrap();
+        assert!(verify_sdk(sdk).is_err());
+    }
 
     #[test]
     fn serialized_seccomp_program_preserves_only_reviewed_local_ipc() {

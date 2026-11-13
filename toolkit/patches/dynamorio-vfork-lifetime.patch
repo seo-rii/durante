@@ -4,6 +4,7 @@ Upstream copyright notices and BSD terms: LICENSE.DynamoRIO in this directory.
 Only a returning vfork parent may reclaim its own completed child's context.
 Restore interrupted syscalls before pending signal delivery can resume the app.
 Restore private signal state for clone3 shared-memory children with CLEAR_SIGHAND.
+Preserve the original x87 status when delayed signal frames need extra XSAVE fields.
 Backport decoder initialization fix from upstream commit c46d736f308e6e734bd0477f7b8a2dcbefb155d3.
 Upstream PR: https://github.com/DynamoRIO/dynamorio/pull/7321
 
@@ -654,3 +655,34 @@ index efc1bbb1cd..ad839efb02 100644
 +                              (ptr_uint_t)last + 1);
 +    TABLE_RWLOCK(sigfd_table, write, unlock);
 +}
+--- a/core/unix/signal_linux_x86.c
++++ b/core/unix/signal_linux_x86.c
+@@ -352,10 +352,6 @@
+         /* this is "unlazy_fpu" */
+         /* fxsaveq is only supported with gas >= 2.16 but we have that */
+         asm volatile("fxsaveq %0 ; fnclex" : "=m"(temp->fxsave));
+-        /* now convert into kernel_fpstate_t form */
+-        ASSERT(sizeof(kernel_fpstate_t) == sizeof(struct i387_fxsave_struct));
+-        memcpy(sc->fpstate, &temp->fxsave,
+-               offsetof(struct i387_fxsave_struct, xmm_space));
+ #else
+         /* this is "unlazy_fpu" */
+         asm volatile("fxsave %0 ; fnclex" : "=m"(temp->fxsave));
+@@ -373,6 +369,17 @@
+     }
+
+     save_xmm(dcontext, frame);
++#ifdef X64
++    /* save_xmm may execute x87-only XSAVE for a larger kernel xstate frame.
++     * FNCLEX above already cleared the live exception status, so that XSAVE
++     * must not replace the application's original x87 state. Copy the legacy
++     * prefix last, leaving the reconstructed SIMD registers and XSAVE header
++     * intact. Keep FNCLEX before the runtime work as in the original path.
++     */
++    ASSERT(sizeof(kernel_fpstate_t) == sizeof(struct i387_fxsave_struct));
++    memcpy(sc->fpstate, &temp->fxsave,
++           offsetof(struct i387_fxsave_struct, xmm_space));
++#endif
+ }
+
+ #ifdef DEBUG
