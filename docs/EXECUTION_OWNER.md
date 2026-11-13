@@ -46,7 +46,8 @@ The job is limited to 1 GiB memory, one CPU, 32 tasks, a 64 MiB scratch tmpfs an
 a separate 8 MiB failure tmpfs. Its root is read-only; networking is disabled;
 installation/source mounts are read-only. Only that case's evidence directory
 is writable on the host. The Docker-specific namespace/security settings match
-the existing disposable [isolation CI profile](../.github/workflows/isolation.yml).
+the existing disposable [isolation CI profile](https://github.com/seo-rii/durante/blob/main/.github/workflows/isolation.yml)
+in the source repository.
 The harness creates only its own disposable container cgroups; it changes no
 existing cgroups, host sysctls, security profiles or credentials.
 
