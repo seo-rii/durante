@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.16)
+project(durante_exit_fixture C)
+find_package(DynamoRIO 11.3 EXACT REQUIRED)
+add_library(exit_fixture SHARED client.c)
+configure_DynamoRIO_client(exit_fixture)
+set_target_properties(exit_fixture PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES)
+target_compile_options(exit_fixture PRIVATE -Wall -Wextra -Werror)
