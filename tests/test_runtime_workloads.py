@@ -39,6 +39,22 @@ class RuntimeWorkloadTests(unittest.TestCase):
                 self.assertEqual(result.stdout, expected)
                 self.assertEqual(result.stderr, "")
 
+    def test_workload_cpu_override_preserves_the_existing_default(self):
+        prlimit = workloads.executable_path("prlimit")
+        if not prlimit:
+            self.skipTest("Linux prlimit unavailable")
+        for limit in (40, 90):
+            with self.subTest(cpu_seconds=limit):
+                directory = self.root / ("cpu-" + str(limit))
+                directory.mkdir()
+                options = {"cpu_seconds": limit} if limit != 40 else {}
+                row = workloads.run_process([sys.executable, "-I", "-S", "-c",
+                    "import resource; print(resource.getrlimit(resource.RLIMIT_CPU))"],
+                    directory, 1000, prlimit, **options)
+                self.assertEqual(row["exit_code"], 0, row)
+                self.assertTrue(row["infrastructure_ok"], row)
+                self.assertEqual(row["stdout"], f"({limit}, {limit})\n")
+
     def test_exact_launch_topology_includes_both_jspawnhelper_images(self):
         cases = workloads.workload_cases({"java": "/selected/java", "node": "/selected/node",
                                            "cpython": "/selected/python"}, self.root)

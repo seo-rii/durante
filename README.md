@@ -110,8 +110,10 @@ record directory, removed after collection unless `--keep-records` is supplied.
 Alternatively, `--records-dir NEW_DIRECTORY` creates and retains a directory at
 the specified path for later inspection.
 The launcher always follows children, enables REP-byte accounting and uses the
-compact 32 MiB code/heap reservation profile. The report keeps execution outcome
-and measurement validity separate.
+compact 32 MiB code/heap reservation profile. It disables DynamoRIO trace building
+to use the qualified basic-block execution profile; this preserves the counting
+definition while avoiding the unqualified trace optimizer's Java lifecycle path.
+The report keeps execution outcome and measurement validity separate.
 
 The supervisor waits for normal descendants even if the root exits first. On
 timeout or SIGINT/SIGTERM, it terminates and reaps owned children, including
@@ -165,7 +167,8 @@ launches the original executable with its existing arguments and environment:
 
 ```sh
 toolkit/sdk/DynamoRIO-Linux-11.3.0-1/bin64/drrun \
-  -quiet -follow_children -c "$PWD/build/libdurante.so" \
+  -quiet -follow_children -disable_traces -vm_size 32M -vmheap_size 32M \
+  -c "$PWD/build/libdurante.so" \
   -outdir /absolute/private/new-directory -rep_bytes -- /path/to/program args
 ```
 

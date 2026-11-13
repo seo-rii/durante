@@ -30,6 +30,20 @@ Each workload runs in four modes:
 4. `durante run`, with its normal REP-enabled client, lifecycle supervision,
    report publication and cleanup checks.
 
+The instrumented modes use Durante's canonical basic-block execution profile,
+with DynamoRIO trace building disabled (`-disable_traces`) and 32-MiB code/heap
+reservations. Trace building is an engine optimization; disabling it preserves
+the `bb_entry_app_instructions` measurement definition. The trace-enabled
+optimizer is outside this qualification: the added Java workloads reproduced
+thread-state errors and a runtime crash with it enabled. Turning off that
+optimization does not claim to repair its implementation.
+
+The prepared runtime also aborts before terminal client callbacks when its exit
+barrier reports that application threads could not be synchronized. That failure
+must not publish a successful end record while a thread can still execute client
+code. CI runs the separate deterministic `runtime_exit_failure.py` regression
+before these workload checks and retains its result alongside the workload matrix.
+
 All four modes must produce the independent expected output and empty stderr.
 The supervisor must also report a normal target exit, complete descendant and
 record cleanup, and its unchanged diagnostic measurement/security contract.
@@ -88,7 +102,8 @@ this added workload suite does not claim PyPy GC or threading qualification.
 python3 -m unittest discover -s tests -p 'test_runtime_workloads.py' -v
 ```
 
-The unit suite executes the real CPython workloads and exercises missing runtimes,
+The unit suite executes the real CPython workloads and checks the actual inherited
+CPU limits. It also exercises missing runtimes,
 wrong Java majors, omitted or duplicate modes, missing child images, altered
 measurements, promoted trust claims, cleanup failure and changed input files.
 
@@ -99,11 +114,16 @@ reservations, two active processors and Serial GC. Node uses a 64-MiB old-space
 limit and a 2-MiB semi-space limit. Its two workers additionally use 16-MiB code
 ranges and 1-MiB stacks through the documented
 [worker resource limits](https://nodejs.org/api/worker_threads.html#new-workerfilename-options),
-so their JIT reservations fit the address-space ceiling. The harness applies the existing per-process
-2-GiB address-space, 40-second CPU, 1-MiB regular-file and zero-core limits through
-`prlimit`. The default wall deadline is forty seconds per observation, with five
+so their JIT reservations fit the address-space ceiling. Workload observations
+use per-process 2-GiB address-space, 90-second CPU, 1-MiB regular-file and zero-core
+limits through `prlimit`; the original compatibility harness keeps its 40-second
+CPU default. The default wall deadline is 120 seconds per observation, with five
 extra seconds around the supervised mode for report/cleanup handling. Child
-fixtures also impose fifteen-second deadlines. The twenty-minute campaign bound
+fixtures impose 45-second deadlines for Java and fifteen seconds for CPython/Node.
+These bounds allow the measured instrumentation cost: GC completed in about
+32 seconds locally, and a Java process-launch probe reached the earlier
+fifteen-second child deadline. They are termination limits, not performance
+acceptance thresholds. The twenty-minute campaign bound
 is checked between observations; a final in-progress observation can exceed it
 by its own bounded deadline. These are fixed fixture bounds, not runtime-wide
 capacity claims or aggregate cgroup limits.

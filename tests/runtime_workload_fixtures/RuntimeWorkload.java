@@ -78,7 +78,7 @@ public class RuntimeWorkload {
                 "-XX:ActiveProcessorCount=2", "-XX:+UseSerialGC", "-cp",
                 System.getProperty("java.class.path"), "RuntimeWorkload", "child", Integer.toString(seed)));
             Process child = new ProcessBuilder(command).redirectError(ProcessBuilder.Redirect.INHERIT).start();
-            if (!child.waitFor(15, TimeUnit.SECONDS)) {
+            if (!child.waitFor(45, TimeUnit.SECONDS)) {
                 child.destroyForcibly().waitFor();
                 throw new AssertionError("child deadline");
             }

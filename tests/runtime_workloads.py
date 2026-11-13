@@ -158,13 +158,14 @@ def run_case(args, workload, mode):
                    "--report", str(directory / "report.json"), "--records-dir", str(records),
                    "--timeout-ms", str(args.timeout_ms), "--", *command]
     elif mode != "native":
-        prefix = [str(args.drrun), "-quiet", "-follow_children", "-vm_size", "32M",
+        prefix = [str(args.drrun), "-quiet", "-follow_children", "-disable_traces", "-vm_size", "32M",
                   "-vmheap_size", "32M", "-stderr_mask", "12"]
         if mode == "client-rep-off":
             records.mkdir(mode=0o700)
             prefix += ["-c", str(args.client), "-outdir", str(records)]
         command = [*prefix, "--", *command]
-    row = run_process(command, directory, args.timeout_ms + (5000 if mode == "supervisor" else 0), args.prlimit)
+    row = run_process(command, directory, args.timeout_ms + (5000 if mode == "supervisor" else 0),
+                      args.prlimit, cpu_seconds=90)
     row.update(workload=workload.name, runtime=workload.runtime, mode=mode, command=command,
                expected_stdout=workload.expected, expected_processes=workload.processes,
                expected_images=workload.images, telemetry_status="not-requested")
@@ -254,7 +255,7 @@ def main(argv=None):
     for name, default in (("java", "java"), ("javac", "javac"), ("cpython", "python3"), ("node", "node")):
         parser.add_argument("--" + name, default=default)
     parser.add_argument("--java-major", type=int, choices=(17, 21), default=17)
-    parser.add_argument("--timeout-ms", type=bounded_number(1000, 60000), default=40000)
+    parser.add_argument("--timeout-ms", type=bounded_number(1000, 180000), default=120000)
     args = parser.parse_args(argv)
     for name in ("sdk", "client", "runner_bin", "output_dir"):
         setattr(args, name, getattr(args, name).absolute())

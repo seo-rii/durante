@@ -252,6 +252,7 @@ class RuntimeProvenanceTests(unittest.TestCase):
         self.assertEqual(result["status"], "passed")
         for call in calls.call_args_list[1:]:
             self.assertEqual(call.args[0][0], str(args.drrun))
+            self.assertIn("-disable_traces", call.args[0])
             self.assertEqual(call.args[3], args.prlimit)
 
     def test_collector_uses_the_recorded_runner_and_limiter(self):
