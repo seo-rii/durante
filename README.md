@@ -299,6 +299,10 @@ pass. These are fixture-specific results, not universal language certification
 or qualification of the separate `isolate` profile. Generated-code unit tests
 alone do not establish JVM compatibility.
 
+The [managed runtime workload suite](docs/RUNTIME_WORKLOADS.md) additionally
+requires Java 17/21, CPython and Node threading, allocation/GC and child-process
+fixtures through native/engine controls and the actual `durante run` path.
+
 [SIMD and interpreter/JIT qualification](docs/QUALIFICATION.md) explains the
 additional native-control, output-preservation and exact-count tests. Per-run
 reports distinguish tested features, unsupported runtime paths and missing CPU
