@@ -78,6 +78,43 @@ termination can complete qualification. The owner removes its uniquely named
 container and independently verifies an empty or absent host cgroup. An
 unavailable Docker/cgroup environment or driver timeout fails the suite.
 
+Each workload observation records cgroup resource snapshots before and after the
+command in `resources.before` and `resources.after`. `resources.delta` contains
+changes in `memory.events`, `pids.events` and `cpu.stat`. The external owner also
+captures these values after container startup and before container teardown. A driver that
+exits without publishing its report retains Docker's `ExitCode` and `OOMKilled`
+fields when observed. Missing required counters fail the observation; kernels
+without `memory.peak` explicitly report `memory_peak_bytes: null`.
+
+These read-only snapshots cover the whole disposable container, including the
+driver. Memory peaks are cumulative since container creation, not per-workload
+peaks. CPU time and throttling include driver overhead. An `oom_kill` or PID-limit
+event is useful evidence alongside a child's exit/output; its absence does not
+exclude address-space allocation failure under `RLIMIT_AS` or another process
+exit cause. See the kernel's [cgroup v2 controller documentation](https://docs.kernel.org/admin-guide/cgroup-v2.html).
+
+## Repeated Java child observations
+
+The separate `--suite java-children` campaign uses only the relocated bundle and
+performs three rounds of `POSIX_SPAWN` followed by `FORK`, each with a required
+native control and isolated execution: **12 observations**. Every observation
+gets a fresh result directory and the unchanged Java fixture, heap/JIT options,
+exact output and process/image checks. The child deadline remains 45 seconds,
+each observation retains its 120-second bound, and the external owner keeps its
+ten-minute profile deadline. There are no success retries or optional repeats.
+
+The worker writes `plan.json` before workload observations and reports any
+`unrun_observations` in `worker.json`. A failure, omitted repeat, unavailable
+resource evidence or incomplete cleanup fails the campaign. Original reports
+are retained; a passing campaign is a non-reproduction, not proof that the
+intermittent Java child failure below is fixed.
+
+Append `--suite java-children` to the command below, using fresh output and work
+directories, to run this campaign locally. Omitting `--suite` still selects the
+full 40-observation matrix across both installation profiles. CI requires both
+campaigns and uploads `.results/isolated-runtimes/` and
+`.results/java-child-runtimes/` together.
+
 ## Reproduction and evidence
 
 Build the pinned SDK/client/CLI and launcher using the existing

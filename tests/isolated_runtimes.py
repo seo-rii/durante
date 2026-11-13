@@ -28,9 +28,56 @@ ROOT = Path(__file__).resolve().parents[1]
 CAPTURE_LIMIT = 65536
 TIMEOUT_MS = 120000
 PROFILES = ("installation", "relocated-bundle")
+SUITE_PROFILES = {"all": PROFILES, "java-children": ("relocated-bundle",)}
 BUNDLE = Path("/relocated version")
 FIXTURE_NAMES = ("RuntimeWorkload.java", "workload.js", "workload.py")
 NODE_VERSION = "v22.23.5"
+
+
+def workload_plan(paths, classes, suite):
+    cases = workload_cases(paths, classes)
+    if suite == "all":
+        return cases
+    if suite != "java-children":
+        raise ValueError("unknown workload suite")
+    children = {case.name: case for case in cases if case.runtime == "java" and case.processes == 3}
+    names = ("java-processes-posix_spawn", "java-processes-fork")
+    if set(children) != set(names):
+        raise ValueError("both Java child launch mechanisms are required")
+    return [replace(children[name], name=f"{name}-repeat-{repeat}")
+            for repeat in range(1, 4) for name in names]
+
+
+def resource_snapshot(root=Path("/sys/fs/cgroup")):
+    """Read this disposable driver's cgroup, outside the measured application."""
+    peak = root / "memory.peak"
+    result = {"memory_current_bytes": int((root / "memory.current").read_text()),
+              "memory_peak_bytes": int(peak.read_text()) if peak.exists() else None,
+              "memory_max": (root / "memory.max").read_text().strip(),
+              "pids_current": int((root / "pids.current").read_text()),
+              "pids_max": (root / "pids.max").read_text().strip(),
+              "cpu_max": (root / "cpu.max").read_text().strip()}
+    for field, name in (("memory_events", "memory.events"), ("pids_events", "pids.events"),
+                        ("cpu_stat", "cpu.stat")):
+        result[field] = {key: int(value) for key, value in
+                         (line.split() for line in (root / name).read_text().splitlines())}
+    for field, required in (("memory_events", {"max", "oom", "oom_kill"}),
+                            ("pids_events", {"max"}),
+                            ("cpu_stat", {"usage_usec", "user_usec", "system_usec"})):
+        if not required <= result[field].keys() or any(value < 0 for value in result[field].values()):
+            raise ValueError("resource counters incomplete or invalid: " + field)
+    return result
+
+
+def resource_delta(before, after):
+    result = {}
+    for field in ("memory_events", "pids_events", "cpu_stat"):
+        if before[field].keys() != after[field].keys():
+            raise ValueError("resource counter set changed: " + field)
+        result[field] = {key: after[field][key] - value for key, value in before[field].items()}
+        if any(value < 0 for value in result[field].values()):
+            raise ValueError("resource counter decreased: " + field)
+    return result
 
 
 def pipe_run(command, directory, timeout_ms=TIMEOUT_MS):
@@ -164,11 +211,12 @@ def relocated_libraries(data):
     return loaded
 
 
-def worker(profile, java_major):
+def worker(profile, java_major, suite="all"):
     evidence = Path("/evidence")
     rows, errors, versions = [], [], {}
     libc, previous = own_subreaper()
-    result = {"schema": 1, "profile": profile, "passed": False, "rows": rows,
+    result = {"schema": 1, "profile": profile, "suite": suite, "passed": False, "rows": rows,
+              "planned_observations": [],
               "authority": "diagnostic_only", "integrity_verified": False, "versions": versions}
     try:
         if profile == "relocated-bundle" and any(Path(path).exists() for path in (
@@ -204,10 +252,14 @@ def worker(profile, java_major):
         if compiled["exit_code"] or compiled["errors"] or compiled["stderr"]:
             raise ValueError("fixed Java workload compilation failed")
         cases = []
-        for case in workload_cases(paths, classes):
+        for case in workload_plan(paths, classes, suite):
             command = [str(workspace / Path(arg).name) if arg.startswith(str(ROOT / "tests/runtime_workload_fixtures"))
                        else arg for arg in case.command]
             cases.append(replace(case, command=command))
+        result["planned_observations"] = [{"workload": case.name, "mode": mode}
+                                           for case in cases for mode in ("native", "isolate")]
+        publish(evidence / "plan.json", {"suite": suite, "profile": profile,
+                                        "observations": result["planned_observations"]})
         doctor = pipe_run(installation_prefix(profile, "doctor"), evidence / "doctor", 15000)
         result["doctor"] = json.loads(doctor["stdout"])
         if (doctor["exit_code"] or doctor["errors"] or doctor["stderr"]
@@ -225,8 +277,15 @@ def worker(profile, java_major):
                     command = [*installation_prefix(profile, "isolate"), "--workspace", str(workspace),
                                "--report", str(directory / "report.json"), "--output-dir", str(directory / "captured"),
                                "--output-limit-bytes", str(CAPTURE_LIMIT), "--timeout-ms", str(TIMEOUT_MS), "--", *target]
+                before = resource_snapshot()
                 row = pipe_run(command, directory, TIMEOUT_MS + 5000)
                 row.update(workload=case.name, runtime=case.runtime, mode=mode, command=command)
+                row["resources"] = {"before": before}
+                try:
+                    row["resources"]["after"] = resource_snapshot()
+                    row["resources"]["delta"] = resource_delta(before, row["resources"]["after"])
+                except (OSError, ValueError, KeyError, TypeError) as error:
+                    row["errors"].append("resource evidence unavailable: " + str(error)[:500])
                 if row["exit_code"] != 0:
                     row["errors"].append("fixture command failed")
                 if mode == "native":
@@ -280,6 +339,9 @@ def worker(profile, java_major):
     finally:
         result["cleanup_complete"] = cleanup_orphans()
         libc.prctl(36, previous, 0, 0, 0)
+        observed = {(row["workload"], row["mode"]) for row in rows}
+        result["unrun_observations"] = [row for row in result["planned_observations"]
+                                        if (row["workload"], row["mode"]) not in observed]
         result.update(errors=errors, cases=len(rows), passed=result["passed"] and result["cleanup_complete"])
         publish(evidence / "worker.json", result)
     # Deliberately remain alive, independently of Durante, until the external
@@ -342,7 +404,7 @@ def execute_profile(args, profile, relocated):
     name = "durante-isolated-runtimes-" + uuid.uuid4().hex
     identity, group, observation = None, None, {}
     errors = []
-    row = {"profile": profile, "owner_outside_job": False, "passed": False}
+    row = {"profile": profile, "suite": args.suite, "owner_outside_job": False, "passed": False}
     try:
         mounts = [(args.driver, "/source", True), (directory, "/evidence", False)]
         if profile == "relocated-bundle":
@@ -359,7 +421,7 @@ def execute_profile(args, profile, relocated):
         for source, target, readonly in mounts:
             command += ["--mount", f"type=bind,src={source},dst={target}" + (",readonly" if readonly else "")]
         command += ["--entrypoint", "/usr/bin/python3", args.image, "/source/tests/isolated_runtimes.py",
-                    "--worker", profile, "--java-major", str(args.java_major)]
+                    "--worker", profile, "--java-major", str(args.java_major), "--suite", args.suite]
         identity = docker(*command).stdout.decode().strip()
         if len(identity) != 64 or any(c not in "0123456789abcdef" for c in identity):
             raise ValueError("unexpected disposable container identity")
@@ -374,12 +436,15 @@ def execute_profile(args, profile, relocated):
             raise ValueError("owner is not outside the job cgroup")
         group = Path("/sys/fs/cgroup") / job.lstrip("/")
         row.update(owner_outside_job=True, job_cgroup=job, cgroup_before=cgroup_state(group))
+        row["resources"] = {"before": resource_snapshot(group)}
         deadline = time.monotonic() + 600
         while time.monotonic() < deadline:
             if (directory / "worker.json").exists():
                 observation = read_json(directory / "worker.json")
                 break
-            if not json.loads(docker("inspect", "--format", "{{json .State.Running}}", identity).stdout):
+            state = json.loads(docker("inspect", "--format", "{{json .State}}", identity).stdout)
+            if not state["Running"]:
+                row["container_exit"] = {key: state[key] for key in ("ExitCode", "OOMKilled")}
                 raise ValueError("runtime driver exited without complete evidence")
             time.sleep(1)
         else:
@@ -387,6 +452,14 @@ def execute_profile(args, profile, relocated):
     except (OSError, ValueError, KeyError, RuntimeError, subprocess.SubprocessError) as error:
         errors.append(str(error)[:2000])
     finally:
+        if group is not None:
+            try:
+                row.setdefault("resources", {})["after"] = resource_snapshot(group)
+                if "before" in row["resources"]:
+                    row["resources"]["delta"] = resource_delta(
+                        row["resources"]["before"], row["resources"]["after"])
+            except (OSError, ValueError, KeyError, TypeError) as error:
+                errors.append("owner resource evidence unavailable: " + str(error)[:500])
         teardown = stop_owned_container(identity or name, group)
         errors.extend(teardown.pop("errors"))
         row.update(teardown)
@@ -401,11 +474,15 @@ def main():
     parser.add_argument("--worker", choices=PROFILES)
     parser.add_argument("--image")
     parser.add_argument("--java-major", type=int, required=True)
+    parser.add_argument("--suite", choices=tuple(SUITE_PROFILES), default="all",
+                        help="all workloads, or twelve fixed relocated Java child observations")
     for name in ("cli", "sdk", "client", "launcher", "output-dir", "work-dir"):
         parser.add_argument("--" + name, type=Path)
     args = parser.parse_args()
     if args.worker:
-        return worker(args.worker, args.java_major)
+        if args.worker not in SUITE_PROFILES[args.suite]:
+            parser.error("worker profile is not part of the selected suite")
+        return worker(args.worker, args.java_major, args.suite)
     if not args.image or any(getattr(args, name) is None for name in (
             "cli", "sdk", "client", "launcher", "output_dir", "work_dir")):
         parser.error("image, installation and fresh output/work directories are required")
@@ -451,10 +528,10 @@ def main():
     if executed.errors:
         publish(args.output_dir / "preflight.json", {"errors": executed.errors})
         raise ValueError("cannot establish stable executed inputs")
-    rows = [execute_profile(args, profile, relocated) for profile in PROFILES]
+    rows = [execute_profile(args, profile, relocated) for profile in SUITE_PROFILES[args.suite]]
     provenance.capture("after")
     executed.capture("after")
-    result = {"schema": 1, "image_id": args.image, "java_major": args.java_major,
+    result = {"schema": 1, "image_id": args.image, "java_major": args.java_major, "suite": args.suite,
               "authority": "diagnostic_only", "integrity_verified": False, "rows": rows,
               "passed": all(row["passed"] for row in rows) and not provenance.errors and not executed.errors,
               "cleanup_complete": all(row.get("cleanup_complete") is True for row in rows),
@@ -463,7 +540,7 @@ def main():
               "limits": ["fixed distro runtime image and small heaps only", "counts remain application-mutable",
                          "no raw-record export from the inner sandbox", "not arbitrary runtime or workload support"]}
     publish(args.output_dir / "results.json", result)
-    print(json.dumps({key: result[key] for key in ("passed", "cleanup_complete", "image_id", "java_major")}))
+    print(json.dumps({key: result[key] for key in ("passed", "cleanup_complete", "image_id", "java_major", "suite")}))
     return 0 if result["passed"] else 1
 
 
