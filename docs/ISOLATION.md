@@ -34,12 +34,22 @@ The manifests and binary hashes detect inconsistent local installations; they
 are not signatures against a malicious installer. The SDK path must identify the
 bounded SDK installation, not a general directory of host files.
 
-Build prerequisites include Meson, Ninja, libcap development files, patch and a C
-compiler. Build a fresh pinned launcher without installing a setuid executable:
+Build prerequisites include Python 3.11 or newer, Meson, Ninja, pkg-config,
+libcap development files, patch and a C compiler. Build a fresh pinned launcher
+without installing a setuid executable:
 
 ```sh
 python3 toolkit/build_isolation.py --output "$PWD/.local/bwrap" --work-dir "$PWD/.local/build-bwrap"
 ```
+
+The builder writes both `.local/bwrap` and
+`.local/bwrap.durante-isolation.json`. Install the matching pair together in the
+operator-owned location: `/trusted/bwrap` in the examples requires the adjacent
+`/trusted/bwrap.durante-isolation.json`. If the executable is renamed, the
+manifest name must still be the executable's name plus `.durante-isolation.json`.
+Keep both files protected from group/other writes and preserve the launcher's
+executable, non-setuid permissions. A missing or mismatched manifest is rejected
+before launch.
 
 Inside the preconfigured bounded execution environment, invoke:
 
@@ -116,11 +126,27 @@ resource and death/teardown policies. Instruction counters remain diagnostic.
 
 The input becomes a read-only snapshot at `/work`, limited to 256 entries, 64 MiB
 and depth eight. Symlinks, hardlinks, devices, sockets and FIFOs are rejected
-before content opens. Only selected system binaries/libraries and trusted
-runtime components are mounted read-only. Environment variables are cleared;
-private temporary storage, a fresh `/proc`, minimal devices, no network, dropped
-capabilities and no-new-privileges apply. Per-process CPU, address-space, file-size
-and descriptor limits complement the required aggregate cgroup limits.
+before content opens. Existing `/usr/bin`, `/usr/lib` and `/usr/lib64` trees are
+mounted read-only in their entirety, along with the trusted SDK and runtime
+components; this is not a per-file system-library allowlist. Keep secrets out of
+those exposed trees and use a minimal outer execution image. Environment
+variables are cleared; a private 128 MiB `/tmp`, a fresh `/proc`, minimal devices,
+no network, dropped capabilities and no-new-privileges apply.
+
+The launcher and its descendants inherit these equal soft/hard per-process
+limits, which include the instrumentation runtime's resource use:
+
+| Limit | Value |
+| --- | --- |
+| Virtual address space (`RLIMIT_AS`) | 1 GiB |
+| CPU time (`RLIMIT_CPU`) | `ceil(timeout_ms / 1000) + 1` seconds |
+| Regular-file size (`RLIMIT_FSIZE`) | 16 MiB per file |
+| Open descriptors (`RLIMIT_NOFILE`) | 1024 |
+| Core dump size (`RLIMIT_CORE`) | 0 |
+
+These fixed ceilings restrict runtime compatibility and complement the required
+aggregate cgroup limits. A per-file size ceiling does not bound total storage or
+the combined output stream; use bounded capture for the latter.
 
 An AMD64 seccomp policy denies alternate syscall ABIs, tracing, host namespace
 access, mount operations, network connections, keyrings, BPF, asynchronous I/O,

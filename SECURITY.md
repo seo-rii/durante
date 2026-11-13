@@ -1,12 +1,15 @@
 # Security boundary
 
 Durante 0.1 is a diagnostic instruction-work counter and process supervisor.
-It is not an execution sandbox, a trusted timing source, or an adversarially
-tamper-proof meter. A report's `valid` and `complete` describe structural
-consistency and observed lifecycle completion; they do not attest counter
-integrity. Every report retains `authority: diagnostic_only`. The CLI additionally
-reports `security.counter_integrity: application_mutable` and
-`security.isolation: external_required`.
+`durante run` requires external execution isolation; `durante isolate` adds the
+experimental namespace profile described below. Neither provides a trusted
+timing source or an adversarially tamper-proof meter. A counter report's `valid`
+and `complete` describe structural consistency and observed lifecycle completion;
+they do not attest counter integrity. Every report retains
+`authority: diagnostic_only`. Both execution commands report
+`security.counter_integrity: application_mutable`. The `run` command reports
+`security.isolation: external_required`; `isolate` reports its
+`bubblewrap-0.12-durante-pid1-v1` profile instead.
 
 ## Confirmed integrity limitation
 
@@ -26,12 +29,12 @@ CLI exit status to authorize AC/TLE, billing, or security decisions.
 
 ## Execution isolation
 
-The CLI follows and reaps owned descendants, including descendants that change
-process groups. It does not restrict filesystem reads/writes, network access,
-syscalls, inherited capabilities, process creation, or resource consumption.
-Same-UID code can still modify accessible files or signal the supervisor,
-including SIGSTOP/SIGKILL. A target can clear its parent-death signal. Parent
-death and descendant ownership are not a kernel-enforced containment boundary.
+`durante run` follows and reaps owned descendants, including descendants that
+change process groups. It does not provide filesystem, network or syscall
+isolation, or aggregate resource limits. Same-UID code can still modify
+accessible files or signal the supervisor, including SIGSTOP/SIGKILL. A target
+can clear its parent-death signal. Parent death and descendant ownership are not
+a kernel-enforced containment boundary.
 
 For untrusted code, an external sandbox must supply distinct credentials and
 capability dropping, protected output/workspace mounts, filesystem and network
@@ -39,6 +42,13 @@ policy, an explicit environment allowlist with no host credentials, signal/PID
 isolation, CPU/RSS/process/storage limits and a separately
 owned watchdog that kills the entire kernel-controlled execution group. An
 in-process counter remains mutable even with that execution sandbox.
+
+The optional `durante isolate` profile supplies the documented namespace, mount,
+capability and syscall restrictions. It still requires an external owner to
+provide the bounded cgroup environment, aggregate lifetime and disk/I/O limits,
+and teardown after controller death. Its output quota is enforced only when
+bounded capture is enabled; otherwise the owner must enforce it. See
+[ISOLATION.md](docs/ISOLATION.md) for the complete prerequisites and tested scope.
 
 ## Supervisor hardening
 

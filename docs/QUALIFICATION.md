@@ -115,21 +115,31 @@ CI retains `.results/` artifacts, including baseline and instrumented diagnostic
 
 ## Reproduce the checks
 
-After building the pinned SDK, client and release CLI as described in the README:
+After building the pinned SDK, client and release CLI as described in the README,
+install the required runtimes and set `JAVA_HOME_17_X64` to the trusted JDK 17
+installation root. GitHub's qualification runner provides that variable; local
+shells must set it explicitly. The full matrix uses the same Java gate and
+40-second per-invocation deadline as CI:
 
 ```sh
+: "${JAVA_HOME_17_X64:?Set this to a JDK 17 installation}"
 python3 tests/simd.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 \
   --client build/libdurante.so --runner-bin target/release/durante \
   --output-dir .results/simd --require-isa sse2 --repeats 2
 python3 tests/runtime_compat.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 \
   --client build/libdurante.so --runner-bin target/release/durante \
   --output-dir .results/runtime-compat --require-runtime cpython \
-  --require-runtime pypy --require-runtime node --require-runtime java \
-  --timeout-ms 20000
+  --require-runtime pypy --require-runtime node --require-qualified-runtime java \
+  --java "$JAVA_HOME_17_X64/bin/java" --javac "$JAVA_HOME_17_X64/bin/javac" \
+  --timeout-ms 40000
 ```
 
-Use fresh output directories. Omit optional runtime-presence requirements for a
-local partial run; its missing runtimes remain visible as skips. CI pins its qualification runner to Ubuntu 24.04 and requires all four runtimes.
+Use fresh output directories. For a local partial run, omit requirements for
+unavailable runtimes and, if Java is omitted, the JDK variable check and explicit
+Java paths. Missing runtimes remain visible as skips. `--require-runtime java`
+checks presence but can accept a historical `known-unqualified` result;
+`--require-qualified-runtime java` requires every Java fixture to pass. CI pins
+its qualification runner to Ubuntu 24.04 and requires all four runtimes.
 Pinned setup actions select cached PyPy 7.3.19/Python 3.10 and CPython 3.12; the
 harness runs under CPython. Java uses the runner's explicit `JAVA_HOME_17_X64`
 installation. The job verifies the preinstalled compiler, CMake, patch and Node
