@@ -14,7 +14,7 @@ python3 experiments/overhead.py \
   --output-dir .results/overhead --warmups 1 --repeats 5
 ```
 
-GCC and Python 3 are also required. The output directory must be new; it retains
+GCC and Python 3.11+ are also required. The output directory must be new; it retains
 the compiled fixtures/timer, raw client records, per-invocation timer reports and
 `results.json`. Existing directories or timer reports are never overwritten.
 Directories are private (`0700`), result files use `0600`, and child tools inherit
@@ -110,6 +110,8 @@ matrix. Bounds are failure backstops, not performance acceptance thresholds.
 The result records before/after hashes for the client, native collector, `drrun`,
 release runtime/extension libraries, runtime build manifest, Python executable,
 compiler/assembler/linker/compiler frontend, source inputs and built fixtures/timer.
+Compiler-reported bare subtool names are resolved with the same restricted PATH
+used for compilation, so a different parent PATH cannot mislabel their identities.
 Git HEAD, CPU vendor/model/microcode/ISA flags/topology, kernel, selected affinity,
 available frequency-policy information, compiler and Python versions are also
 recorded. Changed or missing input identities invalidate the whole experiment and

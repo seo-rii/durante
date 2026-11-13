@@ -402,7 +402,7 @@ def main(argv=None):
         paths["release_core"] = args.sdk / "lib64/release/libdynamorio.so"
         for name in ("as", "ld", "cc1"):
             found = tool_output([str(compiler), "-print-prog-name=" + name])
-            paths["compiler_" + name] = Path(shutil.which(found) or found).resolve(strict=True)
+            paths["compiler_" + name] = Path(shutil.which(found, path=CHILD_ENV["PATH"]) or found).resolve(strict=True)
         summary["inputs_before"] = identities(paths, cpu)
         summary["compiler_version"] = tool_output([str(compiler), "--version"])
         summary["python_version"] = sys.version

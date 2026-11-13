@@ -1,11 +1,16 @@
 """Overhead validation policy and actual per-child resource/capture regressions."""
 import copy
+import contextlib
 import importlib.util
+import io
+import os
 from pathlib import Path
+import shutil
 import signal
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 SPEC = importlib.util.spec_from_file_location(
     "overhead", Path(__file__).resolve().parents[1] / "experiments/overhead.py")
@@ -56,6 +61,33 @@ class OverheadPolicyTests(unittest.TestCase):
 
     def sample(self, name, command, timeout=5):
         return bench.run_sample(self.timer, self.root / (name + ".json"), command, timeout)
+
+    def test_compiler_subtool_identity_uses_the_execution_path(self):
+        shadow = self.root / "shadow-tools"
+        shadow.mkdir()
+        for name in ("as", "ld"):
+            fake = shadow / name
+            fake.write_text("#!/bin/sh\nexit 99\n")
+            fake.chmod(0o700)
+        captured = []
+
+        def stop_after_discovery(paths, cpu):
+            captured.append(dict(paths))
+            raise ValueError("test stops after actual compiler tool discovery")
+
+        output = self.root / "tool-discovery"
+        with patch.dict(os.environ, {"PATH": str(shadow) + os.pathsep + os.defpath}), \
+                patch.object(bench, "identities", side_effect=stop_after_discovery), \
+                contextlib.redirect_stdout(io.StringIO()):
+            code = bench.main(["--sdk", str(self.root), "--client", sys.executable,
+                               "--runner-bin", sys.executable, "--output-dir", str(output)])
+        self.assertEqual(code, 1)
+        self.assertTrue(captured)
+        for name in ("as", "ld"):
+            selected = captured[0]["compiler_" + name]
+            expected = Path(shutil.which(name, path=bench.CHILD_ENV["PATH"])).resolve()
+            self.assertEqual(selected, expected)
+            self.assertNotEqual(selected, shadow / name)
 
     def test_oracles_cover_every_fixed_fixture_and_rep_mode(self):
         for fixture in bench.FIXTURES:
