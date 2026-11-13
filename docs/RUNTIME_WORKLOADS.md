@@ -124,6 +124,15 @@ These launch mechanisms and helper are implemented in
 and [OpenJDK 21 ProcessImpl](https://github.com/openjdk/jdk21u/blob/master/src/java.base/unix/classes/java/lang/ProcessImpl.java).
 The helper images cannot silently disappear from accepted accounting.
 
+If a Java child exits with the wrong status or output, the fixture's stderr
+records the child's input `seed`, numeric `exit` code and `stdout_prefix_base64`.
+The last field preserves the exact first **128 bytes at most** from the child's
+stdout, including newlines and invalid UTF-8, without adding unbounded output to
+the report. An empty value means no stdout was captured; a 128-byte prefix may
+omit later bytes. The separate `child deadline` assertion identifies expiration
+of the existing 45-second child deadline. Successful children still require exit
+0 and the exact expected output.
+
 ## Run locally and in CI
 
 Build the pinned SDK, counter and release CLI as described in the README. Use
@@ -157,12 +166,17 @@ this added workload suite does not claim PyPy GC or threading qualification.
 
 ```sh
 python3 -m unittest discover -s tests -p 'test_runtime_workloads.py' -v
+python3 -m unittest discover -s tests -p 'test_java_process_fixture.py' -v
 ```
 
 The unit suite executes the real CPython workloads and checks the actual inherited
 CPU limits. It also exercises missing runtimes,
 wrong Java majors, omitted or duplicate modes, missing child images, altered
 measurements, promoted trust claims, cleanup failure and changed input files.
+The Java fixture tests compile and execute the real parent with deterministic
+child executables. They check successful output, failures at either child seed,
+nonzero exits, binary output and the 128-byte diagnostic bound. Both Java 17 and
+Java 21 workflow jobs run these tests with their selected JDK.
 
 ## Bounds, provenance and interpretation
 

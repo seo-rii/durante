@@ -96,6 +96,9 @@ outputs, isolated reports and captured files, runtime versions, per-case failure
 reasons, source/artifact hashes before and after the run, and independent owner
 cleanup observations. Both original inputs and the actual staged driver,
 relocated CLI/launcher/manifests/runtime libraries must remain unchanged.
+For Java child failures, inspect the case's `captured/stderr`: the fixture records
+the child seed, exit code and up to 128 stdout bytes as Base64, as described in
+the [shared workload diagnostics](RUNTIME_WORKLOADS.md#execution-controls-and-accounting).
 `results.json` must have both `passed` and
 `cleanup_complete` true. Missing reports and partial matrices never count as
 successful coverage.

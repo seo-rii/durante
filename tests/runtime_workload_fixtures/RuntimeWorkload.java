@@ -1,6 +1,7 @@
 import java.lang.management.ManagementFactory;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -82,10 +83,14 @@ public class RuntimeWorkload {
                 child.destroyForcibly().waitFor();
                 throw new AssertionError("child deadline");
             }
-            String text = new String(child.getInputStream().readNBytes(128), StandardCharsets.UTF_8);
+            byte[] captured = child.getInputStream().readNBytes(128);
+            String text = new String(captured, StandardCharsets.UTF_8);
             int expected = seed * seed + 17;
-            if (child.exitValue() != 0 || !text.equals("child:" + expected + "\n"))
-                throw new AssertionError("child output or exit mismatch");
+            int exitCode = child.exitValue();
+            if (exitCode != 0 || !text.equals("child:" + expected + "\n"))
+                throw new AssertionError("child output or exit mismatch: seed=" + seed
+                    + " exit=" + exitCode + " stdout_prefix_base64="
+                    + Base64.getEncoder().encodeToString(captured));
             total += expected;
         }
         System.out.println("processes:" + total);

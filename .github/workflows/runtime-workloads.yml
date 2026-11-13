@@ -54,7 +54,14 @@ jobs:
       - name: Reject terminal callbacks after a failed runtime exit barrier
         run: python3 tests/runtime_exit_failure.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --output-dir .results/runtime-exit-failure
       - name: Validate workload oracles and strict failure gates
+        shell: bash
+        env:
+          JAVA_MAJOR: ${{ matrix.java }}
         run: |
+          set -euo pipefail
+          jdk_variable="JAVA_HOME_${JAVA_MAJOR}_X64"
+          jdk_root="${!jdk_variable}"
+          PATH="$jdk_root/bin:$PATH" python3 -m unittest discover -s tests -p 'test_java_process_fixture.py' -v
           python3 -m unittest discover -s tests -p 'test_runtime_workloads.py' -v
           python3 -m unittest discover -s tests -p 'test_runtime_exit_faults.py' -v
       - name: Require Java, CPython and Node workloads through Durante
