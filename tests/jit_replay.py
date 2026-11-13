@@ -8,6 +8,7 @@ import shutil
 import subprocess
 
 from concurrent_spawn import bounded_number, cleanup_orphans, own_subreaper
+from jit_lifecycle import diagnostic_classification
 from runtime_compat import (InputProvenance, bounded_bytes, bounded_json, collect_records,
                             file_identity, inspect_accounting, run_process)
 
@@ -70,6 +71,15 @@ def accounting_errors(measurement, expected, fixture, rep):
             if type(measurement.get(key)) is not type(value) or measurement[key] != value]
 
 
+def execution_errors(row):
+    errors = []
+    if row["exit_code"] != 0 or row.get("stdout") != OUTPUT:
+        errors.append("fixture output or exit oracle failed")
+    if diagnostic_classification(row) == "unexpected":
+        errors.append("unexpected runtime or application diagnostic")
+    return errors
+
+
 def matrix_errors(rows):
     expected = {(fixture, label, core) for fixture in FIXTURES
                 for label, core, _ in EXECUTIONS}
@@ -101,7 +111,7 @@ def main():
     args.prlimit = str(Path(limiter).absolute())
     args.output_dir.mkdir(mode=0o700, parents=True, exist_ok=False)
     inputs = {name: ROOT / name for name in (
-        "tests/jit_replay.S", "tests/jit_replay.py", "tests/test_jit_replay.py",
+        "tests/jit_replay.S", "tests/jit_replay.py", "tests/test_jit_replay.py", "tests/jit_lifecycle.py",
         "tests/runtime_compat.py", "tests/concurrent_spawn.py", "tests/fixtures.py", "collect.py",
         "client/durante.c", "client/durante_runtime.h", "toolkit/build_runtime.py",
         "toolkit/patches/dynamorio-vfork-lifetime.patch",
@@ -170,11 +180,9 @@ def main():
                                   args.prlimit)
                 row.update(case=case, fixture=fixture, execution_mode=label, core=core,
                            expected_instructions=expected, rep_bytes_enabled=rep)
+                row["diagnostic_classification"] = diagnostic_classification(row)
                 errors = row["errors"]
-                if row["exit_code"] != 0 or row.get("stdout") != OUTPUT:
-                    errors.append("fixture output or exit oracle failed")
-                if row.get("stderr"):
-                    errors.append("unexpected runtime or application diagnostic")
+                errors.extend(execution_errors(row))
                 if instrumented:
                     try:
                         if label == "supervisor":
@@ -223,6 +231,8 @@ def main():
                "checks_passed": sum(row["passed"] for row in rows),
                "controls_passed": sum(row["passed"] for row in rows
                                       if row["execution_mode"] in ("native", "engine")),
+               "cpu_cache_notices": sum(row["diagnostic_classification"] == "cpu_cache_size_unknown"
+                                        for row in rows),
                "cleanup_complete": cleaned, "inputs_unchanged": unchanged,
                "input_provenance": {"files": provenance.files, "errors": provenance.errors},
                "fixtures": fixtures, "failures": failures, "rows": rows,
