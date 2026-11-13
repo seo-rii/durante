@@ -75,6 +75,10 @@ its CI smoke checks correctness without a performance threshold.
 
 ## Rust command-line tool
 
+Use `durante doctor` for read-only installation/environment diagnostics. See the
+[operator guide](docs/OPERATIONS.md) for profile checks, result examples and
+failure/recovery decisions.
+
 The C client performs instrumentation inside DynamoRIO. The Rust executable
 launches it, supervises the process tree and validates its records; it does not
 replace the counter with a different measurement algorithm. Python is used only
