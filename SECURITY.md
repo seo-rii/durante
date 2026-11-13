@@ -93,6 +93,13 @@ bytes does not invalidate a run. `tests/compat_syscalls.py` compares 18 bounded
 cases against native controls, including ordinary ENOSYS calls. Actual x32
 execution remains unqualified on hosts without that kernel ABI.
 
+The [generated-code lifecycle checks](docs/JIT_LIFECYCLE.md) reproduced internal
+RWX-write replay that duplicated instruction/REP charges without an application
+signal. The current collector can accept those structurally complete counts;
+RWX rewriting remains unqualified. The strict qualification option rejects that
+mode. A precise runtime/accounting fix is still required; speculative client
+filters also rejected otherwise passing Node/Java execution.
+
 ## Fuzzing
 
 The committed targets call the production decoder and lifecycle aggregator.
