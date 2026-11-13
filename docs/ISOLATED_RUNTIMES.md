@@ -20,8 +20,9 @@ thread stacks, 32 MiB compressed-class/code spaces and Serial GC. Node uses a
 64 MiB old-generation heap, 2 MiB semi-spaces and bounded worker resources.
 The native controls use the same address-space ceiling. The private outer
 container has 1 GiB memory, 128 tasks, two CPUs, no network and a read-only root.
-Each fixture gets a 120-second execution deadline and a 64 KiB capture quota;
-the external owner imposes an independent ten-minute deadline on each profile.
+Each isolated target gets a 120-second execution deadline. The capture harness
+permits 125 seconds for both native and isolated commands, with a 64 KiB capture
+quota. The external owner imposes an independent ten-minute deadline on each profile.
 
 The fixed guest environment sets `MALLOC_ARENA_MAX=2`, and native controls use
 the same setting. This bounds glibc's allocator arenas: their address-space
@@ -85,6 +86,11 @@ captures these values after container startup and before container teardown. A d
 exits without publishing its report retains Docker's `ExitCode` and `OOMKilled`
 fields when observed. Missing required counters fail the observation; kernels
 without `memory.peak` explicitly report `memory_peak_bytes: null`.
+Snapshots also record the kernel's `cpuset.cpus.effective` as
+`cpuset_cpus_effective`, or `null` when the file is unavailable. Each owner row
+records `requested_cpuset_cpus`, which is `null` when CPU placement was omitted.
+An explicit placement request requires effective CPU-set evidence; its absence
+fails the campaign.
 Aggregate rows link to the complete per-observation file through
 `resource_evidence`, relative to the profile directory, instead of duplicating
 these snapshots in `worker.json`. The aggregate retains its 64-KiB read bound.
@@ -103,8 +109,9 @@ performs three rounds of `POSIX_SPAWN` followed by `FORK`, each with a required
 native control and isolated execution: **12 observations**. Every observation
 gets a fresh result directory and the unchanged Java fixture, heap/JIT options,
 exact output and process/image checks. The child deadline remains 45 seconds,
-each observation retains its 120-second bound, and the external owner keeps its
-ten-minute profile deadline. There are no success retries or optional repeats.
+isolated targets retain their 120-second bound, the capture harness retains its
+125-second bound, and the external owner keeps its ten-minute profile deadline.
+There are no success retries or optional repeats.
 
 The worker writes `plan.json` before workload observations and reports any
 `unrun_observations` in `worker.json`. A failure, omitted repeat, unavailable
@@ -117,6 +124,34 @@ directories, to run this campaign locally. Omitting `--suite` still selects the
 full 40-observation matrix across both installation profiles. CI requires both
 campaigns and uploads `.results/isolated-runtimes/` and
 `.results/java-child-runtimes/` together.
+
+For a fixed CPU-placement comparison, also append `--cpuset-cpus 0,1` to the
+command below. CPU lists and ranges such as `0-3,6` are accepted. Choose CPUs
+available to the Docker host and check their topology when selecting distinct
+physical cores; logical CPU numbers are machine-specific. The option constrains
+the disposable container's CPU placement while retaining its two-CPU quota and
+all workload limits. Omitting it preserves default placement and existing CI
+behavior.
+
+A completed comparison on one host ran the two conditions sequentially with
+the same production SDK, CLI, client, image and Java fixture, for **24 planned
+observations**:
+
+| CPU placement | Native observations passed | Isolated observations passed |
+| --- | --- | --- |
+| Default allowed CPUs | 6/6 | 6/6 |
+| Two distinct physical cores (`0,1` on that host) | 6/6 | 1/6 |
+
+All five failed isolates reported `child output or exit mismatch` with
+`seed=7 exit=139` and empty child stdout, followed by rejection because
+`process has no completed final image`. Both launch mechanisms were affected.
+The failures completed in 33.304–35.750 seconds, with no `child deadline` marker
+or memory/PID limit events. Both campaigns completed all planned observations;
+cleanup and input-hash checks passed. Exit 139 is the recorded Java child exit
+value; the retained evidence does not directly identify its terminating signal.
+The sequential condition order supports a CPU-placement correlation on this
+build, without establishing the cause. The root cause remains unresolved, and
+the placement option does not fix the failure.
 
 ## Reproduction and evidence
 

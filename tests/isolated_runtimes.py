@@ -9,6 +9,7 @@ from dataclasses import replace
 import json
 import os
 from pathlib import Path
+import re
 import selectors
 import shutil
 import signal
@@ -34,6 +35,20 @@ FIXTURE_NAMES = ("RuntimeWorkload.java", "workload.js", "workload.py")
 NODE_VERSION = "v22.23.5"
 
 
+def cpu_set(value):
+    """Accept Docker's comma-separated CPU ids and inclusive ranges."""
+    if not re.fullmatch(r"[0-9]+(?:-[0-9]+)?(?:,[0-9]+(?:-[0-9]+)?)*", value):
+        raise argparse.ArgumentTypeError("use CPU ids or ranges, for example 0,1 or 0-3,6")
+    try:
+        for part in value.split(","):
+            bounds = [int(number) for number in part.split("-")]
+            if bounds[0] > bounds[-1]:
+                raise ValueError("reversed CPU range")
+    except ValueError as error:
+        raise argparse.ArgumentTypeError("CPU ranges must use increasing nonnegative ids") from error
+    return value
+
+
 def workload_plan(paths, classes, suite):
     cases = workload_cases(paths, classes)
     if suite == "all":
@@ -51,12 +66,14 @@ def workload_plan(paths, classes, suite):
 def resource_snapshot(root=Path("/sys/fs/cgroup")):
     """Read this disposable driver's cgroup, outside the measured application."""
     peak = root / "memory.peak"
+    cpuset = root / "cpuset.cpus.effective"
     result = {"memory_current_bytes": int((root / "memory.current").read_text()),
               "memory_peak_bytes": int(peak.read_text()) if peak.exists() else None,
               "memory_max": (root / "memory.max").read_text().strip(),
               "pids_current": int((root / "pids.current").read_text()),
               "pids_max": (root / "pids.max").read_text().strip(),
-              "cpu_max": (root / "cpu.max").read_text().strip()}
+              "cpu_max": (root / "cpu.max").read_text().strip(),
+              "cpuset_cpus_effective": cpuset.read_text().strip() if cpuset.exists() else None}
     for field, name in (("memory_events", "memory.events"), ("pids_events", "pids.events"),
                         ("cpu_stat", "cpu.stat")):
         result[field] = {key: int(value) for key, value in
@@ -411,7 +428,8 @@ def execute_profile(args, profile, relocated):
     name = "durante-isolated-runtimes-" + uuid.uuid4().hex
     identity, group, observation = None, None, {}
     errors = []
-    row = {"profile": profile, "suite": args.suite, "owner_outside_job": False, "passed": False}
+    row = {"profile": profile, "suite": args.suite, "requested_cpuset_cpus": args.cpuset_cpus,
+           "owner_outside_job": False, "passed": False}
     try:
         mounts = [(args.driver, "/source", True), (directory, "/evidence", False)]
         if profile == "relocated-bundle":
@@ -425,6 +443,8 @@ def execute_profile(args, profile, relocated):
                    "--security-opt", "seccomp=unconfined", "--security-opt", "apparmor=unconfined",
                    "--log-driver", "none", "--tmpfs", "/tmp:rw,exec,mode=1777,size=268435456",
                    "--env", "PYTHONDONTWRITEBYTECODE=1"]
+        if args.cpuset_cpus is not None:
+            command += ["--cpuset-cpus", args.cpuset_cpus]
         for source, target, readonly in mounts:
             command += ["--mount", f"type=bind,src={source},dst={target}" + (",readonly" if readonly else "")]
         command += ["--entrypoint", "/usr/bin/python3", args.image, "/source/tests/isolated_runtimes.py",
@@ -444,6 +464,8 @@ def execute_profile(args, profile, relocated):
         group = Path("/sys/fs/cgroup") / job.lstrip("/")
         row.update(owner_outside_job=True, job_cgroup=job, cgroup_before=cgroup_state(group))
         row["resources"] = {"before": resource_snapshot(group)}
+        if args.cpuset_cpus is not None and not row["resources"]["before"]["cpuset_cpus_effective"]:
+            raise ValueError("requested CPU placement has no effective cpuset evidence")
         deadline = time.monotonic() + 600
         while time.monotonic() < deadline:
             if (directory / "worker.json").exists():
@@ -483,6 +505,8 @@ def main():
     parser.add_argument("--java-major", type=int, required=True)
     parser.add_argument("--suite", choices=tuple(SUITE_PROFILES), default="all",
                         help="all workloads, or twelve fixed relocated Java child observations")
+    parser.add_argument("--cpuset-cpus", type=cpu_set,
+                        help="optional Docker CPU ids/ranges for reproduction; the two-CPU quota stays fixed")
     for name in ("cli", "sdk", "client", "launcher", "output-dir", "work-dir"):
         parser.add_argument("--" + name, type=Path)
     args = parser.parse_args()
