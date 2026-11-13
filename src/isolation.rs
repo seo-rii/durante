@@ -1126,6 +1126,18 @@ mod tests {
                 "lib64/release/libdynamorio.so": format!("{:x}", Sha256::digest(b"fixture runtime"))
             }
         });
+        // Include additional reviewed patch inputs when these branches combine.
+        match fs::read(
+            Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("toolkit/patches/dynamorio-code-replay.patch"),
+        ) {
+            Ok(bytes) => {
+                manifest["inputs"]["code_replay_patch_sha256"] =
+                    json!(format!("{:x}", Sha256::digest(bytes)));
+            }
+            Err(error) if error.kind() == io::ErrorKind::NotFound => {}
+            Err(error) => panic!("cannot read replay patch fixture: {error}"),
+        }
         let publish = |manifest: &Value| {
             fs::write(&manifest_path, serde_json::to_vec(manifest).unwrap()).unwrap();
         };
