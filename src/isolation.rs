@@ -17,6 +17,8 @@ use std::time::{Duration, Instant};
 
 const SOURCE_SHA: &str = "9760d007363e3abba7c747489910f9f82d9fca53ba3bd3282e396fa3c97a3314";
 const PATCH_SHA: &str = "617e143716b533c36535fea64be9192bc46b3c2d52d140c3dbbded90487b1b54";
+const SDK_REPLAY_PATCH_SHA: &str =
+    "aad9b561fb89e09d52d7a765124226659b8dbd8b886da61bc73d15fde28b5b72";
 const SOURCE_URL: &str =
     "https://github.com/containers/bubblewrap/releases/download/v0.12.0/bubblewrap-0.12.0.tar.xz";
 const MAX_FILES: usize = 256;
@@ -235,6 +237,7 @@ fn verify_sdk(root: &Path) -> io::Result<()> {
             != "e2b7d3f1917ff64e644b81efd96a610a3c622f4857c75593fef5d5e581c231f6"
         || manifest["inputs"]["patch_sha256"]
             != "7b2fbaca84e259aeeafdfc4902ce7a330c48cec51e16804fe74ee3b99ea39f6d"
+        || manifest["inputs"]["code_replay_patch_sha256"] != SDK_REPLAY_PATCH_SHA
         || manifest["inputs"]["recipe"] != 1
     {
         return Err(problem(
@@ -1103,6 +1106,38 @@ fn execute(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn sdk_requires_the_reviewed_code_replay_patch() {
+        assert_eq!(
+            format!(
+                "{:x}",
+                Sha256::digest(include_bytes!(
+                    "../toolkit/patches/dynamorio-code-replay.patch"
+                ))
+            ),
+            SDK_REPLAY_PATCH_SHA
+        );
+        let temporary = tempfile::tempdir().unwrap();
+        let sdk = temporary.path();
+        fs::create_dir_all(sdk.join("lib64/release")).unwrap();
+        let core = b"fixture prepared runtime";
+        fs::write(sdk.join("lib64/release/libdynamorio.so"), core).unwrap();
+        let mut manifest = json!({"schema":1, "inputs":{
+            "source_commit":"6847bb210bea0ca11d1bf47704383d6a075da490",
+            "source_sha256":"e2b7d3f1917ff64e644b81efd96a610a3c622f4857c75593fef5d5e581c231f6",
+            "patch_sha256":format!("{:x}", Sha256::digest(include_bytes!("../toolkit/patches/dynamorio-vfork-lifetime.patch"))),
+            "code_replay_patch_sha256":SDK_REPLAY_PATCH_SHA, "recipe":1},
+            "artifacts":{"lib64/release/libdynamorio.so":format!("{:x}",Sha256::digest(core))}});
+        let marker = sdk.join(".durante-runtime.json");
+        fs::write(&marker, serde_json::to_vec(&manifest).unwrap()).unwrap();
+        assert!(verify_sdk(sdk).is_ok());
+        for unreviewed in [Value::Null, json!("0".repeat(64))] {
+            manifest["inputs"]["code_replay_patch_sha256"] = unreviewed;
+            fs::write(&marker, serde_json::to_vec(&manifest).unwrap()).unwrap();
+            assert!(verify_sdk(sdk).is_err());
+        }
+    }
 
     #[test]
     fn serialized_seccomp_program_preserves_only_reviewed_local_ipc() {

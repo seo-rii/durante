@@ -30,6 +30,7 @@
 
 #include "dr_api.h"
 #include "drmgr.h"
+#include "durante_runtime.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <stddef.h>
@@ -54,6 +55,12 @@ typedef struct {
   uint64_t instructions, counter_overflows, signals, rep_bytes, rep_entries,
       unsupported_rep_entries;
   bool rep_error;
+  bool replay_error;
+  app_pc write_pc, write_next_pc, restart_pc;
+  uint64_t write_suffix, write_rep_request, restart_rep_request;
+  int write_rep_opcode, write_rep_bytes, write_rep_count_reg;
+  int restart_rep_opcode, restart_rep_bytes, restart_rep_count_reg;
+  bool write_rep, restart_rep, restart_entered;
   bool pending_spawn, pending_exec, pending_unsupported;
   int pending_syscall;
   uint64_t pending_clone_flags;
@@ -73,6 +80,9 @@ static uint64_t total_instructions, total_signals, total_rep_bytes,
     total_rep_entries, total_unsupported_rep_entries, threads_started,
     threads_ended, event_sequence;
 static bool rep_bytes_enabled, accounting_error, app_exit_seen, report_written;
+/* A replay callback must never do I/O or take a lock, even on a broken TLS
+ * invariant.  This sticky process/shared-VM flag invalidates every snapshot. */
+static int replay_without_tls;
 static int app_exit_code;
 static size_t file_bytes;
 
@@ -179,7 +189,8 @@ static void open_stream(const char *origin, process_id_t parent,
 }
 
 static bool add_thread(thread_data_t *d) {
-  if (!d || d->rep_error || d->counter_overflows ||
+  if (!d || d->rep_error || d->replay_error || d->restart_pc ||
+      d->counter_overflows ||
       UINT64_MAX - total_instructions < d->instructions ||
       UINT64_MAX - total_signals < d->signals ||
       UINT64_MAX - total_rep_bytes < d->rep_bytes ||
@@ -205,8 +216,10 @@ static void snapshot_event(const char *kind, void *ctx, bool is_exec) {
   uint64_t started = child ? 1 : threads_started,
            ended = child ? 0 : threads_ended;
   bool error = child ? false : accounting_error;
+  error = error || __atomic_load_n(&replay_without_tls, __ATOMIC_RELAXED);
   if (is_exec || child) {
-    error = error || !d || d->rep_error || d->counter_overflows ||
+    error = error || !d || d->rep_error || d->replay_error || d->restart_pc ||
+            d->counter_overflows ||
             started != ended + 1;
     if (d) {
       if (UINT64_MAX - instructions < d->instructions ||
@@ -324,11 +337,48 @@ static dr_emit_flags_t analyze_block(void *drcontext, void *tag,
  * transfers. CMPS/SCAS can stop early and
  * are counted as unsupported entries instead of charging their initial RCX.
  */
-static void observe_rep(int bytes, int count_reg) {
+static void observe_rep(app_pc pc, int opcode, int bytes, int count_reg) {
   void *drcontext = dr_get_current_drcontext();
   thread_data_t *data = drmgr_get_tls_field(drcontext, tls_index);
   if (data == NULL)
     fail("REP observation without thread state");
+  uint64_t repeats = 0;
+  if (bytes != 0) {
+    dr_mcontext_t mc = {0};
+    mc.size = sizeof(mc);
+    mc.flags = DR_MC_INTEGER;
+    if (count_reg == DR_REG_NULL || !dr_get_mcontext(drcontext, &mc)) {
+      data->rep_error = true;
+      return;
+    }
+    repeats = reg_get_value((reg_id_t)count_reg, &mc);
+  }
+  bool resumed = data->restart_pc != NULL;
+  uint64_t request = repeats;
+  if (resumed) {
+    if (!data->restart_entered || !data->restart_rep ||
+        data->restart_pc != pc || data->restart_rep_opcode != opcode ||
+        data->restart_rep_bytes != bytes ||
+        data->restart_rep_count_reg != count_reg ||
+        repeats > data->restart_rep_request) {
+      data->replay_error = true;
+      data->restart_pc = NULL;
+      return;
+    }
+    /* A protected later page can fault after earlier REP iterations complete.
+     * Keep the original requested work, not the reduced architectural RCX. */
+    request = data->restart_rep_request;
+    data->restart_pc = NULL;
+  }
+  if (data->write_pc == pc) {
+    data->write_rep = true;
+    data->write_rep_opcode = opcode;
+    data->write_rep_bytes = bytes;
+    data->write_rep_count_reg = count_reg;
+    data->write_rep_request = request;
+  }
+  if (resumed)
+    return;
   if (bytes == 0) {
     if (data->unsupported_rep_entries == UINT64_MAX)
       data->rep_error = true;
@@ -336,14 +386,6 @@ static void observe_rep(int bytes, int count_reg) {
       ++data->unsupported_rep_entries;
     return;
   }
-  dr_mcontext_t mc = {0};
-  mc.size = sizeof(mc);
-  mc.flags = DR_MC_INTEGER;
-  if (count_reg == DR_REG_NULL || !dr_get_mcontext(drcontext, &mc)) {
-    data->rep_error = true;
-    return;
-  }
-  uint64_t repeats = reg_get_value((reg_id_t)count_reg, &mc);
   if (repeats > UINT64_MAX / (unsigned)bytes ||
       UINT64_MAX - data->rep_bytes < repeats * (unsigned)bytes ||
       data->rep_entries == UINT64_MAX) {
@@ -368,16 +410,122 @@ static bool x32_syscall(int number) {
   return number >= 0 && (((unsigned int)number & X32_SYSCALL_BIT) != 0);
 }
 
-static void count_block(int instructions) {
+static void count_block(int instructions, app_pc first_pc) {
   thread_data_t *data = drmgr_get_tls_field(dr_get_current_drcontext(), tls_index);
   if (data == NULL || instructions <= 0)
     fail("instruction count without valid thread state");
+  if (data->restart_pc) {
+    if (data->restart_entered || data->restart_pc != first_pc) {
+      data->replay_error = true;
+      data->restart_pc = NULL;
+    } else if (data->restart_rep) {
+      data->restart_entered = true;
+    } else {
+      data->restart_pc = NULL;
+    }
+  }
+  data->write_pc = NULL;
   if (UINT64_MAX - data->instructions < (uint64_t)instructions) {
     /* Sticky invalidity: subsequent blocks cannot make an overflow usable. */
     data->counter_overflows = 1;
     return;
   }
   data->instructions += (uint64_t)instructions;
+}
+
+/* A fault can leave the middle of a BB whose entire length was charged at
+ * entry. Save its unexecuted suffix at the write, not a whole-counter snapshot:
+ * already executed prefixes and intervening signal work must remain charged.
+ */
+static void before_write(app_pc pc, app_pc next_pc, int suffix) {
+  thread_data_t *data = drmgr_get_tls_field(dr_get_current_drcontext(), tls_index);
+  if (data == NULL)
+    fail("write checkpoint without thread state");
+  data->write_pc = pc;
+  data->write_next_pc = next_pc;
+  data->write_suffix = suffix > 0 ? (uint64_t)suffix : 0;
+  data->write_rep = false;
+}
+
+static void code_replay(void *ctx, int reason, app_pc source_pc,
+                        app_pc target_pc) {
+  thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
+  if (!d) {
+    __atomic_store_n(&replay_without_tls, 1, __ATOMIC_RELAXED);
+    return;
+  }
+  if (reason == DR_DURANTE_REPLAY_ENTRY) {
+    /* Cache validation ran before client entry instrumentation. Nothing was
+     * charged; a pending retry still belongs to the same logical instruction. */
+    if (d->restart_pc && d->restart_pc != target_pc) {
+      d->replay_error = true;
+      d->restart_pc = NULL;
+    }
+    d->write_pc = NULL;
+    return;
+  }
+  bool retry = reason == DR_DURANTE_REPLAY_RETRY;
+  bool completed = reason == DR_DURANTE_REPLAY_AFTER_WRITE;
+  if ((!retry && !completed) || !d->write_pc || !d->write_suffix ||
+      d->restart_pc || d->counter_overflows ||
+      (retry && (source_pc != d->write_pc || target_pc != source_pc)) ||
+      (completed && target_pc != d->write_next_pc)) {
+    d->replay_error = true;
+    d->restart_pc = d->write_pc = NULL;
+    return;
+  }
+  uint64_t rollback = d->write_suffix - (completed ? 1 : 0);
+  if (d->instructions < rollback) {
+    d->replay_error = true;
+    d->write_pc = NULL;
+    return;
+  }
+  d->instructions -= rollback;
+  if (retry) {
+    d->restart_pc = target_pc;
+    d->restart_entered = false;
+    d->restart_rep = d->write_rep;
+    d->restart_rep_opcode = d->write_rep_opcode;
+    d->restart_rep_bytes = d->write_rep_bytes;
+    d->restart_rep_count_reg = d->write_rep_count_reg;
+    d->restart_rep_request = d->write_rep_request;
+  }
+  d->write_pc = NULL;
+}
+
+static void kernel_xfer(void *ctx, const dr_kernel_xfer_info_t *info) {
+  (void)info;
+  thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
+  if (!d)
+    return;
+  /* Signal handlers can call the same code at the same PC with another BB
+   * suffix. PC equality cannot authenticate an interrupted TLS checkpoint.
+   * An unrelated earlier signal does not make later JIT work invalid. */
+  d->write_pc = NULL;
+  if (d->restart_pc) {
+    d->replay_error = true;
+    d->restart_pc = NULL;
+  }
+}
+
+static uint write_suffix(instrlist_t *bb, instr_t *where) {
+  uint count = 0;
+  bool reached = false, in_emulation = false;
+  for (instr_t *ins = instrlist_first(bb); ins; ins = instr_get_next(ins)) {
+    if (ins == where && in_emulation)
+      return 0; /* No exact logical suffix for a physical emulation write. */
+    reached = reached || ins == where;
+    if (drmgr_is_emulation_start(ins)) {
+      if (reached)
+        ++count;
+      in_emulation = true;
+    } else if (drmgr_is_emulation_end(ins)) {
+      in_emulation = false;
+    } else if (reached && !in_emulation && instr_is_app(ins)) {
+      ++count;
+    }
+  }
+  return count;
 }
 
 static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
@@ -398,8 +546,17 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
   if (drmgr_is_first_instr(drcontext, where) && user_data != NULL) {
     /* Preserve complete application state even when a signal handler reads
      * registers/flags that linear liveness analysis considers dead. */
-    dr_insert_clean_call(drcontext, bb, where, (void *)count_block, false, 1,
-                         OPND_CREATE_INT32((int)(ptr_uint_t)user_data));
+    instr_t *first = instrlist_first_app(bb);
+    dr_insert_clean_call(drcontext, bb, where, (void *)count_block, false, 2,
+                         OPND_CREATE_INT32((int)(ptr_uint_t)user_data),
+                         OPND_CREATE_INTPTR(first ? instr_get_app_pc(first) : NULL));
+  }
+  if (instr_is_app(where) && instr_writes_memory(where)) {
+    app_pc pc = instr_get_app_pc(where);
+    app_pc next_pc = pc ? pc + instr_length(drcontext, where) : NULL;
+    dr_insert_clean_call(drcontext, bb, where, (void *)before_write, false, 3,
+                         OPND_CREATE_INTPTR(pc), OPND_CREATE_INTPTR(next_pc),
+                         OPND_CREATE_INT32((int)write_suffix(bb, where)));
   }
   if (rep_bytes_enabled && instr_is_app(where)) {
     const int op = instr_get_opcode(where);
@@ -420,14 +577,18 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
       if (bytes != 1 && bytes != 2 && bytes != 4 && bytes != 8)
         fail("unknown REP MOVS/STOS element width");
       dr_insert_clean_call_ex(drcontext, bb, where, (void *)observe_rep,
-                              DR_CLEANCALL_READS_APP_CONTEXT, 2,
+                              DR_CLEANCALL_READS_APP_CONTEXT, 4,
+                              OPND_CREATE_INTPTR(instr_get_app_pc(where)),
+                              OPND_CREATE_INT32(op),
                               OPND_CREATE_INT32(bytes),
                               OPND_CREATE_INT32(count_reg));
     } else if (op == OP_rep_cmps || op == OP_repne_cmps || op == OP_rep_scas ||
                op == OP_repne_scas || op == OP_rep_lods || op == OP_rep_ins ||
                op == OP_rep_outs) {
       dr_insert_clean_call_ex(drcontext, bb, where, (void *)observe_rep,
-                              DR_CLEANCALL_READS_APP_CONTEXT, 2,
+                              DR_CLEANCALL_READS_APP_CONTEXT, 4,
+                              OPND_CREATE_INTPTR(instr_get_app_pc(where)),
+                              OPND_CREATE_INT32(op),
                               OPND_CREATE_INT32(0),
                               OPND_CREATE_INT32(DR_REG_NULL));
     }
@@ -571,6 +732,7 @@ static void fork_init(void *ctx) {
   threads_started = 1;
   threads_ended = event_sequence = 0;
   accounting_error = app_exit_seen = report_written = false;
+  __atomic_store_n(&replay_without_tls, 0, __ATOMIC_RELAXED);
   app_exit_code = 0;
   thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
   if (!d)
@@ -602,6 +764,8 @@ static void process_exit(void) {
   drmgr_unregister_pre_syscall_event(pre_syscall);
   drmgr_unregister_post_syscall_event(post_syscall);
   drmgr_unregister_signal_event(signal_event);
+  drmgr_unregister_kernel_xfer_event(kernel_xfer);
+  dr_unregister_durante_code_replay_event(code_replay);
   drmgr_unregister_tls_field(tls_index);
   drmgr_exit();
   dr_mutex_destroy(state_lock);
@@ -610,6 +774,8 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
   (void)id;
   dr_set_client_name("Durante process-tree BB work",
                      "https://dynamorio.org/");
+  if (dr_durante_runtime_abi_version() != DR_DURANTE_RUNTIME_ABI_VERSION)
+    fail("prepared runtime with code replay ABI 1 required");
   if ((argc != 3 && argc != 4) || strcmp(argv[1], "-outdir") ||
       (argc == 4 && strcmp(argv[3], "-rep_bytes")))
     fail("usage: -c libdurante.so -outdir NEW_PRIVATE_DIRECTORY [-rep_bytes] "
@@ -630,8 +796,10 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
                                                NULL) ||
       !drmgr_register_pre_syscall_event(pre_syscall) ||
       !drmgr_register_post_syscall_event(post_syscall) ||
-      !drmgr_register_signal_event(signal_event))
+      !drmgr_register_signal_event(signal_event) ||
+      !drmgr_register_kernel_xfer_event(kernel_xfer))
     fail("event registration failed");
+  dr_register_durante_code_replay_event(code_replay);
   open_stream("initial", 0, "");
   dr_register_filter_syscall_event(filter_syscall);
   dr_register_fork_init_event(fork_init);

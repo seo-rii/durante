@@ -1,0 +1,347 @@
+Durante private code-replay notification ABI for pinned DynamoRIO
+6847bb210bea0ca11d1bf47704383d6a075da490.  Apply after the existing
+vfork/lifetime patch.  This reports only actual modified-code dispatch re-entry:
+fault retry, completed sandbox write, and pre-instrumentation sandbox entry.
+The fault path restores application registers before dispatch instead of leaking
+code-cache scratch values.  Generic restore-state queries remain informational.
+
+--- a/core/arch/x86/mangle.c
++++ b/core/arch/x86/mangle.c
+@@ -3111,9 +3111,35 @@
+         instr_create_restore_from_dcontext((dc), (reg), (dc_offs))
+ #endif
+
++/* Mark only the taken post-write side exit.  Entry checks retain the default
++ * EXIT_REASON_SELFMOD and execute before all client/application instructions.
++ * Preserve registers and flags using the same dcontext access as single-step
++ * exits; sandbox fragments can be private or shared.
++ */
++static void
++sandbox_set_write_exit_reason(dcontext_t *dcontext, instrlist_t *ilist, instr_t *where,
++                              uint fragment_flags)
++{
++    if (DYNAMO_OPTION(private_ib_in_tls) || TEST(FRAG_SHARED, fragment_flags)) {
++        insert_shared_get_dcontext(dcontext, ilist, where, true /*save_xdi*/);
++        PRE(ilist, where,
++            INSTR_CREATE_mov_st(
++                dcontext,
++                opnd_create_dcontext_field_via_reg_sz(dcontext, REG_NULL /*default*/,
++                                                      EXIT_REASON_OFFSET, OPSZ_2),
++                OPND_CREATE_INT16(EXIT_REASON_DURANTE_SELFMOD_WRITE)));
++        insert_shared_restore_dcontext_reg(dcontext, ilist, where);
++    } else {
++        PRE(ilist, where,
++            instr_create_save_immed16_to_dcontext(dcontext,
++                                                  EXIT_REASON_DURANTE_SELFMOD_WRITE,
++                                                  EXIT_REASON_OFFSET));
++    }
++}
++
+ static void
+ sandbox_rep_instr(dcontext_t *dcontext, instrlist_t *ilist, instr_t *instr, instr_t *next,
+-                  app_pc start_pc, app_pc end_pc /* end is open */)
++                  app_pc start_pc, app_pc end_pc /* end is open */, uint fragment_flags)
+ {
+     /* put checks before instr, set some reg as a flag, act on it
+      * after instr (even if overwrite self will execute rep to completion)
+@@ -3276,12 +3302,14 @@
+     instr_branch_set_special_exit(jmp, true);
+     /* an exit cti, not a meta instr */
+     instrlist_preinsert(ilist, next, jmp);
++    sandbox_set_write_exit_reason(dcontext, ilist, jmp, fragment_flags);
+     PRE(ilist, next, ok2);
+ }
+
+ static void
+ sandbox_write(dcontext_t *dcontext, instrlist_t *ilist, instr_t *instr, instr_t *next,
+-              opnd_t op, app_pc start_pc, app_pc end_pc /* end is open */)
++              opnd_t op, app_pc start_pc, app_pc end_pc /* end is open */,
++              uint fragment_flags)
+ {
+     /* can only test for equality w/o modifying flags, so save them
+      * if (addr < end_pc && addr+opndsize > start_pc) => self-write
+@@ -3460,6 +3488,7 @@
+     instr_branch_set_special_exit(jmp, true);
+     /* an exit cti, not a meta instr */
+     instrlist_preinsert(ilist, next, jmp);
++    sandbox_set_write_exit_reason(dcontext, ilist, jmp, fragment_flags);
+     PRE(ilist, next, ok);
+     insert_restore_eflags(dcontext, ilist, next, flags, use_tls,
+                           !use_tls _IF_X64(X64_CACHE_MODE_DC(dcontext) &&
+@@ -3830,7 +3859,7 @@
+             }
+
+             if (opcode == OP_rep_ins || opcode == OP_rep_movs || opcode == OP_rep_stos) {
+-                sandbox_rep_instr(dcontext, ilist, instr, next, start_pc, end_pc);
++                sandbox_rep_instr(dcontext, ilist, instr, next, start_pc, end_pc, flags);
+                 continue;
+             }
+
+@@ -3874,7 +3903,8 @@
+                             continue;
+                         }
+                     }
+-                    sandbox_write(dcontext, ilist, instr, next, op, start_pc, end_pc);
++                    sandbox_write(dcontext, ilist, instr, next, op, start_pc, end_pc,
++                                  flags);
+                 }
+             }
+         }
+--- a/core/dispatch.c
++++ b/core/dispatch.c
+@@ -948,7 +948,9 @@
+ #endif
+
+         if (TEST(LINK_SPECIAL_EXIT, dcontext->last_exit->flags)) {
+-            if (dcontext->upcontext.upcontext.exit_reason == EXIT_REASON_SELFMOD) {
++            if (dcontext->upcontext.upcontext.exit_reason == EXIT_REASON_SELFMOD ||
++                dcontext->upcontext.upcontext.exit_reason ==
++                    EXIT_REASON_DURANTE_SELFMOD_WRITE) {
+                 /* Case 8177: If we have a flushed fragment hit a self-write, we
+                  * cannot delete it in our self-write handler (b/c of case 3559's
+                  * incoming links union).  But, our self-write handler needs to be
+--- a/core/fragment.c
++++ b/core/fragment.c
+@@ -5203,6 +5203,20 @@
+      */
+     dcontext->next_tag =
+         EXIT_TARGET_TAG(dcontext, dcontext->last_fragment, dcontext->last_exit);
++    int durante_reason = DR_DURANTE_REPLAY_UNKNOWN;
++#ifdef X86
++    /* The two post-write sandbox exits explicitly set the reason.  The default
++     * selfmod exits on x86 are entry validation/threshold checks inserted before
++     * the original first ilist instruction, including client instrumentation.
++     */
++    if (dcontext->upcontext.upcontext.exit_reason == EXIT_REASON_DURANTE_SELFMOD_WRITE)
++        durante_reason = DR_DURANTE_REPLAY_AFTER_WRITE;
++    else if (dcontext->upcontext.upcontext.exit_reason == EXIT_REASON_SELFMOD)
++        durante_reason = DR_DURANTE_REPLAY_ENTRY;
++#endif
++    /* Reset before callbacks or the threshold path, which can return early. */
++    dcontext->upcontext.upcontext.exit_reason = EXIT_REASON_SELFMOD;
++    instrument_durante_code_replay(dcontext, durante_reason, NULL, dcontext->next_tag);
+     LOG(THREAD, LOG_ALL, 2, "Sandboxing exit from fragment " PFX " @" PFX "\n",
+         dcontext->last_fragment->tag,
+         EXIT_CTI_PC(dcontext->last_fragment, dcontext->last_exit));
+--- a/core/globals.h
++++ b/core/globals.h
+@@ -661,6 +661,8 @@
+     EXIT_REASON_SINGLE_STEP,
+     /* We need to raise a kernel xfer event on an rseq-native abort. */
+     EXIT_REASON_RSEQ_ABORT,
++    /* Durante: a sandbox write completed before its side exit. */
++    EXIT_REASON_DURANTE_SELFMOD_WRITE,
+ };
+
+ /* Number of nested calls into native modules that we support.  This number
+--- /dev/null
++++ b/core/lib/dr_durante_runtime.h
+@@ -0,0 +1,59 @@
++/*
++ * Private ABI shared with toolkit/patches/dynamorio-code-replay.patch.
++ * Include dr_api.h first.  This is specific to the pinned Linux x86-64 core;
++ * it is not an upstream DynamoRIO API or a hostile-host attestation.
++ */
++#ifndef DURANTE_RUNTIME_H
++#define DURANTE_RUNTIME_H
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#define DR_DURANTE_RUNTIME_ABI_VERSION 1U
++#define DR_DURANTE_REPLAY_RETRY 1
++#define DR_DURANTE_REPLAY_AFTER_WRITE 2
++#define DR_DURANTE_REPLAY_ENTRY 3
++#define DR_DURANTE_REPLAY_UNKNOWN 4
++
++typedef void (*dr_durante_code_replay_cb_t)(void *drcontext, int reason,
++                                          app_pc source_pc, app_pc target_pc);
++
++/* A strong reference also makes a client fail to load on a stock/old core.
++ * The version is zero on architectures without this event's full contract.
++ */
++DR_API
++unsigned int dr_durante_runtime_abi_version(void);
++
++/* Register during client initialization and unregister during client exit.
++ * Notifications are synchronous on the affected application thread, after the
++ * core has selected a dispatch re-entry and before any re-entered client or
++ * application instruction.  A cache-local retry emits no event.
++ *
++ * RETRY: source_pc is the translated faulting write and target_pc the dispatch
++ * restart PC.  The write has not completed; a REP write may already have made
++ * partial progress.  This does not mean that no application work was done.
++ * AFTER_WRITE: source_pc is NULL, target_pc is the next application instruction.
++ * The inline sandbox completed the write before exiting the fragment.
++ * ENTRY: source_pc is NULL, target_pc is the fragment's entry.  The sandbox's
++ * entry validation/threshold check exited before client/app instructions ran.
++ * UNKNOWN: the core cannot supply one of these precise classifications.
++ *
++ * This is an informational event, not a signal/kernel-transfer notification.
++ * It supplies no dr_get_mcontext()/dr_set_mcontext() context and cannot redirect
++ * execution.  The callback can run in an internal signal handler: restrict it
++ * to bounded per-thread bookkeeping via existing TLS and atomic operations;
++ * do not allocate, take application locks, invoke code generation/flush APIs,
++ * register events, perform I/O, or change application state.
++ */
++DR_API
++void
++dr_register_durante_code_replay_event(dr_durante_code_replay_cb_t callback);
++DR_API
++bool
++dr_unregister_durante_code_replay_event(dr_durante_code_replay_cb_t callback);
++
++#ifdef __cplusplus
++}
++#endif
++#endif
+--- a/core/lib/instrument.c
++++ b/core/lib/instrument.c
+@@ -255,6 +255,9 @@
+ static callback_list_t kernel_xfer_callbacks = {
+     0,
+ };
++static callback_list_t durante_code_replay_callbacks = {
++    0,
++};
+ #ifdef WINDOWS
+ static callback_list_t exception_callbacks = {
+     0,
+@@ -874,6 +877,7 @@
+     free_callback_list(&pre_syscall_callbacks);
+     free_callback_list(&post_syscall_callbacks);
+     free_callback_list(&kernel_xfer_callbacks);
++    free_callback_list(&durante_code_replay_callbacks);
+ #ifdef WINDOWS
+     free_callback_list(&exception_callbacks);
+ #else
+@@ -1326,6 +1330,44 @@
+                                              const dr_kernel_xfer_info_t *info))
+ {
+     return remove_callback(&kernel_xfer_callbacks, (void (*)(void))func, true);
++}
++
++unsigned int
++dr_durante_runtime_abi_version(void)
++{
++#if defined(LINUX) && defined(X86) && defined(X64)
++    return DR_DURANTE_RUNTIME_ABI_VERSION;
++#else
++    return 0;
++#endif
++}
++
++void
++dr_register_durante_code_replay_event(dr_durante_code_replay_cb_t callback)
++{
++    add_callback(&durante_code_replay_callbacks, (void (*)(void))callback, true);
++}
++
++bool
++dr_unregister_durante_code_replay_event(dr_durante_code_replay_cb_t callback)
++{
++    return remove_callback(&durante_code_replay_callbacks, (void (*)(void))callback, true);
++}
++
++void
++instrument_durante_code_replay(dcontext_t *dcontext, int reason, app_pc source_pc,
++                                app_pc target_pc)
++{
++    /* Do not set client_data->cur_mc/os_cxt: unlike a kernel transfer, this
++     * private event is informational and cannot change application execution.
++     * Use the standard callback snapshot, whose lock is released before invoking
++     * clients, including when the notification originates in a signal handler.
++     */
++    if (durante_code_replay_callbacks.num == 0)
++        return;
++    /* Empty result/assignment operands preserve the exact void callback type. */
++    call_all_ret(, , , durante_code_replay_callbacks, dr_durante_code_replay_cb_t,
++                 (void *)dcontext, reason, source_pc, target_pc);
+ }
+
+ #ifdef PROGRAM_SHEPHERDING
+--- a/core/lib/instrument.h
++++ b/core/lib/instrument.h
+@@ -52,6 +52,7 @@
+ #include "dr_events.h"
+ #include "dr_tools.h"
+ #include "dr_ir_utils.h"
++#include "dr_durante_runtime.h"
+
+ /* Xref _USES_DR_VERSION_ in dr_api.h (PR 250952) and compatibility
+  * check in instrument.c (OLDEST_COMPATIBLE_VERSION, etc.).
+@@ -149,6 +150,11 @@
+                        /* only one of these 2 should be non-NULL */
+                        os_cxt_ptr_t target_os_cxt, priv_mcontext_t *target_mc, int sig);
+
++/* Private, informational notification: no application context is exposed. */
++void
++instrument_durante_code_replay(dcontext_t *dcontext, int reason, app_pc source_pc,
++                                app_pc target_pc);
++
+ void
+ instrument_nudge(dcontext_t *dcontext, client_id_t id, uint64 arg);
+ #ifdef WINDOWS
+--- a/core/unix/signal.c
++++ b/core/unix/signal.c
+@@ -5578,12 +5578,12 @@
+      * how can we tell the difference?
+      */
+     if (was_executable_area_writable(target)) {
+-        /* translate instr_cache_pc to original app pc
+-         * DO NOT use translate_sigcontext, don't want to change the
+-         * signal frame or else we'll lose control when we try to
+-         * return to signal pc!
++        /* Capture application registers before handle_modified_code can flush
++         * the fragment.  Do not change the signal frame yet: a NULL next_pc
++         * requests a cache-local retry, which still needs raw cache registers.
+          */
+         app_pc next_pc, translated_pc = NULL;
++        priv_mcontext_t translated_mcontext;
+         fragment_t *f = NULL;
+         fragment_t wrapper;
+         ASSERT((cache_pc)SIGCXT_FROM_UCXT(uc)->SC_XIP == instr_cache_pc);
+@@ -5595,9 +5595,21 @@
+             d_r_mutex_lock(&thread_initexit_lock);
+             /* cache the fragment since pclookup is expensive for coarse units (i#658) */
+             f = fragment_pclookup(dcontext, instr_cache_pc, &wrapper);
+-            translated_pc = recreate_app_pc(dcontext, instr_cache_pc, f);
+-            ASSERT(translated_pc != NULL);
++            ucontext_to_mcontext(&translated_mcontext, uc);
++            recreate_success_t translated = recreate_app_state(
++                dcontext, &translated_mcontext, false /*registers only*/, f);
++            translated_pc = translated_mcontext.pc;
+             d_r_mutex_unlock(&thread_initexit_lock);
++            if (translated != RECREATE_SUCCESS_STATE || translated_pc == NULL) {
++                /* A PC-only recovery can leak mangling scratch registers into
++                 * the app (e.g. RAX holding a RIP-relative store address).
++                 * Let ordinary signal handling reject unavailable state instead
++                 * of dispatching with a successful but corrupted context.
++                 */
++                instrument_durante_code_replay(dcontext, DR_DURANTE_REPLAY_UNKNOWN,
++                                                NULL, NULL);
++                return false;
++            }
+         }
+
+         next_pc =
+@@ -5618,6 +5630,18 @@
+             return true;
+         } else {
+             ASSERT(!native_state);
++            /* We are leaving the cache, so discard its scratch values.  In
++             * particular a relocated RIP-relative store can fault before its
++             * epilogue restores the app register.  Preserve any REP progress
++             * captured at the actual fault, not a pre-instruction snapshot.
++             */
++            mcontext_to_ucontext(uc, &translated_mcontext);
++            /* handle_modified_code may have freed f.  Only report the captured
++             * application PCs, after flush locks have been released.  A REP
++             * write may have partially completed before this fault/restart.
++             */
++            instrument_durante_code_replay(dcontext, DR_DURANTE_REPLAY_RETRY,
++                                            translated_pc, next_pc);
+             /* Do not resume execution in cache, go back to d_r_dispatch. */
+             transfer_from_sig_handler_to_fcache_return(
+                 dcontext, uc, NULL, SIGSEGV, next_pc,

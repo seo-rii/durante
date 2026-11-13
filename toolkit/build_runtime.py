@@ -27,6 +27,7 @@ SOURCE_BYTES = 19390061
 SOURCE_SHA256 = "e2b7d3f1917ff64e644b81efd96a610a3c622f4857c75593fef5d5e581c231f6"
 SOURCE_ROOT = f"dynamorio-{COMMIT}"
 PATCH = ROOT / "patches" / "dynamorio-vfork-lifetime.patch"
+REPLAY_PATCH = ROOT / "patches" / "dynamorio-code-replay.patch"
 MANIFEST = ".durante-runtime.json"
 PROFILES = {"release": "Release", "debug": "Debug"}
 STOCK_HASHES = {
@@ -50,9 +51,12 @@ def _hash_file(path):
         return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
-def _inputs(patch):
+def _inputs(patch, replay_patch=None):
+    if replay_patch is None:
+        replay_patch = REPLAY_PATCH.read_bytes()
     return {"source_commit": COMMIT, "source_sha256": SOURCE_SHA256,
             "patch_sha256": hashlib.sha256(patch).hexdigest(),
+            "code_replay_patch_sha256": hashlib.sha256(replay_patch).hexdigest(),
             "recipe": 1, "cmake_options": CMAKE_OPTIONS, "profiles": PROFILES}
 
 
@@ -294,7 +298,8 @@ def build_runtime(sdk: Path, work_dir: Path, jobs=2, source_archive=None):
     work_dir = Path(work_dir).absolute()
     work_dir.mkdir(parents=True, exist_ok=True)
     patch = PATCH.read_bytes()
-    inputs = _inputs(patch)
+    replay_patch = REPLAY_PATCH.read_bytes()
+    inputs = _inputs(patch, replay_patch)
     with _sdk_lock(sdk):
         cached = _verify_sdk(sdk, inputs)
         if source_archive is not None:
@@ -313,6 +318,8 @@ def build_runtime(sdk: Path, work_dir: Path, jobs=2, source_archive=None):
             source = _extract_source(snapshot, session)
             patch_file = session / "runtime.patch"
             patch_file.write_bytes(patch)
+            replay_file = session / "code-replay.patch"
+            replay_file.write_bytes(replay_patch)
             temporary = session / "tmp"
             temporary.mkdir()
             env = os.environ.copy()
@@ -320,6 +327,8 @@ def build_runtime(sdk: Path, work_dir: Path, jobs=2, source_archive=None):
             for key in ("CFLAGS", "CXXFLAGS", "CPPFLAGS", "LDFLAGS"):
                 env.pop(key, None)
             _command(["patch", "--batch", "--forward", "--fuzz=0", "-p1", "-i", str(patch_file)],
+                     cwd=source, env=env)
+            _command(["patch", "--batch", "--forward", "--fuzz=0", "-p1", "-i", str(replay_file)],
                      cwd=source, env=env)
             built = _compile_profiles(source, session, jobs, env)
             # Verify the installed input again before changing any artifact.

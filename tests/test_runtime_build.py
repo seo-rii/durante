@@ -164,6 +164,45 @@ class RuntimeBuildTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "hash mismatch"):
             builder._verify_sdk(self.sdk, builder._inputs(b"next-patch"))
 
+    def test_missing_or_changed_replay_patch_requires_rebuild(self):
+        current = builder._inputs(b"lifetime-patch", b"replay-patch")
+        for previous in (
+            {key: value for key, value in current.items()
+             if key != "code_replay_patch_sha256"},
+            builder._inputs(b"lifetime-patch", b"prior-replay-patch"),
+        ):
+            with self.subTest(previous=previous):
+                builder._install(self.sdk, self.built(), previous)
+                self.assertIsNone(builder._verify_sdk(self.sdk, current))
+
+    def test_both_patch_inputs_are_frozen_before_the_first_command(self):
+        archive = self.base / "placeholder.tar.gz"
+        archive.write_bytes(b"test source")
+        source = self.base / "source"
+        source.mkdir()
+        lifetime = self.base / "lifetime.patch"
+        replay = self.base / "replay.patch"
+        lifetime.write_bytes(b"reviewed lifetime patch")
+        replay.write_bytes(b"reviewed replay patch")
+        applied = []
+
+        def command(argv, **kwargs):
+            self.assertIn("--fuzz=0", argv)
+            applied.append(Path(argv[-1]).read_bytes())
+            replay.write_bytes(b"concurrently replaced patch")
+
+        with mock.patch.object(builder, "PATCH", lifetime), \
+                mock.patch.object(builder, "REPLAY_PATCH", replay), \
+                mock.patch.object(builder, "_get_archive", return_value=archive), \
+                mock.patch.object(builder, "_check_archive"), \
+                mock.patch.object(builder, "_extract_source", return_value=source), \
+                mock.patch.object(builder, "_command", side_effect=command), \
+                mock.patch.object(builder, "_compile_profiles", side_effect=RuntimeError("stop before install")):
+            with self.assertRaisesRegex(RuntimeError, "stop before install"):
+                builder.build_runtime(self.sdk, self.base / "work")
+        self.assertEqual(applied, [b"reviewed lifetime patch", b"reviewed replay patch"])
+        self.assertFalse((self.sdk / builder.MANIFEST).exists())
+
     def test_missing_new_symbols_remove_stale_stock_symbols(self):
         manifest = builder._install(self.sdk, self.built(symbols=False), self.inputs)
         self.assertEqual(builder._verify_sdk(self.sdk, self.inputs), manifest)
