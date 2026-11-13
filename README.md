@@ -338,3 +338,5 @@ resource containment; counters remain application-mutable. See the
 [operator requirements and tested boundary](docs/ISOLATION.md).
 The [external execution-owner guide](docs/EXECUTION_OWNER.md) covers controller
 death, suspension, resource failures and independent whole-job teardown.
+The [isolated runtime checks](docs/ISOLATED_RUNTIMES.md) exercise explicit Java,
+Node and CPython profiles and relocated bundles through the real boundary.

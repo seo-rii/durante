@@ -187,3 +187,5 @@ configurations, virtual threads, dynamic agents, or the separate `isolate` profi
 Before/after hashes do not attest a hostile host or inventory every dynamic
 dependency. All counters and reports remain application-mutable,
 `diagnostic_only`, and unsuitable for trusted CPU-time, billing or verdicts.
+The separate [isolated runtime suite](ISOLATED_RUNTIMES.md) checks its explicit
+runtime image, resource limits and relocated bundle through `durante isolate`.
