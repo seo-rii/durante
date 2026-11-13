@@ -194,6 +194,84 @@ class IsolatedRuntimeTests(unittest.TestCase):
                                 isolated.resource_snapshot(root)
                 (root / name).write_text(original)
 
+    def test_full_matrix_keeps_resource_evidence_out_of_the_bounded_owner_summary(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            cgroup = root / "cgroup"
+            cgroup.mkdir()
+            self.cgroup_files(cgroup)
+            # These additional CPU counters occur in the retained CI reports.
+            (cgroup / "cpu.stat").write_text(
+                "usage_usec 123456789\nuser_usec 110000000\nsystem_usec 13456789\n"
+                "core_sched.force_idle_usec 0\nnr_periods 1000\nnr_throttled 15\n"
+                "throttled_usec 1000000\nnr_bursts 0\nburst_usec 0\n")
+            before = isolated.resource_snapshot(cgroup)
+            after = copy.deepcopy(before)
+            after["cpu_stat"].update(usage_usec=124456789, user_usec=110900000, system_usec=13556789)
+            resources = {"before": before, "after": after, "delta": isolated.resource_delta(before, after)}
+            paths = {"java": "/usr/lib/jvm/java-21-openjdk-amd64/bin/java",
+                     "cpython": "/usr/bin/python3.13", "node": "/usr/lib/durante-node/bin/node"}
+            cases = isolated.workload_plan(paths, Path("/evidence/input/classes"), "all")
+            rows, summaries = [], []
+            for case in cases:
+                for mode in ("native", "isolate"):
+                    name = case.name + "-" + mode
+                    target = ["/evidence/input/" + Path(arg).name
+                              if arg.startswith(str(isolated.ROOT / "tests/runtime_workload_fixtures"))
+                              else arg for arg in case.command]
+                    if mode == "native":
+                        command = ["/usr/bin/prlimit", "--as=1073741824", "--cpu=121",
+                                   "--fsize=16777216", "--core=0", "--", *target]
+                    else:
+                        command = ["/relocated version/bin/durante-bundle", "isolate",
+                                   "--workspace", "/evidence/input", "--report", f"/evidence/{name}/report.json",
+                                   "--output-dir", f"/evidence/{name}/captured", "--output-limit-bytes", "65536",
+                                   "--timeout-ms", "120000", "--",
+                                   *[arg.replace("/evidence/input", "/work") for arg in target]]
+                    row = {"workload": case.name, "runtime": case.runtime, "mode": mode,
+                           "command": command, "exit_code": 0, "stdout": case.expected if mode == "native" else "",
+                           "stderr": "", "elapsed_seconds": 60.123, "cleanup_complete": True,
+                           "errors": [], "passed": True, "resources": copy.deepcopy(resources)}
+                    if not rows:
+                        row.update(stdout="wrong\n", errors=["native exact-output control failed"], passed=False)
+                    rows.append(row)
+                    original = copy.deepcopy(row)
+                    evidence = root / name
+                    evidence.mkdir()
+                    summary = isolated.record_observation(evidence, row)
+                    self.assertEqual(row, original)
+                    self.assertNotIn("resources", summary)
+                    self.assertEqual(summary["resource_evidence"], name + "/result.json")
+                    detail = isolated.read_json(root / summary["resource_evidence"])
+                    for key, value in row.items():
+                        self.assertEqual(detail[key], value)
+                        if key != "resources":
+                            self.assertEqual(summary[key], value)
+                    summaries.append(summary)
+            self.assertEqual(len(rows), 20)
+            worker = {"schema": 1, "profile": "relocated-bundle", "suite": "all", "cases": 20,
+                      "passed": False, "cleanup_complete": True,
+                      "planned_observations": [{"workload": row["workload"], "mode": row["mode"]} for row in rows],
+                      "unrun_observations": [], "rows": rows,
+                      "doctor": {"checks_passed": True, "execution_tested": False,
+                                 "measurement_contract": isolated.collector.measurement_contract(),
+                                 "checks": [{"id": name, "status": "pass", "required": True} for name in (
+                                     "close_range_cloexec", "drrun_installation", "client_installation", "sdk_manifest",
+                                     "isolation_launcher", "cli_installation", "namespace_interfaces",
+                                     "user_namespace_limit", "cgroup_limits")]}}
+            duplicated = root / "duplicated-worker.json"
+            isolated.publish(duplicated, worker)
+            self.assertGreater(duplicated.stat().st_size, 65536)
+            with self.assertRaisesRegex(ValueError, "oversized evidence"):
+                isolated.read_json(duplicated)
+            compact = root / "worker.json"
+            isolated.publish(compact, {**worker, "rows": summaries})
+            self.assertLessEqual(compact.stat().st_size, 65536)
+            loaded = isolated.read_json(compact)
+            self.assertEqual(loaded["rows"], summaries)
+            self.assertEqual(isolated.matrix_errors(cases, loaded["rows"]), isolated.matrix_errors(cases, rows))
+            self.assertTrue(isolated.matrix_errors(cases, loaded["rows"]))
+
     def test_resource_delta_distinguishes_new_events_from_prior_campaign_totals(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

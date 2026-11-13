@@ -78,13 +78,16 @@ termination can complete qualification. The owner removes its uniquely named
 container and independently verifies an empty or absent host cgroup. An
 unavailable Docker/cgroup environment or driver timeout fails the suite.
 
-Each workload observation records cgroup resource snapshots before and after the
-command in `resources.before` and `resources.after`. `resources.delta` contains
+Each workload's `result.json` records cgroup resource snapshots before and after
+the command in `resources.before` and `resources.after`. `resources.delta` contains
 changes in `memory.events`, `pids.events` and `cpu.stat`. The external owner also
 captures these values after container startup and before container teardown. A driver that
 exits without publishing its report retains Docker's `ExitCode` and `OOMKilled`
 fields when observed. Missing required counters fail the observation; kernels
 without `memory.peak` explicitly report `memory_peak_bytes: null`.
+Aggregate rows link to the complete per-observation file through
+`resource_evidence`, relative to the profile directory, instead of duplicating
+these snapshots in `worker.json`. The aggregate retains its 64-KiB read bound.
 
 These read-only snapshots cover the whole disposable container, including the
 driver. Memory peaks are cumulative since container creation, not per-workload

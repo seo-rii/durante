@@ -80,6 +80,14 @@ def resource_delta(before, after):
     return result
 
 
+def record_observation(directory, row):
+    # Keep detailed evidence once; the owner reads the aggregate with a 64-KiB bound.
+    evidence = directory.name + "/result.json"
+    publish(directory / "result.json", {**row, "resource_evidence": evidence})
+    return {**{key: value for key, value in row.items() if key != "resources"},
+            "resource_evidence": evidence}
+
+
 def pipe_run(command, directory, timeout_ms=TIMEOUT_MS):
     """Finite trusted fixture command, using anonymous pipes accepted by isolate."""
     directory.mkdir(mode=0o700)
@@ -302,8 +310,7 @@ def worker(profile, java_major, suite="all"):
                     except (OSError, ValueError, KeyError, TypeError, AttributeError) as error:
                         row["errors"].append("isolation evidence unavailable: " + str(error)[:500])
                 row["passed"] = not row["errors"]
-                publish(directory / "result.json", row)
-                rows.append(row)
+                rows.append(record_observation(directory, row))
         errors.extend(matrix_errors(cases, rows))
         directory = evidence / "ioctl-queries"
         command = [*installation_prefix(profile, "isolate"), "--workspace", str(workspace),
