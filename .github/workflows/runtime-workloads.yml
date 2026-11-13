@@ -1,0 +1,78 @@
+name: runtime-workloads
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: durante-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  managed-workloads:
+    name: managed-workloads-java-${{ matrix.java }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [17, 21]
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Verify required runner build tools and runtimes
+        shell: bash
+        env:
+          JAVA_MAJOR: ${{ matrix.java }}
+        run: |
+          set -euo pipefail
+          for tool in gcc g++ cmake patch python3 node prlimit; do command -v "$tool"; done
+          jdk_variable="JAVA_HOME_${JAVA_MAJOR}_X64"
+          jdk_root="${!jdk_variable}"
+          test -x "$jdk_root/bin/java"
+          test -x "$jdk_root/bin/javac"
+          "$jdk_root/bin/java" -version
+          "$jdk_root/bin/javac" -version
+          node --version
+          python3 --version
+      - name: Build Durante with the tested Rust toolchain
+        run: |
+          rustup toolchain install 1.94.0 --profile minimal
+          cargo +1.94.0 build --locked --release
+      - name: Build the pinned runtime and counter
+        run: |
+          python3 toolkit/fetch_sdk.py
+          cmake -S client -B build -DCMAKE_BUILD_TYPE=Release -DDynamoRIO_DIR="$PWD/toolkit/sdk/DynamoRIO-Linux-11.3.0-1/cmake"
+          cmake --build build -j2
+      - name: Reject terminal callbacks after a failed runtime exit barrier
+        run: python3 tests/runtime_exit_failure.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --output-dir .results/runtime-exit-failure
+      - name: Validate workload oracles and strict failure gates
+        run: python3 -m unittest discover -s tests -p 'test_runtime_workloads.py' -v
+      - name: Require Java, CPython and Node workloads through Durante
+        shell: bash
+        env:
+          JAVA_MAJOR: ${{ matrix.java }}
+        run: |
+          set -euo pipefail
+          jdk_variable="JAVA_HOME_${JAVA_MAJOR}_X64"
+          jdk_root="${!jdk_variable}"
+          python3 tests/runtime_workloads.py \
+            --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so \
+            --runner-bin target/release/durante --output-dir .results/runtime-workloads \
+            --java "$jdk_root/bin/java" --javac "$jdk_root/bin/javac" --java-major "$JAVA_MAJOR" \
+            --runtime java --runtime cpython --runtime node --timeout-ms 120000
+      - name: Preserve workload outputs, records and provenance
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: runtime-workloads-java-${{ matrix.java }}
+          path: .results/
+          include-hidden-files: true
+          if-no-files-found: error

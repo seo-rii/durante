@@ -236,7 +236,7 @@ pub(crate) fn verify_sdk(root: &Path) -> io::Result<()> {
         || manifest["inputs"]["source_sha256"]
             != "e2b7d3f1917ff64e644b81efd96a610a3c622f4857c75593fef5d5e581c231f6"
         || manifest["inputs"]["patch_sha256"]
-            != "6314414fb19ac17c485558299a0d331185b854d82a48b3aeb90c187cb9ea0f9b"
+            != "2bf7918ac3f7ce2335a28170018c63cad67fdfc49ef4b34ce5dae1fa5028ac77"
         || manifest["inputs"]["code_replay_patch_sha256"] != SDK_REPLAY_PATCH_SHA
         || manifest["inputs"]["recipe"] != 1
     {
@@ -1148,10 +1148,14 @@ mod tests {
         assert!(verify_sdk(sdk).is_ok());
 
         let current = manifest["inputs"]["patch_sha256"].clone();
-        manifest["inputs"]["patch_sha256"] =
-            json!("7b2fbaca84e259aeeafdfc4902ce7a330c48cec51e16804fe74ee3b99ea39f6d");
-        publish(&manifest);
-        assert!(verify_sdk(sdk).is_err());
+        for prior in [
+            "7b2fbaca84e259aeeafdfc4902ce7a330c48cec51e16804fe74ee3b99ea39f6d",
+            "6314414fb19ac17c485558299a0d331185b854d82a48b3aeb90c187cb9ea0f9b",
+        ] {
+            manifest["inputs"]["patch_sha256"] = json!(prior);
+            publish(&manifest);
+            assert!(verify_sdk(sdk).is_err());
+        }
 
         manifest["inputs"]["patch_sha256"] = current;
         publish(&manifest);

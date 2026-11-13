@@ -117,13 +117,13 @@ def bounded_json(path):
     return json.loads(bounded_bytes(path, MAX_REPORT))
 
 
-def run_process(command, directory, timeout_ms, prlimit=None):
+def run_process(command, directory, timeout_ms, prlimit=None, *, cpu_seconds=40):
     """One bounded process tree; always reap the harness's adopted descendants."""
     stdout, stderr = directory / "stdout.txt", directory / "stderr.txt"
     prlimit = prlimit or executable_path("prlimit")
     if not prlimit:
         raise ValueError("Linux prlimit is required")
-    limited = [prlimit, "--as=2147483648", "--cpu=40", "--fsize=1048576",
+    limited = [prlimit, "--as=2147483648", "--cpu=" + str(cpu_seconds), "--fsize=1048576",
                "--core=0", "--", *command]
     started = time.monotonic()
     timed_out = False
@@ -252,7 +252,7 @@ def run_case(args, work, name, runtime, target, expected, processes, index):
         records = directory / "records"
         command = target
         if mode != "native":
-            command = [str(args.drrun), "-quiet", "-follow_children",
+            command = [str(args.drrun), "-quiet", "-follow_children", "-disable_traces",
                        "-vm_size", "32M", "-vmheap_size", "32M"]
             if mode.startswith("rep-"):
                 records.mkdir(mode=0o700)

@@ -436,6 +436,9 @@ fn execute(
         .args([
             "-quiet",
             "-follow_children",
+            // The pinned trace path fails JVM lifecycle workloads. Execute
+            // the qualified basic-block path without trace construction.
+            "-disable_traces",
             "-vm_size",
             "32M",
             "-vmheap_size",
