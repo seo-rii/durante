@@ -464,14 +464,15 @@ fn policy(path: &Path) -> io::Result<File> {
         statement(0x06, 0x7fff_0000),
         statement(0x06, 0x0005_0000 | libc::EPERM as u32),
     ]);
-    // CPython uses FIOCLEX when opening script files. These two operations
-    // change only this process's descriptor flags, never the underlying inode.
+    // CPython changes its descriptor flags; Java queries queued pipe bytes via
+    // FIONREAD before reading subprocess output. None mutates the backing inode.
     // All other ioctls (including reflink/filesystem mutation) remain denied.
     rules.extend([
-        jump(0x15, libc::SYS_ioctl as u32, 0, 5),
+        jump(0x15, libc::SYS_ioctl as u32, 0, 6),
         statement(0x20, 24),
-        jump(0x15, libc::FIOCLEX as u32, 1, 0),
-        jump(0x15, libc::FIONCLEX as u32, 0, 1),
+        jump(0x15, libc::FIOCLEX as u32, 2, 0),
+        jump(0x15, libc::FIONCLEX as u32, 1, 0),
+        jump(0x15, libc::FIONREAD as u32, 0, 1),
         statement(0x06, 0x7fff_0000),
         statement(0x06, 0x0005_0000 | libc::EPERM as u32),
     ]);
@@ -1277,10 +1278,10 @@ mod tests {
                 DENY
             );
         }
-        for request in [libc::FIOCLEX, libc::FIONCLEX] {
+        for request in [libc::FIOCLEX, libc::FIONCLEX, libc::FIONREAD] {
             assert_eq!(evaluate(ARCH, libc::SYS_ioctl as u32, 0, request), ALLOW);
         }
-        for request in [0x5412, 0x4004_9409, libc::TCGETS] {
+        for request in [0x5412, 0x4004_9409, libc::TCGETS, libc::FIONBIO] {
             assert_eq!(evaluate(ARCH, libc::SYS_ioctl as u32, 0, request), DENY);
         }
         for syscall in [
