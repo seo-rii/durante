@@ -25,7 +25,7 @@ MARKER = "durante-bundle.json"
 MAX_FILE = 64 << 20
 MAX_TOTAL = 256 << 20
 MAX_FILES = 128
-BUNDLE_DOCS = ("BUNDLE.md", "OPERATIONS.md", "ISOLATION.md", "PROTOCOL.md")
+BUNDLE_DOCS = ("BUNDLE.md", "OPERATIONS.md", "ISOLATION.md", "EXECUTION_OWNER.md", "PROTOCOL.md")
 SDK_FILES = (
     ".durante-runtime.json", "License.txt", "README", "bin64/drrun",
     *build_runtime.ARTIFACTS,
