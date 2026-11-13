@@ -43,6 +43,16 @@ CPUID leaf 0xD. It does not assume a fixed AVX-512 offset or inspect a missing
 component as if it were present. Unsupported future frame formats fail the
 fixture and need separate qualification.
 
+The fixture exposed an upstream runtime defect on hosts whose kernel signal
+frames contain extra XSAVE state. When preparing a delayed or nested signal,
+the runtime saved x87 state with FXSAVE, cleared live exceptions with FNCLEX,
+then overwrote the saved state with an x87-only XSAVE. The precision status bit
+was lost even though arithmetic and vector results could remain correct.
+The pinned runtime patch now copies the original legacy FXSAVE prefix after
+that XSAVE. It keeps the early exception clear and preserves the separate
+XMM/YMM/ZMM, mask-register and XSAVE-header restoration. The strict status-bit
+assertions remain enabled for every supported ISA.
+
 ## Reproduce and inspect
 
 Build the SDK, client and release CLI as described in the repository README,
@@ -53,6 +63,10 @@ python3 tests/signal_state.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 \
   --client build/libdurante.so --runner-bin target/release/durante \
   --output-dir .results/signal-state --require-isa sse2 --repeats 2
 ```
+
+Rebuild prepared SDKs after updating the runtime patch. Its digest is recorded
+in `.durante-runtime.json`; the current `isolate` validator rejects the older
+patch digest even when that installation's binary hashes still match.
 
 `--require-isa avx2` or `--require-isa avx512` makes an unavailable requested ISA
 fail qualification. Repetitions are bounded to 1–5 and individual invocations to
@@ -76,5 +90,5 @@ instruction, FPU exception, alternate-stack mode, or context-switch API. It does
 not resolve the separate ignored-signal/syscall-restart limitations documented
 in the README. Asynchronous delivery changes basic-block-entry work; matching
 output or a complete report does not imply identical counts, hardware retirement
-accuracy, tamper resistance, or a CPU-time conversion. The clean-call counter
-and production runtime are unchanged by these tests.
+accuracy, tamper resistance, or a CPU-time conversion. The counter implementation
+is unchanged; the runtime fix preserves application state without adjusting counts.
