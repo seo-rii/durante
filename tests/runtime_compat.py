@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import shutil
 import signal
+import stat
 import subprocess
 import time
 
@@ -22,6 +23,86 @@ RUNTIMES = ("cpython", "pypy", "node", "java")
 MODES = ("native", "engine-only", "rep-off", "rep-on")
 MAX_CAPTURE = 65536
 MAX_REPORT = 2 * 1024 * 1024
+MAX_INPUT_BYTES = 256 * 1024 * 1024
+PYTHON_FIXTURES = (
+    ("arithmetic", "1249975000\n", 1),
+    ("native_libraries", "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad\n30000\n", 1),
+    ("subprocess_tree", "child:7\n", 2),
+)
+
+
+def file_identity(path):
+    """Bounded reproducibility evidence, not attestation against a hostile host."""
+    if path is None:
+        raise ValueError("required executable was not found")
+    path = Path(path)
+    entry = path.lstat()
+    resolved = path.resolve(strict=True)
+    expected = resolved.stat()
+    if not stat.S_ISREG(expected.st_mode) or expected.st_size > MAX_INPUT_BYTES:
+        raise ValueError("input is not a bounded regular file")
+
+    def metadata(info):
+        return {"device": info.st_dev, "inode": info.st_ino, "mode": info.st_mode,
+                "size": info.st_size, "mtime_ns": info.st_mtime_ns,
+                "ctime_ns": info.st_ctime_ns}
+
+    fd = os.open(resolved, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW | os.O_NONBLOCK)
+    with os.fdopen(fd, "rb") as stream:
+        before = os.fstat(stream.fileno())
+        if metadata(before) != metadata(expected):
+            raise ValueError("input changed before hashing")
+        digest = hashlib.sha256()
+        size = 0
+        while data := stream.read(min(1024 * 1024, MAX_INPUT_BYTES + 1 - size)):
+            size += len(data)
+            if size > MAX_INPUT_BYTES:
+                raise ValueError("input exceeds hash byte bound")
+            digest.update(data)
+        if (size != before.st_size or metadata(os.fstat(stream.fileno())) != metadata(before)
+                or metadata(path.lstat()) != metadata(entry)
+                or path.resolve(strict=True) != resolved
+                or metadata(path.stat()) != metadata(before)):
+            raise ValueError("input changed during hashing")
+    return {"resolved_path": str(resolved), "sha256": digest.hexdigest(),
+            "entry": metadata(entry), "file": metadata(before)}
+
+
+class InputProvenance:
+    def __init__(self, paths):
+        self.files = {name: {"path": str(path) if path is not None else None,
+                             "before": None, "after": None, "unchanged": False}
+                      for name, path in paths.items()}
+        self.errors = []
+
+    def capture(self, phase):
+        for name, record in self.files.items():
+            try:
+                record[phase] = file_identity(record["path"])
+            except (OSError, ValueError, RuntimeError) as error:
+                self.errors.append({"input": name, "phase": phase,
+                                    "reason": str(error)[:600]})
+            if phase == "after":
+                record["unchanged"] = record["before"] is not None and record["before"] == record["after"]
+                if record["before"] is not None and record["after"] is not None and not record["unchanged"]:
+                    self.errors.append({"input": name, "phase": phase,
+                                        "reason": "input identity changed"})
+
+    def unchanged(self, prefix=""):
+        records = [record for name, record in self.files.items() if name.startswith(prefix)]
+        return bool(records) and all(record["unchanged"] for record in records)
+
+    def hashes(self, prefix):
+        return {name.removeprefix(prefix): record["before"]["sha256"]
+                for name, record in self.files.items()
+                if name.startswith(prefix) and record["before"] is not None}
+
+
+def executable_path(value):
+    selected = shutil.which(value)
+    # Preserve this absolute invocation path, including a symlink spelling, for
+    # both execution and before/after checks. Never repeat a PATH lookup later.
+    return str(Path(selected).absolute()) if selected else None
 
 
 def bounded_bytes(path, maximum=MAX_CAPTURE):
@@ -36,10 +117,12 @@ def bounded_json(path):
     return json.loads(bounded_bytes(path, MAX_REPORT))
 
 
-def run_process(command, directory, timeout_ms):
+def run_process(command, directory, timeout_ms, prlimit=None):
     """One bounded process tree; always reap the harness's adopted descendants."""
     stdout, stderr = directory / "stdout.txt", directory / "stderr.txt"
-    prlimit = shutil.which("prlimit")
+    prlimit = prlimit or executable_path("prlimit")
+    if not prlimit:
+        raise ValueError("Linux prlimit is required")
     limited = [prlimit, "--as=2147483648", "--cpu=40", "--fsize=1048576",
                "--core=0", "--", *command]
     started = time.monotonic()
@@ -88,8 +171,11 @@ def run_process(command, directory, timeout_ms):
 def collect_records(args, directory, root_pid):
     result = directory / "aggregate.json"
     error = directory / "collector-stderr.txt"
+    prlimit = getattr(args, "prlimit", None) or executable_path("prlimit")
+    if not prlimit:
+        raise ValueError("Linux prlimit is required")
     with result.open("wb") as out, error.open("wb") as err:
-        process = subprocess.run([shutil.which("prlimit"), "--as=536870912", "--cpu=5",
+        process = subprocess.run([prlimit, "--as=536870912", "--cpu=5",
                                   "--fsize=2097152", "--core=0", "--", str(args.runner_bin),
                                   "collect", "--dir", str(directory / "records"),
                                   "--root-pid", str(root_pid)], stdout=out, stderr=err,
@@ -166,7 +252,7 @@ def run_case(args, work, name, runtime, target, expected, processes, index):
         records = directory / "records"
         command = target
         if mode != "native":
-            command = [str(args.sdk / "bin64/drrun"), "-quiet", "-follow_children",
+            command = [str(args.drrun), "-quiet", "-follow_children",
                        "-vm_size", "32M", "-vmheap_size", "32M"]
             if mode.startswith("rep-"):
                 records.mkdir(mode=0o700)
@@ -174,7 +260,7 @@ def run_case(args, work, name, runtime, target, expected, processes, index):
                 if mode == "rep-on":
                     command += ["-rep_bytes"]
             command += ["--", *target]
-        row = run_process(command, directory, args.timeout_ms)
+        row = run_process(command, directory, args.timeout_ms, args.prlimit)
         row.update({"runtime": runtime, "fixture": name, "mode": mode,
                     "command": command, "diagnostic_integrity_failure": False,
                     "telemetry_status": "unavailable" if mode.startswith("rep-") else "not-requested"})
@@ -236,12 +322,7 @@ def unqualified_required_runtimes(results, required):
                          for row in results))
 
 
-def runtime_commands(args, work):
-    paths = {"cpython": shutil.which(args.cpython), "pypy": shutil.which(args.pypy),
-             "node": shutil.which(args.node), "java": shutil.which(args.java)}
-    javac = shutil.which(args.javac)
-    if paths["java"] and not javac:
-        paths["java"] = None
+def runtime_commands(args, work, paths, javac, provenance):
     versions = {}
     for name, path in paths.items():
         if path:
@@ -251,29 +332,26 @@ def runtime_commands(args, work):
                               "-XX:ReservedCodeCacheSize=32m", "-version"]
                              if name == "java" else ["--version"])
             result = run_process([path, *version_flags], directory,
-                                 min(args.timeout_ms, 10000))
+                                 min(args.timeout_ms, 10000), args.prlimit)
             if result["exit_code"] != 0 or not result["infrastructure_ok"]:
                 raise RuntimeError("runtime version probe failed: " + name)
-            with Path(path).resolve().open("rb") as stream:
-                executable_hash = hashlib.file_digest(stream, "sha256").hexdigest()
-            versions[name] = {"path": str(Path(path).resolve()), "sha256": executable_hash,
+            identity = provenance.files["binary:runtime:" + name]["before"]
+            versions[name] = {"path": path, "resolved_path": identity["resolved_path"],
+                              "sha256": identity["sha256"],
                               "version": (result["stdout"] + result["stderr"]).strip()}
     if paths["java"]:
         compiler = work / "javac"
         compiler.mkdir()
         row = run_process([javac, "-J-Xmx128m", "-J-XX:CompressedClassSpaceSize=32m",
                            "-d", str(work), str(FIXTURES / "RuntimeProbe.java")], compiler,
-                          args.timeout_ms)
+                          args.timeout_ms, args.prlimit)
         if row["exit_code"] != 0 or not row["infrastructure_ok"]:
             raise RuntimeError("bounded JVM fixture compilation failed: " + str(row))
     cases = []
     for name in ("cpython", "pypy"):
         if not paths[name]:
             continue
-        for fixture, expected, processes in (
-                ("arithmetic", "1249975000\n", 1),
-                ("native_libraries", "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad\n30000\n", 1),
-                ("subprocess_tree", "child:7\n", 2)):
+        for fixture, expected, processes in PYTHON_FIXTURES:
             cases.append((f"{name}-{fixture}", name,
                           [paths[name], "-I", "-S", str(FIXTURES / (fixture + ".py"))],
                           expected, processes))
@@ -289,10 +367,10 @@ def runtime_commands(args, work):
             cases.append(("java-" + label, "java", [paths["java"], "-Xmx128m", "-Xss256k",
                           "-XX:CompressedClassSpaceSize=32m", "-XX:ReservedCodeCacheSize=32m",
                           *flags, "-cp", str(work), "RuntimeProbe"], "1249975000\n", 1))
-    return paths, versions, cases
+    return versions, cases
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("sdk", "client", "runner-bin", "output-dir"):
         parser.add_argument("--" + name, type=Path, required=True)
@@ -304,41 +382,65 @@ def main():
         parser.add_argument("--" + name, default=default)
     parser.add_argument("--timeout-ms", type=bounded_number(1000, 60000), default=20000)
     parser.add_argument("--repeats", type=bounded_number(1, 5), default=1)
-    args = parser.parse_args()
-    if not shutil.which("prlimit"):
-        parser.error("Linux prlimit is required")
-    args.sdk, args.client, args.runner_bin, args.output_dir = [p.resolve() for p in (
+    args = parser.parse_args(argv)
+    args.sdk, args.client, args.runner_bin, args.output_dir = [p.absolute() for p in (
         args.sdk, args.client, args.runner_bin, args.output_dir)]
-    args.output_dir.mkdir(mode=0o700, parents=True, exist_ok=False)
+    try:
+        args.output_dir.mkdir(mode=0o700, parents=True, exist_ok=False)
+    except OSError:
+        parser.error("output directory must be fresh and writable")
     sources = [Path(__file__).resolve(), ROOT / "tests/test_runtime_compat.py",
-               ROOT / "tests/concurrent_spawn.py",
-               ROOT / "tests/fixtures.py", ROOT / "collect.py", *sorted(FIXTURES.glob("*"))]
-    source_hashes = {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
-                     for p in sources if p.is_file()}
-    binary_hashes = {}
-    for name, path in (("core", args.sdk / "lib64/release/libdynamorio.so"),
-                       ("client", args.client), ("runner", args.runner_bin)):
-        with path.open("rb") as stream:
-            binary_hashes[name] = hashlib.file_digest(stream, "sha256").hexdigest()
-    libc, old_subreaper = own_subreaper()
+               ROOT / "tests/test_runtime_provenance.py", ROOT / "tests/concurrent_spawn.py",
+               ROOT / "tests/fixtures.py", ROOT / "collect.py",
+               FIXTURES / "RuntimeProbe.java", FIXTURES / "arithmetic.js",
+               *(FIXTURES / (name + ".py") for name, _, _ in PYTHON_FIXTURES)]
+    paths = {name: executable_path(getattr(args, name)) for name in RUNTIMES}
+    javac = executable_path(args.javac)
+    if paths["java"] and not javac:
+        paths["java"] = None
+    args.drrun = args.sdk / "bin64/drrun"
+    args.prlimit = executable_path("prlimit")
+    inputs = {"source:" + str(path.relative_to(ROOT)): path for path in sources}
+    inputs.update({"binary:core": args.sdk / "lib64/release/libdynamorio.so",
+                   "binary:client": args.client, "binary:runner": args.runner_bin,
+                   "binary:drrun": args.drrun, "binary:prlimit": args.prlimit})
+    inputs.update({"binary:runtime:" + name: path for name, path in paths.items() if path})
+    if paths["java"]:
+        inputs["binary:javac"] = javac
+    provenance = InputProvenance(inputs)
+    provenance.capture("before")
     results, versions, missing = [], {}, []
     fatal = None
+    owner = None
+    cleaned = True
     try:
-        paths, versions, cases = runtime_commands(args, args.output_dir)
         missing = [name for name, path in paths.items() if not path]
         for name in missing:
             results.append({"runtime": name, "fixture": None, "status": "skip",
                             "reason": "runtime executable (and javac for Java) unavailable"})
+        if provenance.errors:
+            raise ValueError("qualification input identity unavailable before execution")
+        owner = own_subreaper()
+        versions, cases = runtime_commands(args, args.output_dir, paths, javac, provenance)
         for index in range(args.repeats):
             for case in cases:
                 results.append(run_case(args, args.output_dir, *case, index))
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
         fatal = str(error)
     finally:
-        cleaned = cleanup_orphans()
-        libc.prctl(36, old_subreaper, 0, 0, 0)
-    unchanged = all(hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == digest
-                    for path, digest in source_hashes.items())
+        if owner is not None:
+            libc, old_subreaper = owner
+            try:
+                cleaned = cleanup_orphans()
+            except OSError as error:
+                cleaned = False
+                fatal = "cleanup inspection failed: " + str(error)[:600]
+            finally:
+                if libc.prctl(36, old_subreaper, 0, 0, 0):
+                    cleaned = False
+                    fatal = "cannot restore harness process ownership"
+        provenance.capture("after")
+    unchanged = provenance.unchanged()
     required_missing = sorted(set(missing) & set(args.require_runtime))
     required_unqualified = unqualified_required_runtimes(results, args.require_qualified_runtime)
     regressions = [r["fixture"] for r in results if r["status"] == "regression"]
@@ -355,18 +457,27 @@ def main():
                "required_missing": required_missing, "required_unqualified": required_unqualified,
                "missing_runtimes": missing,
                "regressions": regressions, "fatal_error": fatal,
-               "harness_cleanup_complete": cleaned, "sources_unchanged": unchanged,
-               "inputs": source_hashes, "binary_sha256": binary_hashes,
+               "harness_cleanup_complete": cleaned, "sources_unchanged": provenance.unchanged("source:"),
+               "inputs_unchanged": unchanged,
+               "input_provenance": {"files": provenance.files, "errors": provenance.errors},
+               "inputs": provenance.hashes("source:"), "binary_sha256": provenance.hashes("binary:"),
                "runtimes": versions, "results": results,
                "limitations": ["fixed fixtures only", "not production timing or trusted counters",
+                               "before/after identities are reproducibility evidence, not hostile-host attestation",
+                               "dynamic libraries, runtime installations and generated bytecode are not exhaustively hashed",
                                "known-unqualified is not passed compatibility",
                                "JIT-enabled mode does not prove a particular function compiled",
                                "SIGCHLD quality remains explicit in subprocess accounting",
                                "instruction qualification can include partial optional REP-byte telemetry",
                                "MOVS/STOS bytes never claim coverage of every REP operation"]}
-    (args.output_dir / "results.json").write_text(json.dumps(summary, indent=2) + "\n")
+    try:
+        (args.output_dir / "results.json").write_text(json.dumps(summary, indent=2) + "\n")
+    except OSError as error:
+        code = summary["exit_code"] = 1
+        summary["fatal_error"] = "cannot publish results.json: " + str(error)[:600]
     print(json.dumps({k: v for k, v in summary.items() if k not in (
-        "inputs", "binary_sha256", "results", "runtimes")}))
+        "inputs", "binary_sha256", "results", "runtimes", "input_provenance")},
+        default=str))
     return code
 
 
