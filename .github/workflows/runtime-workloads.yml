@@ -54,7 +54,9 @@ jobs:
       - name: Reject terminal callbacks after a failed runtime exit barrier
         run: python3 tests/runtime_exit_failure.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --output-dir .results/runtime-exit-failure
       - name: Validate workload oracles and strict failure gates
-        run: python3 -m unittest discover -s tests -p 'test_runtime_workloads.py' -v
+        run: |
+          python3 -m unittest discover -s tests -p 'test_runtime_workloads.py' -v
+          python3 -m unittest discover -s tests -p 'test_runtime_exit_faults.py' -v
       - name: Require Java, CPython and Node workloads through Durante
         shell: bash
         env:
@@ -68,6 +70,13 @@ jobs:
             --runner-bin target/release/durante --output-dir .results/runtime-workloads \
             --java "$jdk_root/bin/java" --javac "$jdk_root/bin/javac" --java-major "$JAVA_MAJOR" \
             --runtime java --runtime cpython --runtime node --timeout-ms 120000
+      - name: Reject OS synchronization failures before and after partial cleanup
+        if: matrix.java == 17
+        run: |
+          python3 tests/runtime_exit_faults.py \
+            --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so \
+            --runner-bin target/release/durante --output-dir .results/runtime-exit-faults \
+            --build-dir "$RUNNER_TEMP/runtime-exit-faults"
       - name: Preserve workload outputs, records and provenance
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

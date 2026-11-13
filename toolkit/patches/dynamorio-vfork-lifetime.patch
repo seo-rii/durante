@@ -728,3 +728,83 @@ index efc1bbb1cd..ad839efb02 100644
      ASSERT(threads == NULL && num_threads == 0); /* We asked for CLEANED */
      /* the synch_with_all_threads function grabbed the
       * thread_initexit_lock for us! */
+
+--- a/core/dynamo.c
++++ b/core/dynamo.c
+@@ -1254,10 +1254,11 @@
+     thread_record_t **threads;
+     dcontext_t *dcontext = get_thread_private_dcontext();
+     int expected_exiting = dcontext != NULL && dcontext->is_exiting ? 1 : 0;
+-    /* If we fail to suspend a thread (e.g., privilege
+-     * problems) ignore it. XXX: retry instead?
+-     */
+-    uint flags = THREAD_SYNCH_SUSPEND_FAILURE_IGNORE;
++    /* An OS failure cannot be recovered here: earlier successful iterations may
++     * already have freed thread records. Terminate without cleanup, rather than
++     * entering the ABORT path that resumes/dereferences those records.
++     */
++    uint flags = THREAD_SYNCH_SUSPEND_FAILURE_IGNORE | THREAD_SYNCH_TERMINATE_ON_FAILURE;
+     if (pre_exit) {
+         /* i#297: we only synch client threads after process exit event. */
+         flags |= THREAD_SYNCH_SKIP_CLIENT_THREAD;
+--- a/core/synch.h
++++ b/core/synch.h
+@@ -117,6 +117,13 @@
+
+     /* specifies whether we should terminate client threads */
+     THREAD_SYNCH_SKIP_CLIENT_THREAD = 0x00000010,
++
++    /* Process-exit modifier: an OS suspend/context/resume failure terminates the
++     * entire process without cleanup. This overrides the failure policy above;
++     * the CLEANED exit path cannot safely unwind already-freed thread records.
++     * Ordinary suspension and detach callers must not set this modifier.
++     */
++    THREAD_SYNCH_TERMINATE_ON_FAILURE = 0x00000020,
+ };
+
+ /* convenience macros */
+--- a/core/synch.c
++++ b/core/synch.c
+@@ -914,6 +914,18 @@
+  * enter_couldbelinking state)
+  * NOTE - you can't call this with a thread that you've already suspended
+  */
++/* A process-exit synchronization may already have cleaned other threads.
++ * Fail before this thread is touched further, without resuming or walking the
++ * partially freed set and without invoking terminal client callbacks.
++ */
++static void
++terminate_on_synch_failure(uint flags)
++{
++    if (TEST(THREAD_SYNCH_TERMINATE_ON_FAILURE, flags))
++        REPORT_FATAL_ERROR_AND_EXIT(FAILED_TO_SYNCHRONIZE_THREADS, 2,
++                                   get_application_name(), get_application_pid());
++}
++
+ thread_synch_result_t
+ synch_with_thread(thread_id_t id, bool block, bool hold_initexit_lock,
+                   thread_synch_permission_t caller_state,
+@@ -1004,6 +1016,7 @@
+                 first_loop = false;
+             }
+             if (!os_thread_suspend(trec)) {
++                terminate_on_synch_failure(flags);
+                 /* FIXME : eventually should be a real assert once we figure out
+                  * how to handle threads with low privilege handles */
+                 /* For dr_api_exit, we may have missed a thread exit. */
+@@ -1018,6 +1031,7 @@
+                 break;
+             }
+             if (!thread_get_mcontext(trec, &mc)) {
++                terminate_on_synch_failure(flags);
+                 /* FIXME : eventually should be a real assert once we figure out
+                  * how to handle threads with low privilege handles */
+                 ASSERT_CURIOSITY_ONCE(false &&
+@@ -1047,6 +1061,7 @@
+                 RSTATS_INC(synchs_not_at_safe_spot);
+             }
+             if (!os_thread_resume(trec)) {
++                terminate_on_synch_failure(flags);
+                 ASSERT_NOT_REACHED();
+                 res = (TEST(THREAD_SYNCH_SUSPEND_FAILURE_IGNORE, flags)
+                            ? THREAD_SYNCH_RESULT_SUCCESS
