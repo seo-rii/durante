@@ -253,9 +253,9 @@ def worker(profile, java_major):
         captured = tuple(bounded_bytes(directory / "captured" / name) for name in ("stdout", "stderr"))
         report = bounded_json(directory / "report.json")
         ioctl_probe["errors"].extend(isolated_errors(report,
-            Workload("ioctl-queries", "native", [], "readonly-ioctl\n", 1, 1), captured))
+            Workload("ioctl-queries", "native", [], "descriptor-ioctl\n", 1, 1), captured))
         if ioctl_probe["exit_code"] or ioctl_probe["stdout"] or ioctl_probe["stderr"]:
-            ioctl_probe["errors"].append("read-only ioctl probe failed")
+            ioctl_probe["errors"].append("descriptor ioctl probe failed")
         result["ioctl_probe"] = ioctl_probe
         errors.extend(ioctl_probe["errors"])
         if profile == "relocated-bundle":

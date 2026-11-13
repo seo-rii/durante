@@ -50,11 +50,15 @@ collection; CPython requires a cyclic collection. Process/image totals must
 agree, but raw records are intentionally not exported from the inner sandbox.
 The existing non-isolated workload suite supplies independent collector checks.
 
-Java's subprocess input streams query queued bytes with FIONREAD. The filter
-permits this read-only query alongside FIOCLEX/FIONCLEX descriptor flags; without
-it, the JDK's pipe read can fail with `IOException: Illegal seek`. A native probe
-checks pipe/socket queued bytes and descriptor flags, while requiring EPERM for
-FIONBIO, TCGETS and TIOCSTI. The denied FIONBIO must leave O_NONBLOCK unchanged.
+Java's subprocess input streams query queued bytes with FIONREAD; denying it
+can cause `IOException: Illegal seek`. Node/libuv uses FIONBIO to make its
+stdio pipes nonblocking; denying it can cause `Error: open EPERM`. The filter
+permits these exact requests alongside FIOCLEX/FIONCLEX descriptor flags.
+FIONBIO changes O_NONBLOCK on an existing open file description, shared by
+dup/fork and also controllable through fcntl; it is not read-only or a general
+driver ioctl allowance. A native probe checks pipe/socket queued bytes,
+nonblocking set/clear with other flags and queued data preserved, and descriptor
+flags. It still requires EPERM for TCGETS, TIOCSTI, FICLONE and an unknown request.
 
 A native probe also runs through the relocated wrapper's `isolate` path. Its
 captured `/proc/self/maps` must show Durante, drmgr and DynamoRIO loaded from the
