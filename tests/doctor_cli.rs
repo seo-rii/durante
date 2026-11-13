@@ -59,7 +59,7 @@ fn fixture(root: &Path) {
     .unwrap();
     fs::write(root.join("client.so"), b"test client").unwrap();
     fs::write(root.join("sdk/lib64/release/libdynamorio.so"), b"test core").unwrap();
-    let manifest = json!({"schema":1,"inputs":{
+    let mut manifest = json!({"schema":1,"inputs":{
         "source_commit":"6847bb210bea0ca11d1bf47704383d6a075da490",
         "source_sha256":"e2b7d3f1917ff64e644b81efd96a610a3c622f4857c75593fef5d5e581c231f6",
         "patch_sha256":format!("{:x}", Sha256::digest(include_bytes!(
@@ -67,6 +67,17 @@ fn fixture(root: &Path) {
         ))),
         "recipe":1},"artifacts":{
             "lib64/release/libdynamorio.so": format!("{:x}", Sha256::digest(b"test core"))}});
+    // Include additional reviewed patch inputs when these branches combine.
+    match fs::read(
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("toolkit/patches/dynamorio-code-replay.patch"),
+    ) {
+        Ok(bytes) => {
+            manifest["inputs"]["code_replay_patch_sha256"] =
+                json!(format!("{:x}", Sha256::digest(bytes)));
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+        Err(error) => panic!("cannot read replay patch fixture: {error}"),
+    }
     fs::write(
         root.join("sdk/.durante-runtime.json"),
         serde_json::to_vec(&manifest).unwrap(),
