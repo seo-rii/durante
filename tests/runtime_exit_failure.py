@@ -18,7 +18,7 @@ def main():
     parser.add_argument("--output-dir", type=Path, required=True)
     args = parser.parse_args()
     sdk, work = args.sdk.resolve(), args.output_dir.absolute()
-    work.mkdir(mode=0o700)
+    work.mkdir(mode=0o700, parents=True)
     prlimit = executable_path("prlimit")
     inputs = {"source:" + name: FIXTURES / name for name in ("app.c", "client.c", "CMakeLists.txt")}
     inputs.update({"harness": Path(__file__), "process_helper": ROOT / "tests/runtime_compat.py",
