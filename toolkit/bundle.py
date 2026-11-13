@@ -125,7 +125,8 @@ def source_snapshot():
     # These are the inputs read by packaging and the runtime/client/CLI sources
     # named by its reference recipe, not a claim of binary reproducibility.
     names = {"Cargo.toml", "Cargo.lock", "LICENSE", "README.md", "SECURITY.md",
-             "toolkit/bundle.py", "toolkit/build_runtime.py", "toolkit/build_isolation.py", "toolkit/sdk.lock.json"}
+             "toolkit/bundle.py", "toolkit/build_runtime.py", "toolkit/build_isolation.py",
+             "toolkit/fetch_sdk.py", "toolkit/sdk.lock.json"}
     names.update("docs/" + name for name in BUNDLE_DOCS)
     for directory, patterns in (("src", ("*.rs",)), ("client", ("*.c", "*.h", "CMakeLists.txt")),
                                 ("toolkit/patches", ("*.patch", "LICENSE.*"))):
@@ -222,25 +223,37 @@ def read_directory(root):
     if not stat.S_ISDIR(root.lstat().st_mode) or root.stat().st_mode & 0o022:
         fail("bundle must be a protected real directory")
     total, entries, directories = 0, 0, set()
-    for directory, children, files in os.walk(root, followlinks=False):
-        if len(Path(directory).relative_to(root).parts) > 8:
+    def visit(directory, depth):
+        nonlocal entries, total
+        if depth > 8:
             fail("bundle exceeds directory-depth bound")
-        entries += len(children) + len(files)
-        if entries > MAX_FILES:
-            fail("bundle exceeds directory-entry bound")
-        for child in children:
-            path = Path(directory) / child
-            directories.add(safe_name(path.relative_to(root).as_posix()))
-            if not stat.S_ISDIR(path.lstat().st_mode) or path.stat().st_mode & 0o022:
-                fail("unsafe bundle directory or symlink")
-        for leaf in files:
-            path = Path(directory) / leaf
-            name = safe_name(path.relative_to(root).as_posix())
-            data, mode = read_file(path)
-            contents[name] = data, mode
-            total += len(data)
-            if len(contents) > MAX_FILES or total > MAX_TOTAL:
-                fail("bundle exceeds inventory bounds")
+        # os.walk first materializes every child of a directory. Consume the
+        # iterator directly so an oversized directory stops at MAX_FILES + 1.
+        with os.scandir(directory) as children:
+            for child in children:
+                entries += 1
+                if entries > MAX_FILES:
+                    fail("bundle exceeds directory-entry bound")
+                path = directory / child.name
+                name = safe_name(path.relative_to(root).as_posix())
+                info = child.stat(follow_symlinks=False)
+                if stat.S_ISDIR(info.st_mode):
+                    if info.st_mode & 0o022:
+                        fail("unsafe bundle directory")
+                    directories.add(name)
+                    visit(path, depth + 1)
+                else:
+                    if not stat.S_ISREG(info.st_mode):
+                        fail("unsafe bundle entry or symlink")
+                    if total + info.st_size > MAX_TOTAL:
+                        fail("bundle exceeds inventory bounds")
+                    data, mode = read_file(path)
+                    total += len(data)
+                    if total > MAX_TOTAL:
+                        fail("bundle exceeds inventory bounds")
+                    contents[name] = data, mode
+
+    visit(root, 0)
     expected_directories = {str(parent) for name in contents for parent in PurePosixPath(name).parents if str(parent) != "."}
     if directories != expected_directories:
         fail("unexpected empty bundle directory")

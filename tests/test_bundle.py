@@ -10,6 +10,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -89,7 +90,7 @@ class BundleTests(unittest.TestCase):
 
     def test_pack_requires_committed_packaging_and_runtime_inputs(self):
         checkout = self.root / "checkout"
-        for name in bundle.source_snapshot():
+        for name in set(bundle.source_snapshot()) | {"toolkit/fetch_sdk.py"}:
             destination = checkout / name
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / name, destination)
@@ -102,7 +103,7 @@ class BundleTests(unittest.TestCase):
         git("-c", "commit.gpgsign=false", "commit", "-qm", "test fixture")
         with patch.object(bundle, "ROOT", checkout):
             bundle.committed_source()
-            for name in ("toolkit/bundle.py", "docs/BUNDLE.md"):
+            for name in ("toolkit/bundle.py", "docs/BUNDLE.md", "toolkit/fetch_sdk.py"):
                 path = checkout / name
                 original = path.read_bytes()
                 path.write_bytes(original + b"\nchanged\n")
@@ -199,6 +200,40 @@ class BundleTests(unittest.TestCase):
         with patch.object(bundle, "MAX_TOTAL", 1024), self.assertRaisesRegex(ValueError, "expanded archive"):
             bundle.read_archive(path, bundle.digest(path.read_bytes()))
 
+    def test_directory_budget_stops_before_materializing_an_oversized_listing(self):
+        probe = self.root / "metadata"
+        probe.write_bytes(b"x")
+        info = probe.stat()
+
+        class OversizedDirectory:
+            consumed = 0
+            closed = False
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                self.closed = True
+
+            def __iter__(self):
+                return self
+
+            def __next__(self):
+                self.consumed += 1
+                if self.consumed > bundle.MAX_FILES + 1:
+                    raise AssertionError("directory enumeration continued past the entry bound")
+                return SimpleNamespace(name=f"file-{self.consumed}", is_dir=lambda: False,
+                                       stat=lambda **kwargs: info)
+
+        iterator = OversizedDirectory()
+        with patch.object(bundle.os, "scandir", return_value=iterator), \
+                patch.object(bundle, "read_file", return_value=(b"x", 0o644)) as reads, \
+                self.assertRaisesRegex(ValueError, "entry bound"):
+            bundle.read_directory(self.root)
+        self.assertEqual(iterator.consumed, bundle.MAX_FILES + 1)
+        self.assertTrue(iterator.closed)
+        self.assertEqual(reads.call_count, bundle.MAX_FILES)
+
     def test_existing_destinations_symlinks_hardlinks_and_empty_directories_fail(self):
         contents = fixture()
         destination = self.root / "installed"
@@ -230,7 +265,7 @@ class BundleTests(unittest.TestCase):
         moved = self.root / "library"
         library.rename(moved)
         library.symlink_to(moved)
-        with self.assertRaises(OSError):
+        with self.assertRaisesRegex(ValueError, "symlink"):
             bundle.read_directory(destination)
         library.unlink()
         os.link(moved, library)
