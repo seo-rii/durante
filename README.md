@@ -37,8 +37,9 @@ archive SHA-256 before extracting the required build/runtime subset.
 It then builds the 64-bit release and debug runtime cores from the same pinned
 source commit with the [concurrent process and signal patch](toolkit/patches/dynamorio-vfork-lifetime.patch)
 and [code replay patch](toolkit/patches/dynamorio-code-replay.patch).
-The source archive is also hash-pinned. CMake, a C/C++ compiler and `patch` are
-needed for this one-time build; this adds no compilation to measured runs.
+The source archive is also hash-pinned. Python 3.11 or newer, CMake, a C/C++
+compiler and `patch` are needed for this one-time build; this adds no compilation
+to measured runs.
 The SDK's `.durante-runtime.json` records the source, both patches and installed core
 hashes. Cached cores are reused only when those hashes match. The patch also
 backports [DynamoRIO #7321](https://github.com/DynamoRIO/dynamorio/pull/7321),
@@ -69,11 +70,21 @@ python3 tests/smoke.py \
 -vmheap_size 32M`, a bounded reservation configuration for embedding applications. This setting
 reduces address-space reservations; it does not waive target limits.
 
-The build requires GCC or Clang, CMake and Linux x86-64. Tests additionally use
-Python 3 and GCC; PyPy is tested when installed, and absence is reported as a
-coverage gap. No SDK or generated executable is committed.
+Build and test on Linux x86-64. The client supports GCC or Clang; native test
+fixtures additionally require GCC. Development scripts use Python 3.11 or newer,
+including the SDK fetcher. PyPy is tested when installed, and absence is reported
+as a coverage gap. No SDK or generated executable is committed.
+
+The [fixed-fixture overhead experiment](docs/OVERHEAD.md) compares native execution,
+the engine alone, and the counter with REP telemetry off/on. It reports per-run
+wall time, CPU time and peak RSS with output/count oracles and input identities;
+its CI smoke checks correctness without a performance threshold.
 
 ## Rust command-line tool
+
+Use `durante doctor` for read-only installation/environment diagnostics. See the
+[operator guide](docs/OPERATIONS.md) for profile checks, result examples and
+failure/recovery decisions.
 
 The C client performs instrumentation inside DynamoRIO. The Rust executable
 launches it, supervises the process tree and validates its records; it does not
@@ -214,6 +225,14 @@ Fork-style `clone3(CLONE_CLEAR_SIGHAND)` remains unqualified and its accounting
 is rejected. These tests do not establish arbitrary asynchronous-signal
 compatibility during runtime initialization.
 
+The patch also preserves x87 exception status in delayed and nested signal
+frames when the kernel includes extra XSAVE state. The original runtime could
+overwrite the saved precision flag after clearing live FPU exceptions.
+[Signal-state qualification](docs/SIGNAL_STATE.md) checks the saved frame,
+restored registers and arithmetic with native, engine-only and client controls.
+Updating this patch requires rebuilding the prepared SDK and CLI together;
+`isolate` checks the reviewed patch digest.
+
 Concurrent creation is tested with the patched runtime for successful exec,
 failed exec with default and `SA_RESTART` signal handlers, empty environments,
 and parents that finish all spawn operations
@@ -272,11 +291,13 @@ unexecuted suffix is removed before the new entry charge, and a restarted REP
 keeps its original requested bytes once. Ambiguous recovery invalidates counts;
 this does not make signal-interrupted work exact or application-mutable reports trusted.
 
-CPython, native Go/Rust and selected Node/shell fixtures have separate compatibility
-checks in the embedding project's qualification. They are not universal language
-certification. In particular, Java 17 currently crashes during JVM startup with
-this counter while the engine-only control succeeds; JVM use is unqualified.
-Generated-code unit tests do not establish JVM compatibility.
+The repository's runtime checks cover CPython/PyPy arithmetic, native libraries
+and subprocesses, Node with JIT enabled and disabled, and OpenJDK 17 startup,
+tiered execution and `-Xint` fixtures. Clean-call state preservation fixes the
+reproduced OpenJDK 17.0.21 startup crash; CI now requires all Java fixtures to
+pass. These are fixture-specific results, not universal language certification
+or qualification of the separate `isolate` profile. Generated-code unit tests
+alone do not establish JVM compatibility.
 
 [SIMD and interpreter/JIT qualification](docs/QUALIFICATION.md) explains the
 additional native-control, output-preservation and exact-count tests. Per-run
