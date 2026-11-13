@@ -327,3 +327,5 @@ The experimental `durante isolate` command adds a pinned namespace supervisor,
 read-only inputs, seccomp and an outer deadline. It requires externally configured
 resource containment; counters remain application-mutable. See the
 [operator requirements and tested boundary](docs/ISOLATION.md).
+The [external execution-owner guide](docs/EXECUTION_OWNER.md) covers controller
+death, suspension, resource failures and independent whole-job teardown.

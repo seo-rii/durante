@@ -40,6 +40,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/isolation-bin" .results
           cp target/release/durante "$RUNNER_TEMP/isolation-bin/durante"
           cc -O2 -Wall -Wextra -Werror tests/isolation_probe.c -o "$RUNNER_TEMP/isolation-bin/probe"
+          cc -O2 -Wall -Wextra -Werror tests/execution_owner_probe.c -o "$RUNNER_TEMP/isolation-bin/owner-probe"
       - name: Build disposable helper and runtime images
         run: |
           docker build -f docker/isolation-test.Dockerfile --target builder -t durante-isolation-builder .
@@ -88,6 +89,14 @@ jobs:
             --launcher /isolation-tool/bwrap --sdk "$sdk" \
             --client "$PWD/build/libdurante.so" --probe-binary /validation/probe \
             --output-dir /results/isolation
+      - name: Verify external-owner recovery from controller and resource failures
+        run: |
+          python3 tests/execution_owner.py --image durante-isolation-test \
+            --validation-bin "$RUNNER_TEMP/isolation-bin" \
+            --launcher "$RUNNER_TEMP/isolation-tool/bwrap" \
+            --sdk "$PWD/toolkit/sdk/DynamoRIO-Linux-11.3.0-1" \
+            --client "$PWD/build/libdurante.so" \
+            --output-dir "$PWD/.results/execution-owner"
       - name: Preserve boundary results
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
