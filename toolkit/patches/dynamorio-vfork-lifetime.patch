@@ -4,6 +4,7 @@ Upstream copyright notices and BSD terms: LICENSE.DynamoRIO in this directory.
 Only a returning vfork parent may reclaim its own completed child's context.
 Restore interrupted syscalls before pending signal delivery can resume the app.
 Restore private signal state for clone3 shared-memory children with CLEAR_SIGHAND.
+Preserve matched indirect targets across code-cache removal (upstream issue #5061).
 Preserve the original x87 status when delayed signal frames need extra XSAVE fields.
 Backport decoder initialization fix from upstream commit c46d736f308e6e734bd0477f7b8a2dcbefb155d3.
 Upstream PR: https://github.com/DynamoRIO/dynamorio/pull/7321
@@ -808,3 +809,95 @@ index efc1bbb1cd..ad839efb02 100644
                  ASSERT_NOT_REACHED();
                  res = (TEST(THREAD_SYNCH_SUSPEND_FAILURE_IGNORE, flags)
                             ? THREAD_SYNCH_RESULT_SUCCESS
+
+--- a/core/unix/tls.h
++++ b/core/unix/tls.h
+@@ -302,6 +302,13 @@
+         void *client_tls[MAX_NUM_CLIENT_TLS];
+     };
+ #endif
++#if defined(LINUX) && defined(X86) && defined(X64)
++    /* An IBL hit must retain its original target when another thread retires
++     * the table entry before the indirect jump.  Keep this after existing TLS
++     * fields so their offsets (including assembly and client slots) do not move.
++     */
++    app_pc ibl_pending_target;
++#endif
+ } os_local_state_t;
+
+ os_local_state_t *
+--- a/core/os_shared.h
++++ b/core/os_shared.h
+@@ -245,6 +245,12 @@
+
+ ushort
+ os_local_state_offset(ushort seg_offs);
++
++#if defined(LINUX) && defined(X86) && defined(X64)
++/* Local-state offset of the original target retained across an IBL hit. */
++ushort
++os_ibl_pending_target_offset(void);
++#endif
+
+ struct _local_state_t;          /* in arch_exports.h */
+ struct _local_state_extended_t; /* in arch_exports.h */
+--- a/core/unix/os.c
++++ b/core/unix/os.c
+@@ -1956,6 +1956,18 @@
+     ASSERT(TLS_LOCAL_STATE_OFFSET == 0);
+     return (TLS_LOCAL_STATE_OFFSET + tls_offs IF_X86(IF_MACOS64(+tls_get_dr_offs())));
+ }
++
++#if defined(LINUX) && defined(X86) && defined(X64)
++ushort
++os_ibl_pending_target_offset(void)
++{
++    size_t offset = offsetof(os_local_state_t, ibl_pending_target) -
++        offsetof(os_local_state_t, state);
++    ASSERT(offset <= USHRT_MAX);
++    ASSERT(offsetof(os_local_state_t, ibl_pending_target) + sizeof(app_pc) <= PAGE_SIZE);
++    return (ushort)offset;
++}
++#endif
+
+ /* converts a segment offset to a local_state_t offset */
+ ushort
+--- a/core/arch/emit_utils_shared.c
++++ b/core/arch/emit_utils_shared.c
+@@ -3151,6 +3151,16 @@
+         restore_eflags = true;
+     }
+
++#if defined(LINUX) && defined(X86) && defined(X64)
++    if (target_prefix) {
++        /* i#5061: the matched entry's tag can become FAKE_TAG before we
++         * jump through its start_pc.  Save the original target before hit
++         * statistics or register restoration can clobber SCRATCH_REG1.
++         */
++        APP(ilist, SAVE_TO_TLS(dcontext, SCRATCH_REG1, os_ibl_pending_target_offset()));
++    }
++#endif
++
+ #ifdef HASHTABLE_STATISTICS
+     if (INTERNAL_OPTION(hashtable_ibl_stats) ||
+         INTERNAL_OPTION(hashtable_ibl_entry_stats)) {
+--- a/core/arch/x86/emit_utils.c
++++ b/core/arch/x86/emit_utils.c
+@@ -2731,9 +2731,17 @@
+                                absolute _IF_X64(x86_to_x64_ibl_opt));
+         }
+     } else {
++#if defined(LINUX) && defined(X64)
++        /* i#5061: removal changes the entry tag to FAKE_TAG.  The hit path
++         * retained the original application target before restoring XBX.
++         */
++        APP(&ilist,
++            RESTORE_FROM_TLS(dcontext, SCRATCH_REG1, os_ibl_pending_target_offset()));
++#else
+         APP(&ilist,
+             XINST_CREATE_load(dcontext, opnd_create_reg(SCRATCH_REG1),
+                               OPND_CREATE_MEMPTR(SCRATCH_REG2, FRAGMENT_TAG_OFFS)));
++#endif
+     }
+
+     /* Add to the patch list right away; hashtable stats could be added

@@ -1,0 +1,79 @@
+name: isolated-runtimes
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: durante-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  managed-isolation:
+    # Match the existing supported nonroot isolation runner; no host policy edits.
+    runs-on: ubuntu-22.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Verify build tools and strict qualification gates
+        run: |
+          for tool in cc c++ cmake patch curl docker readelf; do command -v "$tool"; done
+          python3 -m unittest discover -s tests -p 'test_isolated_runtimes.py' -v
+      - name: Build the matching CLI and patched runtime
+        run: |
+          rustup toolchain install 1.94.0 --profile minimal
+          cargo +1.94.0 build --release --locked
+          python3 toolkit/fetch_sdk.py
+          cmake -S client -B build -DCMAKE_BUILD_TYPE=Release -DDynamoRIO_DIR="$PWD/toolkit/sdk/DynamoRIO-Linux-11.3.0-1/cmake"
+          cmake --build build -j2
+          mkdir -m 700 "$RUNNER_TEMP/isolated-cli"
+          cp target/release/durante "$RUNNER_TEMP/isolated-cli/durante"
+      - name: Build disposable helper and OpenJDK 21 runtime images
+        run: |
+          docker build -f docker/isolation-test.Dockerfile --target builder -t durante-isolated-builder .
+          docker build -f docker/isolated-runtimes.Dockerfile -t durante-isolated-runtimes .
+      - name: Build the pinned launcher in a finite nonroot container
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -m 700 "$RUNNER_TEMP/isolated-tool" "$RUNNER_TEMP/isolated-build"
+          archive="$RUNNER_TEMP/bubblewrap-0.12.0.tar.xz"
+          curl --fail --location --connect-timeout 20 --max-time 120 --retry 2 --retry-delay 2 \
+            --output "$archive" \
+            https://github.com/containers/bubblewrap/releases/download/v0.12.0/bubblewrap-0.12.0.tar.xz
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --user "$(id -u):$(id -g)" \
+            --memory=1g --pids-limit=64 --cpus=2 \
+            --tmpfs /tmp:rw,exec,mode=1777,size=134217728 \
+            -e TMPDIR=/tmp -e HOME=/tmp -e XDG_CACHE_HOME=/tmp/.cache \
+            --mount "type=bind,src=$PWD,dst=/source,readonly" \
+            --mount "type=bind,src=$archive,dst=/source.tar.xz,readonly" \
+            --mount "type=bind,src=$RUNNER_TEMP/isolated-tool,dst=/output" \
+            --mount "type=bind,src=$RUNNER_TEMP/isolated-build,dst=/work" \
+            --entrypoint /usr/bin/python3 durante-isolated-builder \
+            /source/toolkit/build_isolation.py --source-archive /source.tar.xz \
+            --output /output/bwrap --work-dir /work
+      - name: Require managed workloads and relocated isolation with external teardown
+        run: |
+          mkdir -p .results
+          python3 tests/isolated_runtimes.py --image durante-isolated-runtimes --java-major 21 \
+            --cli "$RUNNER_TEMP/isolated-cli/durante" \
+            --sdk "$PWD/toolkit/sdk/DynamoRIO-Linux-11.3.0-1" --client "$PWD/build/libdurante.so" \
+            --launcher "$RUNNER_TEMP/isolated-tool/bwrap" --output-dir "$PWD/.results/isolated-runtimes" \
+            --work-dir "$RUNNER_TEMP/isolated-runtime-work"
+      - name: Preserve exact runtime, bundle and cleanup evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: isolated-runtime-workloads
+          path: .results/isolated-runtimes/
+          include-hidden-files: true
+          if-no-files-found: error

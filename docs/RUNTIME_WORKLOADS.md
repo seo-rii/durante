@@ -38,6 +38,23 @@ optimizer is outside this qualification: the added Java workloads reproduced
 thread-state errors and a runtime crash with it enabled. Turning off that
 optimization does not claim to repair its implementation.
 
+The production x86-64 Linux runtime retains a matched branch target in per-thread
+storage across code-cache removal, fixing the ordinary JVM execution race tracked
+as [DynamoRIO issue 5061](https://github.com/DynamoRIO/dynamorio/issues/5061).
+`tests/java_tiered.py` repeats the unchanged `RuntimeProbe` with default tiered
+compilation and G1 GC, without disabling JIT or GC options. CI runs one required
+native control followed by thirty engine-only observations, each in a fresh
+directory under the same first four allowed logical CPUs (or fewer if available).
+Every failure and unrun observation fails the fixed plan; there are no retries. Each process has
+the existing 2-GiB address-space, 40-second CPU, 1-MiB file and 40-second wall
+bounds. The ten-minute campaign deadline limits remaining process time, with
+bounded termination and cleanup afterward. Results retain Java 17/21 version
+metadata, stdout/stderr, `hs_err` paths, cleanup state and before/after hashes of
+the production core, JDK executables, `libjvm`, `modules` and generated class.
+Run `python3 tests/java_tiered.py --sdk /path/to/prepared/sdk --java /path/to/jdk/bin/java
+--javac /path/to/jdk/bin/javac --output-dir .results/java-tiered --repeats 30` with
+a fresh output directory. This checks the recorded engine execution only.
+
 The prepared runtime also aborts before terminal client callbacks when its exit
 barrier reports that application threads could not be synchronized, or when an
 OS suspend, context-query or resume operation returns failure during that barrier. That failure
@@ -187,3 +204,5 @@ configurations, virtual threads, dynamic agents, or the separate `isolate` profi
 Before/after hashes do not attest a hostile host or inventory every dynamic
 dependency. All counters and reports remain application-mutable,
 `diagnostic_only`, and unsuitable for trusted CPU-time, billing or verdicts.
+The separate [isolated runtime suite](ISOLATED_RUNTIMES.md) checks its explicit
+runtime image, resource limits and relocated bundle through `durante isolate`.

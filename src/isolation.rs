@@ -236,7 +236,7 @@ pub(crate) fn verify_sdk(root: &Path) -> io::Result<()> {
         || manifest["inputs"]["source_sha256"]
             != "e2b7d3f1917ff64e644b81efd96a610a3c622f4857c75593fef5d5e581c231f6"
         || manifest["inputs"]["patch_sha256"]
-            != "55549776bb61b25b429a4b28b425d4ba20e07e5609db169eb3bd4e3125dc5099"
+            != "4aad57bdf679e18a97836f1472b2a5e2a1a5bf2907ecfa017377bc140d53b646"
         || manifest["inputs"]["code_replay_patch_sha256"] != SDK_REPLAY_PATCH_SHA
         || manifest["inputs"]["recipe"] != 1
     {
@@ -464,14 +464,18 @@ fn policy(path: &Path) -> io::Result<File> {
         statement(0x06, 0x7fff_0000),
         statement(0x06, 0x0005_0000 | libc::EPERM as u32),
     ]);
-    // CPython uses FIOCLEX when opening script files. These two operations
-    // change only this process's descriptor flags, never the underlying inode.
+    // CPython changes descriptor flags; Java queries queued bytes with FIONREAD.
+    // Node/libuv uses generic FIONBIO to toggle the open file description's
+    // O_NONBLOCK flag (also exposed through fcntl), not a driver-specific ioctl.
+    // These operations do not mutate the backing inode.
     // All other ioctls (including reflink/filesystem mutation) remain denied.
     rules.extend([
-        jump(0x15, libc::SYS_ioctl as u32, 0, 5),
+        jump(0x15, libc::SYS_ioctl as u32, 0, 7),
         statement(0x20, 24),
-        jump(0x15, libc::FIOCLEX as u32, 1, 0),
-        jump(0x15, libc::FIONCLEX as u32, 0, 1),
+        jump(0x15, libc::FIOCLEX as u32, 3, 0),
+        jump(0x15, libc::FIONCLEX as u32, 2, 0),
+        jump(0x15, libc::FIONREAD as u32, 1, 0),
+        jump(0x15, libc::FIONBIO as u32, 0, 1),
         statement(0x06, 0x7fff_0000),
         statement(0x06, 0x0005_0000 | libc::EPERM as u32),
     ]);
@@ -1277,10 +1281,10 @@ mod tests {
                 DENY
             );
         }
-        for request in [libc::FIOCLEX, libc::FIONCLEX] {
+        for request in [libc::FIOCLEX, libc::FIONCLEX, libc::FIONREAD, libc::FIONBIO] {
             assert_eq!(evaluate(ARCH, libc::SYS_ioctl as u32, 0, request), ALLOW);
         }
-        for request in [0x5412, 0x4004_9409, libc::TCGETS] {
+        for request in [0x5412, 0x4004_9409, libc::TCGETS, 0x7fff_dead] {
             assert_eq!(evaluate(ARCH, libc::SYS_ioctl as u32, 0, request), DENY);
         }
         for syscall in [

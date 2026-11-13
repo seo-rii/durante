@@ -156,8 +156,13 @@ An AMD64 seccomp policy denies alternate syscall ABIs, tracing, host namespace
 access, mount operations, network connections, keyrings, BPF, asynchronous I/O,
 extended attributes and mutating ioctls. Private AF_UNIX stream/seqpacket pairs
 remain available for process-launch handshakes; datagram pairs and socket
-connect/bind/listen/accept are denied. Only the process-local FIOCLEX/FIONCLEX
-ioctls are allowed. This deliberately restricts application compatibility.
+connect/bind/listen/accept are denied. The ioctl allowlist is limited to
+FIOCLEX/FIONCLEX descriptor flags, the read-only FIONREAD queued-byte query,
+and FIONBIO's O_NONBLOCK flag on the existing open file description. That
+nonblocking flag is shared by dup/fork and is also controllable through fcntl;
+it is not a read-only operation. Terminal operations, filesystem-mutating
+commands and every other ioctl remain denied.
+This deliberately restricts application compatibility.
 
 The guest can write one precreated capture file, not the outer report or its
 parent directory. Results retain `integrity_verified: false` and place any
