@@ -68,6 +68,11 @@ fixtures additionally require GCC. Development scripts use Python 3.11 or newer,
 including the SDK fetcher. PyPy is tested when installed, and absence is reported
 as a coverage gap. No SDK or generated executable is committed.
 
+The [fixed-fixture overhead experiment](docs/OVERHEAD.md) compares native execution,
+the engine alone, and the counter with REP telemetry off/on. It reports per-run
+wall time, CPU time and peak RSS with output/count oracles and input identities;
+its CI smoke checks correctness without a performance threshold.
+
 ## Rust command-line tool
 
 The C client performs instrumentation inside DynamoRIO. The Rust executable
