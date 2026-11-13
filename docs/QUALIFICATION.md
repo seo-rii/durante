@@ -165,7 +165,9 @@ compiled. The separately asserted generated-code fixture in `tests/smoke.py`
 provides a smaller, deterministic check that executed JIT bytes are counted.
 
 [Generated-code lifecycle qualification](JIT_LIFECYCLE.md) adds permission
-transitions, code replacement and same-address remapping. It also documents the
-unresolved RWX rewrite replay counterexample. Its exact known-unqualified
-signature is reported separately from qualified results, and requiring that
-mode explicitly fails until the duplicated accounting is fixed.
+transitions, RWX replacement and same-address remapping. Separate strict replay
+fixtures cover scalar writes, modification inside the current block, partial
+forward/backward MOVSB and STOSB, and repeated rewrites across the runtime's
+adaptive threshold. Native/release/debug controls check application behavior;
+every counter result must match independent instruction and REP oracles. There
+is no known-overcount exception. Unknown or ambiguous recovery fails closed.

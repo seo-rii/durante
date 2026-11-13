@@ -1,4 +1,4 @@
-"""Prevent silent replay overcounts from satisfying the JIT rejection policy."""
+"""Prevent replay overcounts from satisfying strict JIT qualification."""
 import unittest
 from pathlib import Path
 import tempfile
@@ -19,11 +19,11 @@ class JitPolicyTests(unittest.TestCase):
                     "rep_bytes": 18, "rep_entries": 3, "unsupported_rep_entries": 0,
                     "signals_observed": 0, "rep_telemetry_status": "movs_stos_only"}
         self.assertTrue(accounting_errors(observed, 169, 0, True))
-        self.assertEqual(accounting_status(observed, 169, 0, True, "rwx-rewrite"), "known_unqualified")
+        self.assertEqual(accounting_status(observed, 169, 0, True, "rwx-rewrite"), "regression")
         self.assertEqual(accounting_status(observed, 169, 0, True, "protect"), "regression")
         self.assertEqual(accounting_status({**observed, "instructions": 173}, 169, 0, True, "rwx-rewrite"), "regression")
 
-    def test_missing_or_truncated_records_cannot_satisfy_known_exception(self):
+    def test_missing_or_truncated_records_cannot_satisfy_qualification(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             for data in (None, b'{"event":"start"'):
@@ -39,6 +39,8 @@ class JitPolicyTests(unittest.TestCase):
         self.assertEqual(accounting_status(correct, 489, 32, True, "rwx-rewrite"), "qualified")
         for change in ({"valid": 1}, {"complete": False}, {"signals_observed": 1}):
             self.assertEqual(accounting_status({**correct, **change}, 489, 32, True, "rwx-rewrite"), "regression")
+        self.assertEqual(accounting_status({**correct, "signals_observed": False},
+                                          489, 32, True, "rwx-rewrite"), "regression")
 
     def test_exact_count_oracle_requires_the_complete_success_path(self):
         # Tool truncation must not quietly reduce the independent oracle.

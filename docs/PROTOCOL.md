@@ -127,6 +127,18 @@ charge the unexecuted tail of an entered basic block. SIMD width and active lane
 do not multiply its instruction charge; CPU milliseconds have no defined
 conversion.
 
+The prepared runtime distinguishes internal code-modification re-entry from an
+application signal. A fault retry rolls back the charged but unexecuted suffix
+of the old block, then charges the new entry; a completed sandbox write retains
+that write and rolls back only its tail. A sandbox check before client entry has
+no charge to undo. Partially completed REP MOVS/STOS retain their original
+requested byte demand and entry once across internal retries. These corrections
+fix duplicated instrumentation, not general signal-interruption overestimation.
+An unknown/mismatched checkpoint, interrupted pending retry or arithmetic error
+sets sticky accounting invalidity. Thread completion, exec checkpoints and
+shared-address-space vfork child records all preserve that invalidity. Raw schema
+and the diagnostic-only contract remain unchanged.
+
 Every aggregate also emits `rep_telemetry_status`, calculated from validated
 counters rather than target-supplied labels:
 

@@ -42,7 +42,7 @@ def accounting_errors(measurement, expected, extra_nops, rep):
                        "rep_bytes": 12 + extra_nops if rep else 0,
                        "rep_entries": 2 if rep else 0,
                        "unsupported_rep_entries": 0, "signals_observed": 0}.items():
-        if measurement.get(key) != value:
+        if type(measurement.get(key)) is not type(value) or measurement[key] != value:
             errors.append(f"unexpected {key}: expected {value}")
     return errors
 
@@ -52,14 +52,6 @@ def accounting_status(measurement, expected, extra_nops, rep, mode):
         return "regression"
     if not accounting_errors(measurement, expected, extra_nops, rep):
         return "qualified"
-    # Preserve the exact observed counterexample, never call it a qualified
-    # pass or turn arbitrary accounting/output failures into this exception.
-    replayed = {"instructions": expected + 3,
-                "rep_bytes": 18 + 2 * extra_nops if rep else 0,
-                "rep_entries": 3 if rep else 0,
-                "unsupported_rep_entries": 0, "signals_observed": 0}
-    if mode == "rwx-rewrite" and all(measurement.get(key) == value for key, value in replayed.items()):
-        return "known_unqualified"
     return "regression"
 
 
@@ -78,7 +70,7 @@ def main():
         parser.add_argument("--" + name, type=Path, required=True)
     parser.add_argument("--timeout-ms", type=bounded_number(1000, 30000), default=5000)
     parser.add_argument("--require-qualified-mode", choices=MODES, action="append", default=[],
-                        help="fail if any counter case for this mode remains known-unqualified")
+                        help="explicitly require this mode; every matrix row is strict by default")
     args = parser.parse_args()
     for name in ("sdk", "client", "runner_bin", "output_dir"):
         setattr(args, name, getattr(args, name).resolve())
@@ -89,10 +81,14 @@ def main():
     args.output_dir.mkdir(mode=0o700, parents=True, exist_ok=False)
     inputs = {name: ROOT / name for name in (
         "tests/jit_lifecycle.S", "tests/jit_lifecycle.py", "tests/test_jit_lifecycle.py",
-        "tests/runtime_compat.py", "tests/concurrent_spawn.py", "tests/fixtures.py", "collect.py")}
+        "tests/runtime_compat.py", "tests/concurrent_spawn.py", "tests/fixtures.py", "collect.py",
+        "client/durante.c", "client/durante_runtime.h", "toolkit/build_runtime.py",
+        "toolkit/patches/dynamorio-vfork-lifetime.patch",
+        "toolkit/patches/dynamorio-code-replay.patch")}
     inputs.update(client=args.client, runner=args.runner_bin,
                   drrun=args.sdk / "bin64/drrun", compiler=Path(compiler),
                   objdump=Path(objdump), prlimit=Path(args.prlimit),
+                  runtime_manifest=args.sdk / ".durante-runtime.json",
                   release_core=args.sdk / "lib64/release/libdynamorio.so",
                   debug_core=args.sdk / "lib64/debug/libdynamorio.so")
     provenance = InputProvenance(inputs)
@@ -183,9 +179,7 @@ def main():
                         status = accounting_status(measurement, expected, nops, rep, mode)
                         if status == "regression":
                             errors.extend(accounting_errors(measurement, expected, nops, rep))
-                            errors.append("unqualified accounting differs from the recorded counterexample")
-                        elif status == "known_unqualified":
-                            row["qualification_errors"] = accounting_errors(measurement, expected, nops, rep)
+                            errors.append("instruction or REP oracle failed")
                     row["policy_passed"] = row["infrastructure_ok"] and not errors
                     row["status"] = status if row["policy_passed"] else "regression"
                     rows.append(row)
@@ -214,14 +208,13 @@ def main():
     summary = {"schema": 1, "authority": "diagnostic_only", "exit_code": code,
                "checks_passed": sum(row["policy_passed"] for row in rows), "cases": len(rows),
                "qualified_cases": sum(row["status"] == "qualified" for row in rows),
-               "known_unqualified_cases": sum(row["status"] == "known_unqualified" for row in rows),
                "required_unqualified": required_unqualified,
                "controls_passed": sum(row["status"] == "control_passed" for row in rows),
                "cleanup_complete": cleaned, "inputs_unchanged": unchanged,
                "input_provenance": {"files": provenance.files, "errors": provenance.errors},
                "fixtures": fixtures, "failures": failures, "rows": rows,
                "limitations": ["fixed single-threaded generated-code lifecycle fixtures",
-                               "RWX rewrite remains unqualified: duplicated totals are reproduced, not fixed",
+                               "replay correction requires the prepared runtime's private ABI",
                                "not Java/Node JIT compilation or GC/deoptimization qualification",
                                "not isolate profile qualification or trusted retired instructions"]}
     (args.output_dir / "results.json").write_text(json.dumps(summary, indent=2) + "\n")

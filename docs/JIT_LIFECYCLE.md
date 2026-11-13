@@ -1,86 +1,123 @@
-# Generated-code lifecycle qualification
+# Generated-code lifecycle and replay qualification
 
-`tests/jit_lifecycle.py` compares fixed static assembly under native execution,
-release/debug engine-only controls, release/debug counter modes with REP off/on,
-and the Rust supervisor. Each program installs a function returning 42, executes
-it ten times, replaces it with a function returning 43, then executes the
-replacement ten times. A stale cached function fails the output oracle.
+Two strict matrices compare native execution, release/debug engine-only controls,
+release/debug counters with REP off/on, and the Rust supervisor. Each has 48
+observations: 18 functional controls and 30 counter cases. Every scheduled case
+must pass; duplicated counts, invalid/missing/truncated records, diagnostics,
+changed inputs or failed cleanup are errors. No known-overcount exception remains.
 
-Cases exercise RW-to-RX permission transitions, explicit unmap/remap at the same
-owned address, and writes to a previously executed RWX page. Each has a zero-NOP
-and a 32-NOP replacement. An independent `objdump` count of the static success
-path, fixed loop multiplicities and generated bodies determines the exact
-instruction oracle. The two REP copies have known byte lengths.
+## Lifecycle matrix
 
-## Unresolved RWX duplicate accounting
+`tests/jit_lifecycle.py` installs a function returning 42, executes it ten times,
+replaces it with a function returning 43, then executes the replacement ten times.
+A stale cached function fails the output oracle. The modes are RW→RX permission
+transitions, explicit unmap/remap at the same owned address, and rewriting a
+previously executed RWX page. Each replacement has either zero or 32 extra NOPs.
 
-Protection transitions and remapping satisfy the exact oracles. **RWX rewrite
-remains known-unqualified. These checks reproduce the accounting error; they do
-not fix the counter.** The application outputs the correct result and exits 0, while
-a structurally valid, `uninterrupted` measurement reports 172 rather than 169
-instructions, 18 rather than 12 REP bytes, and three rather than two REP entries.
-With 32 extra NOPs, observed/expected values are 492/489 instructions and 82/44 REP
-bytes. Release and debug cores reproduce the same discrepancy.
+An independent `objdump` count of the static success path, fixed loop
+multiplicities and generated bodies determines the instruction oracle. The REP
+copies have known byte lengths. The small RWX case requires 169 instructions,
+12 requested REP bytes and two REP entries; the larger requires 489/44/2.
+The old duplicated results (172/18/3 and 492/82/3) now fail unconditionally.
 
-The engine handles a modified-code fault internally before its public signal
-callback, so entry instrumentation can observe work again without an application
-signal. The pinned runtime's restore-state event also serves PC-only queries;
-its registers need not describe an application write address. Neither
-`restore_memory == false` nor a memory-writing opcode proves replay. Broad
-client-side filters were rejected because they invalidate otherwise passing
-Node and Java fixtures. No speculative filter is included.
+## Replay matrix
 
-A precise runtime notification would need to distinguish retrying the write
-inside the existing cache from dispatch re-entry after a mid-fragment selfmod
-exit. Those decisions are internal to `check_for_modified_code` and
-`handle_modified_code` in the pinned DynamoRIO revision
-`6847bb210bea0ca11d1bf47704383d6a075da490`; the public event API exposes no such
-notification. Resolving this requires a reviewed runtime hook or a replay-aware
-accounting design, with ordinary runtime compatibility retained.
+`tests/jit_replay.py` covers earlier executed work, partially completed writes,
+inline sandbox exits and application-register preservation. Its assembly source
+is fixed; static disassembly and explicit loop/generated-body multiplicities
+produce independent instruction expectations.
 
-## Reproduction and qualification policy
+| Fixture | Instructions | REP bytes / entries when enabled |
+| --- | ---: | ---: |
+| Scalar write to other cached code | 40 | 6 / 1 |
+| Write to an earlier instruction in the current block | 38 | 13 / 1 |
+| Forward MOVSB across RW→cached-RWX page boundary | 48 | 16 / 2 |
+| Backward MOVSB across the boundary with DF set | 49 | 16 / 2 |
+| STOSB into data sharing a cached code page | 51 | 16 / 2 |
+| Twelve alternating rewrites across the adaptive threshold | 211 | 78 / 13 |
 
-After building the pinned SDK, client and CLI:
+The boundary cases complete four iterations before the protected page faults.
+Their second REP still requests ten bytes once, even though RCX is six on retry.
+The self-modification fixture changes an earlier MOV immediate after that MOV
+has executed: its first call must return 42, and its next call must return 43.
+This caught an engine-only bug that exposed the RIP-relative write's scratch RAX
+instead of the original application value. The prepared runtime reconstructs
+the application registers before flushing code and uses that copy only when
+dispatching a retry. A retry inside the existing cache retains its raw registers.
+
+## Runtime and accounting contract
+
+The [private replay patch](../toolkit/patches/dynamorio-code-replay.patch) extends
+the pinned runtime, with declarations in [durante_runtime.h](../client/durante_runtime.h).
+The client requires ABI version 1 through strong symbol references; an old/stock
+core cannot silently run this counter without notifications. Rebuild SDK, client
+and CLI together. The SDK manifest records `code_replay_patch_sha256`, and isolate
+requires its reviewed value in addition to the existing source/lifetime patch.
+
+The runtime reports only actual modified-code dispatch re-entry, distinguishing:
+
+- **RETRY:** the faulting write will run again; a REP may have partially completed.
+- **AFTER_WRITE:** the inline sandbox completed the write and exits to its successor.
+- **ENTRY:** a sandbox validation/threshold check exits before client/app instructions.
+- **UNKNOWN:** the runtime cannot establish the required recovery state.
+
+Before a memory write, bounded thread-local state records its application PC and
+logical block suffix. RETRY removes that unexecuted suffix from the old entry
+charge; the new entry charges its own instructions. AFTER_WRITE retains the
+completed write and removes only its tail. ENTRY has no charge to undo. REP
+retries preserve the original demand and suppress exactly the resumed observation,
+including a second internal fault. A genuine later loop iteration is counted anew.
+
+Signals can overwrite a checkpoint even when their handlers use the same PC.
+Kernel transfers therefore clear checkpoints; an interrupted pending retry is
+invalid. Unknown/mismatched recovery, unsupported emulation checkpoints, missing
+thread state, underflow and existing overflow remain invalid through aggregation,
+exec and vfork child snapshots. An unrelated earlier signal does not by itself
+invalidate later code replacement. No broad restore-state query heuristic is used.
+
+The event does not expose or alter an application context. Its callback performs
+bounded TLS/atomic bookkeeping without allocation, locks or I/O. Runtime patch
+hashes are installation consistency checks, not hostile-host attestation.
+
+## Reproduce
+
+Build the pinned SDK, client and release CLI as described in the README, then:
 
 ```sh
 python3 tests/jit_lifecycle.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 \
   --client build/libdurante.so --runner-bin target/release/durante \
-  --output-dir .results/jit-lifecycle \
-  --require-qualified-mode protect --require-qualified-mode remap
+  --output-dir .results/jit-lifecycle --require-qualified-mode rwx-rewrite
+python3 tests/jit_replay.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 \
+  --client build/libdurante.so --runner-bin target/release/durante \
+  --output-dir .results/jit-replay
 ```
 
-Use a fresh output directory, Linux x86-64, Python 3.11+, GCC, binutils `objdump`
-and `prlimit`. Setup tools and each invocation have wall, CPU, address-space and
-output-file bounds. A subreaper owns and cleans adopted descendants. The same
-recorded absolute limiter path is used throughout. Source, tool, runtime,
-client and generated fixture identities are checked before/after execution.
-These checks are reproducibility evidence, not hostile-host attestation.
-The debug launcher flag precedes engine options. Direct engine invocations use
-the release default's critical/error stderr mask (`12`) to suppress informational
-debug banners; any remaining stderr is a failure, including ignored-option errors.
+Use fresh output directories, Linux x86-64, Python 3.11+, GCC, binutils `objdump`
+and `prlimit`. Setup and each invocation have wall/CPU/address-space/output bounds;
+a subreaper owns adopted descendants. Sources, selected tools, runtime, client,
+CLI and generated fixtures are identified before/after execution. Raw records,
+commands, expectations and errors remain in `results.json`. Exit 0 requires every
+row, identity and cleanup check to pass. The retained `--require-qualified-mode`
+option can state an explicit requirement; the entire default matrix is strict.
 
-The matrix records 48 observations: 18 functional controls, 20 qualified counter
-cases for protection transitions/remapping, and 10 known-unqualified RWX cases.
-Only that exact accounting discrepancy can receive `known_unqualified`; it
-cannot hide a crash, invalid/missing/truncated records, different counts, output
-change, failed cleanup or changed inputs. Corrected RWX counts can become
-`qualified`. The raw observations and qualification errors stay in `results.json`.
+Debug selection precedes forwarded engine options. Direct engine invocations
+use the release default critical/error stderr mask (`12`) to suppress debug
+information banners; remaining diagnostics fail the matrix.
 
-Default exit 0 means this stated policy was satisfied, not that RWX is supported.
-`qualified_cases` excludes controls and known-unqualified cases. To demand RWX
-qualification as well, use a separate fresh directory and add:
+The actual client state machine also has bounded C tests with small host stubs:
 
 ```sh
-python3 tests/jit_lifecycle.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 \
-  --client build/libdurante.so --runner-bin target/release/durante \
-  --output-dir .results/jit-lifecycle-strict --require-qualified-mode rwx-rewrite
+DURANTE_TEST_SDK=toolkit/sdk/DynamoRIO-Linux-11.3.0-1 \
+  python3 -m unittest discover -s tests -p test_client_replay.py -v
 ```
 
-The current client returns harness exit 1 with `required_unqualified` containing
-`rwx-rewrite`. The suite retains this failure for a future precise fix. The CLI
-itself currently still accepts those structurally complete, duplicated counts;
-consumers must not infer RWX qualification from a valid counter report.
+These include production `client/durante.c`, covering repeated partial retries,
+wrong checkpoints/REP descriptors, signal aliasing, overflow, emulation and
+exec/vfork publication. They use SDK headers and GCC, not a loaded runtime, and
+complement the native matrices. Without the default SDK headers they explicitly
+skip; an explicitly configured invalid SDK fails.
 
 These single-threaded fixtures do not qualify concurrent code patching, runtime
-GC/deoptimization, a particular JVM/Node JIT compilation, or `isolate`. Counts
-remain diagnostic and application-mutable, with no trusted CPU-time conversion.
+GC/deoptimization, a particular JVM/Node compilation, or `isolate` execution.
+Counts remain a diagnostic BB-entry metric, including its separate application
+signal limitations, with application-mutable reports and no CPU-time conversion.
