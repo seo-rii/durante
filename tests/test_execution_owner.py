@@ -7,8 +7,9 @@ from pathlib import Path
 import unittest
 from unittest import mock
 
-from execution_owner import (case_errors, cgroup_state, has_accepted_counts,
-                             stop_owned_container, unified_cgroup)
+from execution_owner import (OOM_MEMORY, PUBLICATION, case_errors, cgroup_state,
+                             exhaust_destination, has_accepted_counts, memory_snapshot,
+                             stop_owned_container, stopped_fixture, unified_cgroup)
 
 
 class ExecutionOwnerTests(unittest.TestCase):
@@ -41,7 +42,8 @@ class ExecutionOwnerTests(unittest.TestCase):
         observed = {"controller_pid": 12, "fixture_ready": True,
                     "fault": "controller-kill", "exit_code": -signal.SIGKILL}
         for report in ([], {"execution": []}, {"measurement": 4},
-                       {"untrusted_inner_report": {"measurement": []}}):
+                       {"untrusted_inner_report": {"measurement": []}},
+                       {"untrusted_inner_report": {"execution": []}}):
             with self.subTest(report=report):
                 self.assertTrue(case_errors("controller-kill", observed, report, True))
 
@@ -50,7 +52,8 @@ class ExecutionOwnerTests(unittest.TestCase):
         report = {"authority": "diagnostic_only", "integrity_verified": False,
                   "execution": {"state": "complete", "cleanup_complete": True,
                                 "scratch_cleanup_complete": True},
-                  "untrusted_inner_report": {"measurement": {"valid": True}}}
+                  "untrusted_inner_report": {"measurement": {"valid": True, "complete": True},
+                                             "execution": {"exit_code": 0}}}
         self.assertEqual(case_errors("success", observed, report, True), [])
         self.assertTrue(case_errors("success", observed, None, True))
         invalid = copy.deepcopy(report)
@@ -66,6 +69,134 @@ class ExecutionOwnerTests(unittest.TestCase):
                    "exit_code": 1, "stdout": ""}
         self.assertEqual(case_errors("storage", storage, None, True), [])
         self.assertTrue(case_errors("storage", storage | {"exit_code": 0}, None, True))
+
+    def test_oom_requires_new_host_kernel_events_after_native_startup(self):
+        observed = {"controller_pid": 12, "fixture_pid": 15, "fixture_ready": True,
+                    "fixture_stopped": True, "fixture_released": True, "fault": "oom"}
+        before = {"limit_bytes": OOM_MEMORY, "swap_max_bytes": 0,
+                  "events": {"max": 3, "oom": 2, "oom_kill": 1}}
+        after = copy.deepcopy(before)
+        after["events"] = {"max": 4, "oom": 3, "oom_kill": 2}
+        memory = {"before": before, "after": after}
+        self.assertEqual(case_errors("oom", observed, None, True, memory), [])
+        for name in ("max", "oom", "oom_kill"):
+            stale = copy.deepcopy(memory)
+            stale["after"]["events"][name] = before["events"][name]
+            with self.subTest(stale=name):
+                self.assertTrue(case_errors("oom", observed, None, True, stale))
+        for value in ({}, {"after": after}, memory | {"before": before | {"swap_max_bytes": OOM_MEMORY}},
+                      memory | {"after": after | {"limit_bytes": OOM_MEMORY * 2}}):
+            with self.subTest(memory=value):
+                self.assertTrue(case_errors("oom", observed, None, True, value))
+        for changes, cleanup in (({"fixture_ready": False}, True), ({"fixture_released": False}, True),
+                                 ({"fixture_stopped": False}, True), ({}, False)):
+            with self.subTest(changes=changes, cleanup=cleanup):
+                self.assertTrue(case_errors("oom", observed | changes, None, cleanup, memory))
+        self.assertTrue(case_errors("oom", observed,
+                                    {"untrusted_inner_report": {"measurement": {"valid": True}}}, True, memory))
+
+    def test_report_enospc_requires_midrun_failure_at_the_actual_destination(self):
+        observed = {"controller_pid": 12, "fixture_pid": 15, "fixture_ready": True,
+                    "fixture_stopped": True, "fixture_released": True, "fault": "report-storage",
+                    "storage_errno": errno.ENOSPC, "destination_errno": errno.ENOSPC,
+                    "destination_empty_before_fill": True, "destination_unchanged": True,
+                    "destination_bytes": 0, "exit_code": 1, "stdout": PUBLICATION,
+                    "stderr": "durante: cannot write final report\n"}
+        self.assertEqual(case_errors("report-storage", observed, None, True), [])
+        for changes in ({"fixture_ready": False}, {"fixture_released": False}, {"stdout": ""},
+                        {"exit_code": 0}, {"storage_errno": errno.EACCES}, {"destination_errno": None},
+                        {"destination_empty_before_fill": False}, {"destination_unchanged": False},
+                        {"destination_bytes": 1}, {"stderr": "final report must be a fresh private file"}):
+            with self.subTest(changes=changes):
+                self.assertTrue(case_errors("report-storage", observed | changes, None, True))
+        report = {"authority": "diagnostic_only", "integrity_verified": False}
+        self.assertTrue(case_errors("report-storage", observed, report, True))
+
+    def test_output_enospc_rejects_false_success_and_salvaged_measurements(self):
+        observed = {"controller_pid": 12, "fixture_pid": 15, "fixture_ready": True,
+                    "fixture_stopped": True, "fixture_released": True, "fault": "output-storage",
+                    "storage_errno": errno.ENOSPC, "destination_errno": errno.ENOSPC,
+                    "destination_empty_before_fill": True, "destination_unchanged": True,
+                    "destination_bytes": 0, "exit_code": 1, "captured_stdout": ""}
+        report = {"authority": "diagnostic_only", "integrity_verified": False,
+                  "execution": {"state": "output_failed", "cleanup_complete": True,
+                                "scratch_cleanup_complete": True},
+                  "output": {"stdout_captured_bytes": len(PUBLICATION), "published": False, "complete": False}}
+        self.assertEqual(case_errors("output-storage", observed, report, True), [])
+        for key, changes in (("execution", {"state": "complete"}), ("execution", {"cleanup_complete": False}),
+                             ("output", {"published": True}), ("output", {"stdout_captured_bytes": 0}),
+                             ("output", {"complete": True}), ("measurement", {"instructions": 42})):
+            invalid = copy.deepcopy(report)
+            invalid.setdefault(key, {}).update(changes)
+            with self.subTest(key=key, changes=changes):
+                self.assertTrue(case_errors("output-storage", observed, invalid, True))
+        self.assertTrue(case_errors("output-storage", observed, None, True))
+
+    def test_captured_positive_control_requires_real_complete_output(self):
+        observed = {"controller_pid": 12, "fixture_pid": 15, "fixture_ready": True,
+                    "fixture_stopped": True, "fixture_released": True, "exit_code": 0,
+                    "captured_stdout": PUBLICATION, "captured_stderr": ""}
+        report = {"authority": "diagnostic_only", "integrity_verified": False,
+                  "execution": {"state": "complete", "cleanup_complete": True,
+                                "scratch_cleanup_complete": True},
+                  "untrusted_inner_report": {"measurement": {"valid": True, "complete": True},
+                                             "execution": {"exit_code": 0}},
+                  "output": {"published": True, "complete": True}}
+        self.assertEqual(case_errors("output-success", observed, report, True), [])
+        self.assertTrue(case_errors("output-success", observed | {"captured_stdout": ""}, report, True))
+        self.assertTrue(case_errors("output-success", observed, report | {"output": {"published": False}}, True))
+
+    def test_both_positive_controls_reject_partial_measurements_and_nonzero_target_exit(self):
+        observed = {"controller_pid": 12, "fixture_pid": 15, "fixture_ready": True,
+                    "fixture_stopped": True, "fixture_released": True, "exit_code": 0,
+                    "stdout": "owner-success\n", "captured_stdout": PUBLICATION, "captured_stderr": ""}
+        report = {"authority": "diagnostic_only", "integrity_verified": False,
+                  "execution": {"state": "complete", "cleanup_complete": True,
+                                "scratch_cleanup_complete": True},
+                  "untrusted_inner_report": {"measurement": {"valid": True, "complete": True},
+                                             "execution": {"exit_code": 0}},
+                  "output": {"published": True, "complete": True}}
+        for case in ("success", "output-success"):
+            for key, changes in (("measurement", {"complete": False}), ("execution", {"exit_code": 3}),
+                                 ("execution", {"exit_code": None})):
+                invalid = copy.deepcopy(report)
+                invalid["untrusted_inner_report"][key].update(changes)
+                with self.subTest(case=case, key=key, changes=changes):
+                    self.assertTrue(case_errors(case, observed, invalid, True))
+
+    def test_memory_snapshot_reads_kernel_events_and_swap_bound(self):
+        with tempfile.TemporaryDirectory() as directory:
+            group = Path(directory)
+            for name, value in {"memory.max": str(OOM_MEMORY), "memory.swap.max": "0",
+                                "memory.current": "1024", "memory.events": "max 2\noom 1\noom_kill 1\n"}.items():
+                (group / name).write_text(value)
+            self.assertEqual(memory_snapshot(group), {"limit_bytes": OOM_MEMORY, "swap_max_bytes": 0,
+                                                      "current_bytes": 1024,
+                                                      "events": {"max": 2, "oom": 1, "oom_kill": 1}})
+            (group / "memory.swap.max").unlink()
+            with self.assertRaises(FileNotFoundError):
+                memory_snapshot(group)  # Missing swap/event proof is not OOM coverage.
+
+    def test_publication_barrier_requires_unique_actually_stopped_native_fixture(self):
+        with tempfile.TemporaryDirectory() as directory:
+            proc = Path(directory)
+            for pid, name, state in ((12, "durante", "T (stopped)"), (15, "owner-ready", "S (sleeping)")):
+                (proc / str(pid)).mkdir()
+                (proc / str(pid) / "status").write_text(f"Name:\t{name}\nState:\t{state}\n")
+            self.assertIsNone(stopped_fixture(proc))
+            (proc / "15/status").write_text("Name:\towner-ready\nState:\tT (stopped)\n")
+            self.assertEqual(stopped_fixture(proc), 15)
+            (proc / "12/status").write_text("Name:\towner-ready\nState:\tT (stopped)\n")
+            with self.assertRaisesRegex(RuntimeError, "ambiguous"):
+                stopped_fixture(proc)
+
+    def test_filler_enospc_alone_cannot_qualify_a_writable_destination(self):
+        with tempfile.TemporaryDirectory() as directory:
+            destination = Path(directory) / "report.json"
+            destination.touch()
+            with mock.patch("execution_owner.fill_private_storage", return_value={"storage_errno": errno.ENOSPC}):
+                with self.assertRaisesRegex(RuntimeError, "still accepted"):
+                    exhaust_destination(destination, {})
 
     def test_cgroup_observation_distinguishes_live_empty_and_removed(self):
         with tempfile.TemporaryDirectory() as directory:

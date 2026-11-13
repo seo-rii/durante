@@ -14,16 +14,27 @@ import time
 import uuid
 
 ROOT = Path(__file__).resolve().parents[1]
-CASES = ("success", "controller-kill", "controller-stop", "pids", "storage")
+CASES = ("success", "output-success", "controller-kill", "controller-stop", "pids",
+         "storage", "oom", "report-storage", "output-storage")
+GATED_CASES = ("output-success", "oom", "report-storage", "output-storage")
+CAPTURE_CASES = ("output-success", "output-storage")
+STORAGE_CASES = ("report-storage", "output-storage")
+SUCCESS_CASES = ("success", "output-success")
+PUBLICATION = "owner-publication\n"
+OOM_MEMORY = 256 << 20
 BOUND = 65536
 
 
-def read_json(path):
+def read_bounded(path):
     with Path(path).open("rb") as stream:
         data = stream.read(BOUND + 1)
     if len(data) > BOUND:
         raise ValueError("oversized evidence")
-    return json.loads(data)
+    return data
+
+
+def read_json(path):
+    return json.loads(read_bounded(path))
 
 
 def publish(path, value):
@@ -53,32 +64,46 @@ def has_accepted_counts(report):
                                                "instructions" in measurement))
 
 
-def case_errors(case, observation, report, cleanup):
+def case_errors(case, observation, report, cleanup, memory=None):
     errors = []
     if report is not None:
         if not isinstance(report, dict):
             errors.append("report is not an object")
             report = {}
-        for name in ("execution", "measurement", "untrusted_inner_report"):
+        for name in ("execution", "measurement", "untrusted_inner_report", "output"):
             if name in report and not isinstance(report[name], dict):
                 errors.append("malformed report field: " + name)
         inner = report.get("untrusted_inner_report")
-        if isinstance(inner, dict) and not isinstance(inner.get("measurement", {}), dict):
-            errors.append("malformed inner measurement")
+        if isinstance(inner, dict) and any(not isinstance(inner.get(name, {}), dict)
+                                           for name in ("measurement", "execution")):
+            errors.append("malformed inner measurement/execution")
         if errors:
             report = {}
     if not cleanup:
         errors.append("external owner did not verify complete cgroup teardown")
     if observation.get("controller_pid", 0) <= 1:
         errors.append("real outer controller was not launched")
-    if case == "success":
+    if case in GATED_CASES and (observation.get("fixture_ready") is not True or
+            observation.get("fixture_stopped") is not True or
+            observation.get("fixture_released") is not True or
+            observation.get("fixture_pid", 0) <= 1):
+        errors.append("native startup/continuation barrier was not verified")
+    if case in SUCCESS_CASES:
         if (observation.get("exit_code") != 0 or not isinstance(report, dict) or
                 report.get("execution", {}).get("state") != "complete" or
                 report.get("execution", {}).get("cleanup_complete") is not True or
                 report.get("execution", {}).get("scratch_cleanup_complete") is not True or
                 report.get("untrusted_inner_report", {}).get("measurement", {}).get("valid") is not True or
-                observation.get("stdout") != "owner-success\n"):
+                report.get("untrusted_inner_report", {}).get("measurement", {}).get("complete") is not True or
+                report.get("untrusted_inner_report", {}).get("execution", {}).get("exit_code") != 0 or
+                (case == "success" and observation.get("stdout") != "owner-success\n")):
             errors.append("positive isolated execution control failed")
+        if case == "output-success" and (not isinstance(report, dict) or
+                observation.get("captured_stdout") != PUBLICATION or
+                observation.get("captured_stderr") != "" or
+                report.get("output", {}).get("published") is not True or
+                report.get("output", {}).get("complete") is not True):
+            errors.append("positive captured publication control failed")
     else:
         if has_accepted_counts(report):
             errors.append("failure exposed accepted aggregate counts")
@@ -98,10 +123,90 @@ def case_errors(case, observation, report, cleanup):
                 observation.get("storage_errno") != errno.ENOSPC or
                 observation.get("exit_code") != 1 or observation.get("stdout") != ""):
             errors.append("full private scratch storage did not fail before execution")
+        if case == "oom":
+            before, after = (memory or {}).get("before", {}), (memory or {}).get("after", {})
+            if (observation.get("fault") != "oom" or
+                    any(snapshot.get("limit_bytes") != OOM_MEMORY or
+                        snapshot.get("swap_max_bytes") != 0 for snapshot in (before, after)) or
+                    any(after.get("events", {}).get(name, -1) <=
+                        before.get("events", {}).get(name, -1) or
+                        before.get("events", {}).get(name, -1) < 0
+                        for name in ("max", "oom", "oom_kill"))):
+                errors.append("host did not observe a new cgroup OOM kill after native startup")
+        if case in STORAGE_CASES:
+            if (observation.get("fault") != case or observation.get("exit_code") != 1 or
+                    observation.get("storage_errno") != errno.ENOSPC or
+                    observation.get("destination_errno") != errno.ENOSPC or
+                    observation.get("destination_empty_before_fill") is not True or
+                    observation.get("destination_unchanged") is not True or
+                    observation.get("destination_bytes") != 0):
+                errors.append("mid-run destination exhaustion was not verified")
+            if case == "report-storage" and (report is not None or
+                    observation.get("stdout") != PUBLICATION or
+                    "cannot write final report" not in observation.get("stderr", "")):
+                errors.append("full report destination did not reject final publication")
+            if case == "output-storage" and (not isinstance(report, dict) or
+                    report.get("execution", {}).get("state") != "output_failed" or
+                    report.get("execution", {}).get("cleanup_complete") is not True or
+                    report.get("execution", {}).get("scratch_cleanup_complete") is not True or
+                    report.get("output", {}).get("stdout_captured_bytes") != len(PUBLICATION) or
+                    report.get("output", {}).get("published") is not False or
+                    report.get("output", {}).get("complete") is not False or
+                    observation.get("captured_stdout") != ""):
+                errors.append("full output destination did not reject captured publication")
     if isinstance(report, dict) and (report.get("authority") != "diagnostic_only" or
             report.get("integrity_verified") is not False):
         errors.append("report promoted diagnostic authority")
     return errors
+
+
+def fill_private_storage():
+    written = 0
+    with Path("/scratch/finite-fill").open("wb", buffering=0) as stream:
+        try:
+            for _ in range(16):
+                written += stream.write(b"x" * (1 << 20))
+        except OSError as error:
+            if error.errno != errno.ENOSPC:
+                raise
+            return {"storage_errno": error.errno, "storage_written_bytes": written}
+    raise RuntimeError("the 8 MiB storage quota did not bind")
+
+
+def stopped_fixture(proc=Path("/proc")):
+    candidates = []
+    for entry in proc.iterdir():
+        if not entry.name.isdecimal() or int(entry.name) <= 1:
+            continue
+        try:
+            status = dict(line.split(":", 1) for line in (entry / "status").read_text().splitlines())
+        except FileNotFoundError:
+            continue  # An unrelated child may have exited during inspection.
+        if status.get("Name", "").strip() == "owner-ready" and status.get("State", "").strip().startswith("T"):
+            candidates.append(int(entry.name))
+    if len(candidates) > 1:
+        raise RuntimeError("ambiguous fixed-fixture readiness")
+    return candidates[0] if candidates else None
+
+
+def exhaust_destination(path, observation):
+    before = path.stat()
+    if not path.is_file() or before.st_size != 0:
+        raise RuntimeError("publication destination was not prepared before native startup")
+    observation["destination_empty_before_fill"] = True
+    observation.update(fill_private_storage())
+    # Prove ENOSPC on the actual already-created destination, not just on an
+    # unrelated filler. A successful write is a failed test, never coverage.
+    with path.open("r+b", buffering=0) as stream:
+        try:
+            stream.write(b"x")
+        except OSError as error:
+            if error.errno != errno.ENOSPC:
+                raise
+            observation["destination_errno"] = error.errno
+        else:
+            raise RuntimeError("publication destination still accepted a byte")
+    return before
 
 
 def worker(case):
@@ -114,23 +219,17 @@ def worker(case):
     observation = {"case": case, "controller_pid": None, "phase": "setup",
                    "fixture_ready": False, "stdout": "", "stderr": ""}
     if case == "storage":
-        written = 0
-        with Path("/scratch/finite-fill").open("wb", buffering=0) as stream:
-            try:
-                for _ in range(16):
-                    written += stream.write(b"x" * (1 << 20))
-            except OSError as error:
-                if error.errno != errno.ENOSPC:
-                    raise
-                observation.update(fault="storage", storage_errno=error.errno,
-                                   storage_written_bytes=written)
-        if observation.get("storage_errno") != errno.ENOSPC:
-            raise RuntimeError("the 8 MiB scratch quota did not bind")
+        observation.update(fault="storage", **fill_private_storage())
+    report_path = Path("/scratch/report.json" if case == "report-storage" else "/evidence/report.json")
     command = ["/validation/durante", "isolate", "--launcher", "/isolation-tool/bwrap",
                "--drrun", "/sdk/bin64/drrun", "--client", "/client/libdurante.so",
-               "--workspace", str(workspace), "--report", "/evidence/report.json",
-               "--timeout-ms", "20000", "--", "/work/Main",
-               "success" if case in ("success", "storage") else "pids" if case == "pids" else "hold"]
+               "--workspace", str(workspace), "--report", str(report_path),
+               "--timeout-ms", "20000"]
+    if case in CAPTURE_CASES:
+        command += ["--output-dir", "/scratch/output", "--output-limit-bytes", str(BOUND)]
+    mode = ("oom" if case == "oom" else "publish" if case in GATED_CASES else
+            "success" if case in ("success", "storage") else "pids" if case == "pids" else "hold")
+    command += ["--", "/work/Main", mode]
     env = os.environ.copy()
     env["TMPDIR"] = "/scratch" if case == "storage" else "/tmp"
     process = subprocess.Popen(command, stdin=subprocess.DEVNULL,
@@ -143,6 +242,8 @@ def worker(case):
         selector.register(stream, selectors.EVENT_READ, name)
     deadline = time.monotonic() + 35
     injected = False
+    destination = None
+    destination_before = None
     while time.monotonic() < deadline:
         for key, _ in selector.select(timeout=0.02):
             data = os.read(key.fileobj.fileno(), 4096)
@@ -153,6 +254,13 @@ def worker(case):
                 if len(observation[key.data]) > BOUND:
                     raise RuntimeError("fixture exceeded its evidence bound")
         ready = observation["stdout"] == "owner-running\n"
+        if case in GATED_CASES and not observation["fixture_ready"]:
+            fixture = stopped_fixture()
+            if fixture is not None:
+                observation.update(fixture_pid=fixture, fixture_stopped=True)
+                ready = True
+        elif case in GATED_CASES:
+            ready = observation["fixture_ready"]
         if ready and not observation["fixture_ready"]:
             observation.update(fixture_ready=True, phase="ready")
             publish(evidence / "observation.json", observation)
@@ -164,11 +272,21 @@ def worker(case):
         request = evidence / "request.json"
         if ready and request.exists() and not injected:
             selected = read_json(request).get("fault")
-            if selected != case or selected not in ("controller-kill", "controller-stop"):
+            if selected != case or selected not in ("controller-kill", "controller-stop", *GATED_CASES):
                 raise RuntimeError("unexpected fault request")
-            os.kill(process.pid, signal.SIGKILL if selected == "controller-kill" else signal.SIGSTOP)
+            if case in GATED_CASES:
+                if process.poll() is not None or stopped_fixture() != observation["fixture_pid"]:
+                    raise RuntimeError("controller/fixture exited before mid-run injection")
+                if case in STORAGE_CASES:
+                    destination = report_path if case == "report-storage" else Path("/scratch/output/stdout")
+                    destination_before = exhaust_destination(destination, observation)
+                os.kill(observation["fixture_pid"], signal.SIGCONT)
+                observation.update(fixture_released=True, phase="injected")
+            else:
+                os.kill(process.pid, signal.SIGKILL if selected == "controller-kill" else signal.SIGSTOP)
             injected = True
             observation["fault"] = selected
+            publish(evidence / "observation.json", observation)
         if injected and case == "controller-stop":
             status = Path(f"/proc/{process.pid}/status").read_text()
             if any(line.startswith("State:\tT") for line in status.splitlines()):
@@ -178,6 +296,18 @@ def worker(case):
         # A killed controller may leave descendants holding these pipes. Its
         # death evidence must reach the outside owner without waiting for EOF.
         if process.poll() is not None and (case == "controller-kill" or not selector.get_map()):
+            if destination is not None:
+                after = destination.stat()
+                observation.update(destination_bytes=after.st_size,
+                                   destination_unchanged=(after.st_dev, after.st_ino) ==
+                                   (destination_before.st_dev, destination_before.st_ino))
+            if case == "report-storage":
+                (evidence / "report.json").write_bytes(read_bounded(report_path))
+            if case in CAPTURE_CASES:
+                for name in ("stdout", "stderr"):
+                    data = read_bounded(Path("/scratch/output") / name)
+                    (evidence / ("captured-" + name)).write_bytes(data)
+                    observation["captured_" + name] = data.decode("utf-8", errors="replace")
             observation.update(exit_code=process.returncode, phase="finished")
             publish(evidence / "observation.json", observation)
             break
@@ -212,6 +342,14 @@ def cgroup_state(path):
         if path.exists():
             raise
         return {"exists": False, "populated": "0", "processes": []}
+
+
+def memory_snapshot(path):
+    return {"limit_bytes": int((path / "memory.max").read_text()),
+            "swap_max_bytes": int((path / "memory.swap.max").read_text()),
+            "current_bytes": int((path / "memory.current").read_text()),
+            "events": {key: int(value) for key, value in
+                       (line.split() for line in (path / "memory.events").read_text().splitlines())}}
 
 
 def stop_owned_container(identity, group):
@@ -264,6 +402,7 @@ def execute_case(args, case):
     identifier = None
     group = None
     observation, report = {}, None
+    memory = {}
     errors = []
     cleaned = False
     started = time.monotonic()
@@ -274,7 +413,9 @@ def execute_case(args, case):
                   (args.launcher.parent, "/isolation-tool", True), (args.sdk, "/sdk", True),
                   (args.client.parent, "/client", True), (directory, "/evidence", False)]
         command = ["create", "--name", name, "--network", "none", "--read-only",
-                   "--user", f"{os.getuid()}:{os.getgid()}", "--memory", "1g",
+                   "--user", f"{os.getuid()}:{os.getgid()}",
+                   "--memory", str(OOM_MEMORY) if case == "oom" else "1g",
+                   "--memory-swap", str(OOM_MEMORY) if case == "oom" else "1g",
                    "--pids-limit", "32", "--cpus", "1", "--cgroupns", "private",
                    "--security-opt", "systempaths=unconfined", "--security-opt", "seccomp=unconfined",
                    "--security-opt", "apparmor=unconfined", "--log-driver", "none",
@@ -309,8 +450,17 @@ def execute_case(args, case):
             if evidence.exists():
                 observation = read_json(evidence)
                 if observation.get("phase") == "ready" and not requested:
+                    if case == "oom":
+                        # Take the baseline outside the job, after the real
+                        # fixture stopped and before authorizing any pressure.
+                        memory["before"] = memory_snapshot(group)
                     publish(directory / "request.json", {"fault": case})
                     requested = True
+                if case == "oom" and requested:
+                    memory["after"] = memory_snapshot(group)
+                    if (observation.get("fixture_released") is True and
+                            memory["after"]["events"]["oom_kill"] > memory["before"]["events"]["oom_kill"]):
+                        break  # The outside owner acts even if the controller cannot report.
                 if observation.get("phase") in ("fault", "finished", "worker_timeout"):
                     break
             time.sleep(0.02)
@@ -331,11 +481,11 @@ def execute_case(args, case):
             report = read_json(report_path)
         except (OSError, ValueError) as error:
             errors.append("nonempty report is unreadable: " + str(error))
-    errors.extend(case_errors(case, observation, report, cleaned and row["container_removed"]))
+    errors.extend(case_errors(case, observation, report, cleaned and row["container_removed"], memory))
     row.update(passed=not errors, errors=errors, observation=observation, report=report,
-               accepted_counts=case == "success" and not errors,
+               accepted_counts=case in SUCCESS_CASES and not errors, memory=memory,
                cleanup_complete=cleaned, elapsed_seconds=round(time.monotonic() - started, 3),
-               owner_outcome="complete" if case == "success" else case)
+               owner_outcome="complete" if case in SUCCESS_CASES else case)
     publish(directory / "owner-result.json", row)
     return row
 
@@ -388,7 +538,8 @@ def main():
                "image_requested": requested_image, "image_id": image_id,
                "limitations": ["trusted fixed fixtures and local Docker daemon only",
                                "no external-owner crash, hostile daemon or host failure qualification",
-                               "storage case exhausts private scratch before target launch",
+                               "fixed pre-launch and post-startup tmpfs faults, not arbitrary storage latency/failures",
+                               "OOM qualification requires a live owner and surviving disposable container driver",
                                "not a production execution owner or trusted counter"]}
     publish(args.output_dir / "results.json", summary)
     print(json.dumps({key: value for key, value in summary.items() if key not in ("rows", "input_sha256")}))
