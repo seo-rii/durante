@@ -117,7 +117,7 @@ The worker writes `plan.json` before workload observations and reports any
 `unrun_observations` in `worker.json`. A failure, omitted repeat, unavailable
 resource evidence or incomplete cleanup fails the campaign. Original reports
 are retained; a passing campaign is a non-reproduction, not proof that the
-intermittent Java child failure below is fixed.
+previously observed Java child failures are fixed.
 
 Append `--suite java-children` to the command below, using fresh output and work
 directories, to run this campaign locally. Omitting `--suite` still selects the
@@ -130,12 +130,14 @@ command below. CPU lists and ranges such as `0-3,6` are accepted. Choose CPUs
 available to the Docker host and check their topology when selecting distinct
 physical cores; logical CPU numbers are machine-specific. The option constrains
 the disposable container's CPU placement while retaining its two-CPU quota and
-all workload limits. Omitting it preserves default placement and existing CI
-behavior.
+all workload limits. Omitting it preserves default placement. CI uses default
+placement for the full matrix and `--cpuset-cpus 0,1` for the repeated Java-child
+campaign. Those logical IDs need not represent distinct physical cores on every
+runner.
 
-A completed comparison on one host ran the two conditions sequentially with
-the same production SDK, CLI, client, image and Java fixture, for **24 planned
-observations**:
+A historical comparison, before the upstream correction below, ran the two
+conditions sequentially on one host with the same SDK, CLI, client, image and
+Java fixture, for **24 planned observations**:
 
 | CPU placement | Native observations passed | Isolated observations passed |
 | --- | --- | --- |
@@ -150,8 +152,49 @@ or memory/PID limit events. Both campaigns completed all planned observations;
 cleanup and input-hash checks passed. Exit 139 is the recorded Java child exit
 value; the retained evidence does not directly identify its terminating signal.
 The sequential condition order supports a CPU-placement correlation on this
-build, without establishing the cause. The root cause remains unresolved, and
-the placement option does not fix the failure.
+build, without establishing the cause. CPU placement alone does not fix the
+failure.
+
+## Upstream runtime correction
+
+The prepared runtime now includes the exact upstream correction from
+[DynamoRIO #7749](https://github.com/DynamoRIO/dynamorio/pull/7749)
+([commit 985af57](https://github.com/DynamoRIO/dynamorio/commit/985af57d7c3d73e7a1100d98e412584968588258)).
+It prevents internal suspend-signal reentry between resume notification and
+handler return. Upstream originally reproduced the issue with the AArch64
+`api.detach_state` test; Durante's Java/x86-64 observations below are separate.
+The source pin remains `6847bb210bea0ca11d1bf47704383d6a075da490`; the updated
+lifetime-patch digest is
+`b44627a42f4f0174e843158e3b3473cbcae26e489da55582008f043d0665716c`.
+Rebuild the SDK, client and CLI together; isolate rejects the previous SDK digest.
+
+Two fixed comparisons used OpenJDK 21.0.13+9 and the same image, fixture bytecode,
+client, launcher, JVM flags and limits on two distinct physical cores (`0,1` on
+that host). Each observation had a fresh owned container and identical guest
+paths. `POSIX_SPAWN` and `FORK` were both exercised, with the old/new runtime order
+alternated between rounds. There were no retries, forced scheduling or runtime
+instrumentation changes.
+
+| Comparison | Native passed | Previous runtime passed | Updated runtime passed |
+| --- | --- | --- | --- |
+| Initial 18 observations | 6/6 | 1/6 | 6/6 |
+| Separate 24-observation confirmation | 8/8 | 0/8 | 8/8 |
+
+The initial comparison **failed its predeclared symptom gate**: four baseline
+failures matched the child-exit family, but one baseline run instead reached a
+HotSpot `sharedRuntime.cpp:560` safepoint-PC guarantee and root SIGABRT 6. That
+result remains failed. The separate confirmation declared this secondary JVM
+abort in advance and excluded it from evidence of correcting the original
+failure; it did not occur in the confirmation.
+
+The confirmation's baseline failures were six first-child exit/output mismatches
+and two root SIGSEGV 11 exits without stderr. All eight updated-runtime runs
+passed the exact output, process/image accounting and cleanup checks. Every
+planned observation completed, source/artifact hashes stayed unchanged, and
+resource evidence and external teardown checks passed. The raw campaign retained
+exit 1 for its baseline failures; the separately evaluated before/after comparison
+passed. This supports the correction for this tested profile without assigning
+every historical child exit or the distinct JVM abort to the same cause.
 
 ## Reproduction and evidence
 
@@ -185,12 +228,10 @@ the [shared workload diagnostics](RUNTIME_WORKLOADS.md#execution-controls-and-ac
 `cleanup_complete` true. Missing reports and partial matrices never count as
 successful coverage.
 
-Passing CI does not qualify every local build. Additional Java 21 child-process
-observations with a locally built runtime have intermittently failed with an
-engine signal-handler crash or a child output/exit mismatch; their cause remains
-unresolved. Retain those failed reports when comparing another build or run.
-The child diagnostics above help distinguish the outcomes; a later passing run
-alone does not establish a fix.
+Passing CI does not qualify every local build. Retain the earlier failed reports
+alongside the runtime comparison above. These observations cover the tested
+fixture and environment; they do not qualify arbitrary Java workloads, JVM
+configurations or hosts, or establish that every earlier failure shared a cause.
 
 All reports retain `authority: diagnostic_only` and `integrity_verified: false`.
 Containment and complete arithmetic results do not make application-mutable

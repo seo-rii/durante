@@ -8,6 +8,9 @@ Preserve matched indirect targets across code-cache removal (upstream issue #506
 Preserve the original x87 status when delayed signal frames need extra XSAVE fields.
 Backport decoder initialization fix from upstream commit c46d736f308e6e734bd0477f7b8a2dcbefb155d3.
 Upstream PR: https://github.com/DynamoRIO/dynamorio/pull/7321
+Backport thread synchronization signal-stack correction from upstream commit
+985af57d7c3d73e7a1100d98e412584968588258.
+Upstream PR: https://github.com/DynamoRIO/dynamorio/pull/7749
 
 --- a/core/dynamo.c
 +++ b/core/dynamo.c
@@ -901,3 +904,22 @@ index efc1bbb1cd..ad839efb02 100644
      }
 
      /* Add to the patch list right away; hashtable stats could be added
+
+--- a/core/unix/signal.c
++++ b/core/unix/signal.c
+@@ -8838,5 +8838,15 @@ handle_suspend_signal(dcontext_t *dcontext, kernel_siginfo_t *siginfo,
+     if (unblocked_sigs) {
+         /* re-block so our exit from main_signal_handler is not interrupted */
++        kernel_sigaddset(&prevmask, SUSPEND_SIGNAL);
+         sigprocmask_syscall(SIG_SETMASK, &prevmask, NULL, sizeof(prevmask));
++    } else {
++        /* Prevent another SUSPEND_SIGNAL interrupting main_signal_handler before we
++         * exit.
++         */
++        kernel_sigset_t mask;
++        kernel_sigemptyset(&mask);
++        kernel_sigaddset(&mask, SUSPEND_SIGNAL);
++
++        sigprocmask_syscall(SIG_BLOCK, &mask, NULL, sizeof(mask));
+     }
+     ostd->suspended_sigcxt = NULL;

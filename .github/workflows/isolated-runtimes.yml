@@ -72,7 +72,7 @@ jobs:
       - name: Repeat Java child launches in the relocated bundle
         run: |
           python3 tests/isolated_runtimes.py --image durante-isolated-runtimes --java-major 21 \
-            --suite java-children --cli "$RUNNER_TEMP/isolated-cli/durante" \
+            --suite java-children --cpuset-cpus 0,1 --cli "$RUNNER_TEMP/isolated-cli/durante" \
             --sdk "$PWD/toolkit/sdk/DynamoRIO-Linux-11.3.0-1" --client "$PWD/build/libdurante.so" \
             --launcher "$RUNNER_TEMP/isolated-tool/bwrap" --output-dir "$PWD/.results/java-child-runtimes" \
             --work-dir "$RUNNER_TEMP/java-child-runtime-work"
