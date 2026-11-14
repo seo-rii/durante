@@ -25,6 +25,16 @@ int main(int argc, char **argv) {
     CHECK(argc == 5);
     CHECK(different_namespace("pid", argv[3]));
     CHECK(different_namespace("net", argv[4]));
+    if (!strcmp(argv[1], "exit-139")) {
+        puts("exiting-139");
+        return 139;
+    }
+    if (!strcmp(argv[1], "signal-term")) {
+        puts("terminating-self");
+        CHECK(fflush(stdout) == 0);
+        CHECK(raise(SIGTERM) == 0);
+        return 2;
+    }
     if (!strcmp(argv[1], "capture-exact")) {
         char out[4096], err[4096];
         memset(out, 'O', sizeof(out)); memset(err, 'E', sizeof(err));

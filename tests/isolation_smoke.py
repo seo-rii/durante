@@ -74,7 +74,7 @@ def main():
     libc, previous = own_subreaper()
     rows = []
     try:
-        for mode in ('probe', 'python', 'kill-inner', 'sleep'):
+        for mode in ('probe', 'python', 'exit-139', 'signal-term', 'kill-inner', 'sleep'):
             case = output / mode
             report = case / 'report.json'
             timeout = 500 if mode == 'sleep' else 10000
@@ -104,6 +104,31 @@ def main():
                     row['passed'] = (safe and row['exit_code'] == 0 and row['stdout'] == expected
                                      and result['execution']['state'] == 'complete'
                                      and result.get('untrusted_inner_report', {}).get('measurement', {}).get('valid') is True)
+                elif mode == 'exit-139':
+                    inner = result.get('untrusted_inner_report', {})
+                    execution = inner.get('execution', {})
+                    row['passed'] = (safe and row['exit_code'] == 0
+                                     and row['stdout'] == 'exiting-139\n' and row['stderr'] == ''
+                                     and result['execution']['state'] == 'complete'
+                                     and result['execution'].get('wrapper_exit_code') == 0
+                                     and execution.get('state') == 'complete'
+                                     and execution.get('exit_code') == 139
+                                     and execution.get('signal', 'missing') is None
+                                     and inner.get('measurement', {}).get('valid') is True
+                                     and inner.get('measurement', {}).get('complete') is True
+                                     and 'untrusted_failure_execution' not in result)
+                elif mode == 'signal-term':
+                    execution = result.get('untrusted_failure_execution', {})
+                    row['passed'] = (safe and row['exit_code'] == 1
+                                     and row['stdout'] == 'terminating-self\n' and row['stderr'] == ''
+                                     and result['execution']['state'] == 'isolation_failed'
+                                     and result['execution'].get('wrapper_exit_code') == 1
+                                     and 'untrusted_inner_report' not in result
+                                     and set(execution) == {'state', 'root_pid', 'exit_code', 'signal'}
+                                     and execution.get('state') == 'incomplete'
+                                     and type(execution.get('root_pid')) is int and execution['root_pid'] > 0
+                                     and execution.get('exit_code', 'missing') is None
+                                     and execution.get('signal') == signal.SIGTERM)
                 elif mode == 'kill-inner':
                     row['passed'] = (safe and row['exit_code'] == 1
                                      and 'untrusted_inner_report' not in result
