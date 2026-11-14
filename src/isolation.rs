@@ -541,6 +541,45 @@ fn policy(path: &Path) -> io::Result<File> {
     File::open(path)
 }
 
+fn failure_execution(inner: &Value) -> Option<Value> {
+    let execution = inner.get("execution")?;
+    let state = execution.get("state")?.as_str()?;
+    if !matches!(
+        state,
+        "launch_failed"
+            | "complete"
+            | "incomplete"
+            | "cancelled"
+            | "timed_out"
+            | "wait_failed"
+            | "cleanup_failed"
+    ) {
+        return None;
+    }
+    // Preserve only termination diagnostics, never counters or an accepted report.
+    // In particular, an exit code of 128 + N is not evidence of signal N.
+    let mut diagnostic = json!({"state": state});
+    for (name, minimum, maximum) in [
+        ("root_pid", 1, i32::MAX as u64),
+        ("exit_code", 0, 255),
+        ("signal", 1, 64),
+    ] {
+        let value = execution.get(name)?;
+        if !value.is_null()
+            && !value
+                .as_u64()
+                .is_some_and(|number| (minimum..=maximum).contains(&number))
+        {
+            return None;
+        }
+        diagnostic[name] = value.clone();
+    }
+    if !diagnostic["exit_code"].is_null() && !diagnostic["signal"].is_null() {
+        return None;
+    }
+    Some(diagnostic)
+}
+
 fn valid_inner(value: &Value) -> bool {
     let base = value["schema"] == 1
         && value["authority"] == "diagnostic_only"
@@ -1084,13 +1123,16 @@ fn execute(
     }
     if !success {
         result["execution"]["state"] = json!("isolation_failed");
-        // Diagnostic text only. Never promote a failed wrapper's report,
-        // execution claims or counters into a successful outer result.
+        // Retain bounded diagnostics separately from an accepted inner report.
+        // A failed wrapper never supplies successful execution or counters.
         if let Ok(bytes) = read_bounded(capture, MAX_REPORT) {
             if let Ok(inner) = serde_json::from_slice::<Value>(&bytes) {
                 if let Some(reason) = inner["measurement"]["reason"].as_str() {
                     result["untrusted_failure_reason"] =
                         json!(reason.chars().take(300).collect::<String>());
+                }
+                if let Some(execution) = failure_execution(&inner) {
+                    result["untrusted_failure_execution"] = execution;
                 }
             }
         }
@@ -1113,6 +1155,50 @@ fn execute(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn failed_execution_distinguishes_exit_status_from_signal() {
+        for (state, pid, code, signal) in [
+            ("complete", json!(7), json!(139), Value::Null),
+            ("incomplete", json!(7), Value::Null, json!(11)),
+            ("launch_failed", Value::Null, Value::Null, Value::Null),
+        ] {
+            let expected = json!({"state":state,"root_pid":pid,"exit_code":code,"signal":signal});
+            let mut inner =
+                json!({"execution":expected,"measurement":{"valid":true,"instructions":123}});
+            inner["execution"]["unexpected"] = json!("not copied");
+            assert_eq!(failure_execution(&inner), Some(expected));
+        }
+    }
+
+    #[test]
+    fn failed_execution_omits_unavailable_or_malformed_status() {
+        let valid = json!({"execution":{"state":"incomplete","root_pid":7,
+            "exit_code":null,"signal":11}});
+        for (field, value) in [
+            ("state", json!("unknown")),
+            ("state", json!([])),
+            ("root_pid", json!(0)),
+            ("root_pid", json!(i32::MAX as u64 + 1)),
+            ("root_pid", json!(true)),
+            ("exit_code", json!(139)), // Cannot report an exit and signal together.
+            ("exit_code", json!(256)),
+            ("signal", json!("11")),
+            ("signal", json!(0)),
+            ("signal", json!(65)),
+        ] {
+            let mut changed = valid.clone();
+            changed["execution"][field] = value;
+            assert_eq!(failure_execution(&changed), None, "field {field}");
+        }
+        for field in ["state", "root_pid", "exit_code", "signal"] {
+            let mut changed = valid.clone();
+            changed["execution"].as_object_mut().unwrap().remove(field);
+            assert_eq!(failure_execution(&changed), None, "missing {field}");
+        }
+        assert_eq!(failure_execution(&json!({})), None);
+        assert_eq!(failure_execution(&json!({"execution": []})), None);
+    }
 
     #[test]
     fn sdk_provenance_accepts_the_current_patch_and_rejects_prior_or_changed_inputs() {

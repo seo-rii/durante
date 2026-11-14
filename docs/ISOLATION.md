@@ -178,7 +178,17 @@ The guest can write one precreated capture file, not the outer report or its
 parent directory. Results retain `integrity_verified: false` and place any
 accepted diagnostic report under `untrusted_inner_report`. Timeout, killed inner
 supervision or cleanup failure produces no accepted inner report. Error text
-copied from the guest is explicitly untrusted. The patched namespace PID 1 is
+copied from the guest is explicitly untrusted.
+
+A failed wrapper can retain `untrusted_failure_reason` and
+`untrusted_failure_execution` from its inner report. The latter contains only
+the typed, bounded `state`, `root_pid`, `exit_code` and `signal` fields;
+`root_pid` refers to the guest PID namespace. These diagnostics do not supply
+accepted counters or change the outer failure status. They can be absent when
+the inner report is missing or malformed, or the outer controller forcibly
+stops execution. See the [failure example and status interpretation](OPERATIONS.md#reading-an-execution-result).
+
+The patched namespace PID 1 is
 non-dumpable before the guest forks, blocking guest access to its memory and
 inherited descriptors. A private pidfd guard arms parent-death handling before
 the initial namespace setup wait and verifies that the outside monitor is alive;
@@ -188,6 +198,7 @@ external owner remains required for forced
 controller death and kernel resource failures.
 
 `tests/isolation_smoke.py` exercises native and Python subprocess execution,
+normal exit 139 and target SIGTERM status reporting,
 PID/network separation, supervisor memory/descriptor denial, read-only mounts,
 missing host secrets, seccomp restrictions, inner-supervisor SIGKILL, an outer
 watchdog deadline, unsafe input nodes and inherited regular-file rejection.

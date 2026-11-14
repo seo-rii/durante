@@ -86,6 +86,31 @@ capture, separately require `output.published` and `output.complete` for full
 output. An EOF-complete output can accompany a timed-out execution; output
 completeness is not execution success. An exact quota followed by EOF is allowed.
 
+A failed isolated execution (CLI exit 1) can retain inner termination diagnostics:
+
+```json
+{
+  "execution": {"state": "isolation_failed", "wrapper_exit_code": 1},
+  "untrusted_failure_reason": "root did not exit normally",
+  "untrusted_failure_execution": {
+    "state": "incomplete",
+    "root_pid": 3,
+    "exit_code": null,
+    "signal": 15
+  }
+}
+```
+
+`untrusted_failure_execution` contains only the inner execution state, guest
+root PID, exit code and signal. A null exit code or signal means the inner
+supervisor did not observe that form of termination. Normal `exit(139)` is
+distinct from termination by signal 11: never infer a signal from `128 + signal`
+arithmetic on an exit code. These fields remain untrusted diagnostics; they do
+not provide accepted counts or turn a failed result into a successful one.
+No `untrusted_inner_report` is accepted in this example. Failure diagnostics are
+optional and can be absent after missing or malformed inner reports, deadlines
+or forced termination.
+
 An output quota stop (CLI exit 125) can retain a published prefix:
 
 ```json
