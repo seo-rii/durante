@@ -45,6 +45,11 @@ hashes. Cached cores are reused only when those hashes match. The patch also
 backports [DynamoRIO #7321](https://github.com/DynamoRIO/dynamorio/pull/7321),
 which preserves the decoder context during early thread initialization and
 avoids a debug-runtime startup assertion.
+It also backports [DynamoRIO #7749](https://github.com/DynamoRIO/dynamorio/pull/7749)
+([commit 985af57](https://github.com/DynamoRIO/dynamorio/commit/985af57d7c3d73e7a1100d98e412584968588258)),
+a thread-synchronization correction originally reported by the AArch64
+`api.detach_state` test. Durante's Java comparison is documented separately in
+[isolated runtime qualification](docs/ISOLATED_RUNTIMES.md#upstream-runtime-correction).
 
 The counter requires Durante's private replay ABI 1 in the prepared runtime.
 Rebuild the SDK, client and CLI together when updating: an old/stock core cannot
@@ -235,7 +240,7 @@ frames when the kernel includes extra XSAVE state. The original runtime could
 overwrite the saved precision flag after clearing live FPU exceptions.
 [Signal-state qualification](docs/SIGNAL_STATE.md) checks the saved frame,
 restored registers and arithmetic with native, engine-only and client controls.
-Updating this patch requires rebuilding the prepared SDK and CLI together;
+Updating this patch requires rebuilding the prepared SDK, client and CLI together;
 `isolate` checks the reviewed patch digest.
 
 Concurrent creation is tested with the patched runtime for successful exec,
