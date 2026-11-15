@@ -8,7 +8,7 @@ import shutil
 import subprocess
 
 from concurrent_spawn import bounded_number, cleanup_orphans, own_subreaper
-from jit_lifecycle import diagnostic_classification
+from jit_lifecycle import diagnostic_classification as jit_diagnostic_classification
 from runtime_compat import InputProvenance, bounded_json, collect_records, run_process
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -28,6 +28,20 @@ CASES = {
 MODES = [("native", None, False), ("supervisor", "release", True)] + [
     (label, core, rep) for core in ("release", "debug")
     for label, rep in (("engine", False), ("counter-off", False), ("counter-on", True))]
+
+
+def diagnostic_classification(row):
+    # This fixture has exactly one successful exec: the debug core initializes
+    # its CPU description in both images. CI retained the same known cache-size
+    # notice once per image, with correct output and exact REP partitions.
+    # Fork/vfork and failed exec do not introduce another engine startup here.
+    if (row.get("fixture") == "exec" and row.get("core") == "debug"
+            and row.get("execution_mode") in ("engine", "counter-off", "counter-on")
+            and row.get("stderr") == "<Unknown processor cache size>\n" * 2):
+        return "cpu_cache_size_unknown_after_exec"
+    # Keep the existing single-image policy, including rejection of any other
+    # diagnostic or repetition. Never strip or rewrite the retained stderr.
+    return jit_diagnostic_classification(row)
 
 
 def expected_breakdown(units, enabled):
@@ -131,7 +145,8 @@ def main():
                 row["functional_ok"] = row["exit_code"] == 0 and row.get("stdout") == OUTPUT
                 if not row["functional_ok"]:
                     errors.append("native memory/output oracle failed")
-                if diagnostic_classification(row) == "unexpected":
+                row["diagnostic_classification"] = diagnostic_classification(row)
+                if row["diagnostic_classification"] == "unexpected":
                     errors.append("unexpected execution diagnostic")
                 if instrumented:
                     if label == "supervisor":
