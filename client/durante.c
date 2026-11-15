@@ -723,9 +723,10 @@ static void fork_init(void *ctx) {
   if (report_file >= 0)
     dr_close_file(report_file);
   report_file = -1;
-  /* Mutex and all completed/other-thread state inherited from the parent must
-   * not contribute to the child's work. DR restores the surviving TLS slot. */
-  state_lock = dr_mutex_create();
+  /* DR synchronizes threads before fork, and pre_syscall releases our mutex
+   * before the syscall. Keep the inherited mutex so process_exit frees it;
+   * replacing it leaks its allocation in every forked child. Completed and
+   * other-thread counters must still be reset. DR restores surviving TLS. */
   owner_pid = dr_get_process_id();
   total_instructions = total_signals = total_rep_bytes = total_rep_entries =
       total_unsupported_rep_entries = 0;
