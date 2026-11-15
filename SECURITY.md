@@ -97,8 +97,13 @@ stalling instrumentation on exec.
 extension, inherited descriptors, no-new-privileges, bounded churn and hostile
 cleanup. `tests/adversarial_native.py` checks normal execution, FIFO/symlink/
 hardlink replacement and file/memfd `execveat`. The latter exec paths currently
-have incomplete instrumentation and are rejected as unavailable measurements;
-they are not certified as supported paths. Its optional
+have incomplete instrumentation and are rejected as unavailable measurements
+when CPU restrictions are disabled; they are not certified as supported paths.
+When a CPU policy is enabled, all application `execve` and `execveat` transitions
+return `EPERM` before execution. A normal pathname alone cannot qualify the
+replacement: null argument vectors and 32-bit images can also escape client
+reinjection. Policy guards therefore do not depend on pathname or ELF-header
+inspection. Its optional
 `--demonstrate-report-forgery` case records the known integrity counterexample
 separately from attacks prevented.
 
@@ -106,11 +111,18 @@ The client only accounts for the native Linux x86-64 syscall ABI. An executed
 `int 0x80` fork previously created a child while the result incorrectly reported
 one complete process. Runtime guards now invalidate executed compatibility
 syscall instructions and x32 syscall identifiers, even when REP telemetry is
-disabled. The original syscall and its result are preserved; unsupported ABI
+disabled. With CPU restrictions disabled, the original syscall and its result
+are preserved; unsupported ABI
 execution yields no usable aggregate. Merely containing unreachable compatibility
 bytes does not invalidate a run. `tests/compat_syscalls.py` compares 18 bounded
 cases against native controls, including ordinary ENOSYS calls. Actual x32
 execution remains unqualified on hosts without that kernel ABI.
+
+With a CPU policy enabled, compatibility syscall instructions stop before the
+instruction and x32 calls return `EPERM` before reaching the kernel. Unsupported
+clone/spawn forms are also denied before a child can escape instrumentation.
+The native policy fixtures verify actual output and memory effects, including
+continued parent instrumentation after a shared-VM child is stopped.
 
 The [generated-code checks](docs/JIT_LIFECYCLE.md) require exact instruction and
 REP totals through RWX replacement, partial REP retries and inline self-modifying

@@ -18,14 +18,17 @@ def fixtures():
 
     def add(name, body="", *, features=("avx",), violation=None, count=None,
             code=0, suffix="", arguments=(), marker=None, cli=False,
-            violation_count=1, unavailable=False, rep_bytes=None):
+            violation_count=1, unavailable=False, rep_bytes=None, stdout="",
+            starts=None, spawns=None, exec_attempts=None, debug_failure=None):
         source = (".global _start\n.text\n_start:\n" + body
                   + f"mov $60,%eax\nmov ${code},%edi\nsyscall\n" + suffix
                   + '\n.section .note.GNU-stack,"",@progbits\n')
         cases.append(dict(name=name, source=source, features=list(features), violation=violation,
                           count=count, code=code, arguments=arguments, marker=marker, cli=cli,
                           violation_count=violation_count if violation else 0,
-                          unavailable=unavailable, rep_bytes=rep_bytes))
+                          unavailable=unavailable, rep_bytes=rep_bytes, stdout=stdout,
+                          starts=starts, spawns=spawns, exec_attempts=exec_attempts,
+                          debug_failure=debug_failure))
 
     add("scalar", count=3, cli=True)
     add("scalar_no_policy", count=3, features=())
@@ -80,9 +83,10 @@ def fixtures():
         "xor %r10d,%r10d\nsyscall\n.byte 0xc5,0xf8,0x77\nchild:\n"
         ".byte 0xc5,0xf8,0x77\n", violation="avx", code=126, violation_count=2,
         suffix=".bss\n.p2align 3\nstatus: .skip 8\n")
-    add("exec", "mov 16(%rsp),%rdi\nxor %edx,%edx\npush %rdx\npush %rdi\n"
-        "mov %rsp,%rsi\nmov $59,%eax\nsyscall\n", violation="avx", code=126,
-        arguments=("@avx_raw",))
+    add("exec_guard", "mov 16(%rsp),%rdi\nxor %edx,%edx\npush %rdx\npush %rdi\n"
+        "mov %rsp,%rsi\nmov $59,%eax\nsyscall\ncmp $-1,%rax\njne exec_failed\n",
+        arguments=("@avx_raw",), starts=1, spawns=0, exec_attempts=0, cli=True,
+        suffix=".text\nexec_failed: mov $60,%eax\nmov $77,%edi\nsyscall\n")
     add("thread", "mov $56,%eax\nmov $0x50f00,%edi\nlea stack_end(%rip),%rsi\n"
         "xor %edx,%edx\nxor %r10d,%r10d\nxor %r8d,%r8d\nsyscall\n"
         "test %eax,%eax\njz child\nmov $35,%eax\nlea delay(%rip),%rdi\n"
@@ -108,6 +112,79 @@ def fixtures():
         marker=0, violation="avx", code=126)
     add("rep_with_policy", "lea buffer(%rip),%rdi\nmov $16,%ecx\nxor %eax,%eax\nrep stosb\n",
         features=("simd",), count=7, rep_bytes=16, suffix=".bss\nbuffer: .skip 16\n")
+
+    child_message = "FORBIDDEN_CHILD\n"
+    child_write = ("mov $1,%eax\nmov $1,%edi\nlea child_message(%rip),%rsi\n"
+                   "mov $16,%edx\nsyscall\n")
+    child_data = '.section .rodata\nchild_message: .ascii "FORBIDDEN_CHILD\\n"\n'
+    add("transition_child", "paddq %xmm0,%xmm1\n" + child_write,
+        features=(), stdout=child_message, suffix=child_data)
+    failed = ".text\nfailed: mov $60,%eax\nmov $77,%edi\nsyscall\n"
+    denied = "cmp $-1,%rax\njne failed\n"
+    execveat = ("mov 16(%rsp),%rdi\nmov %rdi,%r12\nmov $2,%eax\n"
+                "xor %esi,%esi\nxor %edx,%edx\nsyscall\nmov %eax,%edi\n"
+                "lea empty(%rip),%rsi\nxor %r10d,%r10d\npush %r10\npush %r12\n"
+                "mov %rsp,%rdx\nmov $0x1000,%r8d\nmov $322,%eax\nsyscall\n")
+    for policy in (True, False):
+        add("execveat_guard" if policy else "execveat_default", execveat + denied,
+            features=("simd",) if policy else (), arguments=("@transition_child",),
+            stdout="" if policy else child_message, unavailable=not policy,
+            starts=1, spawns=0, exec_attempts=0 if policy else 1,
+            suffix=failed + '.section .rodata\nempty: .byte 0\n')
+    for kind, argv in (("null", "xor %esi,%esi\n"),
+                       ("empty", "push %rdx\nmov %rsp,%rsi\n"),
+                       ("empty_arg0", "push %rdx\nlea empty(%rip),%rax\npush %rax\nmov %rsp,%rsi\n")):
+        body = "mov 16(%rsp),%rdi\nxor %edx,%edx\n" + argv + "mov $59,%eax\nsyscall\n"
+        add("execve_" + kind + "_guard", body + denied,
+            features=("simd",), arguments=("@transition_child",), starts=1, spawns=0,
+            exec_attempts=0, suffix=failed + '.section .rodata\nempty: .byte 0\n')
+        if kind == "null":
+            add("execve_null_default", body + denied, features=(), arguments=("@transition_child",),
+                stdout=child_message, unavailable=True, exec_attempts=1, suffix=failed)
+    # Compatibility execve uses a low-address path and argv, both genuinely
+    # accepted by the kernel. Policy mode must stop before the int instruction.
+    compat = ("mov 16(%rsp),%rsi\nlea compat_path(%rip),%rdi\n"
+              "copy_path: lodsb\nstosb\ntest %al,%al\njnz copy_path\n"
+              "mov $11,%eax\nlea compat_path(%rip),%rbx\nlea compat_argv(%rip),%rcx\n"
+              "xor %edx,%edx\nint $0x80\n")
+    compat_data = (".bss\ncompat_path: .skip 4096\n.data\n.p2align 2\n"
+                   "compat_argv: .long compat_path,0\n")
+    add("compat_exec_guard", compat + child_write, features=("simd",), code=126,
+        arguments=("@transition_child",), unavailable=True, starts=1, spawns=0,
+        exec_attempts=0, suffix=compat_data + child_data)
+    add("compat_exec_default", compat, features=(), arguments=("@transition_child",),
+        stdout=child_message, unavailable=True, suffix=compat_data,
+        debug_failure="core/vmareas.c:6214 !dynamo_vm_area_overlap(base, base + size)")
+    add("sysenter_guard", ".byte 0x0f,0x34\n" + child_write, features=("simd",), code=126,
+        unavailable=True, starts=1, spawns=0, exec_attempts=0, suffix=child_data,
+        debug_failure="core/arch/arch.c:3008 instr_get_opcode(&instr) == OP_jmp_short || instr_get_opcode(&instr) == OP_int")
+    add("x32_guard", "mov $0x40000208,%eax\nxor %edi,%edi\nxor %esi,%esi\n"
+        "xor %edx,%edx\nsyscall\n" + denied, features=("simd",), starts=1, spawns=0,
+        exec_attempts=0, suffix=failed)
+    for name, flags in (("shared_vm", 0x111), ("shared_files", 0x411)):
+        add("clone_" + name + "_guard", f"mov $56,%eax\nmov ${flags},%edi\n"
+            "lea stack_end(%rip),%rsi\nxor %edx,%edx\nxor %r10d,%r10d\n"
+            "xor %r8d,%r8d\nsyscall\ntest %eax,%eax\njz escaped_child\n" + denied,
+            features=("simd",), starts=1, spawns=0, exec_attempts=0,
+            suffix=failed + ".text\nescaped_child: paddq %xmm0,%xmm1\n" + child_write
+                   + "mov $60,%eax\nxor %edi,%edi\nsyscall\n" + child_data
+                   + ".bss\n.p2align 4\n.skip 65536\nstack_end:\n")
+    add("clone3_flags_guard", "mov $435,%eax\nlea clone_args(%rip),%rdi\nmov $88,%esi\n"
+        "syscall\n" + denied, features=("simd",), starts=1, spawns=0, exec_attempts=0,
+        suffix=failed + ".data\n.p2align 3\nclone_args: .quad 0x100000000\n.skip 80\n")
+    for name, child_body, unavailable, child_args in (
+            ("nested_spawn", "mov $57,%eax\nsyscall\n" + denied, False, ()),
+            ("compat", "mov $20,%eax\nint $0x80\n" + child_write, True, ()),
+            ("exec", "mov 16(%rsp),%rdi\nxor %edx,%edx\nxor %esi,%esi\n"
+             "mov $59,%eax\nsyscall\n" + denied, False, ("@transition_child",))):
+        status = 126 << 8 if unavailable else 0
+        add("vfork_" + name + "_guard", "mov $58,%eax\nsyscall\ntest %eax,%eax\njz child\n"
+            "mov %eax,%edi\nmov $61,%eax\nlea status(%rip),%rsi\nxor %edx,%edx\n"
+            f"xor %r10d,%r10d\nsyscall\ncmpl ${status},status(%rip)\njne failed\n"
+            "jmp done\nchild:\n" + child_body
+            + "mov $60,%eax\nxor %edi,%edi\nsyscall\ndone:\n", features=("simd",),
+            unavailable=unavailable, starts=2, spawns=1, exec_attempts=0, arguments=child_args,
+            suffix=failed + child_data + ".bss\n.p2align 3\nstatus: .skip 8\n")
     return cases
 
 
@@ -157,6 +234,12 @@ def execute(args, case, binaries, core="release", cli=False):
     command += ["--", *target]
     row = run_process(command, directory, 15000)
     row.update(name=case["name"], core=core, cli=cli)
+    # These two pinned debug-core failures were reproduced with the pre-guard
+    # client. They already stop execution and yield unavailable measurements.
+    # Require their precise diagnostics instead of accepting arbitrary errors.
+    debug_failure = case["debug_failure"] if core == "debug" and not cli else None
+    expected_code = 255 if debug_failure else case["code"]
+    expected_stdout = "" if debug_failure else case["stdout"]
     pid = row["root_pid"]
     if cli:
         envelope = json.loads(report.read_text()) if report.is_file() else {}
@@ -171,7 +254,7 @@ def execute(args, case, binaries, core="release", cli=False):
             "--root-pid", str(pid)], capture_output=True, text=True, timeout=10, check=False)
         measurement = json.loads(result.stdout)
         okay = (result.returncode == (1 if case["violation"] or case["unavailable"] else 0)
-                and row["exit_code"] == case["code"])
+                and row["exit_code"] == expected_code)
     events = [json.loads(line) for path in sorted(records.glob("process-*.jsonl"))
               for line in path.read_text().splitlines()]
     starts = [event for event in events if event["event"] == "start"]
@@ -181,9 +264,17 @@ def execute(args, case, binaries, core="release", cli=False):
         okay &= ((event.get("cpu_policy_version") == 1 and event.get("cpu_policy") == expected_policy)
                  if expected_policy else "cpu_policy" not in event and "cpu_policy_version" not in event)
     okay &= bool(starts) and len(violations) == case["violation_count"]
+    for key, event_name in (("starts", "start"), ("spawns", "spawn"),
+                            ("exec_attempts", "exec_attempt")):
+        if case[key] is not None:
+            okay &= sum(event["event"] == event_name for event in events) == case[key]
     okay &= all(event["feature"] == case["violation"] for event in violations)
     okay &= check_measurement(measurement, case) and measurement == collector.collect(records, pid)
-    okay &= row["cleanup_complete"] and not row["timeout"] and row["stdout"] == ""
+    okay &= row["cleanup_complete"] and not row["timeout"] and row["stdout"] == expected_stdout
+    if debug_failure:
+        okay &= debug_failure in row["stderr"] and "Internal Error: DynamoRIO debug check failure" in row["stderr"]
+    else:
+        okay &= "Internal Error: DynamoRIO" not in row["stderr"]
     if case["marker"] is not None:
         observed = marker.read_bytes()[:16]
         okay &= observed == bytes([case["marker"]]) * 16

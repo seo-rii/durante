@@ -29,7 +29,10 @@ hardware retirement accuracy. Runtime compatibility, process-tree completeness,
 counter trust and time-limit semantics are separate questions.
 
 The policy applies at executed instruction boundaries, including generated code,
-and is inherited by followed children and exec images. A violation writes a
+and is inherited by followed forks and threads. While enabled, application
+`execve`/`execveat`, x32 syscalls and unsupported clone forms return `EPERM`;
+compatibility syscall instructions stop before execution. Measurement-only
+execution retains its existing syscall behavior. A feature violation writes a
 `cpu_feature_violation` lifecycle record and exits that process with 126. The
 collector returns unavailable work with no partial totals. A normal application
 exit 126 does not establish a violation. Policy state and records share the

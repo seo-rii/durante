@@ -71,7 +71,7 @@ typedef struct {
   int child_file, child_exit_code;
   size_t child_bytes;
   uint64_t child_sequence;
-  bool child_exit_seen, child_cpu_violation;
+  bool child_exit_seen, child_policy_exit;
 } thread_data_t;
 static int tls_index;
 static void *state_lock;
@@ -448,11 +448,37 @@ static void observe_rep(app_pc pc, int opcode, int bytes, int count_reg) {
   ++*kind_entries;
 }
 
+/* A shared-VM child must take DR's ordinary syscall-exit path so its suspended
+ * parent keeps the correct runtime state. Only our exit syscall may run after
+ * this decision, never application handlers or the rejected instruction. */
+static void cpu_policy_exit(void) {
+  void *ctx = dr_get_current_drcontext();
+  thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
+  if (!d)
+    fail("CPU policy exit without valid thread state");
+  if (d->child_pid) {
+    dr_mcontext_t mc = {.size = sizeof(mc), .flags = DR_MC_ALL};
+    d->child_policy_exit = true;
+    if (!dr_get_mcontext(ctx, &mc))
+      fail("cannot redirect CPU policy exit");
+    mc.xax = SYS_exit_group;
+    mc.xdi = 126;
+    mc.pc = cpu_policy_exit_pc;
+    dr_redirect_execution(&mc);
+    fail("cannot execute CPU policy exit");
+  }
+  dr_abort_with_code(126);
+}
+
 /* The client implements the Linux x86-64 syscall ABI only. In particular an
  * int 0x80 fork can create a child without either the native spawn callback or
- * the child's client running. Preserve the application instruction, but never
- * publish a complete partial tree after a compatibility ABI is executed. */
+ * the child's client running. Measurement-only mode preserves the instruction
+ * but invalidates the partial tree. CPU policy mode stops before execution. */
 static void unsupported_syscall_abi(void) {
+  if (deny_avx || deny_simd) {
+    dr_fprintf(STDERR, "durante: syscall ABI unsupported with CPU policy\n");
+    cpu_policy_exit();
+  }
   dr_mutex_lock(state_lock);
   accounting_error = true;
   dr_mutex_unlock(state_lock);
@@ -581,8 +607,10 @@ static uint write_suffix(instrlist_t *bb, instr_t *where) {
 }
 
 static void cpu_feature_violation(int feature) {
-  if (feature == CPU_POLICY_UNDECODED)
-    fail("instruction unsupported by native CPU policy decoder");
+  if (feature == CPU_POLICY_UNDECODED) {
+    dr_fprintf(STDERR, "durante: instruction unsupported by native CPU policy decoder\n");
+    cpu_policy_exit();
+  }
   void *ctx = dr_get_current_drcontext();
   thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
   if (!d || (feature != CPU_POLICY_AVX && feature != CPU_POLICY_SIMD))
@@ -593,22 +621,8 @@ static void cpu_feature_violation(int feature) {
   route_event(d, "cpu_feature_violation", feature == CPU_POLICY_AVX
               ? ",\"feature\":\"avx\"" : ",\"feature\":\"simd\"");
   dr_mutex_unlock(state_lock);
-  /* The bounded event is sufficient to invalidate the whole measurement.
-   * A shared-VM child must take DR's ordinary syscall-exit path so its suspended
-   * parent keeps the correct runtime state. Redirect only to our exit syscall,
-   * never to application handlers or back to the forbidden instruction. */
-  if (d->child_pid) {
-    dr_mcontext_t mc = {.size = sizeof(mc), .flags = DR_MC_ALL};
-    d->child_cpu_violation = true;
-    if (!dr_get_mcontext(ctx, &mc))
-      fail("cannot redirect CPU policy exit");
-    mc.xax = SYS_exit_group;
-    mc.xdi = 126;
-    mc.pc = cpu_policy_exit_pc;
-    dr_redirect_execution(&mc);
-    fail("cannot execute CPU policy exit");
-  }
-  dr_abort_with_code(126);
+  /* This bounded event invalidates the whole measurement before termination. */
+  cpu_policy_exit();
 }
 
 static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
@@ -623,8 +637,9 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
        instr_get_isa_mode(where) != DR_ISA_AMD64)) {
     /* This is a runtime clean call at the actual instruction. Merely having
      * unreachable compatibility bytes in a module must not taint a run. */
-    dr_insert_clean_call(drcontext, bb, where,
-                         (void *)unsupported_syscall_abi, false, 0);
+    dr_insert_clean_call_ex(drcontext, bb, where, (void *)unsupported_syscall_abi,
+                           DR_CLEANCALL_READS_APP_CONTEXT |
+                               DR_CLEANCALL_WRITES_APP_CONTEXT, 0);
   }
   if (drmgr_is_first_instr(drcontext, where) && user_data != NULL) {
     /* Preserve complete application state even when a signal handler reads
@@ -704,12 +719,19 @@ static bool pre_syscall(void *ctx, int number) {
   thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
   if (!d)
     fail("syscall without TLS");
+  /* These transitions can escape the native x86-64 client. Reject them before
+   * kernel entry or lifecycle bookkeeping; no process/image was created. */
+  if ((deny_avx || deny_simd) && (x32_syscall(number) || number == SYS_execve
+#ifdef SYS_execveat
+                                || number == SYS_execveat
+#endif
+                                )) {
+    dr_syscall_set_result(ctx, (reg_t)-EPERM);
+    return false;
+  }
   if (x32_syscall(number))
     unsupported_syscall_abi();
-  d->pending_spawn = false;
-  d->pending_exec = false;
-  d->pending_unsupported = false;
-  d->pending_syscall = number;
+  bool unsupported = false;
   bool spawn = number == SYS_fork || number == SYS_vfork;
   bool exec = number == SYS_execve;
 #ifdef SYS_execveat
@@ -724,7 +746,7 @@ static bool pre_syscall(void *ctx, int number) {
     size_t size = (size_t)dr_syscall_get_param(ctx, 1);
     if (size < sizeof(flags) ||
         !dr_safe_read(args, sizeof(flags), &flags, NULL))
-      d->pending_unsupported = true;
+      unsupported = true;
   }
 #endif
   if (number == SYS_clone
@@ -736,17 +758,23 @@ static bool pre_syscall(void *ctx, int number) {
     /* Non-thread shared-address-space clones have no isolated TLS accounting.
      */
     if (spawn && (flags & CLONE_VM_FLAG) && !(flags & CLONE_VFORK_FLAG))
-      d->pending_unsupported = true;
+      unsupported = true;
     /* The runtime fix restores cleared handlers for shared-VM spawn children.
      * Fork-style clone3 uses a separate signal initialization path. */
     if (spawn && (flags & CLONE_CLEAR_SIGHAND_FLAG) && !(flags & CLONE_VM_FLAG))
-      d->pending_unsupported = true;
+      unsupported = true;
   }
   if (d->child_pid && spawn)
-    d->pending_unsupported = true;
-  d->pending_clone_flags = flags;
+    unsupported = true;
   if (spawn && (flags & CLONE_FILES_FLAG))
-    d->pending_unsupported = true;
+    unsupported = true;
+  if ((deny_avx || deny_simd) && unsupported) {
+    dr_syscall_set_result(ctx, (reg_t)-EPERM);
+    return false;
+  }
+  d->pending_unsupported = unsupported;
+  d->pending_syscall = number;
+  d->pending_clone_flags = flags;
   d->pending_spawn = spawn;
   d->pending_exec = exec;
   dr_mutex_lock(state_lock);
@@ -763,7 +791,7 @@ static bool pre_syscall(void *ctx, int number) {
   }
   if (exec)
     snapshot_event("exec_attempt", ctx, true);
-  if (d->child_pid && d->child_exit_seen && !d->child_cpu_violation)
+  if (d->child_pid && d->child_exit_seen && !d->child_policy_exit)
     snapshot_event("end", ctx, false);
   if (d->child_pid && (exec || d->child_exit_seen) && d->child_file >= 0) {
     dr_close_file(d->child_file);

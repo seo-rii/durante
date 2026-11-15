@@ -208,9 +208,11 @@ Python runtime dependency in its execution sandbox. Shared
 [protocol vectors](tests/protocol_vectors.json) exercise complete and incomplete
 trees, exec boundaries, duplicate records and overflow handling.
 
-The client does not capture or replace target stdout/stderr, set its exit status,
-change fork to another syscall, or weaken sandbox policies. It writes separate
-lifecycle records. The caller must put resource bounds around execution and
+The client does not capture or replace target stdout/stderr, change fork to
+another syscall, or weaken sandbox policies. Measurement-only execution leaves
+the target's exit status unchanged; enabled CPU policies stop forbidden
+instructions and deny unsupported execution transitions. The client writes
+separate lifecycle records. The caller must put resource bounds around execution and
 cleanup; the collector neither waits for processes nor kills them. A live or
 truncated tree is unavailable, never a valid partial total.
 

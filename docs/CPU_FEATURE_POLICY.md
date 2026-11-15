@@ -23,9 +23,18 @@ The client classifies decoded instruction opcodes and operands while DynamoRIO
 builds application blocks, then inserts termination immediately before the
 forbidden instruction. Translation alone does not reject unreachable bytes.
 Generated code, changed code and alternate instruction entry points are checked
-when DynamoRIO translates their executed path. Followed child processes, threads
-and exec images inherit the selected policy. This uses the pinned runtime's
+when DynamoRIO translates their executed path. Followed forks and threads
+inherit the selected policy. This uses the pinned runtime's
 existing instruction-decoder and code-replay support.
+
+While a policy is enabled, application `execve` and `execveat` calls return
+`EPERM`, including normal pathname, file-descriptor and compatibility-image
+transitions. The pinned runtime cannot guarantee policy instrumentation across
+every replacement image. The initially selected program still launches normally.
+Unsupported clone forms and x32 syscalls also return `EPERM`; compatibility
+syscall instructions such as `int 0x80` stop before execution and leave the
+measurement unavailable. These guards do not invent an AVX or SIMD violation.
+Omitting the policy retains the existing measurement-only syscall behavior.
 
 The check includes application libraries, not only the submitted source. A
 scalar program can therefore be stopped by packed SIMD in libc or another
@@ -76,6 +85,7 @@ process-tree owner. It does not turn diagnostic instruction counts into trusted
 judge limits. See [SECURITY.md](../SECURITY.md).
 
 `tests/native_cpu_policy.py` runs real release/debug fixtures for the selected
-instruction families, generated code, lifecycle inheritance and memory effects.
+instruction families, generated code, lifecycle inheritance, rejected execution
+transitions and memory effects.
 The collector protocol vectors and `tests/native_policy_cli.rs` cover policy
 agreement, violation reporting, legacy clients and ordinary nonzero exits.
