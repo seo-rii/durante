@@ -84,40 +84,61 @@ python3 tests/jvm_safepoint.py \
 ```
 
 This runs one native control followed by one engine-only debugger observation.
-It is diagnostic only. GDB changes scheduling and installs software breakpoints;
-its transcript is retained separately and bounded by the same 1-MiB file limit.
-Debugger startup can still share stdout, so it cannot substitute for the
-exact-output recurrence matrix. The helper keeps target ASLR and JVM/engine options unchanged,
-follows the parent only, and uses exact function-entry addresses so SysV
-argument-register meanings are explicit. It does not modify runtime patches,
-signal masks or JVM flags to suppress an error.
+It is diagnostic only. GDB changes scheduling and installs breakpoints in native
+DynamoRIO code; its transcript remains bounded by the same 1-MiB file limit.
+The helper retains target ASLR, JVM/engine options and parent-only following.
+The prepared release core must include its matching `libdynamorio.so.debug`.
+Both files are hashed, and GDB must report identical GNU build IDs with the debug
+file owned by the declared core. Missing types, identities or native code
+addresses fail capture rather than guessing a context layout.
 
-The bounded `jvm-context.jsonl` keeps three different observations:
+The current context stream uses schema 2. On the first real signal-delivery
+stop, it resolves the pinned runtime's native `translate_sigcontext` function and
+checks that the exact entry lies in the declared core's executable mapping. It
+records Linux x86-64 entry arguments, the typed `kernel_ucontext_t` fields before
+translation, the function's typed boolean return and the same context afterward.
+Call IDs, inferior PIDs, thread IDs and context addresses pair entries and
+returns. A missing return or an out-of-scope native frame is an explicit failure.
+A false translation return or zero resulting PC is retained as observed data;
+it is not confused with a debugger read error or automatically attributed to
+BUG-006. Neither context is relabeled as a HotSpot handler entry or poll-stub
+argument. Those application-level observations remain unavailable.
 
-1. Debugger signal-delivery stops, with PC, registers and available siginfo. This
-   is before the process handler and may point into engine or generated cache
-   code; it is not automatically an application/JVM polling PC.
-2. The signal and delivered `ucontext` fields at entry to HotSpot's signal handler.
-   The context layout is explicitly Linux x86-64 glibc; it is not portable to
-   another OS/ABI.
-3. The first argument at exact `SharedRuntime::get_poll_stub` entry, when observed.
+Raw signal delivery stops include many runtime-internal faults. The debugger
+continues observing them, but records only the first sixteen raw stops and
+reports the total observed stop count and sampled-out count. Native translation
+pairs share the original 256-event budget. Exceeding that budget remains a failed,
+truncated capture. A bounded first false-return/zero-PC sample and its occurrence
+count survive in the terminal summary even after exhaustion. This does not fill
+missing pairs or make a truncated stream complete. Terminal exit and probe
+coverage metadata also survive the cap. No signal masks, ucontexts or runtime
+patches are changed by the observer.
 
-Timestamps, inferior PID and thread IDs permit correlation, without asserting
-that unrelated stops belong to the same signal. An unhit breakpoint, unavailable
-symbol, failed read or exhausted 256-event budget is reported. Terminal status
-and probe-coverage metadata survive that event cap without raising it. Missing context
-coverage is not filled from `hs_err`. The records do not themselves identify an
-engine fragment or prove which translation branch executed; that requires
-separate evidence. A debugger-only failure is not proof of the unchanged
-runtime's cause or a correction.
+Schema 1 streams from the earlier application-entry approach remain readable
+with their original coverage semantics. They are not reclassified as native
+translation evidence. Exact target output in the unmodified recurrence matrix
+remains separate from debugger observations. Even a fully captured successful
+run is non-reproduction, not an explanation or correction of the original abort.
 
 ## Regression coverage
 
 `python3 -m unittest discover -s tests -p test_jvm_safepoint.py -v` checks the
 fixed plan, preservation of failures before later successes, native/cleanup and
 deadline stops, bounded fatal inspection, exact symptom attribution, root/child
-distinction, and absent/truncated debugger coverage. Existing shared workload
-tests continue to exercise the functional and accounting oracles.
+distinction, and absent/truncated debugger coverage. Schema 2 regressions reject
+missing register fields, invalid unsigned register values, unmatched calls,
+wrong thread/context identities and malformed summary counts while preserving
+valid false-return/zero-PC observations. Existing shared workload tests continue
+to exercise the functional and accounting oracles.
+
+With GDB, a compiler and a prepared SDK, the suite also executes a small native
+and engine-only control. Its one known-address protection fault is handled by
+making its data page writable; the application checks the delivered PC and
+output. The debugger must report a true native translation return and the exact
+assembly fault label as the post-translation PC. Set `DURANTE_TEST_CONTEXT_SDK`
+to an explicit prepared SDK locally; a missing explicit SDK is a test failure.
+The standard CI SDK path is detected automatically. Without the tools/default
+SDK the live control is explicitly skipped, which does not validate it.
 
 ## Bounded observations on 2026-11-15
 
@@ -195,3 +216,41 @@ polling-context capture or explain the original safepoint abort.
 
 BUG-006 remains open and its cause is unconfirmed; this logging correction is
 not a JVM fix and changes no production runtime or client patch.
+
+### Native translation observer follow-up
+
+A bounded first-signal diagnostic found the JVM mapped in `/proc/<pid>/maps`
+while GDB listed only the runtime core and its separate debug file. No libjvm
+object-file event reached the previous installer. The two JVM symbols existed
+in the selected JDK; their absence from capture was not evidence that the JVM
+had never used them.
+
+A separate tiny dynamic-library control established a second limitation. A
+software breakpoint at the application function's original address hit correctly
+in native execution. Under the engine it instead produced an unrecognized
+SIGTRAP in the generated code cache, with no original-address breakpoint hit;
+that diagnostic was intentionally stopped and preserved. Application-entry
+software breakpoints were therefore removed from the JVM observer.
+
+The first native-runtime probe attempted installation during the core's object
+file callback and rejected an address outside the then-observed mapping. The
+application itself still completed correctly. Deferring installation to a real
+signal stop resolved the mismatch. At that stop, GDB already resolved the native
+symbol to the correct mapped address, so an experimental explicit symbol reload
+and ELF parsing fallback were removed. The final observer validates the existing
+symbols and their GNU build IDs without changing global debugger configuration.
+The known-fault native/engine control and all eighteen focused tests passed
+with no skips and unchanged inputs. Its translated PC matched the independent
+assembly fault label and the application validated the delivered PC itself.
+
+The final one-native/one-debugger JVM run completed in 20.542 seconds (20.294
+seconds inside the harness), with both targets returning the exact
+`processes:204` output and exit 0. The observer saw 6,116 raw signal-delivery
+stops, retained the declared first sixteen, and captured all three native
+translation entry/return pairs. All three returned true with nonzero resulting
+PCs. The stream used 26 events, with no truncation, outstanding return or missing
+native probe, and the separate transcript was 607,876 bytes. Input identities,
+CPU-affinity restoration and process cleanup passed. The diagnostic exited 0;
+HotSpot handler/poll-stub coverage remained explicitly unavailable. This verifies
+that the native translation observer works on the selected JVM, while leaving
+the original intermittent safepoint failure and its cause unresolved.

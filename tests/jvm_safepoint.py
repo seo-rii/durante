@@ -88,11 +88,14 @@ def observation_plan(args, workload):
 def inspect_context(path):
     data = bounded_bytes(path, 262144)
     events = [json.loads(line) for line in data.splitlines()]
-    if not events or len(events) > 260 or any(not isinstance(e, dict) or e.get("schema") != 1 for e in events):
+    if (not events or len(events) > 260 or not isinstance(events[0], dict)
+            or events[0].get("schema") not in (1, 2)
+            or any(not isinstance(e, dict) or e.get("schema") != events[0]["schema"] for e in events)):
         raise ValueError("invalid bounded debugger context stream")
     kinds = {event.get("event") for event in events}
     errors = [event for event in events if event.get("event") in ("error", "truncated")]
-    return {"path": str(path), "sha256": hashlib.sha256(data).hexdigest(), "events": len(events),
+    evidence = {"path": str(path), "sha256": hashlib.sha256(data).hexdigest(), "events": len(events),
+            "schema": events[0]["schema"],
             "signal_stop_observed": "signal_stop" in kinds,
             "hotspot_context_observed": "hotspot_signal_context" in kinds,
             "poll_stub_argument_observed": "poll_stub_argument" in kinds,
@@ -100,6 +103,80 @@ def inspect_context(path):
             "errors": errors, "complete": not errors and all(k in kinds for k in
                 ("signal_stop", "hotspot_signal_context", "poll_stub_argument", "inferior_exit")),
             "interpretation": "debugger signal-stop PC, delivered HotSpot ucontext, and poll-stub argument are distinct observations; no causal translation claim"}
+    if events[0]["schema"] == 1:
+        evidence["capture_domain"] = "legacy_application_entries"
+        return evidence
+
+    def hexadecimal(value, nonzero=False):
+        return (isinstance(value, str) and re.fullmatch(r"0x[0-9a-fA-F]{1,16}", value) is not None
+                and (not nonzero or int(value, 16) != 0))
+
+    def valid_context(value):
+        fields = ("rip", "rsp", "err", "trapno", "cr2")
+        return isinstance(value, dict) and all(name in value and hexadecimal(value[name]) for name in fields)
+
+    def valid_identity(value):
+        pid, thread = value.get("inferior_pid"), value.get("thread_ptid")
+        return (type(pid) is int and pid > 0 and isinstance(thread, list) and len(thread) == 3
+                and all(type(part) is int and part >= 0 for part in thread)
+                and thread[0] == pid and thread[1] > 0
+                and hexadecimal(value.get("ucontext_address"), nonzero=True))
+
+    entered, returned = {}, {}
+    for event in events:
+        kind = event.get("event")
+        if kind not in ("translation_enter", "translation_return"):
+            continue
+        identifier = event.get("translation_id")
+        if type(identifier) is not int or identifier < 1 or not valid_identity(event):
+            raise ValueError("invalid native translation identifier")
+        if kind == "translation_enter":
+            if identifier in entered or not valid_context(event.get("pre_context")):
+                raise ValueError("duplicate or incomplete native translation entry")
+            entered[identifier] = event
+        else:
+            before = entered.get(identifier)
+            if (before is None or identifier in returned or type(event.get("result")) is not bool
+                    or event.get("ucontext_address") != before.get("ucontext_address")
+                    or event.get("inferior_pid") != before.get("inferior_pid")
+                    or event.get("thread_ptid") != before.get("thread_ptid")
+                    or not valid_context(event.get("post_context"))):
+                raise ValueError("native translation return does not match its entry")
+            returned[identifier] = event
+    summaries = [event for event in events if event.get("event") == "capture_summary"]
+    summary = summaries[0] if len(summaries) == 1 else {}
+    counts = ("translations_entered", "translations_returned", "pending_returns",
+              "raw_signal_stops_seen", "raw_signal_stops_sampled_out", "critical_translations")
+    if summary and any(type(summary.get(name)) is not int or summary[name] < 0 for name in counts):
+        raise ValueError("invalid native translation summary counts")
+    if summary and summary["raw_signal_stops_sampled_out"] != max(0, summary["raw_signal_stops_seen"] - 16):
+        raise ValueError("raw signal sampling summary is inconsistent")
+    critical = summary.get("first_critical_translation")
+    if critical is not None and (not isinstance(critical, dict) or not valid_identity(critical)
+                                or type(critical.get("result")) is not bool
+                                or not valid_context(critical.get("pre_context"))
+                                or not valid_context(critical.get("post_context"))):
+        raise ValueError("invalid critical native translation context")
+    complete = (bool(entered) and entered.keys() == returned.keys()
+                and summary.get("translations_entered") == len(entered)
+                and summary.get("translations_returned") == len(returned)
+                and summary.get("pending_returns") == 0
+                and summary.get("installed_probe_kinds") == ["native_translation"]
+                and summary.get("missing_probe_kinds") == []
+                and summary.get("event_limit_reached") is False
+                and bool(summary.get("critical_translations")) == (critical is not None))
+    evidence.update(capture_domain="dynamorio_native_translation",
+                    native_translation_pairs=len(returned), native_translation_coverage_complete=complete,
+                    translation_failures=[identifier for identifier, event in returned.items() if not event["result"]],
+                    zero_post_pc=[identifier for identifier, event in returned.items()
+                                  if event.get("post_context", {}).get("rip") == "0x0"],
+                    raw_signal_stops_seen=summary.get("raw_signal_stops_seen"),
+                    raw_signal_stops_sampled_out=summary.get("raw_signal_stops_sampled_out"),
+                    critical_translations=summary.get("critical_translations"), first_critical_translation=critical,
+                    hotspot_context_observed=False, poll_stub_argument_observed=False,
+                    complete=not errors and complete and "inferior_exit" in kinds,
+                    interpretation="native runtime translation entry/return contexts and typed bool result; neither HotSpot handler context nor poll-stub argument; no production-cause claim")
+    return evidence
 
 
 def debugger_command(debugger, engine):
@@ -114,6 +191,9 @@ def debugger_command(debugger, engine):
 
 def run_context(args, workload, directory, timeout):
     directory.mkdir(mode=0o700)
+    (directory / "jvm-context-config.json").write_text(json.dumps({
+        "core": str(args.sdk / "lib64/release/libdynamorio.so"),
+        "debug_file": str(args.sdk / "lib64/release/libdynamorio.so.debug")}) + "\n")
     engine = [str(args.drrun), "-quiet", "-follow_children", "-disable_traces", "-vm_size", "32M",
               "-vmheap_size", "32M", "-stderr_mask", "12", "--", *workload.command]
     command = debugger_command(args.gdb, engine)
@@ -127,8 +207,8 @@ def run_context(args, workload, directory, timeout):
         data = bounded_bytes(transcript, MAX_FATAL_BYTES)
         row["debugger_transcript"] = {"path": str(transcript), "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}
         row["context"] = inspect_context(directory / "jvm-context.jsonl")
-        if row["context"]["errors"] or not row["context"]["inferior_exit_observed"]:
-            row["errors"].append("debugger capture failed, truncated, or has no inferior exit")
+        if not row["context"]["complete"]:
+            row["errors"].append("debugger native translation capture failed, truncated, or has incomplete coverage")
     except (OSError, ValueError, TypeError) as error:
         row["errors"].append("context capture unavailable: " + str(error)[:300])
     row["passed"] = row["infrastructure_ok"] and row["exit_code"] == 0 and not row["errors"]
@@ -222,6 +302,7 @@ def main(argv=None):
         inputs["jdk:" + name] = home / name if home else None
     if args.context:
         inputs["binary:gdb"] = args.gdb
+        inputs["binary:core-debug"] = args.sdk / "lib64/release/libdynamorio.so.debug"
     provenance = InputProvenance(inputs)
     provenance.capture("before")
     workload = next(w for w in workloads.workload_cases({"java": args.java or "<missing-java>"}, args.output_dir / "classes")

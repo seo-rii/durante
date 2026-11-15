@@ -1,7 +1,9 @@
 """Regression checks for fixed plans, symptom attribution and context evidence."""
 from contextlib import redirect_stdout
+import copy
 import io
 import json
+import os
 from pathlib import Path
 import runpy
 import shutil
@@ -26,6 +28,18 @@ R12=0x0000000000000000, R13=0x00007f6b69883530
 RIP=0x00007f6b66aeb2b4, EFLAGS=0x0000000000010246
 XMM[0]=0x0
 """
+
+
+def debugger_module():
+    commands = []
+    events = SimpleNamespace(connect=lambda _: None)
+    fake = SimpleNamespace(Breakpoint=object, FinishBreakpoint=object, error=RuntimeError,
+        SignalEvent=type("SignalEvent", (), {}), execute=commands.append,
+        selected_thread=lambda: None, selected_inferior=lambda: SimpleNamespace(pid=0),
+        events=SimpleNamespace(new_objfile=events, stop=events, exited=events))
+    with patch.dict(sys.modules, {"gdb": fake}), patch.object(Path, "open", return_value=io.StringIO()):
+        module = runpy.run_path(str(safepoint.ROOT / "tests/jvm_safepoint_gdb.py"))
+    return module, commands, fake
 
 
 class SafepointTests(unittest.TestCase):
@@ -198,6 +212,123 @@ class SafepointTests(unittest.TestCase):
         self.assertFalse(write(full + ["truncated"])["complete"])
         self.assertFalse(write(full + ["error"])["complete"])
 
+    def test_native_translation_pairs_preserve_failed_or_zero_pc_results(self):
+        path = self.root / "native-context.jsonl"
+        identity = {"schema": 2, "inferior_pid": 70, "thread_ptid": [70, 71, 0],
+                    "translation_id": 1, "ucontext_address": "0x1230"}
+        context = {"rip": "0x4000", "rsp": "0x5000", "err": "0x2", "trapno": "0xe", "cr2": "0x6000"}
+        events = [
+            {**identity, "event": "translation_enter", "pre_context": context},
+            {**identity, "event": "translation_return", "result": False, "post_context": {**context, "rip": "0x0"}},
+            {"schema": 2, "event": "inferior_exit"},
+            {"schema": 2, "event": "capture_summary", "translations_entered": 1,
+             "translations_returned": 1, "pending_returns": 0,
+             "installed_probe_kinds": ["native_translation"], "missing_probe_kinds": [],
+             "event_limit_reached": False, "raw_signal_stops_seen": 2000,
+             "raw_signal_stops_sampled_out": 1984, "critical_translations": 1,
+             "first_critical_translation": {**identity, "result": False,
+                                             "pre_context": context,
+                                             "post_context": {**context, "rip": "0x0"}}}]
+
+        def inspect(rows):
+            path.write_text("".join(json.dumps(row) + "\n" for row in rows))
+            return safepoint.inspect_context(path)
+
+        evidence = inspect(events)
+        self.assertTrue(evidence["complete"])
+        self.assertEqual(evidence["translation_failures"], [1])
+        self.assertEqual(evidence["zero_post_pc"], [1])
+        self.assertFalse(evidence["hotspot_context_observed"])
+        self.assertFalse(evidence["poll_stub_argument_observed"])
+        self.assertEqual(evidence["raw_signal_stops_sampled_out"], 1984)
+        for changed in (events[:1] + events[2:], events + [{"schema": 2, "event": "truncated"}]):
+            self.assertFalse(inspect(changed)["complete"])
+        for mutation in ({"translation_id": 2}, {"thread_ptid": [70, 72, 0]},
+                         {"inferior_pid": 75}, {"ucontext_address": "0x4560"}, {"result": 1},
+                         {"post_context": {}}, {"post_context": {**context, "rip": "0x10000000000000000"}}):
+            changed = copy.deepcopy(events)
+            changed[1].update(mutation)
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                inspect(changed)
+        for key in context:
+            changed = copy.deepcopy(events)
+            del changed[0]["pre_context"][key]
+            with self.subTest(missing=key), self.assertRaises(ValueError):
+                inspect(changed)
+        for invalid in (-1, True, "1", None):
+            changed = copy.deepcopy(events)
+            changed[-1]["translations_entered"] = invalid
+            with self.subTest(summary_count=invalid), self.assertRaises(ValueError):
+                inspect(changed)
+
+    def test_native_runtime_probe_observes_exact_fault_pc_and_boolean_return(self):
+        requested = os.environ.get("DURANTE_TEST_CONTEXT_SDK")
+        sdk = Path(requested) if requested else safepoint.ROOT / "toolkit/sdk/DynamoRIO-Linux-11.3.0-1"
+        debugger, compiler, prlimit, nm = (shutil.which(name) for name in ("gdb", "gcc", "prlimit", "nm"))
+        required = (sdk / "bin64/drrun", sdk / "lib64/release/libdynamorio.so.debug")
+        available = all((debugger, compiler, prlimit, nm)) and all(path.is_file() for path in required)
+        if not available and not requested:
+            self.skipTest("prepared SDK/GDB unavailable; native translation probe requires its live control")
+        self.assertTrue(available, "explicit context-control SDK and required tools must be available")
+        source, executable = self.root / "fault.c", self.root / "fault"
+        source.write_text(r'''#define _GNU_SOURCE
+#include <signal.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <sys/mman.h>
+#include <ucontext.h>
+#include <unistd.h>
+extern char durante_context_fault[];
+static void *page;
+static volatile sig_atomic_t seen, correct;
+static void handled(int signal, siginfo_t *info, void *pointer) {
+    ucontext_t *context = pointer;
+    correct = signal == SIGSEGV && info->si_addr == page &&
+        (uintptr_t) context->uc_mcontext.gregs[REG_RIP] == (uintptr_t) durante_context_fault;
+    if (mprotect(page, 4096, PROT_READ | PROT_WRITE)) _exit(90);
+    ++seen;
+}
+int main(void) {
+    page = mmap(0, 4096, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    if (page == MAP_FAILED) return 2;
+    struct sigaction action = {0};
+    action.sa_sigaction = handled; action.sa_flags = SA_SIGINFO;
+    if (sigaction(SIGSEGV, &action, 0)) return 3;
+    __asm__ volatile(".global durante_context_fault\ndurante_context_fault:\nmovb $9,(%0)"
+                     : : "r"(page) : "memory");
+    if (seen != 1 || !correct || *(unsigned char *)page != 9) return 4;
+    puts("native-translation-control:1");
+    return 0;
+}
+''')
+        compiled = subprocess.run([compiler, "-O0", "-g", "-no-pie", str(source), "-o", str(executable)],
+                                  capture_output=True, timeout=10)
+        self.assertEqual(compiled.returncode, 0, compiled.stderr)
+        symbols = subprocess.run([nm, "-n", str(executable)], text=True, capture_output=True, timeout=5)
+        self.assertEqual(symbols.returncode, 0, symbols.stderr)
+        expected_pc = next(int(line.split()[0], 16) for line in symbols.stdout.splitlines()
+                           if line.endswith(" durante_context_fault"))
+        native_dir = self.root / "native-fault"
+        native_dir.mkdir()
+        native = safepoint.run_process([str(executable)], native_dir, 5000, prlimit, cpu_seconds=5)
+        self.assertEqual(native["exit_code"], 0, native)
+        self.assertEqual(native["stdout"], "native-translation-control:1\n")
+        self.assertTrue(native["cleanup_complete"])
+        args = SimpleNamespace(sdk=sdk.resolve(), drrun=sdk.resolve() / "bin64/drrun", gdb=debugger, prlimit=prlimit)
+        directory = self.root / "engine-fault"
+        observed = safepoint.run_context(args, SimpleNamespace(command=[str(executable)]), directory, 15000)
+        self.assertTrue(observed["passed"], observed)
+        self.assertEqual(observed["stdout"], native["stdout"])
+        self.assertTrue(observed["cleanup_complete"])
+        rows = [json.loads(line) for line in (directory / "jvm-context.jsonl").read_text().splitlines()]
+        entered = {row["translation_id"]: row for row in rows if row["event"] == "translation_enter"}
+        matching = [row for row in rows if row["event"] == "translation_return"
+                    and int(row["post_context"]["rip"], 16) == expected_pc]
+        self.assertEqual(len(matching), 1, rows)
+        self.assertIs(matching[0]["result"], True)
+        self.assertNotEqual(entered[matching[0]["translation_id"]]["pre_context"]["rip"], hex(expected_pc))
+        self.assertTrue(any(row["event"] == "breakpoint_installed" and row.get("build_id") for row in rows))
+
     def test_missing_inputs_still_publish_the_full_failed_plan(self):
         output = self.root / "missing-inputs"
         with redirect_stdout(io.StringIO()):
@@ -216,14 +347,7 @@ class SafepointTests(unittest.TestCase):
         debugger = shutil.which("gdb")
         if not debugger:
             self.skipTest("GDB unavailable; context diagnostic policy is not qualified")
-        commands = []
-        events = SimpleNamespace(connect=lambda _: None)
-        fake = SimpleNamespace(Breakpoint=object, error=RuntimeError,
-            SignalEvent=type("SignalEvent", (), {}), execute=commands.append,
-            selected_thread=lambda: None, selected_inferior=lambda: SimpleNamespace(pid=0),
-            events=SimpleNamespace(new_objfile=events, stop=events, exited=events))
-        with patch.dict(sys.modules, {"gdb": fake}), patch.object(Path, "open", return_value=io.StringIO()):
-            module = runpy.run_path(str(safepoint.ROOT / "tests/jvm_safepoint_gdb.py"))
+        module, commands, _ = debugger_module()
         policy = next(c for c in commands if c.startswith("handle SIGSEGV"))
         result = subprocess.run([debugger, "--nx", "--nh", "--batch", "-ex", policy,
                                  "-ex", "info signals SIGSEGV", "-ex", "info signals SIGBUS",
@@ -250,7 +374,9 @@ class SafepointTests(unittest.TestCase):
         record("configuration")
         record("signal_stop")
         record("inferior_exit", terminal=True, exit_code=0)
-        record("capture_summary", terminal=True, installed_probe_kinds=[])
+        record("capture_summary", terminal=True, installed_probe_kinds=[],
+               translations_entered=0, translations_returned=0, pending_returns=0,
+               raw_signal_stops_seen=0, raw_signal_stops_sampled_out=0, critical_translations=0)
         path = self.root / "capped-context.jsonl"
         path.write_text(output.getvalue())
         evidence = safepoint.inspect_context(path)
@@ -258,6 +384,41 @@ class SafepointTests(unittest.TestCase):
         self.assertTrue(evidence["inferior_exit_observed"])
         self.assertFalse(evidence["complete"])
         self.assertEqual(evidence["errors"][0]["event"], "truncated")
+
+    def test_return_probe_retains_critical_context_after_event_cap_and_reports_missing_returns(self):
+        module, _, fake = debugger_module()
+        fake.selected_thread = lambda: SimpleNamespace(ptid=(70, 71, 0))
+        fake.selected_inferior = lambda: SimpleNamespace(pid=70)
+        state = module["record"].__globals__
+        output = io.StringIO()
+        before = {"rip": "0x4000", "rsp": "0x5000", "err": "0x2", "trapno": "0xe", "cr2": "0x6000"}
+        state.update(stream=output, count=1, MAX_EVENTS=1, truncated=False,
+                     context=lambda _: {**before, "rip": "0x0"})
+        probe_type = module["TranslationReturn"]
+        probe = probe_type.__new__(probe_type)
+        probe.identifier, probe.pointer, probe.before, probe.return_value = 7, 0x1230, before, 0
+        state["pending"][7] = probe
+        self.assertFalse(probe.stop())
+        self.assertNotIn(7, state["pending"])
+        self.assertEqual(state["critical_translations"], 1)
+        self.assertIs(state["critical_sample"]["result"], False)
+        self.assertEqual(state["critical_sample"]["post_context"]["rip"], "0x0")
+        self.assertEqual(json.loads(output.getvalue())["event"], "truncated")
+
+        for return_value in (None, 2):
+            output = io.StringIO()
+            state.update(stream=output, count=0, MAX_EVENTS=256, truncated=False)
+            probe.return_value = return_value
+            state["pending"][7] = probe
+            self.assertFalse(probe.stop())
+            self.assertEqual(json.loads(output.getvalue())["event"], "error")
+            self.assertNotIn(7, state["pending"])
+        output = io.StringIO()
+        state.update(stream=output, count=0)
+        state["pending"][7] = probe
+        probe.out_of_scope()
+        self.assertNotIn(7, state["pending"])
+        self.assertIn("without an observed return", json.loads(output.getvalue())["detail"])
 
     def test_debugger_signal_stop_output_stays_in_bounded_transcript(self):
         debugger, prlimit = shutil.which("gdb"), shutil.which("prlimit")
