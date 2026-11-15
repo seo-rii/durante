@@ -4,6 +4,8 @@ import copy
 from dataclasses import asdict
 from fractions import Fraction
 import json
+import os
+import sys
 from pathlib import Path
 import tempfile
 from types import SimpleNamespace
@@ -11,6 +13,7 @@ import unittest
 from unittest.mock import patch
 
 import runtime_repeatability as repeatability
+import runtime_compat
 
 
 def host():
@@ -69,6 +72,37 @@ def collection_fixture():
             "plan": plan, "rows": rows, "setup_complete": True, "cleanup_complete": True,
             "host_before": host(), "host_after": host(), "inputs_unchanged": True,
             "input_provenance": {"files": files, "errors": []}, "failures": []}
+
+
+
+def controlled_collection_fixture(name):
+    collection = collection_fixture()
+    profile = collection["profile"]
+    case = repeatability.controlled_cases(repeatability.profile_cases(profile), name)[0]
+    profile["cpython_hash_profile"] = name
+    profile["workloads"] = [asdict(case)]
+    profile["environment"] = repeatability.profile_environment(profile)
+    seed = repeatability.CPYTHON_HASH_PROFILES[name]
+    effective = {"executable": "/runtime/python3", "flags": {
+        "isolated": 0, "ignore_environment": 0, "safe_path": True,
+        "no_user_site": 1, "no_site": 1, "hash_randomization": 1},
+        "python_environment": {"PYTHONHASHSEED": seed}, "hash_sentinel": -123456789,
+        "hash_algorithm": "synthetic-hash", "stdlib_paths": ["/runtime/pathlib.py"]}
+    profile["cpython_effective"] = effective
+    collection["cpython_probe"] = {"command": ["/runtime/python3", *repeatability.CPYTHON_CONTROL_FLAGS, "-c", repeatability.CPYTHON_PROBE],
+        "stdout": json.dumps(effective), "stderr": "", "exit_code": 0, "errors": [],
+        "timeout": False, "infrastructure_ok": True, "cleanup_complete": True, "python_hash_seed": seed}
+    files = collection["input_provenance"]["files"]
+    for phase in ("before", "after"):
+        files["binary:runtime"][phase]["resolved_path"] = "/runtime/python3"
+    files["probe:cpython-module:0"] = {"path": "/runtime/pathlib.py",
+        "before": {"sha256": "b" * 64}, "after": {"sha256": "b" * 64}, "unchanged": True}
+    profile["input_sha256"]["probe:cpython-module:0"] = "b" * 64
+    for row in collection["rows"]:
+        row["python_hash_seed"] = seed
+        row["command"] = repeatability.expected_command(profile, case, row["mode"], Path(row["directory"]))
+    collection["profile_sha256"] = repeatability.digest(profile)
+    return collection
 
 
 def change_counter(row, name, value):
@@ -199,6 +233,94 @@ class RepeatabilityTests(unittest.TestCase):
                 edit(collection)
                 result = repeatability.evaluate(collection)
                 self.assertFalse(result["qualification_passed"], result)
+
+    def test_named_hash_profiles_change_only_explicit_seed_and_keep_default_commands(self):
+        isolated = collection_fixture()
+        self.assertEqual(repeatability.profile_cases(isolated["profile"])[0].command[1:3], ["-I", "-S"])
+        controlled = [controlled_collection_fixture(name) for name in ("random", "seed-1")]
+        for collection in controlled:
+            before = copy.deepcopy(collection)
+            result = repeatability.evaluate(collection)
+            self.assertTrue(result["qualification_passed"], result)
+            self.assertEqual(collection, before)
+            self.assertEqual(len(collection["plan"]), 12)
+            self.assertEqual(collection["options"]["max_spread_ppm"], 0)
+        profiles = [item["profile"] for item in controlled]
+        self.assertEqual(profiles[0]["workloads"], profiles[1]["workloads"])
+        environments = [dict(profile["environment"]) for profile in profiles]
+        self.assertEqual([env.pop("PYTHONHASHSEED") for env in environments], ["random", "1"])
+        self.assertEqual(environments[0], environments[1])
+        for runtime, workloads in (("java", ["allocation-gc"]), ("cpython", ["processes"]), ("cpython", None)):
+            with self.subTest(runtime=runtime, workloads=workloads), self.assertRaises(ValueError):
+                repeatability.collect(SimpleNamespace(runtime=runtime, workload=workloads, cpython_hash_profile="seed-1"))
+
+    def test_controlled_profile_requires_effective_probe_seed_and_module_identity(self):
+        for label in ("missing probe", "ignored seed", "other Python input", "missing module", "missing forwarded seed"):
+            with self.subTest(label=label):
+                collection = controlled_collection_fixture("seed-1")
+                profile = collection["profile"]
+                if label == "missing probe":
+                    collection.pop("cpython_probe")
+                elif label == "ignored seed":
+                    profile["cpython_effective"]["flags"]["ignore_environment"] = 1
+                    collection["cpython_probe"]["stdout"] = json.dumps(profile["cpython_effective"])
+                elif label == "other Python input":
+                    profile["environment"]["PYTHONPATH"] = "/unexpected"
+                elif label == "missing module":
+                    collection["input_provenance"]["files"].pop("probe:cpython-module:0")
+                    profile["input_sha256"].pop("probe:cpython-module:0")
+                else:
+                    collection["rows"][0].pop("python_hash_seed")
+                collection["profile_sha256"] = repeatability.digest(profile)
+                self.assertFalse(repeatability.evaluate(collection)["qualification_passed"])
+
+    def test_all_executed_harness_helpers_are_required_offline(self):
+        for name in ("source:tests/concurrent_spawn.py", "source:tests/fixtures.py"):
+            collection = collection_fixture()
+            collection["input_provenance"]["files"].pop(name)
+            collection["profile"]["input_sha256"].pop(name)
+            collection["profile_sha256"] = repeatability.digest(collection["profile"])
+            self.assertFalse(repeatability.evaluate(collection)["collection_passed"])
+
+    def test_process_environment_discards_inherited_python_inputs(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            for seed in (None, "random", "1"):
+                directory = Path(temporary) / str(seed)
+                directory.mkdir()
+                child = SimpleNamespace(pid=123, wait=lambda **kwargs: 0, poll=lambda: 0)
+                with patch.dict(os.environ, {"PATH": "/bin", "PYTHONHASHSEED": "99", "PYTHONPATH": "/inherited", "PYTHONMALLOC": "debug"}, clear=True), \
+                        patch.object(runtime_compat.subprocess, "Popen", return_value=child) as spawn, \
+                        patch.object(runtime_compat, "cleanup_orphans", return_value=True):
+                    row = runtime_compat.run_process(["/runtime/python"], directory, 1000, "/prlimit", python_hash_seed=seed)
+                environment = spawn.call_args.kwargs["env"]
+                python = {key: value for key, value in environment.items() if key.startswith("PYTHON")}
+                self.assertEqual(python, {} if seed is None else {"PYTHONHASHSEED": seed})
+                self.assertEqual(row.get("python_hash_seed"), seed)
+            with self.assertRaises(ValueError):
+                runtime_compat.run_process([], Path(temporary), 1000, "/prlimit", python_hash_seed="2")
+
+    def test_native_probe_confirms_default_isolation_and_fixed_seed_options(self):
+        prlimit = repeatability.executable_path("prlimit")
+        if not prlimit:
+            self.skipTest("Linux prlimit unavailable")
+        with tempfile.TemporaryDirectory() as temporary:
+            observations = []
+            for index, flags in enumerate((['-I', '-S'], list(repeatability.CPYTHON_CONTROL_FLAGS), list(repeatability.CPYTHON_CONTROL_FLAGS))):
+                directory = Path(temporary) / str(index)
+                directory.mkdir()
+                with repeatability.fixed_environment():
+                    row = runtime_compat.run_process([sys.executable, *flags, '-c', repeatability.CPYTHON_PROBE], directory, 10000, prlimit, python_hash_seed="1")
+                self.assertEqual(row["exit_code"], 0, row)
+                self.assertEqual(row["stderr"], "")
+                observations.append(json.loads(row["stdout"]))
+            self.assertEqual(observations[0]["flags"]["isolated"], 1)
+            self.assertEqual(observations[0]["flags"]["ignore_environment"], 1)
+            for observed in observations[1:]:
+                self.assertEqual(observed["flags"]["isolated"], 0)
+                self.assertEqual(observed["flags"]["ignore_environment"], 0)
+                self.assertEqual(observed["python_environment"], {"PYTHONHASHSEED": "1"})
+                self.assertTrue(observed["stdlib_paths"])
+            self.assertEqual(observations[1]["hash_sentinel"], observations[2]["hash_sentinel"])
 
     def test_parser_rejects_duplicate_json_and_preserves_integer_precision(self):
         with tempfile.TemporaryDirectory() as temporary:

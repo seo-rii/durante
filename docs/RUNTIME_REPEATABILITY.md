@@ -39,6 +39,43 @@ keeps `-I -S`. These options appear in the profile; a different JIT/GC/ISA profi
 requires a different collection. The tool does not use `-Xint` or JIT-off as a
 general solution and does not prove that any particular method was compiled.
 
+## Explicit CPython hash controls
+
+The default CPython command remains `-I -S`. Isolated mode implies ignoring
+`PYTHON*` startup variables, so adding `PYTHONHASHSEED` alone cannot control that
+profile. The workload also imports its standard-library dependencies before
+`gc.disable()`; counts include interpreter startup, imports and shutdown.
+Equal output and a fixed CPU do not establish identical interpreter work.
+
+For a bounded diagnostic comparison, `--cpython-hash-profile random|seed-1`
+explicitly selects `-P -s -S` and respectively `PYTHONHASHSEED=random` or `1`.
+Both controls use the same flags, fixture, resources and otherwise identical
+fixed environment. All inherited environment values are removed; the process
+launcher reintroduces only the selected hash variable after its usual removal
+of `PYTHON*` values. This option requires `--runtime cpython --workload
+allocation-gc`. Child-process fixtures keep their own isolated startup flags
+and are outside this control. Omission or `isolated` preserves the original
+command and environment.
+
+A separate native startup probe retains the effective `sys.flags`, hash
+algorithm and sentinel, selected executable, forwarded Python environment, and
+reported module source/cache paths. Those named module files join before/after
+provenance. The probe output, execution result and command remain in
+`collection.json` and `cpython-startup-probe/`; missing or inconsistent control
+input fails evaluation. This is a probe of the same startup inputs, not a capture
+of every measured process's random seed or every loaded library. Named file
+hashes remain reproducibility evidence rather than full runtime attestation.
+
+Predeclare two fresh collections with the same three repeats, four modes and
+**0 ppm** threshold, changing only the hash control (`random` then `seed-1`).
+Run both plans once, retain all 24 workload observations and stop regardless of
+the result. Each collection also has its normal version probe and one startup
+probe. A reduction in spread would support hash randomization as a contributing
+input; residual spread alone would not identify a counter error. These explicit
+profiles differ from the default isolated profile and cannot approve that
+profile or arbitrary CPython programs. ASLR, address-dependent behavior, GC and
+other uncontrolled runtime decisions may still matter.
+
 The [isolate workload evidence](ISOLATED_RUNTIMES.md) uses these same functional
 fixtures with a different execution boundary and resource profile. A repeatability
 pass here applies only to `run`. It neither imports an isolate pass as a repeated
@@ -154,7 +191,41 @@ was changed. This small observation demonstrates the distinction between
 successful collection and repeatability; it neither identifies the source of
 instruction variability nor establishes a language-wide variability bound.
 
-The synthetic regression suite needs no runtime build:
+## Bounded CPython hash-control comparison
+
+The 2026-11-15 follow-up ran the predeclared `random` then `seed-1` profiles once
+each: three repetitions of all four modes, CPU 0, 30-second invocation limit,
+300-second campaign, and **0 ppm** throughout. Both collections completed and
+passed all 12 functional/accounting/cleanup observations. The effective probes
+reported `isolated=0`, `ignore_environment=0`, `safe_path=true`, and exactly the
+selected `PYTHONHASHSEED`. Commands, other environment values, CPU profile and
+named input hashes were equal between collections. Both retained the same 80
+module source/cache paths plus five explicitly named shared-library/loader files;
+all captured inputs and the CPU profile were unchanged before/after execution.
+
+| Hash control | Metered mode | Minimum instructions | Exact median | Maximum instructions | Range |
+| --- | --- | ---: | ---: | ---: | ---: |
+| `random` | Client, REP disabled | 92,788,997 | 92,817,489 | 93,168,221 | 379,224 |
+| `random` | Supervisor, REP enabled | 92,968,616 | 92,976,900 | 93,048,953 | 80,337 |
+| `seed-1` | Client, REP disabled | 92,823,785 | 92,852,062 | 92,909,468 | 85,683 |
+| `seed-1` | Supervisor, REP enabled | 92,823,722 | 92,823,746 | 92,867,165 | 43,443 |
+
+Other recorded counters had zero range within every group. Both profiles failed
+exact repeatability and exited 1; offline evaluation reproduced both results
+exactly. The original isolated collection also retained its previous evaluation
+semantics. All 24 workload observations were kept; neither profile was retried
+and no threshold was changed.
+
+Instruction spread decreased in this small fixed-seed comparison, but remained
+nonzero. A fixed string-hash seed therefore did not establish exact repeatability.
+The experiment does not identify the residual source or establish a counter
+error, and it does not qualify the default isolated profile. The startup probe
+is separate from the measured workload; its hash sentinel is not an observation
+of every measured process's internal state.
+
+## Tests
+
+The regression suite uses small native CPython probes but needs no runtime build:
 
 ```sh
 python3 -m unittest discover -s tests -p 'test_runtime_repeatability.py' -v

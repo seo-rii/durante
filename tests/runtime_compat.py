@@ -117,8 +117,10 @@ def bounded_json(path):
     return json.loads(bounded_bytes(path, MAX_REPORT))
 
 
-def run_process(command, directory, timeout_ms, prlimit=None, *, cpu_seconds=40):
+def run_process(command, directory, timeout_ms, prlimit=None, *, cpu_seconds=40, python_hash_seed=None):
     """One bounded process tree; always reap the harness's adopted descendants."""
+    if python_hash_seed not in (None, "random", "1"):
+        raise ValueError("unsupported explicit Python hash seed")
     stdout, stderr = directory / "stdout.txt", directory / "stderr.txt"
     prlimit = prlimit or executable_path("prlimit")
     if not prlimit:
@@ -133,6 +135,10 @@ def run_process(command, directory, timeout_ms, prlimit=None, *, cpu_seconds=40)
                            "NODE_OPTIONS", "NODE_V8_COVERAGE", "JAVA_TOOL_OPTIONS",
                            "_JAVA_OPTIONS", "JDK_JAVA_OPTIONS", "PYPYLOG", "PYPYJIT")}
         environment.update({"LANG": "C", "LC_ALL": "C"})
+        # Only the named repeatability control may reintroduce one Python input.
+        # Every inherited PYTHON* value remains removed.
+        if python_hash_seed is not None:
+            environment["PYTHONHASHSEED"] = python_hash_seed
         process = subprocess.Popen(limited, cwd=directory, stdin=subprocess.DEVNULL,
                                    stdout=out, stderr=err, start_new_session=True,
                                    env=environment)
@@ -165,6 +171,8 @@ def run_process(command, directory, timeout_ms, prlimit=None, *, cpu_seconds=40)
     if not cleaned:
         row["errors"].append("descendant cleanup failed")
     row["infrastructure_ok"] = cleaned and not timed_out and not row["errors"]
+    if python_hash_seed is not None:
+        row["python_hash_seed"] = python_hash_seed
     return row
 
 

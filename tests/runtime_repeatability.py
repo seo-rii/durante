@@ -2,7 +2,7 @@
 """Record fresh-process runtime observations and qualify their raw-count spread."""
 import argparse
 from contextlib import contextmanager
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from fractions import Fraction
 import hashlib
 import json
@@ -16,7 +16,7 @@ import time
 from types import SimpleNamespace
 
 from concurrent_spawn import bounded_number, cleanup_orphans, own_subreaper
-from runtime_compat import InputProvenance, bounded_bytes, executable_path
+from runtime_compat import InputProvenance, bounded_bytes, executable_path, file_identity
 import runtime_workloads as workloads
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -24,8 +24,25 @@ COUNTERS = ("instructions", "rep_bytes", "rep_entries", "unsupported_rep_entries
 KINDS = ("movs_bytes", "stos_bytes", "movs_entries", "stos_entries")
 METERED = ("client-rep-off", "supervisor")
 REQUIRED_INPUTS = {"binary:runtime", "binary:client", "binary:runner", "binary:drrun",
-                   "binary:core", "manifest:runtime", "binary:prlimit", "binary:harness-python"}
+                   "binary:core", "manifest:runtime", "binary:prlimit", "binary:harness-python",
+                   "source:tests/concurrent_spawn.py", "source:tests/fixtures.py"}
 FIXED_ENV = {"PATH": os.defpath, "LANG": "C", "LC_ALL": "C", "TZ": "UTC", "MALLOC_ARENA_MAX": "2"}
+CPYTHON_HASH_PROFILES = {"isolated": None, "random": "random", "seed-1": "1"}
+CPYTHON_CONTROL_FLAGS = ("-P", "-s", "-S")
+CPYTHON_PROBE = """import gc, json, os, pathlib, subprocess, sys, threading
+paths = sorted({str(pathlib.Path(value).resolve())
+                for module in list(sys.modules.values())
+                for attribute in ("__file__", "__cached__")
+                if isinstance(value := getattr(module, attribute, None), str)
+                and pathlib.Path(value).is_file()})
+print(json.dumps({"executable": str(pathlib.Path(sys.executable).resolve()),
+                  "flags": {name: getattr(sys.flags, name) for name in
+                            ("isolated", "ignore_environment", "safe_path", "no_user_site", "no_site", "hash_randomization")},
+                  "python_environment": {key: value for key, value in os.environ.items() if key.startswith("PYTHON")},
+                  "hash_sentinel": hash("durante-repeatability-v1"),
+                  "hash_algorithm": sys.hash_info.algorithm,
+                  "stdlib_paths": paths}, sort_keys=True))
+"""
 MAX_JSON = 32 * 1024 * 1024
 LIMITATIONS = [
     "fresh processes including startup; no persistent-runtime warmup or steady-state claim",
@@ -34,6 +51,7 @@ LIMITATIONS = [
     "named input hashes and optional operator image digest do not attest every loaded library or the host",
     "application-mutable diagnostic counts, not CPU time, time coefficients or trusted judgement",
     "run-profile observations do not qualify isolate; existing isolate evidence remains a separate prerequisite",
+    "explicit CPython hash controls change startup flags and do not qualify the default isolated profile",
 ]
 
 
@@ -151,6 +169,98 @@ def measurement_values(measurement, case, rep):
     return values
 
 
+
+def hash_profile(profile):
+    name = profile.get("cpython_hash_profile", "isolated")
+    if name not in CPYTHON_HASH_PROFILES or (name != "isolated" and profile.get("runtime") != "cpython"):
+        raise ValueError("unknown or incompatible CPython hash profile")
+    return name
+
+
+def controlled_cases(cases, name):
+    if name == "isolated":
+        return cases
+    # Child-process fixtures deliberately retain their own -I flags. This small
+    # control therefore applies only to the single-process allocation/GC case.
+    if len(cases) != 1 or cases[0].name != "cpython-allocation-gc":
+        raise ValueError("explicit CPython hash controls require only allocation-gc")
+    case = cases[0]
+    if case.command[1:3] != ["-I", "-S"]:
+        raise ValueError("default CPython startup contract changed")
+    return [replace(case, command=[case.command[0], *CPYTHON_CONTROL_FLAGS, *case.command[3:]])]
+
+
+def profile_environment(profile):
+    environment = dict(FIXED_ENV)
+    seed = CPYTHON_HASH_PROFILES[hash_profile(profile)]
+    if seed is not None:
+        environment["PYTHONHASHSEED"] = seed
+    return environment
+
+
+def probe_errors(collection, profile, files):
+    name = hash_profile(profile)
+    if name == "isolated":
+        if collection.get("cpython_probe") is not None or profile.get("cpython_effective") is not None:
+            return ["isolated profile contains an unsolicited hash-control probe"]
+        return []
+    probe = collection.get("cpython_probe") or {}
+    effective = profile.get("cpython_effective")
+    try:
+        observed = json.loads(probe.get("stdout", ""))
+        expected_flags = {"isolated": 0, "ignore_environment": 0, "safe_path": True,
+                          "no_user_site": 1, "no_site": 1, "hash_randomization": 1}
+        seed = CPYTHON_HASH_PROFILES[name]
+        if (probe.get("infrastructure_ok") is not True or probe.get("cleanup_complete") is not True
+                or type(probe.get("exit_code")) is not int or probe["exit_code"] != 0
+                or probe.get("timeout") is not False or probe.get("stderr") != "" or probe.get("errors")
+                or probe.get("python_hash_seed") != seed
+                or probe.get("command") != [profile["runtime_executable"], *CPYTHON_CONTROL_FLAGS, "-c", CPYTHON_PROBE]
+                or not workloads.same_json(observed, effective)
+                or not workloads.same_json(observed.get("flags"), expected_flags)
+                or observed.get("python_environment") != {"PYTHONHASHSEED": seed}
+                or observed.get("executable") != files["binary:runtime"]["before"]["resolved_path"]
+                or type(observed.get("hash_sentinel")) is not int
+                or not -(1 << 63) <= observed["hash_sentinel"] < (1 << 63)
+                or not isinstance(observed.get("hash_algorithm"), str) or not observed["hash_algorithm"]):
+            raise ValueError("effective CPython flags, hash input or runtime identity differs")
+        paths = observed.get("stdlib_paths")
+        if (not isinstance(paths, list) or not 1 <= len(paths) <= 256
+                or any(not isinstance(path, str) or not Path(path).is_absolute() for path in paths)
+                or paths != sorted(set(paths))):
+            raise ValueError("CPython probe module paths are unavailable or invalid")
+        for index, path in enumerate(paths):
+            if files["probe:cpython-module:" + str(index)]["path"] != path:
+                raise ValueError("CPython module provenance differs from its probe")
+    except (ValueError, KeyError, TypeError, AttributeError) as error:
+        return ["CPython startup probe unavailable or incompatible: " + str(error)]
+    return []
+
+
+def collect_cpython_probe(args, collection, provenance):
+    profile = collection["profile"]
+    if hash_profile(profile) == "isolated":
+        return
+    directory = args.output_dir / "cpython-startup-probe"
+    directory.mkdir(mode=0o700)
+    command = [profile["runtime_executable"], *CPYTHON_CONTROL_FLAGS, "-c", CPYTHON_PROBE]
+    row = workloads.run_process(command, directory, 10000, args.prlimit,
+                                python_hash_seed=args.python_hash_seed)
+    row.update(command=command, directory=str(directory))
+    collection["cpython_probe"] = row
+    effective = json.loads(row.get("stdout", ""))
+    profile["cpython_effective"] = effective
+    paths = effective.get("stdlib_paths", [])
+    if not isinstance(paths, list) or not 1 <= len(paths) <= 256:
+        raise ValueError("CPython probe module inventory unavailable")
+    for index, path in enumerate(paths):
+        provenance.files["probe:cpython-module:" + str(index)] = {
+            "path": path, "before": file_identity(path), "after": None, "unchanged": False}
+    errors = probe_errors(collection, profile, provenance.files)
+    if errors:
+        raise ValueError("; ".join(errors))
+
+
 def profile_cases(profile):
     runtime = profile["runtime"]
     if runtime not in workloads.RUNTIMES or profile.get("execution_profile") != "run":
@@ -159,7 +269,7 @@ def profile_cases(profile):
     if not isinstance(selected, list) or not selected or len(selected) != len(set(selected)):
         raise ValueError("empty or duplicate workload selection")
     available = workloads.workload_cases({runtime: profile["runtime_executable"]}, Path(profile["classes_directory"]))
-    cases = [case for case in available if case.name in selected]
+    cases = controlled_cases([case for case in available if case.name in selected], hash_profile(profile))
     if selected != [case.name for case in cases] or not workloads.same_json(profile.get("workloads"), [asdict(case) for case in cases]):
         raise ValueError("recorded commands or workload oracle do not match the fixed profile")
     return cases
@@ -167,7 +277,7 @@ def profile_cases(profile):
 
 def profile_errors(profile):
     errors = []
-    if profile.get("environment") != FIXED_ENV or profile.get("fresh_processes") is not True:
+    if profile.get("environment") != profile_environment(profile) or profile.get("fresh_processes") is not True:
         errors.append("execution environment or process-lifetime policy changed")
     integer(profile.get("timeout_ms"), 1000, 180000, "profile wall limit")
     image = profile.get("runtime_image")
@@ -228,6 +338,7 @@ def evaluate(collection):
             failures.append("CPU affinity/ISA/host profile changed or is unavailable")
         provenance = collection["input_provenance"]
         files = provenance["files"]
+        failures.extend(probe_errors(collection, profile, files))
         required = REQUIRED_INPUTS | {"source:tests/runtime_repeatability.py", "source:tests/runtime_workloads.py",
                                     "source:tests/runtime_compat.py", "source:collect.py"}
         if profile["runtime"] == "java":
@@ -260,6 +371,9 @@ def evaluate(collection):
                     or type(row.get("exit_code")) is not int or row["exit_code"] != 0
                     or row.get("timeout") is not False or row.get("stdout") != case.expected or row.get("stderr") != ""):
                 failures.append(label + ": incomplete, failed or skipped observation")
+                continue
+            if row.get("python_hash_seed") != CPYTHON_HASH_PROFILES[hash_profile(profile)]:
+                failures.append(label + ": forwarded Python hash input differs from the profile")
                 continue
             if row.get("command") != expected_command(profile, case, mode, Path(row["directory"])):
                 failures.append(label + ": execution command differs from the fixed profile")
@@ -297,10 +411,10 @@ def evaluate(collection):
 
 
 @contextmanager
-def fixed_environment():
+def fixed_environment(environment=None):
     previous = dict(os.environ)
     os.environ.clear()
-    os.environ.update(FIXED_ENV)
+    os.environ.update(FIXED_ENV if environment is None else environment)
     try:
         yield
     finally:
@@ -343,6 +457,11 @@ def input_paths(args, executable):
 
 
 def collect(args):
+    selected_hash_profile = getattr(args, "cpython_hash_profile", "isolated")
+    if (selected_hash_profile not in CPYTHON_HASH_PROFILES
+            or selected_hash_profile != "isolated" and (args.runtime != "cpython" or args.workload != ["allocation-gc"])):
+        raise ValueError("explicit CPython hash controls require cpython and only allocation-gc")
+    args.python_hash_seed = CPYTHON_HASH_PROFILES[selected_hash_profile]
     for name in ("sdk", "client", "runner_bin", "output_dir"):
         setattr(args, name, getattr(args, name).absolute())
     args.output_dir.mkdir(parents=True, mode=0o700, exist_ok=False)
@@ -353,6 +472,7 @@ def collect(args):
     cases = workloads.workload_cases({args.runtime: executable or str(Path(args.runtime_bin or args.runtime).absolute())}, classes)
     if args.workload:
         cases = [case for case in cases if any(case.name == args.runtime + "-" + name or case.name.startswith(args.runtime + "-" + name + "-") for name in args.workload)]
+    cases = controlled_cases(cases, selected_hash_profile)
     provenance = InputProvenance(input_paths(args, executable))
     profile = {"runtime": args.runtime, "runtime_executable": cases[0].command[0],
                "classes_directory": str(classes), "workload_names": [case.name for case in cases],
@@ -360,6 +480,9 @@ def collect(args):
                "runner": str(args.runner_bin), "drrun": str(args.drrun), "client": str(args.client),
                "timeout_ms": args.timeout_ms, "fresh_processes": True, "environment": FIXED_ENV,
                "runtime_image": args.runtime_image, "versions": {}, "host": None, "input_sha256": {}}
+    if selected_hash_profile != "isolated":
+        profile["cpython_hash_profile"] = selected_hash_profile
+        profile["environment"] = profile_environment(profile)
     plan = fixed_plan(cases, args.repeats)
     by_name = {case.name: case for case in cases}
     rows = [{**item, "state": "unrun", "passed": False, "errors": [],
@@ -388,8 +511,9 @@ def collect(args):
         if provenance.errors:
             raise ValueError("required runtime/fixture/tool identity unavailable")
         owner = own_subreaper()
-        with fixed_environment():
+        with fixed_environment(profile["environment"]):
             profile["versions"], _ = workloads.probe_and_compile(args, {args.runtime: executable}, provenance)
+            collect_cpython_probe(args, collection, provenance)
             profile["input_sha256"] = {name: item["before"]["sha256"] for name, item in provenance.files.items()}
             collection["profile_sha256"] = digest(profile)
             collection["setup_complete"] = True
@@ -455,6 +579,8 @@ def main(argv=None):
     for name in ("sdk", "client", "runner-bin", "output-dir"):
         capture.add_argument("--" + name, type=Path, required=True)
     capture.add_argument("--runtime", choices=workloads.RUNTIMES, required=True)
+    capture.add_argument("--cpython-hash-profile", choices=tuple(CPYTHON_HASH_PROFILES), default="isolated",
+                         help="explicit allocation-gc diagnostic: isolated (default), controlled random, or seed-1")
     capture.add_argument("--runtime-bin", help="selected runtime executable; default: java/python3/node")
     capture.add_argument("--runtime-file", type=Path, action="append", default=[], help="additional runtime library/module to hash before and after")
     capture.add_argument("--runtime-image", help="operator-supplied immutable sha256 image digest; metadata, not attestation")
