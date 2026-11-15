@@ -122,6 +122,13 @@ Frontend and executor must agree on the exact budget capability, model, profile
 and accepted budget before execution. A runner that ignores the option cannot
 return an ordinary successful result for that request.
 
+The profile must identify effective runtime options as well as the runtime image:
+JIT/GC settings, library mode, operator defaults and heap settings derived from
+raw memory limits. A request's profile name alone is insufficient. Current
+Aonohako shared-model bindings match source/image/engine/dispatch; they do not
+yet bind these effective options. A future live-budget admission must close that
+gap rather than treating an image match as qualification of every configuration.
+
 Keep raw CPU/RSS/wall observations, work score and optional time estimate in
 separate fields. An unavailable estimate does not imply TLE. A small partial
 score cannot turn an existing resource, output or execution failure into AC.
