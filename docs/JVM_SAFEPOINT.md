@@ -294,3 +294,17 @@ within their bounds. No fatal report was found, inputs stayed unchanged, cleanup
 completed and CPU affinity was restored. The campaign retained exit 1 and its
 incomplete capture. It was not retried or counted as a complete JVM diagnostic;
 the earlier successful observation remains separate.
+
+A separately declared comparison then ran the direct engine and debugger in
+sequence with the same target arguments, classpath, mixed-library environment,
+runtime and resource limits. Both passed the exact output/exit oracle, in 12.60
+and 17.88 seconds respectively; the comparison took 31.02 seconds overall.
+The debugger recorded three complete translation pairs in 26 events, with 6,094
+raw stops and a 603,539-byte transcript. Up to three read-only process-state
+snapshots were scheduled at 15, 60 and 110 seconds, retaining PID/starttime,
+parent/thread relationships, wait state and tracer PID. The one due GDB snapshot
+reached the traced Java parent and an untraced Java child; the direct engine had
+already exited before its first snapshot. The observation threads stopped, all
+30 inputs stayed unchanged, cleanup completed and CPU affinity was restored.
+This finite non-reproduction supplies no state evidence for the earlier timeout
+and does not establish its cause or a runtime correction.
