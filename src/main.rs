@@ -41,18 +41,6 @@ enum Command {
         #[arg(long, value_parser = parse_pid)]
         root_pid: u32,
     },
-    /// Collect guest callbacks after reaping QEMU and checking external policy.
-    CollectQemu {
-        /// Closed completion record from the QEMU guest-work plugin.
-        #[arg(long)]
-        input: PathBuf,
-        /// Emulator PID observed by the supervisor.
-        #[arg(long, value_parser = parse_pid)]
-        root_pid: u32,
-        /// Normal process exit code observed by the supervisor (0 through 255).
-        #[arg(long)]
-        exit_code: u8,
-    },
     /// Run the native counter, reap the process tree, and write a diagnostic report.
     Run {
         /// Trusted DynamoRIO launcher executable.
@@ -76,6 +64,9 @@ enum Command {
         /// Retain an automatically created records directory and report its path.
         #[arg(long)]
         keep_records: bool,
+        /// Stop before executing a forbidden instruction; repeat for both policies.
+        #[arg(long = "disallow-cpu-feature", value_parser = ["avx", "simd"])]
+        disallowed_cpu_features: Vec<String>,
         /// Target executable and arguments, passed directly without a shell.
         #[arg(required = true, last = true, num_args = 1..)]
         command: Vec<OsString>,
@@ -103,6 +94,9 @@ enum Command {
         /// Combined captured-byte limit (default 1 MiB, at most 64 MiB).
         #[arg(long, requires = "output_dir", value_parser = parse_output_limit)]
         output_limit_bytes: Option<u64>,
+        /// Forward the native instruction policy into the isolated run.
+        #[arg(long = "disallow-cpu-feature", value_parser = ["avx", "simd"])]
+        disallowed_cpu_features: Vec<String>,
         #[arg(required = true, last = true, num_args = 1..)]
         command: Vec<OsString>,
     },
@@ -138,24 +132,8 @@ fn parse_output_limit(value: &str) -> Result<u64, String> {
         .ok_or_else(|| "output limit must be between 1 and 67108864 bytes".to_owned())
 }
 
-fn print_collection(result: serde_json::Value) -> Result<i32, String> {
-    let stdout = io::stdout();
-    let mut output = stdout.lock();
-    match serde_json::to_writer(&mut output, &result)
-        .map_err(io::Error::other)
-        .and_then(|()| writeln!(output))
-    {
-        Ok(()) => Ok(if result["valid"] == true && result["complete"] == true {
-            0
-        } else {
-            1
-        }),
-        Err(_) => Err("cannot write collection result".to_owned()),
-    }
-}
-
 fn main() {
-    let cli = match Cli::try_parse() {
+    let mut cli = match Cli::try_parse() {
         Ok(cli) => cli,
         Err(error)
             if matches!(
@@ -183,6 +161,25 @@ fn main() {
             std::process::exit(2);
         }
     };
+    if let Command::Run {
+        disallowed_cpu_features,
+        ..
+    }
+    | Command::Isolate {
+        disallowed_cpu_features,
+        ..
+    } = &mut cli.command
+    {
+        disallowed_cpu_features.sort_unstable();
+        if disallowed_cpu_features.len() > 2
+            || disallowed_cpu_features
+                .windows(2)
+                .any(|pair| pair[0] == pair[1])
+        {
+            eprintln!("durante: duplicate or excessive CPU feature restrictions");
+            std::process::exit(2);
+        }
+    }
     let result = match cli.command {
         Command::Doctor {
             profile,
@@ -206,13 +203,21 @@ fn main() {
             }
         }
         Command::Collect { dir, root_pid } => {
-            print_collection(durante::collect::collect(&dir, root_pid))
+            let result = durante::collect::collect(&dir, root_pid);
+            let stdout = io::stdout();
+            let mut output = stdout.lock();
+            match serde_json::to_writer(&mut output, &result)
+                .map_err(io::Error::other)
+                .and_then(|()| writeln!(output))
+            {
+                Ok(()) => Ok(if result["valid"] == true && result["complete"] == true {
+                    0
+                } else {
+                    1
+                }),
+                Err(_) => Err("cannot write collection result".to_owned()),
+            }
         }
-        Command::CollectQemu {
-            input,
-            root_pid,
-            exit_code,
-        } => print_collection(durante::qemu::collect(&input, root_pid, exit_code)),
         Command::Run {
             drrun,
             client,
@@ -221,6 +226,7 @@ fn main() {
             timeout_ms,
             records_dir,
             keep_records,
+            disallowed_cpu_features,
             command,
         } => {
             #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
@@ -233,6 +239,7 @@ fn main() {
                     timeout_ms,
                     records_dir,
                     keep_records,
+                    disallowed_cpu_features,
                     command,
                 })
             }
@@ -246,6 +253,7 @@ fn main() {
                     timeout_ms,
                     records_dir,
                     keep_records,
+                    disallowed_cpu_features,
                     command,
                 );
                 Err("durante run requires Linux x86-64".to_owned())
@@ -260,6 +268,7 @@ fn main() {
             timeout_ms,
             output_dir,
             output_limit_bytes,
+            disallowed_cpu_features,
             command,
         } => {
             #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
@@ -273,6 +282,7 @@ fn main() {
                     timeout_ms,
                     output_dir,
                     output_limit_bytes: output_limit_bytes.unwrap_or(output::DEFAULT_LIMIT),
+                    disallowed_cpu_features,
                     command,
                 })
             }
@@ -288,6 +298,7 @@ fn main() {
                     command,
                     output_dir,
                     output_limit_bytes,
+                    disallowed_cpu_features,
                 );
                 Err("durante isolate requires Linux x86-64".to_owned())
             }

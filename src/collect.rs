@@ -369,6 +369,17 @@ fn boolean(event: &Event, field: &str) -> Result<bool, Error> {
         .ok_or("missing or invalid boolean field")
 }
 fn validate_field_types(event: &Event) -> Result<(), Error> {
+    if event.contains_key("cpu_policy_version") || event.contains_key("cpu_policy") {
+        require(text(event, "event")? == "start", "CPU policy outside start")?;
+        cpu_policy(event)?;
+    }
+    if event.contains_key("feature") {
+        require(
+            text(event, "event")? == "cpu_feature_violation",
+            "CPU feature outside violation",
+        )?;
+        text(event, "feature")?;
+    }
     if event.contains_key("rep_breakdown_version") {
         require(
             uint(event, "rep_breakdown_version")? == 1,
@@ -431,6 +442,22 @@ fn validate_field_types(event: &Event) -> Result<(), Error> {
         int(event, "result")?;
     }
     Ok(())
+}
+
+fn cpu_policy(event: &Event) -> Result<&str, Error> {
+    if !event.contains_key("cpu_policy_version") && !event.contains_key("cpu_policy") {
+        return Ok("");
+    }
+    require(
+        uint(event, "cpu_policy_version")? == 1,
+        "unsupported CPU policy version",
+    )?;
+    let policy = text(event, "cpu_policy")?;
+    require(
+        matches!(policy, "avx" | "simd" | "avx,simd"),
+        "invalid CPU policy",
+    )?;
+    Ok(policy)
 }
 
 struct Terminal {
@@ -533,6 +560,23 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
         streams.iter().any(|(pid, _)| *pid == root_pid),
         "root PID absent",
     )?;
+    // A violating process may have no final image. Check every advertised
+    // policy first so an early violation cannot hide a mixed-policy tree.
+    let mut policy = None;
+    for (_, records) in &streams {
+        for record in records {
+            validate_field_types(record)?;
+            if text(record, "event")? == "start" {
+                let current = cpu_policy(record)?;
+                require(
+                    policy.is_none_or(|previous| previous == current),
+                    "mixed CPU policies",
+                )?;
+                policy = Some(current);
+            }
+        }
+    }
+    let policy = policy.unwrap_or("").to_owned();
     let mut seen_segments = BTreeSet::new();
     let mut processes = BTreeMap::new();
     let mut spawn_edges = BTreeMap::<u32, (u32, String)>::new();
@@ -633,6 +677,19 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
                 "event sequence gap or duplicate",
             )?;
             match kind {
+                "cpu_feature_violation" => {
+                    let feature = text(&record, "feature")?;
+                    require(
+                        matches!(feature, "avx" | "simd")
+                            && policy.split(',').any(|enabled| enabled == feature),
+                        "CPU violation outside requested policy",
+                    )?;
+                    return Err(if feature == "avx" {
+                        "disallowed CPU feature: avx"
+                    } else {
+                        "disallowed CPU feature: simd"
+                    });
+                }
                 "spawn" => {
                     let child = uint(&record, "child_pid")?;
                     require(
@@ -759,6 +816,9 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
     insert_counters(&mut result, &totals);
     if breakdown_mode == Some(true) {
         result["rep_breakdown"] = json!(breakdown_totals);
+    }
+    if !policy.is_empty() {
+        result["disallowed_cpu_features"] = json!(policy.split(',').collect::<Vec<_>>());
     }
     Ok(result)
 }

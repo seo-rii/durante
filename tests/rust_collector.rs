@@ -145,6 +145,9 @@ fn shared_protocol_vectors() {
             }
         } else {
             assert_invalid(&result);
+            if let Some(reason) = case.get("expected_reason") {
+                assert_eq!(&result["reason"], reason, "case {}", case["name"]);
+            }
         }
     }
 }

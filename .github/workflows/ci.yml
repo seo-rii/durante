@@ -14,48 +14,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  qemu-cpu-policy:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 25
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
-      - name: Check out the qualified execution-policy runtime
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
-        with:
-          repository: seo-rii/aonohako
-          ref: 58fe9ce4ab60b0fc552da5ed799b2b3e9f502f72
-          path: .external/aonohako
-          persist-credentials: false
-      - name: Install native QEMU build dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            ca-certificates curl xz-utils patch gcc libc6-dev make ninja-build \
-            python3 python3-venv python3-tomli pkg-config libglib2.0-dev libcapstone-dev zlib1g-dev
-      - name: Build the pinned emulator and original policy plugin
-        run: |
-          .external/aonohako/scripts/build_cpu_policy_qemu.sh "$RUNNER_TEMP/cpu-policy"
-          .external/aonohako/scripts/build_cpu_policy_plugin.sh "$RUNNER_TEMP/cpu-policy/cpu-policy.so"
-      - name: Build and validate Durante guest measurement
-        run: |
-          rustup toolchain install 1.94.0 --profile minimal
-          cargo +1.94.0 build --locked
-          cargo +1.94.0 test --locked --test qemu_collector
-          python3 toolkit/build_qemu_plugin.py --output build/durante-qemu.so
-          python3 -m unittest discover -s tests -p test_qemu_plugin.py -v
-      - name: Qualify exact guest counts and runtime CPU restrictions together
-        run: |
-          python3 tests/qemu_policy.py --runtime "$RUNNER_TEMP/cpu-policy" \
-            --plugin build/durante-qemu.so --collector-bin target/debug/durante \
-            --output-dir .results/qemu-policy
-      - name: Preserve composition results
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: qemu-cpu-policy
-          path: .results/qemu-policy/
-          include-hidden-files: true
-          if-no-files-found: warn
   secrets:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -137,6 +95,8 @@ jobs:
           cmake --build build -j2
       - name: Validate lifecycle records and aggregation
         run: python3 -m unittest discover -s tests -v
+      - name: Stop forbidden native instructions with release and debug runtimes
+        run: python3 tests/native_cpu_policy.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/native-cpu-policy
       - name: Qualify exact SIMD counts and preserved arithmetic results
         run: python3 tests/simd.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/simd --require-isa sse2 --repeats 2
       - name: Preserve signal vector and floating-point state with release and debug runtimes

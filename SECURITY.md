@@ -24,35 +24,17 @@ do not make its memory or files inaccessible to an adversarial application.
 This cannot be fixed by schema validation, a private temporary directory,
 checksums, or a signing key stored in the same address space. Trusted charging
 needs a measurement backend outside the submission's mutable trust domain.
-Do not use these native counts, a weighted conversion, or a normal CLI exit
-status to authorize AC/TLE, billing, or security decisions.
+Until that exists, do not use these counts, a weighted conversion, or a normal
+CLI exit status to authorize AC/TLE, billing, or security decisions.
 
-## Optional QEMU guest counter
-
-The [QEMU counter](https://github.com/seo-rii/durante/blob/main/docs/QEMU.md)
-keeps its state in the emulator and labels its
-contract `counter_integrity: emulator_managed`. This describes where accounting
-happens; it does not establish guest isolation or attest report integrity.
-`diagnostic_only`, `integrity_verified: false` and
-`trusted_verdict_eligible: false` remain mandatory. Counts describe guest
-instruction callbacks, not native basic-block entries or hardware retirement.
-
-The plugin supplies no instruction filter, guest-memory boundary, syscall
-filter, resource limit or supervisor. Its supported composition uses aonohako's
-patched QEMU 10.0.15, CPU-policy plugin and existing external sandbox. A trusted
-owner must retain the static-ELF checks, fixed guest-memory layout, syscall
-restrictions, protected report descriptors, bounded lifetime and full cleanup.
-An unrestricted QEMU process can expose host memory or descriptors to its guest;
-loading this counter alone does not prevent that access.
-
-`collect-qemu` validates one bounded report and matches its PID and exit code
-against values supplied by the caller. It cannot establish that these values
-came from `waitpid`, that a CPU policy was active, or that resource checks passed.
-The owner must reject policy failures, signals, forced termination and cleanup
-failures before collection, even when report bytes look complete. The policy
-and work reports need separate protected regular files: guest exit status 126
-alone cannot distinguish an ordinary exit from a policy violation. Native
-`durante run` and `durante isolate` do not launch this backend.
+Native CPU-feature restrictions use the same in-process DynamoRIO client.
+They stop an observed forbidden instruction before it executes, including code
+translated after startup, but do not make the client, code cache or lifecycle
+records inaccessible to hostile application code. Treat the policy receipt and
+violation reason as application-mutable diagnostics. The caller still supplies
+the existing execution sandbox and resource owner. Exit 126 alone is not a
+policy violation; consumers must validate the policy metadata and lifecycle
+event. See the [native policy guide](https://github.com/seo-rii/durante/blob/main/docs/CPU_FEATURE_POLICY.md).
 
 ## Execution isolation
 
