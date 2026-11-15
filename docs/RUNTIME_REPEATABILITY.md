@@ -133,6 +133,27 @@ REP work stays unsupported, handled signals remain visible, and counts remain
 application-mutable diagnostics. There is no conversion to CPU nanoseconds,
 language coefficient, production time limit, or guarantee for other workloads.
 
+## Bounded local observation
+
+On 2026-11-15, the unchanged implementation at `2be6c66` collected CPython 3.11.2
+`allocation-gc` on one allowed logical CPU, using three repetitions of each mode,
+a 30-second invocation limit, a 300-second campaign and the preselected **0 ppm**
+threshold. All 12 executions passed their output, accounting and cleanup checks;
+the recorded inputs and CPU profile were unchanged. Collection passed, but
+repeatability qualification failed because instruction totals varied:
+
+| Metered mode | Minimum instructions | Exact median | Maximum instructions |
+| --- | ---: | ---: | ---: |
+| Client, REP disabled | 92,826,902 | 92,848,532 | 92,938,573 |
+| Supervisor, REP enabled | 92,882,628 | 92,931,323 | 93,090,569 |
+
+Other recorded metrics, including combined and split REP work, were identical
+within each three-observation group. Offline re-evaluation reproduced the exact
+evaluation and its exit status 1. No failed member was removed and no threshold
+was changed. This small observation demonstrates the distinction between
+successful collection and repeatability; it neither identifies the source of
+instruction variability nor establishes a language-wide variability bound.
+
 The synthetic regression suite needs no runtime build:
 
 ```sh
