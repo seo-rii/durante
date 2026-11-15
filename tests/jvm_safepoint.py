@@ -183,10 +183,31 @@ def debugger_command(debugger, engine):
     # Configure the CLI interpreter before entering Python. On GDB 13.1,
     # enabling logging inside the Python script redirects ordinary messages but
     # leaves asynchronous run/continue stop frames on the original stdout.
-    return [debugger, "--nx", "--nh", "--batch", "--return-child-result",
-            "-ex", "set logging file debugger-transcript.log",
-            "-ex", "set logging redirect on", "-ex", "set logging enabled on",
-            "-x", str(ROOT / "tests/jvm_safepoint_gdb.py"), "--args", *engine]
+    command = [debugger, "--nx", "--nh", "--batch", "--return-child-result",
+               "-ex", "set logging file debugger-transcript.log",
+               "-ex", "set logging redirect on", "-ex", "set logging enabled on",
+               "-x", str(ROOT / "tests/jvm_safepoint_gdb.py")]
+    if "LD_LIBRARY_PATH" not in os.environ:
+        return [*command, "--args", *engine]
+    # setup-python's shared library can replace the system libpython linked by
+    # GDB while GDB retains the system stdlib path. Keep this interpreter's
+    # library environment separate, and restore the exact value for its target.
+    # Structured argv avoids passing an environment value through GDB commands.
+    environment = executable_path("env")
+    if not environment:
+        raise ValueError("env is required to separate debugger and target library paths")
+    return [environment, "-u", "LD_LIBRARY_PATH", "--", *command, "--args",
+            environment, "--", "LD_LIBRARY_PATH=" + os.environ["LD_LIBRARY_PATH"], *engine]
+
+
+def debugger_transcript_evidence(directory, include_excerpt=False):
+    path = directory / "debugger-transcript.log"
+    data = bounded_bytes(path, MAX_FATAL_BYTES)
+    evidence = {"path": str(path), "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}
+    if include_excerpt:
+        excerpt = data if len(data) <= 8192 else data[:4096] + b"\n[bounded transcript excerpt]\n" + data[-4096:]
+        evidence.update(excerpt=excerpt.decode("utf-8", errors="replace"), excerpt_truncated=len(data) > 8192)
+    return evidence
 
 
 def run_context(args, workload, directory, timeout):
@@ -203,15 +224,15 @@ def run_context(args, workload, directory, timeout):
     # separate, unmodified recurrence matrix.
     row.update(command=command, diagnostic_only=True)
     try:
-        transcript = directory / "debugger-transcript.log"
-        data = bounded_bytes(transcript, MAX_FATAL_BYTES)
-        row["debugger_transcript"] = {"path": str(transcript), "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}
+        row["debugger_transcript"] = debugger_transcript_evidence(directory)
         row["context"] = inspect_context(directory / "jvm-context.jsonl")
         if not row["context"]["complete"]:
             row["errors"].append("debugger native translation capture failed, truncated, or has incomplete coverage")
     except (OSError, ValueError, TypeError) as error:
         row["errors"].append("context capture unavailable: " + str(error)[:300])
     row["passed"] = row["infrastructure_ok"] and row["exit_code"] == 0 and not row["errors"]
+    if not row["passed"] and "debugger_transcript" in row:
+        row["debugger_transcript"] = debugger_transcript_evidence(directory, include_excerpt=True)
     return row
 
 
@@ -303,6 +324,8 @@ def main(argv=None):
     if args.context:
         inputs["binary:gdb"] = args.gdb
         inputs["binary:core-debug"] = args.sdk / "lib64/release/libdynamorio.so.debug"
+        if "LD_LIBRARY_PATH" in os.environ:
+            inputs["binary:debugger-env"] = executable_path("env")
     provenance = InputProvenance(inputs)
     provenance.capture("before")
     workload = next(w for w in workloads.workload_cases({"java": args.java or "<missing-java>"}, args.output_dir / "classes")

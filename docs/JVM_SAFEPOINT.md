@@ -92,6 +92,16 @@ Both files are hashed, and GDB must report identical GNU build IDs with the debu
 file owned by the declared core. Missing types, identities or native code
 addresses fail capture rather than guessing a context layout.
 
+When the caller supplies `LD_LIBRARY_PATH`, the harness starts GDB with that
+variable unset and restores its exact value for the target through `env`
+arguments. An explicitly empty value remains empty. This prevents a caller's
+Python shared library from replacing GDB's system interpreter while retaining
+GDB's system standard-library paths. The target keeps its original library
+environment, and the additional `env` executable is included in the input
+identities. No global environment or debugger configuration is changed.
+Failed captures retain a bounded transcript excerpt with its byte count and
+hash, so a startup error remains readable after temporary test files are removed.
+
 The current context stream uses schema 2. On the first real signal-delivery
 stop, it resolves the pinned runtime's native `translate_sigcontext` function and
 checks that the exact entry lies in the declared core's executable mapping. It

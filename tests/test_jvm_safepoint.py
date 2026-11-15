@@ -47,12 +47,33 @@ class SafepointTests(unittest.TestCase):
         temporary = tempfile.TemporaryDirectory(prefix="durante-safepoint-unit-")
         self.addCleanup(temporary.cleanup)
         self.root = Path(temporary.name)
+        self.addCleanup(self.preserve_debugger_failure)
         self.args = SimpleNamespace(output_dir=self.root, repeats=2, context=False,
                                     sdk=self.root / "sdk", drrun=self.root / "sdk/bin64/drrun",
                                     java="/selected/java", javac="/selected/javac", client=self.root / "client",
                                     runner_bin=self.root / "runner", prlimit="/selected/prlimit")
         self.workload = next(w for w in safepoint.workloads.workload_cases(
             {"java": self.args.java}, self.root / "classes") if w.name == "java-processes-posix_spawn")
+
+    def preserve_debugger_failure(self):
+        result = getattr(self._outcome, "result", None)
+        failures = getattr(result, "failures", []) + getattr(result, "errors", [])
+        if not any(test is self or getattr(test, "test_case", None) is self for test, _ in failures):
+            return
+        # These are owned fixture outputs, retained before TemporaryDirectory
+        # cleanup so the existing .results CI artifact includes startup errors.
+        names = {"debugger-transcript.log", "jvm-context.jsonl", "jvm-context-config.json",
+                 "stdout.txt", "stderr.txt", "fault.c", "fault"}
+        files = [path for path in self.root.rglob("*") if path.is_file() and path.name in names]
+        if not any(path.name == "debugger-transcript.log" for path in files):
+            return
+        base = safepoint.ROOT / ".results/jvm-context-unit"
+        base.mkdir(mode=0o700, parents=True, exist_ok=True)
+        destination = Path(tempfile.mkdtemp(prefix=self._testMethodName + "-", dir=base))
+        for path in files:
+            target = destination / path.relative_to(self.root)
+            target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+            target.write_bytes(safepoint.bounded_bytes(path, safepoint.MAX_FATAL_BYTES))
 
     @staticmethod
     def success():
@@ -432,6 +453,8 @@ int main(void) {
                   "print('signal-control:8')\n")
         command = safepoint.debugger_command(debugger, [sys.executable, "-c", target])
         result = safepoint.run_process(command, directory, 10000, prlimit, cpu_seconds=5)
+        if not result["infrastructure_ok"] or result["exit_code"] != 0:
+            result["debugger_transcript"] = safepoint.debugger_transcript_evidence(directory, include_excerpt=True)
         self.assertTrue(result["infrastructure_ok"], result)
         self.assertTrue(result["cleanup_complete"], result)
         self.assertEqual(result["exit_code"], 0, result)
@@ -444,6 +467,51 @@ int main(void) {
         self.assertTrue(evidence["inferior_exit_observed"])
         self.assertFalse(evidence["complete"])
         self.assertEqual(evidence["errors"], [])
+
+    def test_debugger_library_environment_is_separate_and_target_value_is_exact(self):
+        debugger, prlimit = shutil.which("gdb"), shutil.which("prlimit")
+        if not debugger or not prlimit:
+            self.skipTest("GDB/prlimit unavailable; library environment is not qualified")
+        target = ["/bin/sh", "-c", 'if [ "${LD_LIBRARY_PATH+x}" = x ]; then printf "set:%s" "$LD_LIBRARY_PATH"; else printf unset; fi']
+        for index, value in enumerate((None, "", 'directory with spaces=one:"quoted":two')):
+            with self.subTest(value=value), patch.dict(os.environ):
+                if value is None:
+                    os.environ.pop("LD_LIBRARY_PATH", None)
+                else:
+                    os.environ["LD_LIBRARY_PATH"] = value
+                directory = self.root / ("library-environment-" + str(index))
+                directory.mkdir()
+                command = safepoint.debugger_command(debugger, target)
+                insertion = command.index("-x")
+                command[insertion:insertion] = ["-ex", "python import os,math; assert 'LD_LIBRARY_PATH' not in os.environ; print('debugger-library-environment:clean')"]
+                result = safepoint.run_process(command, directory, 10000, prlimit, cpu_seconds=5)
+                result["debugger_transcript"] = safepoint.debugger_transcript_evidence(directory, include_excerpt=True)
+                self.assertEqual(result["exit_code"], 0, result)
+                self.assertIn("debugger-library-environment:clean\n", result["debugger_transcript"]["excerpt"], result)
+                self.assertTrue(result["cleanup_complete"], result)
+                self.assertEqual(result["stdout"], "unset" if value is None else "set:" + value)
+                self.assertEqual(os.environ.get("LD_LIBRARY_PATH"), value)
+
+    def test_startup_error_retains_bounded_transcript_text(self):
+        directory = self.root / "startup-error"
+        transcript = "Python Exception <class 'ModuleNotFoundError'>: No module named 'math'\nError occurred in Python: No module named 'math'\n"
+        args = SimpleNamespace(sdk=self.root, drrun=self.root / "drrun", gdb="/selected/gdb", prlimit="/selected/prlimit")
+
+        def failed(*_args, **_kwargs):
+            (directory / "debugger-transcript.log").write_text(transcript)
+            return {**self.success(), "exit_code": 1, "stdout": ""}
+
+        with patch.object(safepoint, "run_process", side_effect=failed):
+            row = safepoint.run_context(args, self.workload, directory, 1000)
+        self.assertFalse(row["passed"])
+        self.assertEqual(row["debugger_transcript"]["excerpt"], transcript)
+        self.assertEqual(row["debugger_transcript"]["sha256"], "0b305aa30831a95ae603c71aa4aec6c56e489c4ee0766bd00db5718bcc5fcaa4")
+        (directory / "debugger-transcript.log").write_bytes(b"head\n" + b"x" * 20000 + b"\ntail")
+        evidence = safepoint.debugger_transcript_evidence(directory, include_excerpt=True)
+        self.assertTrue(evidence["excerpt_truncated"])
+        self.assertLess(len(evidence["excerpt"].encode()), 8300)
+        self.assertTrue(evidence["excerpt"].startswith("head\n"))
+        self.assertTrue(evidence["excerpt"].endswith("\ntail"))
 
 
 if __name__ == "__main__":
