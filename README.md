@@ -321,6 +321,11 @@ The [managed runtime workload suite](docs/RUNTIME_WORKLOADS.md) additionally
 requires Java 17/21, CPython and Node threading, allocation/GC and child-process
 fixtures through native/engine controls and the actual `durante run` path.
 
+The [runtime repeatability tool](docs/RUNTIME_REPEATABILITY.md) repeats those
+fixed profiles in fresh processes, preserving failed and unrun observations.
+It separates collection success from exact integer spread qualification for
+instructions and combined/per-operation REP counters; it defines no time weights.
+
 [SIMD and interpreter/JIT qualification](docs/QUALIFICATION.md) explains the
 additional native-control, output-preservation and exact-count tests. Per-run
 reports distinguish tested features, unsupported runtime paths and missing CPU
