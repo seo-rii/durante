@@ -136,9 +136,11 @@ and engine-only control. Its one known-address protection fault is handled by
 making its data page writable; the application checks the delivered PC and
 output. The debugger must report a true native translation return and the exact
 assembly fault label as the post-translation PC. Set `DURANTE_TEST_CONTEXT_SDK`
-to an explicit prepared SDK locally; a missing explicit SDK is a test failure.
-The standard CI SDK path is detected automatically. Without the tools/default
-SDK the live control is explicitly skipped, which does not validate it.
+to an explicit prepared SDK locally; a missing explicit SDK or required tool is
+a test failure. CI installs GDB, verifies the required tools, and sets that SDK
+variable for the unit suite so the live control is required. Outside CI, the
+standard SDK path is used when no override is given; missing optional tools or
+that default SDK produce an explicit skip, which does not validate the control.
 
 ## Bounded observations on 2026-11-15
 
