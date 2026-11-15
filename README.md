@@ -37,6 +37,10 @@ inventing zeros. See the [protocol](docs/PROTOCOL.md) for the optional capabilit
 checked sums and actual lifecycle/replay qualification tests. No time weights
 are selected by these counters.
 
+The [online work-budget proposal](docs/ONLINE_WORK_BUDGET.md) describes the
+remaining live-accounting, stop/cleanup and consumer contracts. It is a design
+draft; current Durante does not enforce a work-score limit during execution.
+
 ## Build and test
 
 The pinned SDK is DynamoRIO 11.3.0-1 (source revision
