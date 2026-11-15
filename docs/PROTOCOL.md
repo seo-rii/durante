@@ -1,6 +1,7 @@
 # Durante lifecycle protocol, schema 1
 
-The client is launched with `-outdir DIR [-rep_bytes]`. DIR must already exist,
+The client is launched with `-outdir DIR [-rep_bytes]`, optionally followed by
+one or two `-disallow_cpu_feature avx|simd` pairs. DIR must already exist,
 be empty, private and writable by the target. `drrun -follow_children` must be
 active. The root PID is the launched target/engine PID, preserved through exec.
 The caller collects only after the entire tree has stopped and been reaped.
@@ -52,6 +53,22 @@ All images and processes must agree on its presence and version. An absent
 capability denotes legacy telemetry with an unspecified operation split; it
 does not imply zero MOVS or STOS work. Unknown versions and mixed legacy/new
 trees are unavailable to collectors that understand the extension.
+
+Enabled native CPU restrictions add `cpu_policy_version: 1` and `cpu_policy`
+to every `start`. The latter is exactly `"avx"`, `"simd"` or `"avx,simd"`;
+both fields are absent when disabled. All processes and images must agree on
+the capability, version and canonical policy. Partial metadata, unknown
+versions and mixed policy trees are unavailable. A successful aggregate adds
+the corresponding canonical `disallowed_cpu_features` array. Legacy aggregates
+omit it; absence must not satisfy an explicitly requested policy.
+
+An executed forbidden instruction produces `cpu_feature_violation` with
+`feature: "avx"` or `"simd"` in its live image, with the normal next sequence
+number, before process exit 126. The feature must belong to the announced
+policy. This event makes the whole measurement unavailable, without any partial
+counter totals, and returns `reason: "disallowed CPU feature: avx"` (or `simd`).
+No final `end` is required after this event. Exit code 126 by itself is not a
+violation. These events and policy metadata remain application-mutable.
 
 `spawn` is written by the parent only after successful process creation. Fields
 are `child_pid`, Linux x86-64 `syscall` number (clone 56, fork 57, vfork 58, clone3

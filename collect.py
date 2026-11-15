@@ -75,9 +75,9 @@ def parse_integer(raw):
 
 UINT_FIELDS = ('schema', 'client_version', 'pid', 'seq', 'parent_pid', 'child_pid',
                'syscall', *FIELDS, 'threads_started', 'threads_finished', 'app_exit_code',
-               'rep_breakdown_version', *REP_BREAKDOWN_RAW_FIELDS)
+               'rep_breakdown_version', 'cpu_policy_version', *REP_BREAKDOWN_RAW_FIELDS)
 TEXT_FIELDS = ('authority', 'metric', 'segment', 'event', 'origin', 'parent_segment',
-               'sdk_version', 'quality')
+               'sdk_version', 'quality', 'cpu_policy', 'feature')
 BOOL_FIELDS = ('rep_bytes_enabled', 'supported', 'valid', 'accounting_error',
                'threads_complete', 'app_exit_seen')
 
@@ -103,6 +103,21 @@ def validate_field_types(record):
         elif key == 'result':
             require(type(value) is int and -(1 << 63) <= value < (1 << 63),
                     'invalid signed integer field')
+    if 'cpu_policy_version' in record or 'cpu_policy' in record:
+        require(record.get('event') == 'start', 'CPU policy outside start')
+        cpu_policy(record)
+    if 'feature' in record:
+        require(record.get('event') == 'cpu_feature_violation', 'CPU feature outside violation')
+
+
+def cpu_policy(record):
+    if 'cpu_policy_version' not in record and 'cpu_policy' not in record:
+        return ''
+    require(uint(record.get('cpu_policy_version'), 'cpu_policy_version') == 1,
+            'unsupported CPU policy version')
+    policy = record.get('cpu_policy')
+    require(type(policy) is str and policy in ('avx', 'simd', 'avx,simd'), 'invalid CPU policy')
+    return policy
 
 
 def parse_records(process, data):
@@ -230,6 +245,17 @@ def add_rep_breakdown(total, values):
 def aggregate(streams, root_pid):
     require(pid(root_pid) and root_pid in streams, 'root PID absent')
     require(0 < len(streams) <= MAX_PROCESSES, 'process count exceeded')
+    # Validate all policy announcements before an early violation returns an
+    # unavailable result: a violating stream must not hide mixed policies.
+    policy = None
+    for records in streams.values():
+        for record in records:
+            validate_field_types(record)
+            if record.get('event') == 'start':
+                current = cpu_policy(record)
+                require(policy is None or policy == current, 'mixed CPU policies')
+                policy = current
+    policy = policy or ''
     segments = set(); processes = {}; spawn_edges = {}; rep_mode = None
     rep_breakdown_version = None; breakdown_mode_set = False
     total_breakdown = empty_rep_breakdown()
@@ -274,7 +300,12 @@ def aggregate(streams, root_pid):
             require(state is not None and not ended and segment == state, 'event outside live segment')
             sequence += 1
             require(type(record.get('seq')) is int and record['seq'] == sequence, 'event sequence gap or duplicate')
-            if event == 'spawn':
+            if event == 'cpu_feature_violation':
+                feature = record.get('feature')
+                require(feature in ('avx', 'simd') and feature in policy.split(','),
+                        'CPU violation outside requested policy')
+                raise Invalid('disallowed CPU feature: ' + feature)
+            elif event == 'spawn':
                 child = record.get('child_pid')
                 require(pid(child) and child != process and child not in spawn_edges, 'duplicate/invalid child edge')
                 require(record.get('supported') is True, 'unsupported process creation')
@@ -332,6 +363,8 @@ def aggregate(streams, root_pid):
                        'max_total_bytes': MAX_TOTAL_BYTES, 'max_events_per_process': MAX_EVENTS}}
     if rep_breakdown_version is not None:
         result['rep_breakdown'] = total_breakdown
+    if policy:
+        result['disallowed_cpu_features'] = policy.split(',')
     return result
 
 

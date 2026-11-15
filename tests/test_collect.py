@@ -56,7 +56,8 @@ class CollectorTests(unittest.TestCase):
     result=m.aggregate(streams,case['root_pid'])
     self.assertEqual({k:result[k] for k in case['expected']},case['expected'],case['name'])
    else:
-    with self.assertRaises(m.Invalid,msg=case['name']):m.aggregate(streams,case['root_pid'])
+    with self.assertRaises(m.Invalid,msg=case['name']) as caught:m.aggregate(streams,case['root_pid'])
+    if 'expected_reason' in case:self.assertEqual(str(caught.exception),case['expected_reason'],case['name'])
  def test_one_process(self):
   a=m.aggregate({1:[start(1),end(1)]},1);self.assertEqual(a['instructions'],100)
  def test_fork_sums_once(self):

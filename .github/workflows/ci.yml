@@ -95,6 +95,8 @@ jobs:
           cmake --build build -j2
       - name: Validate lifecycle records and aggregation
         run: python3 -m unittest discover -s tests -v
+      - name: Stop forbidden native instructions with release and debug runtimes
+        run: python3 tests/native_cpu_policy.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/native-cpu-policy
       - name: Qualify exact SIMD counts and preserved arithmetic results
         run: python3 tests/simd.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/simd --require-isa sse2 --repeats 2
       - name: Preserve signal vector and floating-point state with release and debug runtimes

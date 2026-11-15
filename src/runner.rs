@@ -28,6 +28,7 @@ pub struct Options {
     pub timeout_ms: u64,
     pub records_dir: Option<PathBuf>,
     pub keep_records: bool,
+    pub disallowed_cpu_features: Vec<String>,
     pub command: Vec<OsString>,
 }
 
@@ -368,6 +369,9 @@ pub fn run(options: Options) -> Result<i32, String> {
             "cleanup_complete":true,"records_cleanup_complete":true,
             "supervisor_reaped_processes":0},
         "measurement":invalid_measurement(None,"measurement did not start")});
+    if !options.disallowed_cpu_features.is_empty() {
+        result["disallowed_cpu_features"] = json!(options.disallowed_cpu_features);
+    }
     let outcome = execute(&options, drrun, client, &mut result);
     result["execution"]["wall_time_ms"] =
         json!(started.elapsed().as_millis().min(u64::MAX as u128) as u64);
@@ -418,6 +422,15 @@ pub(crate) fn cancellation_signal() -> i32 {
     CANCEL_SIGNAL.load(Ordering::Relaxed)
 }
 
+/// Enabled runs require the client's exact capability receipt. A legacy client
+/// or a different policy must not silently satisfy the requested restriction.
+pub(crate) fn policy_matches(report: &Value, expected: &[String]) -> bool {
+    match report.get("disallowed_cpu_features") {
+        None => expected.is_empty(),
+        Some(value) => !expected.is_empty() && *value == json!(expected),
+    }
+}
+
 fn execute(
     options: &Options,
     drrun: PathBuf,
@@ -448,7 +461,12 @@ fn execute(
         .arg(client)
         .arg("-outdir")
         .arg(&records.path)
-        .args(["-rep_bytes", "--"])
+        .arg("-rep_bytes");
+    for feature in &options.disallowed_cpu_features {
+        command.args(["-disallow_cpu_feature", feature]);
+    }
+    command
+        .arg("--")
         .args(&options.command)
         .stdin(Stdio::inherit())
         .stdout(Stdio::inherit())
@@ -556,6 +574,15 @@ fn execute(
         code = 1;
     } else {
         let mut measurement = durante::collect::collect(&records.path, root_pid);
+        if measurement["valid"] == true
+            && measurement["complete"] == true
+            && !policy_matches(&measurement, &options.disallowed_cpu_features)
+        {
+            measurement = invalid_measurement(
+                Some(root_pid),
+                "client CPU feature policy does not match the request",
+            );
+        }
         if measurement["valid"] == true && measurement["complete"] == true {
             let recorded_exit = measurement["processes"]
                 .as_array()

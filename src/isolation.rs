@@ -35,6 +35,7 @@ pub struct Options {
     pub timeout_ms: u64,
     pub output_dir: Option<PathBuf>,
     pub output_limit_bytes: u64,
+    pub disallowed_cpu_features: Vec<String>,
     pub command: Vec<OsString>,
 }
 
@@ -830,6 +831,9 @@ pub fn run(options: Options) -> Result<i32, String> {
         "measurement_contract":durante::report::measurement_contract(),
         "execution":{"state":"launch_failed","wrapper_exit_code":null,
         "cleanup_complete":true,"scratch_cleanup_complete":true,"wall_time_ms":0}});
+    if !options.disallowed_cpu_features.is_empty() {
+        result["disallowed_cpu_features"] = json!(options.disallowed_cpu_features);
+    }
     result["output"] = match &options.output_dir {
         Some(path) => json!({"mode":"capture_requested", "directory":path,
             "limit_bytes":options.output_limit_bytes, "published":false, "complete":false}),
@@ -1028,7 +1032,11 @@ fn execute(
             "--report-existing",
             "--timeout-ms",
         ])
-        .arg(options.timeout_ms.to_string())
+        .arg(options.timeout_ms.to_string());
+    for feature in &options.disallowed_cpu_features {
+        command.args(["--disallow-cpu-feature", feature]);
+    }
+    command
         .arg("--")
         .args(&options.command)
         .stdin(Stdio::inherit())
@@ -1183,7 +1191,10 @@ fn execute(
         .map_err(|_| "inner report missing, unsafe or oversized")?;
     let inner: Value =
         serde_json::from_slice(&data).map_err(|_| "invalid untrusted inner report")?;
-    if valid_inner(&inner) {
+    if valid_inner(&inner)
+        && runner::policy_matches(&inner, &options.disallowed_cpu_features)
+        && runner::policy_matches(&inner["measurement"], &options.disallowed_cpu_features)
+    {
         result["untrusted_inner_report"] = inner;
     } else {
         result["execution"]["state"] = json!("incomplete");

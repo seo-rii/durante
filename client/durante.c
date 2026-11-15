@@ -31,6 +31,7 @@
 #include "dr_api.h"
 #include "drmgr.h"
 #include "durante_runtime.h"
+#include "cpu_policy.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <stddef.h>
@@ -70,7 +71,7 @@ typedef struct {
   int child_file, child_exit_code;
   size_t child_bytes;
   uint64_t child_sequence;
-  bool child_exit_seen;
+  bool child_exit_seen, child_policy_exit;
 } thread_data_t;
 static int tls_index;
 static void *state_lock;
@@ -83,6 +84,8 @@ static uint64_t total_instructions, total_signals, total_rep_bytes,
 static uint64_t total_rep_movs_bytes, total_rep_stos_bytes,
     total_rep_movs_entries, total_rep_stos_entries;
 static bool rep_bytes_enabled, accounting_error, app_exit_seen, report_written;
+static bool deny_avx, deny_simd;
+static app_pc cpu_policy_exit_pc;
 /* A replay callback must never do I/O or take a lock, even on a broken TLS
  * invariant.  This sticky process/shared-VM flag invalidates every snapshot. */
 static int replay_without_tls;
@@ -175,13 +178,18 @@ static void route_event(thread_data_t *d, const char *kind,
 static void start_record(thread_data_t *d, const char *origin,
                          process_id_t parent, const char *parent_segment) {
   char fields[384];
+  const char *policy = deny_avx && deny_simd ? "avx,simd" : deny_avx ? "avx" : "simd";
+  char policy_fields[96] = "";
+  if (deny_avx || deny_simd)
+    dr_snprintf(policy_fields, sizeof(policy_fields),
+                ",\"cpu_policy_version\":1,\"cpu_policy\":\"%s\"", policy);
   dr_snprintf(fields, sizeof(fields),
               ",\"origin\":\"%s\",\"parent_pid\":%d,"
               "\"parent_segment\":\"%s\",\"rep_bytes_enabled\":%s,"
               "\"rep_breakdown_version\":1,\"sdk_"
-              "version\":\"11.3.0\"",
+              "version\":\"11.3.0\"%s",
               origin, (int)parent, parent_segment,
-              rep_bytes_enabled ? "true" : "false");
+              rep_bytes_enabled ? "true" : "false", policy_fields);
   route_event(d, "start", fields);
 }
 static void open_stream(const char *origin, process_id_t parent,
@@ -440,11 +448,37 @@ static void observe_rep(app_pc pc, int opcode, int bytes, int count_reg) {
   ++*kind_entries;
 }
 
+/* A shared-VM child must take DR's ordinary syscall-exit path so its suspended
+ * parent keeps the correct runtime state. Only our exit syscall may run after
+ * this decision, never application handlers or the rejected instruction. */
+static void cpu_policy_exit(void) {
+  void *ctx = dr_get_current_drcontext();
+  thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
+  if (!d)
+    fail("CPU policy exit without valid thread state");
+  if (d->child_pid) {
+    dr_mcontext_t mc = {.size = sizeof(mc), .flags = DR_MC_ALL};
+    d->child_policy_exit = true;
+    if (!dr_get_mcontext(ctx, &mc))
+      fail("cannot redirect CPU policy exit");
+    mc.xax = SYS_exit_group;
+    mc.xdi = 126;
+    mc.pc = cpu_policy_exit_pc;
+    dr_redirect_execution(&mc);
+    fail("cannot execute CPU policy exit");
+  }
+  dr_abort_with_code(126);
+}
+
 /* The client implements the Linux x86-64 syscall ABI only. In particular an
  * int 0x80 fork can create a child without either the native spawn callback or
- * the child's client running. Preserve the application instruction, but never
- * publish a complete partial tree after a compatibility ABI is executed. */
+ * the child's client running. Measurement-only mode preserves the instruction
+ * but invalidates the partial tree. CPU policy mode stops before execution. */
 static void unsupported_syscall_abi(void) {
+  if (deny_avx || deny_simd) {
+    dr_fprintf(STDERR, "durante: syscall ABI unsupported with CPU policy\n");
+    cpu_policy_exit();
+  }
   dr_mutex_lock(state_lock);
   accounting_error = true;
   dr_mutex_unlock(state_lock);
@@ -572,6 +606,25 @@ static uint write_suffix(instrlist_t *bb, instr_t *where) {
   return count;
 }
 
+static void cpu_feature_violation(int feature) {
+  if (feature == CPU_POLICY_UNDECODED) {
+    dr_fprintf(STDERR, "durante: instruction unsupported by native CPU policy decoder\n");
+    cpu_policy_exit();
+  }
+  void *ctx = dr_get_current_drcontext();
+  thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
+  if (!d || (feature != CPU_POLICY_AVX && feature != CPU_POLICY_SIMD))
+    fail("CPU policy observation without valid thread state");
+  /* route_event keeps a shared-VM/vfork child's report out of its parent's
+   * stream. No parent counter or terminal state is modified here. */
+  dr_mutex_lock(state_lock);
+  route_event(d, "cpu_feature_violation", feature == CPU_POLICY_AVX
+              ? ",\"feature\":\"avx\"" : ",\"feature\":\"simd\"");
+  dr_mutex_unlock(state_lock);
+  /* This bounded event invalidates the whole measurement before termination. */
+  cpu_policy_exit();
+}
+
 static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
                                         instrlist_t *bb, instr_t *where,
                                         bool for_trace, bool translating,
@@ -584,8 +637,9 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
        instr_get_isa_mode(where) != DR_ISA_AMD64)) {
     /* This is a runtime clean call at the actual instruction. Merely having
      * unreachable compatibility bytes in a module must not taint a run. */
-    dr_insert_clean_call(drcontext, bb, where,
-                         (void *)unsupported_syscall_abi, false, 0);
+    dr_insert_clean_call_ex(drcontext, bb, where, (void *)unsupported_syscall_abi,
+                           DR_CLEANCALL_READS_APP_CONTEXT |
+                               DR_CLEANCALL_WRITES_APP_CONTEXT, 0);
   }
   if (drmgr_is_first_instr(drcontext, where) && user_data != NULL) {
     /* Preserve complete application state even when a signal handler reads
@@ -594,6 +648,14 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
     dr_insert_clean_call(drcontext, bb, where, (void *)count_block, false, 2,
                          OPND_CREATE_INT32((int)(ptr_uint_t)user_data),
                          OPND_CREATE_INTPTR(first ? instr_get_app_pc(first) : NULL));
+  }
+  if (instr_is_app(where) && (deny_avx || deny_simd)) {
+    enum cpu_policy_decision decision = cpu_policy_classify(where, deny_avx, deny_simd);
+    if (decision != CPU_POLICY_ALLOW)
+      dr_insert_clean_call_ex(drcontext, bb, where, (void *)cpu_feature_violation,
+                           DR_CLEANCALL_READS_APP_CONTEXT |
+                               DR_CLEANCALL_WRITES_APP_CONTEXT,
+                           1, OPND_CREATE_INT32(decision));
   }
   if (instr_is_app(where) && instr_writes_memory(where)) {
     app_pc pc = instr_get_app_pc(where);
@@ -657,12 +719,19 @@ static bool pre_syscall(void *ctx, int number) {
   thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
   if (!d)
     fail("syscall without TLS");
+  /* These transitions can escape the native x86-64 client. Reject them before
+   * kernel entry or lifecycle bookkeeping; no process/image was created. */
+  if ((deny_avx || deny_simd) && (x32_syscall(number) || number == SYS_execve
+#ifdef SYS_execveat
+                                || number == SYS_execveat
+#endif
+                                )) {
+    dr_syscall_set_result(ctx, (reg_t)-EPERM);
+    return false;
+  }
   if (x32_syscall(number))
     unsupported_syscall_abi();
-  d->pending_spawn = false;
-  d->pending_exec = false;
-  d->pending_unsupported = false;
-  d->pending_syscall = number;
+  bool unsupported = false;
   bool spawn = number == SYS_fork || number == SYS_vfork;
   bool exec = number == SYS_execve;
 #ifdef SYS_execveat
@@ -677,7 +746,7 @@ static bool pre_syscall(void *ctx, int number) {
     size_t size = (size_t)dr_syscall_get_param(ctx, 1);
     if (size < sizeof(flags) ||
         !dr_safe_read(args, sizeof(flags), &flags, NULL))
-      d->pending_unsupported = true;
+      unsupported = true;
   }
 #endif
   if (number == SYS_clone
@@ -689,17 +758,23 @@ static bool pre_syscall(void *ctx, int number) {
     /* Non-thread shared-address-space clones have no isolated TLS accounting.
      */
     if (spawn && (flags & CLONE_VM_FLAG) && !(flags & CLONE_VFORK_FLAG))
-      d->pending_unsupported = true;
+      unsupported = true;
     /* The runtime fix restores cleared handlers for shared-VM spawn children.
      * Fork-style clone3 uses a separate signal initialization path. */
     if (spawn && (flags & CLONE_CLEAR_SIGHAND_FLAG) && !(flags & CLONE_VM_FLAG))
-      d->pending_unsupported = true;
+      unsupported = true;
   }
   if (d->child_pid && spawn)
-    d->pending_unsupported = true;
-  d->pending_clone_flags = flags;
+    unsupported = true;
   if (spawn && (flags & CLONE_FILES_FLAG))
-    d->pending_unsupported = true;
+    unsupported = true;
+  if ((deny_avx || deny_simd) && unsupported) {
+    dr_syscall_set_result(ctx, (reg_t)-EPERM);
+    return false;
+  }
+  d->pending_unsupported = unsupported;
+  d->pending_syscall = number;
+  d->pending_clone_flags = flags;
   d->pending_spawn = spawn;
   d->pending_exec = exec;
   dr_mutex_lock(state_lock);
@@ -716,7 +791,7 @@ static bool pre_syscall(void *ctx, int number) {
   }
   if (exec)
     snapshot_event("exec_attempt", ctx, true);
-  if (d->child_pid && d->child_exit_seen)
+  if (d->child_pid && d->child_exit_seen && !d->child_policy_exit)
     snapshot_event("end", ctx, false);
   if (d->child_pid && (exec || d->child_exit_seen) && d->child_file >= 0) {
     dr_close_file(d->child_file);
@@ -816,6 +891,8 @@ static void process_exit(void) {
   drmgr_unregister_tls_field(tls_index);
   drmgr_exit();
   dr_mutex_destroy(state_lock);
+  if (cpu_policy_exit_pc)
+    dr_raw_mem_free(cpu_policy_exit_pc, dr_page_size());
 }
 DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
   (void)id;
@@ -823,15 +900,40 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
                      "https://dynamorio.org/");
   if (dr_durante_runtime_abi_version() != DR_DURANTE_RUNTIME_ABI_VERSION)
     fail("prepared runtime with code replay ABI 1 required");
-  if ((argc != 3 && argc != 4) || strcmp(argv[1], "-outdir") ||
-      (argc == 4 && strcmp(argv[3], "-rep_bytes")))
+  if (argc < 3 || strcmp(argv[1], "-outdir"))
     fail("usage: -c libdurante.so -outdir NEW_PRIVATE_DIRECTORY [-rep_bytes] "
-         "-- program");
+         "[-disallow_cpu_feature avx|simd] -- program");
   if (strlen(argv[2]) >= sizeof(outdir) || argv[2][0] != '/')
     fail("report directory must be absolute");
   memcpy(outdir, argv[2], strlen(argv[2]) + 1);
-  rep_bytes_enabled = argc == 4;
+  for (int i = 3; i < argc; ++i) {
+    if (strcmp(argv[i], "-rep_bytes") == 0 && !rep_bytes_enabled) {
+      rep_bytes_enabled = true;
+    } else if (strcmp(argv[i], "-disallow_cpu_feature") == 0 && i + 1 < argc) {
+      const char *feature = argv[++i];
+      if (strcmp(feature, "avx") == 0 && !deny_avx)
+        deny_avx = true;
+      else if (strcmp(feature, "simd") == 0 && !deny_simd)
+        deny_simd = true;
+      else
+        fail("unknown or duplicate disallowed CPU feature");
+    } else {
+      fail("unknown or duplicate client option");
+    }
+  }
   owner_pid = dr_get_process_id();
+  if (deny_avx || deny_simd) {
+    cpu_policy_exit_pc = dr_raw_mem_alloc(dr_page_size(),
+                                         DR_MEMPROT_READ | DR_MEMPROT_WRITE, NULL);
+    if (!cpu_policy_exit_pc)
+      fail("cannot allocate CPU policy exit");
+    /* syscall; ud2. This page is translated as application code so the runtime
+     * observes SYS_exit_group and restores shared-VM child lifecycle state. */
+    memcpy(cpu_policy_exit_pc, "\x0f\x05\x0f\x0b", 4);
+    if (!dr_memory_protect(cpu_policy_exit_pc, dr_page_size(),
+                          DR_MEMPROT_READ | DR_MEMPROT_EXEC))
+      fail("cannot protect CPU policy exit");
+  }
   if (!drmgr_init())
     fail("extension initialization failed");
   state_lock = dr_mutex_create();
