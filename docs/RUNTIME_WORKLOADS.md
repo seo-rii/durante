@@ -226,6 +226,40 @@ before/after identity checks invalidate the whole result if an input changes or
 cannot be inspected. Results retain each mode's command, stdout/stderr, raw records,
 supervisor report, observed runtime versions and provenance errors.
 
+Each observation also records the harness's CPU-affinity mask and the launched
+root's PID/start-time identity when available. When the outer wall deadline
+expires, `run_process` attempts one process-tree snapshot before sending SIGTERM.
+The snapshot follows children listed by every observed thread of the owned tree;
+it does not scan all of `/proc`. Records contain PID/start time, parent links,
+process/thread state, `wchan`, `TracerPid` and the kernel CPU-affinity list.
+Command lines, process names and environments are not retained.
+
+The observer checks a 50-ms time budget between reads and traversal steps, with
+limits of 64 processes, 128 threads per process, 256 threads overall and 256 KiB
+of proc-file reads. Its compact JSON representation is also capped at 256 KiB;
+this excludes formatting and other data in the surrounding `results.json`.
+These are observation limits, not additional successful execution allowances.
+The scan is not atomic: disappeared/reused identities, changed parents, denied
+reads and reached limits produce `complete: false` and explicit `issues`.
+Missing launch identity prevents a tree walk. A limited or failed diagnostic
+does not change the timeout verdict, signal grace periods or descendant cleanup.
+Even if the process exits while being observed, the row retains `timeout: true`.
+The snapshot is embedded in the row's `timeout_snapshot`, so the existing
+`.results` artifact retains it in `results.json`. Successful rows have no tree
+snapshot. Focused regressions include owned nonleader-thread descendants,
+identity/permission/size/time limits, signal races and a small sleeping tree.
+
+On a managed-workload CI failure, the separate seven-day
+`runtime-workloads-java-<version>-failed-runtime` artifact retains the built
+client/CLI and the release engine subset used by that job, alongside the normal
+results artifact. Compare those files' SHA256 values with `results.json` input
+provenance: builds from the same source in different jobs can produce different
+core bytes. This subset contains the release core, its symbols, launcher and
+required runtime libraries; it is not the complete development SDK or a debug
+profile build. Artifact download does not preserve executable mode bits, and
+the retained binaries do not reproduce the JDK, every dependency, host or CPU
+placement automatically. Those execution inputs must be matched separately.
+
 Exit 0 requires the complete requested matrix, unchanged inputs and successful
 cleanup. Exit 1 means a workload, accounting, provenance, setup or cleanup failure;
 inspect `results.json`. Invalid command-line syntax or a nonfresh/unwritable output
