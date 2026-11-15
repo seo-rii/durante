@@ -367,6 +367,67 @@ ASLR nor resolves the remaining variation, proves counter correctness or
 qualifies the original allocation workload. Matching harness/native flags also
 does not prove fixed addresses inside every instrumented execution.
 
+## Bounded effective-profile observation
+
+A separate diagnostic on 2026-11-15 checked the controls inside instrumented
+CPython processes. The collection tool's existing startup probe runs once
+natively; that probe alone cannot establish the effective state of the later
+engine, client and supervisor targets. The additional diagnostic used the
+unchanged repository code at `18dbb3f` and the same CPython 3.11.2 installation,
+prepared SDK, client, CLI, named libraries, CPU 0, `-P -s -S` flags,
+`PYTHONHASHSEED=1` and `setarch x86_64 -R` wrapper. The older fixed client remains
+separate from the later CPU-policy client on main.
+
+The plan declared three rounds, each in native, engine-only, REP-off client and
+REP-enabled supervisor order: twelve fresh processes in total, with no retries.
+It kept the 30-second target wall limit, five-second supervisor publication
+allowance, 90-second CPU limit, 2-GiB address space, 1-MiB files, disabled core
+dumps and 300-second campaign. A row required its full wall allowance plus
+23 seconds reserved for collection, publication, termination and owner cleanup.
+A failed native control or incomplete cleanup would leave later rows unrun and
+visible in the result.
+
+The fixed diagnostic program imported the startup probe's modules and retained
+seven objects: `None`, the `sys` and `builtins` modules, `sys.modules`, a new
+`object()`, a `bytearray(b"durante-effective-profile-v1")`, and a list holding the
+last two objects. It recorded their addresses and only the mappings containing
+those addresses. Reading `/proc/self/maps` had a 256-KiB bound; at most seven
+selected mappings could enter the output. One JSON line, limited to 16 KiB,
+also recorded the declared startup flags, named hash input, hash sentinel and
+algorithm, process personality, module paths and a GC/allocated-block snapshot
+after imports and sentinel creation but before reading maps. The program did
+not dump the process environment.
+
+All twelve rows completed and passed in 26.26 seconds. Every mode reported the
+declared seed `1`, hash sentinel `8559364366264786793`, `siphash13`, startup flags
+and personality `262144` with `ADDR_NO_RANDOMIZE=true`. The seven selected object
+addresses and their containing mappings were identical across all three
+observations within each mode. Native addresses differed from engine/client
+addresses, which the diagnostic allowed. GC generation counts/statistics and
+allocated-block counts were also identical within each mode at the sampled
+point: 29,014 blocks natively and 29,031 in each instrumented mode. Each stdout
+was 6,118 bytes and its bytes were identical within its mode.
+
+The metered rows passed the existing independent raw-record, one-process,
+one-image and counter-partition checks. Named runtime, standard-library,
+probe/driver, SDK, client, CLI and wrapper identities were unchanged before and
+after execution. Raw stdout and reports were retained; cleanup, CPU-profile
+checks and affinity restoration completed. This diagnostic's exit 0 means its
+declared control and accounting observations succeeded. It does not change the
+repeatability evaluator's qualification result: both earlier 24-observation
+startup/import collections still fail their original **0 ppm** gate and retain
+their unchanged records and exit status 1.
+
+The extra imports, allocations, mapping reads and output make this a different
+program from the startup/import controls. It parses the complete bounded maps
+view before selecting the containing mappings, so stable selected output does
+not establish that every mapping or runtime input was fixed. A snapshot of
+seven objects and GC state also does not cover every allocation or the full
+execution history. These observations confirm the selected controls inside
+these instrumented processes; they neither identify the original instruction
+spread's cause nor establish counter correctness or language-wide repeatability.
+The residual variation remains unresolved.
+
 ## Tests
 
 The regression suite uses small native CPython probes but needs no runtime build:
