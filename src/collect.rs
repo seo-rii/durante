@@ -3,6 +3,7 @@
 //! Structural consistency is not integrity against an application that can
 //! modify its own instrumentation state. Every result remains diagnostic-only.
 
+use crate::report::RepBreakdown;
 use serde::de::{self, MapAccess, Visitor};
 use serde::{Deserialize, Deserializer};
 use serde_json::{json, Map, Number, Value};
@@ -25,6 +26,12 @@ const FIELDS: [&str; 5] = [
     "rep_entries",
     "unsupported_rep_entries",
     "signals_observed",
+];
+const REP_BREAKDOWN_FIELDS: [&str; 4] = [
+    "rep_movs_bytes",
+    "rep_stos_bytes",
+    "rep_movs_entries",
+    "rep_stos_entries",
 ];
 type Error = &'static str;
 type Event = Map<String, Value>;
@@ -275,8 +282,8 @@ fn decode_stream(pid: u32, data: &[u8]) -> Result<Vec<Event>, Error> {
     Ok(records)
 }
 
-// Deserialize flat objects directly. Value's default map implementation would
-// silently overwrite duplicate keys, including keys unknown to this schema.
+// Deserialize flat objects directly.
+// Value's default map implementation would silently overwrite duplicate keys.
 struct FlatEvent(Event);
 impl<'de> Deserialize<'de> for FlatEvent {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
@@ -362,6 +369,17 @@ fn boolean(event: &Event, field: &str) -> Result<bool, Error> {
         .ok_or("missing or invalid boolean field")
 }
 fn validate_field_types(event: &Event) -> Result<(), Error> {
+    if event.contains_key("rep_breakdown_version") {
+        require(
+            uint(event, "rep_breakdown_version")? == 1,
+            "unsupported REP breakdown version",
+        )?;
+    }
+    for field in REP_BREAKDOWN_FIELDS {
+        if event.contains_key(field) {
+            uint(event, field)?;
+        }
+    }
     for field in [
         "schema",
         "client_version",
@@ -417,10 +435,16 @@ fn validate_field_types(event: &Event) -> Result<(), Error> {
 
 struct Terminal {
     counters: [u64; 5],
+    rep_breakdown: Option<RepBreakdown>,
     threads: u64,
     exit_code: Option<u8>,
 }
-fn terminal(event: &Event, is_exec: bool, rep_enabled: bool) -> Result<Terminal, Error> {
+fn terminal(
+    event: &Event,
+    is_exec: bool,
+    rep_enabled: bool,
+    breakdown_enabled: bool,
+) -> Result<Terminal, Error> {
     let mut counters = [0; 5];
     for (index, field) in FIELDS.iter().enumerate() {
         counters[index] = uint(event, field)?;
@@ -453,6 +477,33 @@ fn terminal(event: &Event, is_exec: bool, rep_enabled: bool) -> Result<Terminal,
     if !rep_enabled {
         require(counters[1..4] == [0, 0, 0], "REP counters without REP mode")?;
     }
+    let rep_breakdown = if breakdown_enabled {
+        require(
+            REP_BREAKDOWN_FIELDS
+                .iter()
+                .all(|field| event.contains_key(*field)),
+            "missing advertised REP breakdown",
+        )?;
+        let breakdown = RepBreakdown::from_counts(
+            uint(event, "rep_movs_bytes")?,
+            uint(event, "rep_stos_bytes")?,
+            uint(event, "rep_movs_entries")?,
+            uint(event, "rep_stos_entries")?,
+        );
+        require(
+            breakdown.matches_totals(counters[1], counters[2], rep_enabled),
+            "REP breakdown partition mismatch",
+        )?;
+        Some(breakdown)
+    } else {
+        require(
+            REP_BREAKDOWN_FIELDS
+                .iter()
+                .all(|field| !event.contains_key(*field)),
+            "unadvertised REP breakdown",
+        )?;
+        None
+    };
     let code =
         u8::try_from(uint(event, "app_exit_code")?).map_err(|_| "invalid application exit code")?;
     if !is_exec {
@@ -460,6 +511,7 @@ fn terminal(event: &Event, is_exec: bool, rep_enabled: bool) -> Result<Terminal,
     }
     Ok(Terminal {
         counters,
+        rep_breakdown,
         threads,
         exit_code: if is_exec { None } else { Some(code) },
     })
@@ -485,7 +537,9 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
     let mut processes = BTreeMap::new();
     let mut spawn_edges = BTreeMap::<u32, (u32, String)>::new();
     let mut rep_mode = None;
+    let mut breakdown_mode = None;
     let mut totals = [0u64; 5];
+    let mut breakdown_totals = RepBreakdown::default();
     let mut all_segments = Vec::new();
     for (process, records) in streams {
         let mut state: Option<String> = None;
@@ -530,6 +584,12 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
                     "mixed REP modes",
                 )?;
                 rep_mode = Some(mode);
+                let detailed = record.contains_key("rep_breakdown_version");
+                require(
+                    breakdown_mode.is_none_or(|previous| previous == detailed),
+                    "mixed REP breakdown capabilities",
+                )?;
+                breakdown_mode = Some(detailed);
                 let parent = uint(&record, "parent_pid")?;
                 let parent_segment = text(&record, "parent_segment")?;
                 let origin = text(&record, "origin")?;
@@ -539,7 +599,10 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
                         origin == "initial" && parent == 0 && parent_segment.is_empty(),
                         "invalid exec origin",
                     )?;
-                    selected.push((previous_segment.clone(), terminal(&checkpoint, true, mode)?));
+                    selected.push((
+                        previous_segment.clone(),
+                        terminal(&checkpoint, true, mode, detailed)?,
+                    ));
                 } else {
                     if process == root_pid {
                         require(
@@ -607,7 +670,12 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
                     require(pending_exec.is_none(), "exec outcome missing")?;
                     selected.push((
                         segment,
-                        terminal(&record, false, rep_mode.ok_or("missing REP mode")?)?,
+                        terminal(
+                            &record,
+                            false,
+                            rep_mode.ok_or("missing REP mode")?,
+                            breakdown_mode.ok_or("missing REP breakdown capability")?,
+                        )?,
                     ));
                     ended = true;
                 }
@@ -620,6 +688,7 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
         )?;
         let (parent_pid, parent_segment) = first_origin.ok_or("missing process origin")?;
         let mut process_totals = [0u64; 5];
+        let mut process_breakdown = RepBreakdown::default();
         let exit_code = selected.last().ok_or("missing terminal image")?.1.exit_code;
         let images = selected.len();
         for (segment, values) in selected {
@@ -627,10 +696,22 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
             add_counters(&mut process_totals, &values.counters)?;
             let mut row = json!({"pid": process, "segment": segment, "threads": values.threads, "exit_code": values.exit_code});
             insert_counters(&mut row, &values.counters);
+            if let Some(breakdown) = values.rep_breakdown {
+                breakdown_totals = breakdown_totals
+                    .checked_add(breakdown)
+                    .ok_or("tree REP breakdown overflow")?;
+                process_breakdown = process_breakdown
+                    .checked_add(breakdown)
+                    .ok_or("process REP breakdown overflow")?;
+                row["rep_breakdown"] = json!(breakdown);
+            }
             all_segments.push(row);
         }
         let mut row = json!({"pid": process, "parent_pid": parent_pid, "parent_segment": parent_segment, "images": images, "exit_code": exit_code});
         insert_counters(&mut row, &process_totals);
+        if breakdown_mode == Some(true) {
+            row["rep_breakdown"] = json!(process_breakdown);
+        }
         processes.insert(process, row);
     }
     let actual_children: BTreeSet<_> = processes
@@ -676,5 +757,8 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
                    "max_total_bytes": MAX_TOTAL_BYTES, "max_events_per_process": MAX_EVENTS},
     });
     insert_counters(&mut result, &totals);
+    if breakdown_mode == Some(true) {
+        result["rep_breakdown"] = json!(breakdown_totals);
+    }
     Ok(result)
 }

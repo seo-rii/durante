@@ -61,6 +61,7 @@ fn assert_invalid(result: &Value) {
         "rep_entries",
         "unsupported_rep_entries",
         "signals_observed",
+        "rep_breakdown",
         "processes",
         "segments",
     ] {
@@ -437,4 +438,300 @@ fn deeply_nested_unknown_fields_never_recurse_or_expose_totals() {
         let bytes = format!("{{\"pid\":1,\"extra\":{nested}}}\n");
         assert_invalid(&collect_bytes(&[(1, bytes.as_bytes())], 1));
     }
+}
+
+fn breakdown(parts: [u64; 4]) -> Value {
+    json!({"version":1,"movs_bytes":parts[0],"stos_bytes":parts[1],
+        "movs_entries":parts[2],"stos_entries":parts[3]})
+}
+
+const RAW_REP_FIELDS: [&str; 4] = [
+    "rep_movs_bytes",
+    "rep_stos_bytes",
+    "rep_movs_entries",
+    "rep_stos_entries",
+];
+
+fn insert_raw_breakdown(row: &mut Value, parts: [u64; 4]) {
+    for (field, value) in RAW_REP_FIELDS.iter().zip(parts) {
+        row[*field] = json!(value);
+    }
+}
+
+fn detailed_start(pid: u32, image: u64, enabled: bool) -> Value {
+    let mut row = start(pid, image);
+    row["rep_bytes_enabled"] = json!(enabled);
+    row["rep_breakdown_version"] = json!(1);
+    row
+}
+
+fn detailed_end(pid: u32, image: u64, seq: u64, count: u64, parts: [u64; 4]) -> Value {
+    let mut row = end(pid, image, seq, count);
+    row["rep_bytes"] = json!(parts[0].checked_add(parts[1]).unwrap());
+    row["rep_entries"] = json!(parts[2].checked_add(parts[3]).unwrap());
+    insert_raw_breakdown(&mut row, parts);
+    row
+}
+
+#[test]
+fn rep_breakdown_preserves_legacy_absence_and_new_zero_or_positive_observations() {
+    let dir = tempfile::tempdir().unwrap();
+    let mut legacy_start = start(1, 1);
+    legacy_start["rep_bytes_enabled"] = json!(true);
+    let mut legacy_end = end(1, 1, 2, 100);
+    legacy_end["rep_bytes"] = json!(22);
+    legacy_end["rep_entries"] = json!(5);
+    write_rows(dir.path(), 1, &[legacy_start, legacy_end]);
+    let legacy = collect(dir.path(), 1);
+    assert_eq!(legacy["valid"], true);
+    for row in [&legacy, &legacy["processes"][0], &legacy["segments"][0]] {
+        assert!(row.get("rep_breakdown").is_none());
+    }
+    for (enabled, parts) in [
+        (false, [0, 0, 0, 0]),
+        (true, [0, 0, 2, 3]), // Zero RCX still enters the REP instruction.
+        (true, [17, 5, 2, 3]),
+    ] {
+        let mut terminal = detailed_end(1, 1, 2, 100, parts);
+        if enabled {
+            // Unsupported REP entries stay outside the supported partition.
+            terminal["unsupported_rep_entries"] = json!(7);
+        }
+        write_rows(dir.path(), 1, &[detailed_start(1, 1, enabled), terminal]);
+        let result = collect(dir.path(), 1);
+        assert_eq!(result["valid"], true, "{result}");
+        assert_eq!(result["instructions"], 100);
+        assert_eq!(result["rep_entries"], parts[2] + parts[3]);
+        for row in [&result, &result["processes"][0], &result["segments"][0]] {
+            assert_eq!(row["rep_breakdown"], breakdown(parts));
+        }
+        assert_eq!(
+            result["rep_telemetry_status"],
+            if enabled { "partial" } else { "disabled" }
+        );
+    }
+}
+
+#[test]
+fn rep_breakdown_rejects_invalid_capability_and_raw_counter_types() {
+    let dir = tempfile::tempdir().unwrap();
+    for value in [
+        json!(0),
+        json!(2),
+        json!(true),
+        json!(1.0),
+        json!(-1),
+        Value::Null,
+        json!("1"),
+    ] {
+        let mut first = detailed_start(1, 1, true);
+        first["rep_breakdown_version"] = value;
+        write_rows(
+            dir.path(),
+            1,
+            &[first, detailed_end(1, 1, 2, 100, [17, 5, 2, 3])],
+        );
+        assert_invalid(&collect(dir.path(), 1));
+    }
+    for field in RAW_REP_FIELDS {
+        for value in [
+            json!(true),
+            json!(1.0),
+            json!(-1),
+            Value::Null,
+            json!("1"),
+            json!({"nested":1}),
+        ] {
+            let mut terminal = detailed_end(1, 1, 2, 100, [17, 5, 2, 3]);
+            terminal[field] = value;
+            write_rows(dir.path(), 1, &[detailed_start(1, 1, true), terminal]);
+            assert_invalid(&collect(dir.path(), 1));
+        }
+        let mut terminal = detailed_end(1, 1, 2, 100, [17, 5, 2, 3]);
+        terminal.as_object_mut().unwrap().remove(field);
+        write_rows(dir.path(), 1, &[detailed_start(1, 1, true), terminal]);
+        assert_invalid(&collect(dir.path(), 1));
+    }
+    // RAW JSON remains scalar-only for compatibility with the earlier parser.
+    let mut nested = detailed_end(1, 1, 2, 100, [17, 5, 2, 3]);
+    nested["rep_breakdown"] = breakdown([17, 5, 2, 3]);
+    write_rows(dir.path(), 1, &[detailed_start(1, 1, true), nested]);
+    assert_invalid(&collect(dir.path(), 1));
+    let first = detailed_start(1, 1, true);
+    let terminal = detailed_end(1, 1, 2, 100, [17, 5, 2, 3]);
+    for raw in [
+        format!("{first}\n{terminal}\n").replace(
+            "\"rep_movs_bytes\":17",
+            "\"rep_movs_bytes\":17,\"rep_movs_bytes\":17",
+        ),
+        format!("{first}\n{terminal}\n").replace(
+            "\"rep_movs_bytes\":17",
+            "\"rep_movs_bytes\":18446744073709551616",
+        ),
+    ] {
+        fs::write(dir.path().join("process-1.jsonl"), raw).unwrap();
+        assert_invalid(&collect(dir.path(), 1));
+    }
+}
+
+#[test]
+fn rep_breakdown_requires_capability_and_checked_terminal_partitions() {
+    let dir = tempfile::tempdir().unwrap();
+    for (enabled, bytes, entries, parts) in [
+        (true, 22, 5, [18, 5, 2, 3]),
+        (true, 22, 5, [17, 5, 2, 4]),
+        (true, 22, 5, [17, 5, 0, 5]),
+        (true, 22, 5, [17, 5, 5, 0]),
+        (false, 0, 0, [0, 0, 1, 0]),
+        (true, u64::MAX, 2, [u64::MAX, 1, 1, 1]),
+        (true, 0, u64::MAX, [0, 0, u64::MAX, 1]),
+    ] {
+        let mut terminal = end(1, 1, 2, 100);
+        terminal["rep_bytes"] = json!(bytes);
+        terminal["rep_entries"] = json!(entries);
+        insert_raw_breakdown(&mut terminal, parts);
+        write_rows(dir.path(), 1, &[detailed_start(1, 1, enabled), terminal]);
+        assert_invalid(&collect(dir.path(), 1));
+    }
+    write_rows(
+        dir.path(),
+        1,
+        &[detailed_start(1, 1, false), end(1, 1, 2, 100)],
+    );
+    assert_invalid(&collect(dir.path(), 1));
+    write_rows(
+        dir.path(),
+        1,
+        &[start(1, 1), detailed_end(1, 1, 2, 100, [0; 4])],
+    );
+    assert_invalid(&collect(dir.path(), 1));
+    for field in RAW_REP_FIELDS {
+        let mut terminal = end(1, 1, 2, 100);
+        terminal[field] = json!(0);
+        write_rows(dir.path(), 1, &[start(1, 1), terminal]);
+        assert_invalid(&collect(dir.path(), 1));
+    }
+    for index in 0..4 {
+        let mut maximum = [0; 4];
+        maximum[index] = u64::MAX;
+        let mut one = [0; 4];
+        one[index] = 1;
+        let first = durante::report::RepBreakdown::from_value(&breakdown(maximum)).unwrap();
+        let second = durante::report::RepBreakdown::from_value(&breakdown(one)).unwrap();
+        assert!(first.checked_add(second).is_none());
+    }
+}
+
+#[test]
+fn rep_breakdown_sums_fork_and_exec_images_and_rejects_mixed_starts() {
+    let dir = tempfile::tempdir().unwrap();
+    let mut spawn = event(1, 1, 2, "spawn");
+    spawn["child_pid"] = json!(2);
+    spawn["syscall"] = json!(57);
+    spawn["supported"] = json!(true);
+    let mut checkpoint = detailed_end(1, 1, 3, 100, [10, 20, 1, 2]);
+    checkpoint["event"] = json!("exec_attempt");
+    checkpoint["app_exit_seen"] = json!(false);
+    let root = vec![
+        detailed_start(1, 1, true),
+        spawn,
+        checkpoint,
+        detailed_start(1, 2, true),
+        detailed_end(1, 2, 2, 25, [2, 4, 1, 1]),
+    ];
+    let mut child = detailed_start(2, 1, true);
+    child["origin"] = json!("fork");
+    child["parent_pid"] = json!(1);
+    child["parent_segment"] = json!("1-1");
+    let children = vec![child, detailed_end(2, 1, 2, 30, [3, 5, 1, 1])];
+    write_rows(dir.path(), 1, &root);
+    write_rows(dir.path(), 2, &children);
+    let result = collect(dir.path(), 1);
+    assert_eq!(result["valid"], true, "{result}");
+    assert_eq!(result["instructions"], 155);
+    assert_eq!(result["rep_breakdown"], breakdown([15, 29, 3, 4]));
+    assert_eq!(
+        result["processes"][0]["rep_breakdown"],
+        breakdown([12, 24, 2, 3])
+    );
+    assert_eq!(
+        result["processes"][1]["rep_breakdown"],
+        breakdown([3, 5, 1, 1])
+    );
+    assert_eq!(
+        result["segments"][0]["rep_breakdown"],
+        breakdown([10, 20, 1, 2])
+    );
+    assert!(result["segments"][0]["exit_code"].is_null());
+    for image in 0..2 {
+        let mut mixed = root.clone();
+        mixed[if image == 0 { 0 } else { 3 }]
+            .as_object_mut()
+            .unwrap()
+            .remove("rep_breakdown_version");
+        write_rows(dir.path(), 1, &mixed);
+        assert_invalid(&collect(dir.path(), 1));
+    }
+    write_rows(dir.path(), 1, &root);
+    let mut mixed = children;
+    mixed[0]
+        .as_object_mut()
+        .unwrap()
+        .remove("rep_breakdown_version");
+    write_rows(dir.path(), 2, &mixed);
+    assert_invalid(&collect(dir.path(), 1));
+}
+
+#[test]
+fn rep_breakdown_failed_exec_is_not_required_or_counted_but_remains_typed() {
+    let dir = tempfile::tempdir().unwrap();
+    let mut checkpoint = detailed_end(1, 1, 2, 100, [10, 20, 1, 2]);
+    checkpoint["event"] = json!("exec_attempt");
+    checkpoint["app_exit_seen"] = json!(false);
+    checkpoint["rep_movs_bytes"] = json!(999); // Ignored checkpoint partition.
+    let mut failed = event(1, 1, 3, "exec_failed");
+    failed["syscall"] = json!(59);
+    failed["result"] = json!(-2);
+    let final_row = detailed_end(1, 1, 4, 125, [15, 25, 2, 3]);
+    for missing in [0, 1, 4] {
+        let mut attempt = checkpoint.clone();
+        for field in RAW_REP_FIELDS.iter().take(missing) {
+            attempt.as_object_mut().unwrap().remove(*field);
+        }
+        write_rows(
+            dir.path(),
+            1,
+            &[
+                detailed_start(1, 1, true),
+                attempt.clone(),
+                failed.clone(),
+                final_row.clone(),
+            ],
+        );
+        let result = collect(dir.path(), 1);
+        assert_eq!(result["valid"], true, "{result}");
+        assert_eq!(result["instructions"], 125);
+        assert_eq!(result["image_count"], 1);
+        assert_eq!(result["rep_breakdown"], breakdown([15, 25, 2, 3]));
+        // Once exec succeeds, that same checkpoint becomes selected and must
+        // supply the advertised, arithmetically consistent partition.
+        write_rows(
+            dir.path(),
+            1,
+            &[
+                detailed_start(1, 1, true),
+                attempt,
+                detailed_start(1, 2, true),
+                detailed_end(1, 2, 2, 25, [1, 2, 1, 1]),
+            ],
+        );
+        assert_invalid(&collect(dir.path(), 1));
+    }
+    checkpoint["rep_movs_bytes"] = json!(true);
+    write_rows(
+        dir.path(),
+        1,
+        &[detailed_start(1, 1, true), checkpoint, failed, final_row],
+    );
+    assert_invalid(&collect(dir.path(), 1));
 }

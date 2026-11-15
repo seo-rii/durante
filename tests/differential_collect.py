@@ -38,7 +38,7 @@ NUMBERS = (
     '1.7976931348623157e308', '1.7976931348623158e308',
 )
 FIELDS = ('extra', 'result', 'parent_pid', 'instructions', 'seq', 'schema', 'valid',
-          'pid', 'supported', 'rep_bytes_enabled', 'parent_segment')
+          'pid', 'supported', 'rep_bytes_enabled', 'parent_segment', 'rep_breakdown_version', 'rep_movs_bytes', 'rep_stos_bytes', 'rep_movs_entries', 'rep_stos_entries')
 
 
 def encode(rows):
@@ -49,7 +49,7 @@ def mutate(case, index, rng):
     files = {name: encode(rows) for name, rows in case['files'].items()}
     name = rng.choice(sorted(files))
     original = case['files'][name]
-    operation = index % 12
+    operation = index % 16
     if operation == 0:
         return files, 'unmodified-vector'
     row_index = rng.randrange(len(original))
@@ -85,9 +85,22 @@ def mutate(case, index, rng):
         position = rng.randrange(len(files[name]))
         data = bytearray(files[name]); data[position] ^= rng.randrange(1, 256)
         files[name] = bytes(data)
-    else:
+    elif operation == 11:
         # Unknown scalar strings stay legal up to the actual line-size bound.
         rows[row_index]['extra'] = 'a' * rng.choice([0, 100, 2600, 3072])
+        files[name] = encode(rows)
+    elif operation == 12:
+        rows[row_index]['rep_movs_bytes'] = rng.choice([None, False, -1, 0.0, 1 << 64])
+        files[name] = encode(rows)
+    elif operation == 13:
+        rows[row_index]['rep_breakdown_version'] = rng.choice([None, False, 0, 1, 2])
+        files[name] = encode(rows)
+    elif operation == 14:
+        rows[row_index].pop('rep_stos_entries', None)
+        files[name] = encode(rows)
+    else:
+        rows[row_index].update(rep_movs_bytes=(1 << 64) - 1, rep_stos_bytes=1,
+                               rep_movs_entries=1, rep_stos_entries=1)
         files[name] = encode(rows)
     return files, 'mutation-' + str(operation)
 
@@ -103,7 +116,7 @@ def no_partial_totals(result):
         if result.get('complete') is not False:
             raise AssertionError('invalid result was marked complete')
         if any(key in result for key in ('instructions', 'rep_bytes', 'rep_entries',
-               'unsupported_rep_entries', 'signals_observed', 'processes', 'segments')):
+               'unsupported_rep_entries', 'signals_observed', 'rep_breakdown', 'processes', 'segments')):
             raise AssertionError('invalid result exposed partial totals')
 
 
@@ -468,8 +481,17 @@ def main(argv=None):
         for index in range(args.cases):
             if time.monotonic() - started > 120:
                 raise RuntimeError('differential campaign exceeded 120 seconds')
-            case = vectors[0] if index % 12 in (1, 2, 3, 4, 5) else vectors[index % len(vectors)]
-            files, operation = mutate(case, index, rng)
+            # Visit every fixed contract before mutation. Coupling vector and
+            # mutation indices can otherwise mutate a valid capability case on
+            # every visit and never compare its successful aggregate.
+            if index < len(vectors):
+                case = vectors[index]
+                files = {name: encode(rows) for name, rows in case['files'].items()}
+                operation = 'unmodified-vector'
+            else:
+                mutation = index - len(vectors)
+                case = vectors[0] if mutation % 16 in (1, 2, 3, 4, 5) else vectors[mutation % len(vectors)]
+                files, operation = mutate(case, mutation, rng)
             context = {'seed': args.seed, 'case_index': index, 'baseline': case['name'],
                        'operation': operation}
             result = run_and_preserve(binary, files, case['root_pid'], context,

@@ -86,6 +86,11 @@ def main():
      for n in [0,1,8192]:
       name=f'{mode}-{op}{suffix}-{n}';program=compile(name,REP.replace('rep movsb',f'rep {op}{suffix}'),[*asm,f'-DREP_COUNT={n}'])
       r=run(name,[program],rep=rep,expected=7)['result'];assert r['rep_bytes']==(n*width if rep else 0),r
+      expected_breakdown={'version':1,'movs_bytes':0,'stos_bytes':0,'movs_entries':0,'stos_entries':0}
+      if rep:expected_breakdown.update({op+'_bytes':n*width,op+'_entries':1})
+      assert r['rep_breakdown']==expected_breakdown,r
+      assert r['segments'][0]['rep_breakdown']==expected_breakdown,r
+      assert r['processes'][0]['rep_breakdown']==expected_breakdown,r
    for n in [0,32]:
     name=f'{mode}-jit-{n}';program=compile(name,JIT,[*asm,f'-DNOP_COUNT={n}'])
     run(name,[program],rep=rep,expected=5017+1000*n)

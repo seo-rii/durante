@@ -29,6 +29,14 @@ unavailable byte telemetry independently of instruction validity. See the
 [result contract](docs/PROTOCOL.md#result-contract-and-consumers) before consuming
 reports; a valid count is not a trusted verdict or a CPU-time conversion.
 
+New clients also report versioned `rep_breakdown` counters for MOVS and STOS
+requested bytes and entries separately, at image/process/tree level. This lets
+reference-model experiments distinguish copying from filling without changing
+the existing combined totals. Legacy records omit the breakdown instead of
+inventing zeros. See the [protocol](docs/PROTOCOL.md) for the optional capability,
+checked sums and actual lifecycle/replay qualification tests. No time weights
+are selected by these counters.
+
 ## Build and test
 
 The pinned SDK is DynamoRIO 11.3.0-1 (source revision
