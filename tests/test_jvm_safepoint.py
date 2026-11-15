@@ -337,7 +337,8 @@ int main(void) {
         self.assertTrue(native["cleanup_complete"])
         args = SimpleNamespace(sdk=sdk.resolve(), drrun=sdk.resolve() / "bin64/drrun", gdb=debugger, prlimit=prlimit)
         directory = self.root / "engine-fault"
-        observed = safepoint.run_context(args, SimpleNamespace(command=[str(executable)]), directory, 15000)
+        observed = safepoint.run_context(args, SimpleNamespace(command=[str(executable)],
+                                        expected="native-translation-control:1\n"), directory, 15000)
         self.assertTrue(observed["passed"], observed)
         self.assertEqual(observed["stdout"], native["stdout"])
         self.assertTrue(observed["cleanup_complete"])
@@ -512,6 +513,29 @@ int main(void) {
         self.assertLess(len(evidence["excerpt"].encode()), 8300)
         self.assertTrue(evidence["excerpt"].startswith("head\n"))
         self.assertTrue(evidence["excerpt"].endswith("\ntail"))
+
+    def test_complete_context_still_requires_exact_target_output_and_clean_stderr(self):
+        args = SimpleNamespace(sdk=self.root, drrun=self.root / "drrun",
+                               gdb="/selected/gdb", prlimit="/selected/prlimit")
+        cases = (("expected", self.workload.expected, "", True),
+                 ("wrong", "processes:0\n", "", False),
+                 ("missing", "", "", False),
+                 ("extra", self.workload.expected + "extra output\n", "", False),
+                 ("stderr", self.workload.expected, "unexpected diagnostic\n", False))
+        for name, stdout, stderr, expected_passed in cases:
+            with self.subTest(name=name):
+                directory = self.root / name
+
+                def run(*_args, **_kwargs):
+                    (directory / "debugger-transcript.log").write_text("fixture debugger log\n")
+                    return {**self.success(), "stdout": stdout, "stderr": stderr}
+
+                with patch.object(safepoint, "run_process", side_effect=run), \
+                        patch.object(safepoint, "inspect_context", return_value={"complete": True}):
+                    row = safepoint.run_context(args, self.workload, directory, 1000)
+                self.assertEqual(row["passed"], expected_passed, row)
+                self.assertEqual(row["functional_ok"], expected_passed, row)
+                self.assertEqual(row["expected_stdout"], self.workload.expected)
 
 
 if __name__ == "__main__":

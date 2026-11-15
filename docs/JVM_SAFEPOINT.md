@@ -86,6 +86,10 @@ python3 tests/jvm_safepoint.py \
 This runs one native control followed by one engine-only debugger observation.
 It is diagnostic only. GDB changes scheduling and installs breakpoints in native
 DynamoRIO code; its transcript remains bounded by the same 1-MiB file limit.
+Both observations require the fixture's exact stdout, empty stderr and exit 0.
+Complete context coverage cannot make a wrong or missing target result pass.
+The report records the expected output and functional result separately from
+context coverage; success requires both, along with complete process cleanup.
 The helper retains target ASLR, JVM/engine options and parent-only following.
 The prepared release core must include its matching `libdynamorio.so.debug`.
 Both files are hashed, and GDB must report identical GNU build IDs with the debug

@@ -219,10 +219,15 @@ def run_context(args, workload, directory, timeout):
               "-vmheap_size", "32M", "-stderr_mask", "12", "--", *workload.command]
     command = debugger_command(args.gdb, engine)
     row = run_process(command, directory, timeout, args.prlimit, cpu_seconds=90)
-    # Redirect debugger chatter to its own bounded transcript. Debugger startup
-    # may still share stdout, so the exact target stdout oracle remains in the
-    # separate, unmodified recurrence matrix.
-    row.update(command=command, diagnostic_only=True)
+    # Debugger chatter belongs in its bounded transcript. The target must still
+    # satisfy the same output/exit oracle as the unmodified recurrence controls.
+    row.update(command=command, diagnostic_only=True, expected_stdout=workload.expected)
+    if row["exit_code"] != 0 or row.get("stdout") != workload.expected:
+        row["errors"].append("exact fixture output or exit oracle failed")
+    if row.get("stderr"):
+        row["errors"].append("unexpected application or runtime diagnostic")
+    row["functional_ok"] = (row["exit_code"] == 0 and row.get("stdout") == workload.expected
+                            and row.get("stderr") == "")
     try:
         row["debugger_transcript"] = debugger_transcript_evidence(directory)
         row["context"] = inspect_context(directory / "jvm-context.jsonl")
@@ -230,7 +235,7 @@ def run_context(args, workload, directory, timeout):
             row["errors"].append("debugger native translation capture failed, truncated, or has incomplete coverage")
     except (OSError, ValueError, TypeError) as error:
         row["errors"].append("context capture unavailable: " + str(error)[:300])
-    row["passed"] = row["infrastructure_ok"] and row["exit_code"] == 0 and not row["errors"]
+    row["passed"] = row["infrastructure_ok"] and row["functional_ok"] and not row["errors"]
     if not row["passed"] and "debugger_transcript" in row:
         row["debugger_transcript"] = debugger_transcript_evidence(directory, include_excerpt=True)
     return row
