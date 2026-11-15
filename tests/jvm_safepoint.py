@@ -102,12 +102,21 @@ def inspect_context(path):
             "interpretation": "debugger signal-stop PC, delivered HotSpot ucontext, and poll-stub argument are distinct observations; no causal translation claim"}
 
 
+def debugger_command(debugger, engine):
+    # Configure the CLI interpreter before entering Python. On GDB 13.1,
+    # enabling logging inside the Python script redirects ordinary messages but
+    # leaves asynchronous run/continue stop frames on the original stdout.
+    return [debugger, "--nx", "--nh", "--batch", "--return-child-result",
+            "-ex", "set logging file debugger-transcript.log",
+            "-ex", "set logging redirect on", "-ex", "set logging enabled on",
+            "-x", str(ROOT / "tests/jvm_safepoint_gdb.py"), "--args", *engine]
+
+
 def run_context(args, workload, directory, timeout):
     directory.mkdir(mode=0o700)
     engine = [str(args.drrun), "-quiet", "-follow_children", "-disable_traces", "-vm_size", "32M",
               "-vmheap_size", "32M", "-stderr_mask", "12", "--", *workload.command]
-    command = [args.gdb, "--nx", "--nh", "--batch", "--return-child-result", "-x",
-               str(ROOT / "tests/jvm_safepoint_gdb.py"), "--args", *engine]
+    command = debugger_command(args.gdb, engine)
     row = run_process(command, directory, timeout, args.prlimit, cpu_seconds=90)
     # Redirect debugger chatter to its own bounded transcript. Debugger startup
     # may still share stdout, so the exact target stdout oracle remains in the

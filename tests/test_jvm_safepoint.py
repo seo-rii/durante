@@ -232,10 +232,10 @@ class SafepointTests(unittest.TestCase):
         for name in ("SIGSEGV", "SIGBUS", "SIGABRT"):
             self.assertRegex(result.stdout, name + r"\s+Yes\s+Yes\s+Yes")
         transcript = self.root / "debugger-transcript.log"
-        command = [debugger, "--nx", "--nh", "--batch"]
-        for setting in commands:
-            if setting.startswith("set logging"):
-                command += ["-ex", setting.replace("debugger-transcript.log", str(transcript))]
+        command = safepoint.debugger_command(debugger, [])
+        # This configuration-only probe starts no inferior to supply an exit code.
+        command = [arg.replace("debugger-transcript.log", str(transcript))
+                   for arg in command[:command.index("-x")] if arg != "--return-child-result"]
         command += ["-ex", r"echo context-transcript-receipt\n"]
         logged = subprocess.run(command, text=True, capture_output=True, timeout=5)
         self.assertEqual(logged.returncode, 0, logged.stderr)
@@ -258,6 +258,31 @@ class SafepointTests(unittest.TestCase):
         self.assertTrue(evidence["inferior_exit_observed"])
         self.assertFalse(evidence["complete"])
         self.assertEqual(evidence["errors"][0]["event"], "truncated")
+
+    def test_debugger_signal_stop_output_stays_in_bounded_transcript(self):
+        debugger, prlimit = shutil.which("gdb"), shutil.which("prlimit")
+        if not debugger or not prlimit:
+            self.skipTest("GDB/prlimit unavailable; live output routing is not qualified")
+        directory = self.root / "signal-control"
+        directory.mkdir()
+        target = ("import os,signal\n"
+                  "signal.signal(signal.SIGSEGV,lambda *_:None)\n"
+                  "for _ in range(8): os.kill(os.getpid(),signal.SIGSEGV)\n"
+                  "print('signal-control:8')\n")
+        command = safepoint.debugger_command(debugger, [sys.executable, "-c", target])
+        result = safepoint.run_process(command, directory, 10000, prlimit, cpu_seconds=5)
+        self.assertTrue(result["infrastructure_ok"], result)
+        self.assertTrue(result["cleanup_complete"], result)
+        self.assertEqual(result["exit_code"], 0, result)
+        self.assertEqual(result["stdout"], "signal-control:8\n")
+        transcript = safepoint.bounded_bytes(directory / "debugger-transcript.log", safepoint.MAX_FATAL_BYTES)
+        self.assertEqual(transcript.count(b"received signal SIGSEGV"), 8)
+        self.assertIn(b"exited normally", transcript)
+        evidence = safepoint.inspect_context(directory / "jvm-context.jsonl")
+        self.assertTrue(evidence["signal_stop_observed"])
+        self.assertTrue(evidence["inferior_exit_observed"])
+        self.assertFalse(evidence["complete"])
+        self.assertEqual(evidence["errors"], [])
 
 
 if __name__ == "__main__":

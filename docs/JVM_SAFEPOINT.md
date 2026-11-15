@@ -147,10 +147,51 @@ entry nor a poll-stub argument was observed. The SDK auto-load warning is
 retained, without changing global debugger configuration or assigning it a
 cause. Original polling-PC / context-translation evidence remains unavailable.
 
-The final tool redirects debugger chatter to a separate bounded transcript and
-preserves terminal/coverage metadata even after event exhaustion. Actual GDB
-configuration and recorder regressions verify these changes without increasing
-either bound; the original failed attempt is not reclassified. These final
-logging refinements have not established a successful JVM context capture.
-Fourteen focused unit regressions pass. BUG-006 remains open and its cause is
-unconfirmed; no production runtime or client patch is included.
+The initial logging refinement redirected debugger chatter to a separate bounded
+transcript and preserved terminal/coverage metadata even after event exhaustion.
+Fourteen focused configuration and recorder regressions passed, but these changes
+had not yet established a successful live JVM context capture. The original
+failed attempt was not reclassified.
+
+### Follow-up live logging check
+
+A separate, unchanged-input check of that revision completed both observations
+in 101.513 seconds. The native control passed; the JVM under GDB exited normally
+without a fatal report. Context capture still failed: 566,031 bytes of debugger
+signal-stop frames remained in stdout, above its 64-KiB inspection limit, while
+the separate debugger transcript held only 18,780 bytes. All process cleanup
+completed, CPU affinity was restored, and the fourteen runtime/tool inputs matched
+the preceding observation.
+
+The 256-event budget was retained. The 190,745-byte context file contained the
+configuration, 255 signal stops, the truncation marker, and both terminal records
+(`inferior_exit` and `capture_summary`). This verifies terminal metadata survives
+event exhaustion in the actual JVM run. The summary identified both missing
+HotSpot/poll-stub probes; no delivered HotSpot context or original polling-PC
+argument was obtained.
+
+A small native GDB regression reproduced the output-routing defect independently
+of the JVM. On GDB 13.1, enabling logging from inside the Python script left
+asynchronous `run`/`continue` stop frames on the original stdout. The harness now
+applies the same logging commands through GDB's CLI before entering Python. The
+regression uses eight handled signals and checks that the target's exact stdout
+remains separate, all eight debugger stop frames and the exit message reach the
+existing transcript, and signal/exit context records remain available. It failed
+before this change and passed afterward. All fifteen focused regressions pass.
+The 256-event, 1-MiB file, 120-second row, and 600-second campaign bounds and all
+JVM/runtime options remain unchanged. The failed JVM attempt is preserved.
+
+A single follow-up JVM check of the corrected tool completed in 60.526 seconds.
+The native control and JVM under GDB both exited normally with exactly
+`processes:204` plus its newline on stdout. Debugger output was preserved in a
+609,537-byte transcript within the existing 1-MiB bound; the earlier stdout
+inspection failure was absent. The context stream still reached its 256-event
+budget and retained the truncation marker, inferior exit and capture summary.
+The overall diagnostic correctly remained failed (exit 1), with both
+HotSpot/poll-stub probes unobserved. Cleanup, input identity and CPU-affinity
+restoration checks passed. This verifies the output correction on the JVM while
+preserving the incomplete-context result; it does not establish successful
+polling-context capture or explain the original safepoint abort.
+
+BUG-006 remains open and its cause is unconfirmed; this logging correction is
+not a JVM fix and changes no production runtime or client patch.

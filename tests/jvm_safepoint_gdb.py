@@ -129,9 +129,6 @@ def on_exit(event):
 
 
 try:
-    gdb.execute("set logging file debugger-transcript.log")
-    gdb.execute("set logging redirect on")
-    gdb.execute("set logging enabled on")
     gdb.execute("set pagination off")
     gdb.execute("set confirm off")
     gdb.execute("set print thread-events off")
