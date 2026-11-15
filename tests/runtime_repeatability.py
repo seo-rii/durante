@@ -29,6 +29,12 @@ REQUIRED_INPUTS = {"binary:runtime", "binary:client", "binary:runner", "binary:d
 FIXED_ENV = {"PATH": os.defpath, "LANG": "C", "LC_ALL": "C", "TZ": "UTC", "MALLOC_ARENA_MAX": "2"}
 CPYTHON_HASH_PROFILES = {"isolated": None, "random": "random", "seed-1": "1"}
 CPYTHON_CONTROL_FLAGS = ("-P", "-s", "-S")
+CPYTHON_STARTUP_CONTROLS = {
+    "startup": ("print('startup:ok')\n", "startup:ok\n"),
+    "imports": ("import gc\nfrom pathlib import Path\nimport subprocess\nimport sys\n"
+                "import threading\nprint('imports:ok')\n", "imports:ok\n"),
+}
+CPYTHON_HASH_WORKLOADS = ("allocation-gc", *CPYTHON_STARTUP_CONTROLS)
 CPYTHON_PROBE = """import gc, json, os, pathlib, subprocess, sys, threading
 paths = sorted({str(pathlib.Path(value).resolve())
                 for module in list(sys.modules.values())
@@ -52,6 +58,7 @@ LIMITATIONS = [
     "application-mutable diagnostic counts, not CPU time, time coefficients or trusted judgement",
     "run-profile observations do not qualify isolate; existing isolate evidence remains a separate prerequisite",
     "explicit CPython hash controls change startup flags and do not qualify the default isolated profile",
+    "CPython startup/import controls include loader, output and shutdown work; they are not region counts or counter correctness proofs",
 ]
 
 
@@ -180,14 +187,22 @@ def hash_profile(profile):
 def controlled_cases(cases, name):
     if name == "isolated":
         return cases
-    # Child-process fixtures deliberately retain their own -I flags. This small
-    # control therefore applies only to the single-process allocation/GC case.
-    if len(cases) != 1 or cases[0].name != "cpython-allocation-gc":
-        raise ValueError("explicit CPython hash controls require only allocation-gc")
-    case = cases[0]
-    if case.command[1:3] != ["-I", "-S"]:
+    # Child-process fixtures deliberately retain their own -I flags. Hash
+    # controls apply only to these explicitly selected single-process cases.
+    if not cases or any(case.name not in {"cpython-" + workload for workload in CPYTHON_HASH_WORKLOADS}
+                        for case in cases):
+        raise ValueError("explicit CPython hash controls require allocation-gc, startup or imports")
+    if any(case.command[1:3] != ["-I", "-S"] for case in cases):
         raise ValueError("default CPython startup contract changed")
-    return [replace(case, command=[case.command[0], *CPYTHON_CONTROL_FLAGS, *case.command[3:]])]
+    return [replace(case, command=[case.command[0], *CPYTHON_CONTROL_FLAGS, *case.command[3:]]) for case in cases]
+
+
+def cpython_startup_cases(executable):
+    # These opt-in controls belong only to this repeatability tool. Do not add
+    # them to the ordinary language compatibility matrix or its default plan.
+    return [workloads.Workload("cpython-" + name, "cpython", [executable, "-I", "-S", "-c", source],
+                               expected, 1, 1)
+            for name, (source, expected) in CPYTHON_STARTUP_CONTROLS.items()]
 
 
 def profile_environment(profile):
@@ -269,6 +284,8 @@ def profile_cases(profile):
     if not isinstance(selected, list) or not selected or len(selected) != len(set(selected)):
         raise ValueError("empty or duplicate workload selection")
     available = workloads.workload_cases({runtime: profile["runtime_executable"]}, Path(profile["classes_directory"]))
+    if runtime == "cpython":
+        available += cpython_startup_cases(profile["runtime_executable"])
     cases = controlled_cases([case for case in available if case.name in selected], hash_profile(profile))
     if selected != [case.name for case in cases] or not workloads.same_json(profile.get("workloads"), [asdict(case) for case in cases]):
         raise ValueError("recorded commands or workload oracle do not match the fixed profile")
@@ -458,9 +475,12 @@ def input_paths(args, executable):
 
 def collect(args):
     selected_hash_profile = getattr(args, "cpython_hash_profile", "isolated")
+    if args.runtime != "cpython" and set(args.workload or []) & CPYTHON_STARTUP_CONTROLS.keys():
+        raise ValueError("startup and imports controls require cpython")
     if (selected_hash_profile not in CPYTHON_HASH_PROFILES
-            or selected_hash_profile != "isolated" and (args.runtime != "cpython" or args.workload != ["allocation-gc"])):
-        raise ValueError("explicit CPython hash controls require cpython and only allocation-gc")
+            or selected_hash_profile != "isolated" and (args.runtime != "cpython" or not args.workload
+                or not set(args.workload) <= set(CPYTHON_HASH_WORKLOADS))):
+        raise ValueError("explicit CPython hash controls require cpython and allocation-gc, startup or imports")
     args.python_hash_seed = CPYTHON_HASH_PROFILES[selected_hash_profile]
     for name in ("sdk", "client", "runner_bin", "output_dir"):
         setattr(args, name, getattr(args, name).absolute())
@@ -470,6 +490,8 @@ def collect(args):
     args.drrun = args.sdk / "bin64/drrun"
     classes = args.output_dir / "classes"
     cases = workloads.workload_cases({args.runtime: executable or str(Path(args.runtime_bin or args.runtime).absolute())}, classes)
+    if args.runtime == "cpython" and args.workload:
+        cases += cpython_startup_cases(cases[0].command[0])
     if args.workload:
         cases = [case for case in cases if any(case.name == args.runtime + "-" + name or case.name.startswith(args.runtime + "-" + name + "-") for name in args.workload)]
     cases = controlled_cases(cases, selected_hash_profile)
@@ -580,11 +602,12 @@ def main(argv=None):
         capture.add_argument("--" + name, type=Path, required=True)
     capture.add_argument("--runtime", choices=workloads.RUNTIMES, required=True)
     capture.add_argument("--cpython-hash-profile", choices=tuple(CPYTHON_HASH_PROFILES), default="isolated",
-                         help="explicit allocation-gc diagnostic: isolated (default), controlled random, or seed-1")
+                         help="explicit single-process diagnostic: isolated (default), controlled random, or seed-1")
     capture.add_argument("--runtime-bin", help="selected runtime executable; default: java/python3/node")
     capture.add_argument("--runtime-file", type=Path, action="append", default=[], help="additional runtime library/module to hash before and after")
     capture.add_argument("--runtime-image", help="operator-supplied immutable sha256 image digest; metadata, not attestation")
-    capture.add_argument("--workload", choices=tuple(workloads.OUTPUTS), action="append", help="default: all; Java processes includes both launch mechanisms")
+    capture.add_argument("--workload", choices=(*workloads.OUTPUTS, *CPYTHON_STARTUP_CONTROLS), action="append",
+                         help="default: ordinary workloads; CPython startup/imports controls require explicit selection")
     capture.add_argument("--javac", default="javac")
     capture.add_argument("--java-major", type=int, choices=(17, 21), default=17)
     capture.add_argument("--cpu", type=bounded_number(0, 1048575), help="one allowed logical CPU; default: first allowed CPU")

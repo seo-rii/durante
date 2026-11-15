@@ -52,10 +52,10 @@ explicitly selects `-P -s -S` and respectively `PYTHONHASHSEED=random` or `1`.
 Both controls use the same flags, fixture, resources and otherwise identical
 fixed environment. All inherited environment values are removed; the process
 launcher reintroduces only the selected hash variable after its usual removal
-of `PYTHON*` values. This option requires `--runtime cpython --workload
-allocation-gc`. Child-process fixtures keep their own isolated startup flags
-and are outside this control. Omission or `isolated` preserves the original
-command and environment.
+of `PYTHON*` values. This option requires `--runtime cpython` and explicit
+selection of `allocation-gc`, `startup` or `imports`. Child-process fixtures
+keep their own isolated startup flags and are outside this control. Omission
+or `isolated` preserves the original command and environment.
 
 A separate native startup probe retains the effective `sys.flags`, hash
 algorithm and sentinel, selected executable, forwarded Python environment, and
@@ -75,6 +75,45 @@ input; residual spread alone would not identify a counter error. These explicit
 profiles differ from the default isolated profile and cannot approve that
 profile or arbitrary CPython programs. ASLR, address-dependent behavior, GC and
 other uncontrolled runtime decisions may still matter.
+
+## CPython startup and import controls
+
+The repeatability tool additionally accepts explicit `--workload startup` and
+`--workload imports` selections for CPython only. These controls are absent from
+the default plan and from the ordinary language compatibility matrix. `startup`
+executes an inline program that prints one fixed line; `imports` imports the same
+`gc`, `pathlib`, `subprocess`, `sys` and `threading` modules as the allocation
+fixture, then prints a different fixed line. Neither runs the allocation loop
+or its explicit collections. The original fixture is unchanged.
+
+Each complete inline program, exact output and single-process/image oracle is
+recorded in the profile. The evaluator reconstructs those fixed commands and
+keeps statistics separate by workload and execution mode. Runtime, harness and
+named module files retain before/after hashes. The native startup probe remains
+separate from the measured processes; it does not prove their GC or allocator
+states. Counts include the loader, interpreter initialization, printing and
+shutdown. These are complete-process controls, not measurements of separate
+regions, and subtracting their independent totals would not produce an exact
+allocation-loop count.
+
+A bounded follow-up to the hash comparison selects both controls with `seed-1`,
+three repetitions, all four modes and the same **0 ppm** gate. This declares
+24 observations before execution. Keep all results and stop after that plan;
+do not add repetitions based on a promising range. The earlier allocation
+collection is historical context, not a simultaneous paired sample. Variation
+in these smaller controls would show that the allocation loop is unnecessary
+for observing spread, but would not by itself distinguish actual startup work
+from a counter error. A fixed three-sample result would not qualify the original
+allocation fixture or other programs.
+
+```sh
+python3 tests/runtime_repeatability.py collect \
+  --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so \
+  --runner-bin target/release/durante --runtime cpython \
+  --workload startup --workload imports --cpython-hash-profile seed-1 \
+  --repeats 3 --max-spread-ppm 0 --timeout-ms 30000 --campaign-seconds 300 \
+  --output-dir .results/repeatability-cpython-startup
+```
 
 The [isolate workload evidence](ISOLATED_RUNTIMES.md) uses these same functional
 fixtures with a different execution boundary and resource profile. A repeatability
@@ -222,6 +261,41 @@ The experiment does not identify the residual source or establish a counter
 error, and it does not qualify the default isolated profile. The startup probe
 is separate from the measured workload; its hash sentinel is not an observation
 of every measured process's internal state.
+
+## Bounded startup/import observation
+
+The subsequent 2026-11-15 plan ran `startup` and `imports` once as one declared
+24-observation collection: `seed-1`, CPU 0, three repetitions of four modes,
+30-second invocation limit, 300-second campaign and **0 ppm**. It reused the
+previous comparison's CPython 3.11.2 installation, prepared runtime, client,
+CLI and named libraries. These binaries predate the CPU-policy client change
+in main; this is continued diagnosis with fixed inputs, not qualification of
+that newer client. All 24 executions passed their exact output, accounting and
+cleanup checks, with unchanged input hashes and CPU profile. The collection
+took 23.635 seconds and returned 1 because all four metered groups retained
+instruction spread:
+
+| Control | Metered mode | Minimum instructions | Exact median | Maximum instructions | Range |
+| --- | --- | ---: | ---: | ---: | ---: |
+| `startup` | Client, REP disabled | 19,657,279 | 19,693,463 | 19,706,543 | 49,264 |
+| `startup` | Supervisor, REP enabled | 19,657,353 | 19,693,457 | 19,693,583 | 36,230 |
+| `imports` | Client, REP disabled | 75,434,391 | 75,449,165 | 75,487,341 | 52,950 |
+| `imports` | Supervisor, REP enabled | 75,487,102 | 75,487,270 | 75,487,412 | 310 |
+
+Every other recorded counter had zero range in each group. The planned runs
+were retained without retry or threshold change. The allocation loop and its
+explicit collections are therefore unnecessary to observe spread in this
+installation. Actual interpreter/loader/shutdown work and counter behavior
+remain possible contributors; this experiment does not separate them.
+
+A separate six-execution native probe observed identical automatic-GC collection
+counts across three fresh processes during the fixture's imports; disabling GC
+before those imports suppressed their additional collections. Allocated-block
+counts and object addresses still differed. Those probes used extra observation
+code and were not the measured workload, so they neither establish GC as the
+cause nor rule out address-dependent runtime work. The original isolated and
+both hash-control collections retain the same evaluation decisions and numeric
+results, with only the additional explanatory limitation for these new controls.
 
 ## Tests
 
