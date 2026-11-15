@@ -51,7 +51,7 @@ archive SHA-256 before extracting the required build/runtime subset.
 It then builds the 64-bit release and debug runtime cores from the same pinned
 source commit with the [concurrent process and signal patch](toolkit/patches/dynamorio-vfork-lifetime.patch)
 and [code replay patch](toolkit/patches/dynamorio-code-replay.patch).
-The source archive is also hash-pinned. Python 3.11 or newer, CMake, a C/C++
+The source archive is also hash-pinned. Python 3.10 or newer, CMake, a C/C++
 compiler and `patch` are needed for this one-time build; this adds no compilation
 to measured runs.
 The SDK's `.durante-runtime.json` records the source, both patches and installed core
@@ -92,8 +92,9 @@ python3 tests/smoke.py \
 reduces address-space reservations; it does not waive target limits.
 
 Build and test on Linux x86-64. The client supports GCC or Clang; native test
-fixtures additionally require GCC. Development scripts use Python 3.11 or newer,
-including the SDK fetcher. PyPy is tested when installed, and absence is reported
+fixtures additionally require GCC. The full development suite uses Python 3.11
+or newer; the SDK builder also supports Python 3.10.
+PyPy is tested when installed, and absence is reported
 as a coverage gap. No SDK or generated executable is committed.
 
 The [fixed-fixture overhead experiment](docs/OVERHEAD.md) compares native execution,
