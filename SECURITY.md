@@ -29,7 +29,8 @@ status to authorize AC/TLE, billing, or security decisions.
 
 ## Optional QEMU guest counter
 
-The [QEMU counter](docs/QEMU.md) keeps its state in the emulator and labels its
+The [QEMU counter](https://github.com/seo-rii/durante/blob/main/docs/QEMU.md)
+keeps its state in the emulator and labels its
 contract `counter_integrity: emulator_managed`. This describes where accounting
 happens; it does not establish guest isolation or attest report integrity.
 `diagnostic_only`, `integrity_verified: false` and
