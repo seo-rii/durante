@@ -266,3 +266,27 @@ CPU-affinity restoration and process cleanup passed. The diagnostic exited 0;
 HotSpot handler/poll-stub coverage remained explicitly unavailable. This verifies
 that the native translation observer works on the selected JVM, while leaving
 the original intermittent safepoint failure and its cause unresolved.
+
+### Debugger library environment follow-up
+
+Requiring GDB in CI exposed a startup failure: its embedded Python could not
+import `math` while `setup-python` supplied a different Python shared library
+through `LD_LIBRARY_PATH`. A local mixed-library control reproduced this import
+failure. The system GDB 13 / Python 3.11 helper did not itself import `math`, so
+that comparison explicitly imported it in a diagnostic helper copy; it is not
+an exact replay of the CI GDB 15 / Python 3.12 loader. Separating GDB's library
+environment restored the import and preserved the target's original value.
+Twenty focused tests passed with the foreign library path set and no skips.
+
+A subsequent one-native/one-debugger JVM control used the committed helper,
+the same JDK/core, options, two-CPU placement and original deadlines, with that
+foreign library path explicitly recorded as an input. The native observation
+passed with exact output. The debugger started successfully and recorded one
+native translation pair with a true return and nonzero resulting PC, but reached
+its 120-second wall deadline without a target exit or capture summary. The last
+transcript line was a vfork-child detach; it does not establish where or why
+progress stopped. The 318,043-byte transcript and twenty context events remained
+within their bounds. No fatal report was found, inputs stayed unchanged, cleanup
+completed and CPU affinity was restored. The campaign retained exit 1 and its
+incomplete capture. It was not retried or counted as a complete JVM diagnostic;
+the earlier successful observation remains separate.
