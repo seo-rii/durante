@@ -54,6 +54,7 @@
 typedef struct {
   uint64_t instructions, counter_overflows, signals, rep_bytes, rep_entries,
       unsupported_rep_entries;
+  uint64_t rep_movs_bytes, rep_stos_bytes, rep_movs_entries, rep_stos_entries;
   bool rep_error;
   bool replay_error;
   app_pc write_pc, write_next_pc, restart_pc;
@@ -79,6 +80,8 @@ static char outdir[4096], segment[80];
 static uint64_t total_instructions, total_signals, total_rep_bytes,
     total_rep_entries, total_unsupported_rep_entries, threads_started,
     threads_ended, event_sequence;
+static uint64_t total_rep_movs_bytes, total_rep_stos_bytes,
+    total_rep_movs_entries, total_rep_stos_entries;
 static bool rep_bytes_enabled, accounting_error, app_exit_seen, report_written;
 /* A replay callback must never do I/O or take a lock, even on a broken TLS
  * invariant.  This sticky process/shared-VM flag invalidates every snapshot. */
@@ -171,10 +174,11 @@ static void route_event(thread_data_t *d, const char *kind,
 }
 static void start_record(thread_data_t *d, const char *origin,
                          process_id_t parent, const char *parent_segment) {
-  char fields[256];
+  char fields[384];
   dr_snprintf(fields, sizeof(fields),
               ",\"origin\":\"%s\",\"parent_pid\":%d,"
-              "\"parent_segment\":\"%s\",\"rep_bytes_enabled\":%s,\"sdk_"
+              "\"parent_segment\":\"%s\",\"rep_bytes_enabled\":%s,"
+              "\"rep_breakdown_version\":1,\"sdk_"
               "version\":\"11.3.0\"",
               origin, (int)parent, parent_segment,
               rep_bytes_enabled ? "true" : "false");
@@ -195,12 +199,20 @@ static bool add_thread(thread_data_t *d) {
       UINT64_MAX - total_signals < d->signals ||
       UINT64_MAX - total_rep_bytes < d->rep_bytes ||
       UINT64_MAX - total_rep_entries < d->rep_entries ||
+      UINT64_MAX - total_rep_movs_bytes < d->rep_movs_bytes ||
+      UINT64_MAX - total_rep_stos_bytes < d->rep_stos_bytes ||
+      UINT64_MAX - total_rep_movs_entries < d->rep_movs_entries ||
+      UINT64_MAX - total_rep_stos_entries < d->rep_stos_entries ||
       UINT64_MAX - total_unsupported_rep_entries < d->unsupported_rep_entries)
     return false;
   total_instructions += d->instructions;
   total_signals += d->signals;
   total_rep_bytes += d->rep_bytes;
   total_rep_entries += d->rep_entries;
+  total_rep_movs_bytes += d->rep_movs_bytes;
+  total_rep_stos_bytes += d->rep_stos_bytes;
+  total_rep_movs_entries += d->rep_movs_entries;
+  total_rep_stos_entries += d->rep_stos_entries;
   total_unsupported_rep_entries += d->unsupported_rep_entries;
   return true;
 }
@@ -212,6 +224,10 @@ static void snapshot_event(const char *kind, void *ctx, bool is_exec) {
            signals = child ? 0 : total_signals,
            bytes = child ? 0 : total_rep_bytes,
            entries = child ? 0 : total_rep_entries,
+           movs_bytes = child ? 0 : total_rep_movs_bytes,
+           stos_bytes = child ? 0 : total_rep_stos_bytes,
+           movs_entries = child ? 0 : total_rep_movs_entries,
+           stos_entries = child ? 0 : total_rep_stos_entries,
            unsupported = child ? 0 : total_unsupported_rep_entries;
   uint64_t started = child ? 1 : threads_started,
            ended = child ? 0 : threads_ended;
@@ -226,6 +242,10 @@ static void snapshot_event(const char *kind, void *ctx, bool is_exec) {
           UINT64_MAX - signals < d->signals ||
           UINT64_MAX - bytes < d->rep_bytes ||
           UINT64_MAX - entries < d->rep_entries ||
+          UINT64_MAX - movs_bytes < d->rep_movs_bytes ||
+          UINT64_MAX - stos_bytes < d->rep_stos_bytes ||
+          UINT64_MAX - movs_entries < d->rep_movs_entries ||
+          UINT64_MAX - stos_entries < d->rep_stos_entries ||
           UINT64_MAX - unsupported < d->unsupported_rep_entries)
         error = true;
       else {
@@ -233,6 +253,10 @@ static void snapshot_event(const char *kind, void *ctx, bool is_exec) {
         signals += d->signals;
         bytes += d->rep_bytes;
         entries += d->rep_entries;
+        movs_bytes += d->rep_movs_bytes;
+        stos_bytes += d->rep_stos_bytes;
+        movs_entries += d->rep_movs_entries;
+        stos_entries += d->rep_stos_entries;
         unsupported += d->unsupported_rep_entries;
       }
     }
@@ -246,14 +270,18 @@ static void snapshot_event(const char *kind, void *ctx, bool is_exec) {
   dr_snprintf(
       fields, sizeof(fields),
       ",\"instructions\":%llu,\"rep_bytes\":%llu,"
-      "\"rep_entries\":%llu,\"unsupported_rep_entries\":%llu,\"signals_"
+      "\"rep_entries\":%llu,\"rep_movs_bytes\":%llu,\"rep_stos_bytes\":%llu,"
+      "\"rep_movs_entries\":%llu,\"rep_stos_entries\":%llu,"
+      "\"unsupported_rep_entries\":%llu,\"signals_"
       "observed\":%llu,"
       "\"threads_started\":%llu,\"threads_finished\":%llu,\"threads_complete\":"
       "%s,"
       "\"accounting_error\":%s,\"app_exit_seen\":%s,\"app_exit_code\":%d,"
       "\"valid\":%s,\"quality\":\"%s\"",
       (unsigned long long)instructions, (unsigned long long)bytes,
-      (unsigned long long)entries, (unsigned long long)unsupported,
+      (unsigned long long)entries, (unsigned long long)movs_bytes,
+      (unsigned long long)stos_bytes, (unsigned long long)movs_entries,
+      (unsigned long long)stos_entries, (unsigned long long)unsupported,
       (unsigned long long)signals, (unsigned long long)started,
       (unsigned long long)ended, complete ? "true" : "false",
       error ? "true" : "false", exit_seen ? "true" : "false", exit_code,
@@ -386,14 +414,30 @@ static void observe_rep(app_pc pc, int opcode, int bytes, int count_reg) {
       ++data->unsupported_rep_entries;
     return;
   }
-  if (repeats > UINT64_MAX / (unsigned)bytes ||
-      UINT64_MAX - data->rep_bytes < repeats * (unsigned)bytes ||
-      data->rep_entries == UINT64_MAX) {
+  if ((opcode != OP_rep_movs && opcode != OP_rep_stos) ||
+      (bytes != 1 && bytes != 2 && bytes != 4 && bytes != 8) ||
+      repeats > UINT64_MAX / (unsigned)bytes) {
     data->rep_error = true;
     return;
   }
-  data->rep_bytes += repeats * (unsigned)bytes;
+  uint64_t requested_bytes = repeats * (unsigned)bytes;
+  uint64_t *kind_bytes =
+      opcode == OP_rep_movs ? &data->rep_movs_bytes : &data->rep_stos_bytes;
+  uint64_t *kind_entries =
+      opcode == OP_rep_movs ? &data->rep_movs_entries : &data->rep_stos_entries;
+  /* Commit the aggregate and operation-specific counters together. Even a
+   * zero-repeat observation contributes one entry to its original opcode. */
+  if (UINT64_MAX - data->rep_bytes < requested_bytes ||
+      data->rep_entries == UINT64_MAX ||
+      UINT64_MAX - *kind_bytes < requested_bytes ||
+      *kind_entries == UINT64_MAX) {
+    data->rep_error = true;
+    return;
+  }
+  data->rep_bytes += requested_bytes;
   ++data->rep_entries;
+  *kind_bytes += requested_bytes;
+  ++*kind_entries;
 }
 
 /* The client implements the Linux x86-64 syscall ABI only. In particular an
@@ -723,12 +767,15 @@ static void fork_init(void *ctx) {
   if (report_file >= 0)
     dr_close_file(report_file);
   report_file = -1;
-  /* Mutex and all completed/other-thread state inherited from the parent must
-   * not contribute to the child's work. DR restores the surviving TLS slot. */
-  state_lock = dr_mutex_create();
+  /* DR synchronizes threads before fork, and pre_syscall releases our mutex
+   * before the syscall. Keep the inherited mutex so process_exit frees it;
+   * replacing it leaks its allocation in every forked child. Completed and
+   * other-thread counters must still be reset. DR restores surviving TLS. */
   owner_pid = dr_get_process_id();
   total_instructions = total_signals = total_rep_bytes = total_rep_entries =
       total_unsupported_rep_entries = 0;
+  total_rep_movs_bytes = total_rep_stos_bytes = total_rep_movs_entries =
+      total_rep_stos_entries = 0;
   threads_started = 1;
   threads_ended = event_sequence = 0;
   accounting_error = app_exit_seen = report_written = false;

@@ -1,4 +1,4 @@
-"""Exercise actual static client replay functions with minimal DR host stubs.
+"""Exercise actual client REP accounting and replay with minimal DR host stubs.
 
 No replay implementation is copied or extracted. The temporary C translation
 unit includes client/durante.c; section GC removes unrelated instrumentation.
@@ -108,6 +108,9 @@ static void reset(void) {
     record[0] = 0;
     total_instructions = total_signals = total_rep_bytes = total_rep_entries = 0;
     total_unsupported_rep_entries = 0;
+    total_rep_movs_bytes = total_rep_stos_bytes = 0;
+    total_rep_movs_entries = total_rep_stos_entries = 0;
+    rep_bytes_enabled = true;
     threads_started = 1;
     threads_ended = event_sequence = file_bytes = 0;
     accounting_error = false;
@@ -126,6 +129,37 @@ static void snapshot(bool expected_valid) {
                                          "\"accounting_error\":true"));
 }
 
+static void assert_rep_counts(const thread_data_t *data, uint64_t movs_bytes,
+                              uint64_t stos_bytes, uint64_t movs_entries,
+                              uint64_t stos_entries) {
+    assert(data->rep_movs_bytes == movs_bytes && data->rep_stos_bytes == stos_bytes);
+    assert(data->rep_movs_entries == movs_entries && data->rep_stos_entries == stos_entries);
+    assert(data->rep_bytes == movs_bytes + stos_bytes);
+    assert(data->rep_entries == movs_entries + stos_entries);
+}
+
+static void assert_record_breakdown(uint64_t movs_bytes, uint64_t stos_bytes,
+                                   uint64_t movs_entries, uint64_t stos_entries) {
+    char expected[256];
+    int length = snprintf(expected, sizeof(expected),
+        "\"rep_movs_bytes\":%llu,\"rep_stos_bytes\":%llu,"
+        "\"rep_movs_entries\":%llu,\"rep_stos_entries\":%llu,",
+        (unsigned long long)movs_bytes, (unsigned long long)stos_bytes,
+        (unsigned long long)movs_entries, (unsigned long long)stos_entries);
+    assert(length > 0 && (size_t)length < sizeof(expected));
+    assert(strstr(record, expected));
+    assert(!strstr(record, "\"rep_breakdown\":"));
+}
+
+static void assert_rep_unchanged(const thread_data_t *before) {
+    assert(state.rep_bytes == before->rep_bytes && state.rep_entries == before->rep_entries);
+    assert(state.rep_movs_bytes == before->rep_movs_bytes);
+    assert(state.rep_stos_bytes == before->rep_stos_bytes);
+    assert(state.rep_movs_entries == before->rep_movs_entries);
+    assert(state.rep_stos_entries == before->rep_stos_entries);
+    assert(state.unsupported_rep_entries == before->unsupported_rep_entries);
+}
+
 static void arm_rep(void) {
     state.instructions = 100;
     count_block(7, START);
@@ -133,6 +167,7 @@ static void arm_rep(void) {
     supplied_rcx = 10;
     observe_rep(WRITE, OP_rep_movs, 1, DR_REG_RCX);
     assert(state.rep_bytes == 10 && state.rep_entries == 1);
+    assert_rep_counts(&state, 10, 0, 1, 0);
     code_replay(CTX, DR_DURANTE_REPLAY_RETRY, WRITE, WRITE);
     assert(state.instructions == 104 && state.restart_pc == WRITE);
     assert(!state.replay_error && !state.restart_entered);
@@ -166,6 +201,228 @@ int main(int argc, char **argv) {
         assert((ptr_uint_t)count == 2);
         assert(write_suffix((instrlist_t *)nodes, (instr_t *)&nodes[2]) == 0);
         assert(write_suffix((instrlist_t *)nodes, (instr_t *)&nodes[4]) == 1);
+    } else if (!strcmp(test, "rep-breakdown-mixed")) {
+        state.instructions = 1;
+        supplied_rcx = 7;
+        observe_rep(WRITE, OP_rep_movs, 1, DR_REG_RCX);
+        supplied_rcx = 3;
+        observe_rep(NEXT, OP_rep_stos, 4, DR_REG_RCX);
+        supplied_rcx = 0;
+        observe_rep(WRITE, OP_rep_movs, 8, DR_REG_RCX);
+        observe_rep(NEXT, OP_rep_stos, 2, DR_REG_ECX);
+        assert_rep_counts(&state, 7, 12, 2, 2);
+        const int unsupported[] = {OP_rep_cmps, OP_repne_cmps, OP_rep_scas,
+            OP_repne_scas, OP_rep_lods, OP_rep_ins, OP_rep_outs};
+        context_available = false; /* Unsupported forms never need RCX. */
+        for (unsigned i = 0; i < sizeof(unsupported) / sizeof(unsupported[0]); ++i)
+            observe_rep(WRITE, unsupported[i], 0, DR_REG_NULL);
+        assert(!state.rep_error && state.unsupported_rep_entries == 7);
+        assert_rep_counts(&state, 7, 12, 2, 2);
+        snapshot(true);
+        assert_record_breakdown(7, 12, 2, 2);
+    } else if (!strcmp(test, "rep-breakdown-widths")) {
+        const int opcodes[] = {OP_rep_movs, OP_rep_stos};
+        const int widths[] = {1, 2, 4, 8};
+        const int registers[] = {DR_REG_RCX, DR_REG_ECX};
+        for (unsigned op = 0; op < 2; ++op) {
+            for (unsigned width = 0; width < 4; ++width) {
+                for (unsigned reg = 0; reg < 2; ++reg) {
+                    reset();
+                    state.instructions = 1;
+                    supplied_rcx = UINT64_C(0x100000005);
+                    observe_rep(WRITE, opcodes[op], widths[width], registers[reg]);
+                    uint64_t bytes = (reg ? 5 : UINT64_C(0x100000005)) * widths[width];
+                    assert(!state.rep_error);
+                    assert_rep_counts(&state, op ? 0 : bytes, op ? bytes : 0,
+                                      op ? 0 : 1, op ? 1 : 0);
+                    snapshot(true);
+                    assert_record_breakdown(op ? 0 : bytes, op ? bytes : 0,
+                                            op ? 0 : 1, op ? 1 : 0);
+                }
+            }
+        }
+    } else if (!strcmp(test, "rep-breakdown-disabled")) {
+        rep_bytes_enabled = false;
+        char parent_segment[80];
+        memset(parent_segment, 'p', sizeof(parent_segment) - 1);
+        parent_segment[sizeof(parent_segment) - 1] = 0;
+        start_record(NULL, "exec", 999, parent_segment);
+        assert(strstr(record, "\"rep_breakdown_version\":1"));
+        assert(strstr(record, "\"rep_bytes_enabled\":false"));
+        assert(strstr(record, "\"sdk_version\":\"11.3.0\""));
+        state.instructions = 1;
+        snapshot(true);
+        assert_record_breakdown(0, 0, 0, 0);
+        assert(add_thread(&state));
+        threads_ended = 1;
+        snapshot_event("end", NULL, false);
+        assert(strstr(record, "\"valid\":true"));
+        assert_record_breakdown(0, 0, 0, 0);
+    } else if (!strcmp(test, "rep-breakdown-overflow")) {
+        const int opcodes[] = {OP_rep_movs, OP_rep_stos};
+        for (unsigned op = 0; op < 2; ++op) {
+            for (unsigned variant = 0; variant < 5; ++variant) {
+                reset();
+                state.instructions = 7;
+                supplied_rcx = 5;
+                observe_rep(WRITE, OP_rep_movs, 1, DR_REG_RCX);
+                supplied_rcx = 7;
+                observe_rep(NEXT, OP_rep_stos, 1, DR_REG_RCX);
+                uint64_t *kind_bytes = op ? &state.rep_stos_bytes : &state.rep_movs_bytes;
+                uint64_t *kind_entries = op ? &state.rep_stos_entries : &state.rep_movs_entries;
+                if (variant == 0) state.rep_bytes = UINT64_MAX - 1;
+                if (variant == 1) state.rep_entries = UINT64_MAX;
+                if (variant == 2) *kind_bytes = UINT64_MAX - 1;
+                if (variant == 3) *kind_entries = UINT64_MAX;
+                thread_data_t before = state;
+                supplied_rcx = variant == 4 ? UINT64_MAX : 2;
+                observe_rep(WRITE, opcodes[op], variant == 4 ? 8 : 1, DR_REG_RCX);
+                assert(state.rep_error && !add_thread(&state));
+                assert_rep_unchanged(&before);
+                snapshot(false);
+            }
+            reset();
+            state.instructions = 7;
+            supplied_rcx = UINT64_MAX;
+            observe_rep(WRITE, opcodes[op], 1, DR_REG_RCX);
+            supplied_rcx = 0;
+            observe_rep(WRITE, opcodes[op], 1, DR_REG_RCX);
+            assert(!state.rep_error);
+            assert_rep_counts(&state, op ? 0 : UINT64_MAX, op ? UINT64_MAX : 0,
+                              op ? 0 : 2, op ? 2 : 0);
+            snapshot(true);
+            thread_data_t before = state;
+            supplied_rcx = 1;
+            observe_rep(WRITE, opcodes[op], 1, DR_REG_RCX);
+            assert(state.rep_error);
+            assert_rep_unchanged(&before);
+        }
+    } else if (!strcmp(test, "rep-breakdown-aggregation")) {
+        state.instructions = 5;
+        supplied_rcx = 5;
+        observe_rep(WRITE, OP_rep_movs, 2, DR_REG_RCX);
+        supplied_rcx = 3;
+        observe_rep(NEXT, OP_rep_stos, 4, DR_REG_RCX);
+        assert(add_thread(&state));
+        threads_started = 2;
+        threads_ended = 1;
+        active = &parent_state;
+        parent_state.instructions = 9;
+        supplied_rcx = 0;
+        observe_rep(WRITE, OP_rep_movs, 1, DR_REG_RCX);
+        supplied_rcx = 2;
+        observe_rep(NEXT, OP_rep_stos, 8, DR_REG_RCX);
+        for (unsigned i = 0; i < 2; ++i) {
+            snapshot(true);
+            assert_record_breakdown(10, 28, 2, 2);
+            assert(total_rep_bytes == 22 && total_rep_entries == 2);
+            assert(total_rep_movs_bytes == 10 && total_rep_stos_bytes == 12);
+            assert(total_rep_movs_entries == 1 && total_rep_stos_entries == 1);
+        }
+        assert(add_thread(&parent_state));
+        threads_ended = 2;
+        snapshot_event("end", NULL, false);
+        assert(strstr(record, "\"valid\":true"));
+        assert_record_breakdown(10, 28, 2, 2);
+        assert(total_rep_bytes == 38 && total_rep_entries == 4);
+    } else if (!strcmp(test, "rep-breakdown-aggregate-overflow")) {
+        for (unsigned variant = 0; variant < 6; ++variant) {
+            reset();
+            state.instructions = 5;
+            supplied_rcx = 2;
+            observe_rep(WRITE, OP_rep_movs, 4, DR_REG_RCX);
+            supplied_rcx = 3;
+            observe_rep(NEXT, OP_rep_stos, 2, DR_REG_RCX);
+            total_instructions = 10;
+            total_rep_bytes = 30;
+            total_rep_entries = 3;
+            total_rep_movs_bytes = 10;
+            total_rep_stos_bytes = 20;
+            total_rep_movs_entries = 1;
+            total_rep_stos_entries = 2;
+            uint64_t *fields[] = {&total_rep_bytes, &total_rep_entries,
+                &total_rep_movs_bytes, &total_rep_stos_bytes,
+                &total_rep_movs_entries, &total_rep_stos_entries};
+            *fields[variant] = UINT64_MAX;
+            uint64_t before[6];
+            for (unsigned i = 0; i < 6; ++i) before[i] = *fields[i];
+            assert(!add_thread(&state));
+            assert(total_instructions == 10);
+            for (unsigned i = 0; i < 6; ++i) assert(*fields[i] == before[i]);
+            snapshot(false);
+            assert_record_breakdown(before[2], before[3], before[4], before[5]);
+            assert(total_instructions == 10);
+            for (unsigned i = 0; i < 6; ++i) assert(*fields[i] == before[i]);
+            assert_rep_counts(&state, 8, 6, 1, 1);
+        }
+    } else if (!strcmp(test, "rep-breakdown-replay-kinds")) {
+        const int opcodes[] = {OP_rep_movs, OP_rep_stos};
+        for (unsigned op = 0; op < 2; ++op) {
+            reset();
+            supplied_rcx = 3;
+            observe_rep(NEXT, opcodes[1 - op], 2, DR_REG_RCX);
+            state.instructions = 100;
+            count_block(7, START);
+            before_write(WRITE, NEXT, 3);
+            supplied_rcx = 10;
+            observe_rep(WRITE, opcodes[op], 4, DR_REG_RCX);
+            code_replay(CTX, DR_DURANTE_REPLAY_RETRY, WRITE, WRITE);
+            const unsigned remaining[] = {6, 2, 0};
+            for (unsigned retry = 0; retry < 3; ++retry) {
+                code_replay(CTX, DR_DURANTE_REPLAY_ENTRY, NULL, WRITE);
+                count_block(3, WRITE);
+                before_write(WRITE, NEXT, 3);
+                supplied_rcx = remaining[retry];
+                observe_rep(WRITE, opcodes[op], 4, DR_REG_RCX);
+                assert(state.write_rep_request == 10 && !state.restart_pc);
+                assert_rep_counts(&state, op ? 6 : 40, op ? 40 : 6, 1, 1);
+                code_replay(CTX, retry == 2 ? DR_DURANTE_REPLAY_AFTER_WRITE :
+                            DR_DURANTE_REPLAY_RETRY, retry == 2 ? NULL : WRITE,
+                            retry == 2 ? NEXT : WRITE);
+            }
+            count_block(2, NEXT);
+            count_block(3, WRITE);
+            before_write(WRITE, NEXT, 3);
+            supplied_rcx = 4;
+            observe_rep(WRITE, opcodes[op], 4, DR_REG_RCX);
+            assert(!state.rep_error && !state.replay_error);
+            assert_rep_counts(&state, op ? 6 : 56, op ? 56 : 6,
+                              op ? 1 : 2, op ? 2 : 1);
+            snapshot(true);
+            assert_record_breakdown(op ? 6 : 56, op ? 56 : 6,
+                                    op ? 1 : 2, op ? 2 : 1);
+        }
+    } else if (!strcmp(test, "rep-breakdown-vfork")) {
+        total_instructions = 50;
+        total_rep_bytes = total_rep_movs_bytes = 900;
+        total_rep_entries = total_rep_movs_entries = 9;
+        threads_started = 2;
+        threads_ended = 1;
+        active = &parent_state;
+        parent_state.instructions = 77;
+        supplied_rcx = 7;
+        observe_rep(WRITE, OP_rep_movs, 1, DR_REG_RCX);
+        active = &child_state;
+        child_state.instructions = 20;
+        child_state.child_pid = 200;
+        child_state.child_file = 123;
+        child_state.child_exit_seen = true;
+        strcpy(child_state.child_segment, "child");
+        start_record(&child_state, "fork", owner_pid, segment);
+        assert(strstr(record, "\"rep_breakdown_version\":1"));
+        assert(strstr(record, "\"rep_bytes_enabled\":true"));
+        supplied_rcx = 4;
+        observe_rep(WRITE, OP_rep_stos, 8, DR_REG_RCX);
+        supplied_rcx = 0;
+        observe_rep(NEXT, OP_rep_movs, 1, DR_REG_RCX);
+        snapshot_event("end", CTX, false);
+        assert(strstr(record, "\"pid\":200") && strstr(record, "\"valid\":true"));
+        assert_record_breakdown(0, 32, 1, 1);
+        assert(total_rep_bytes == 900 && total_rep_entries == 9);
+        assert_rep_counts(&parent_state, 7, 0, 1, 0);
+        active = &parent_state;
+        snapshot(true);
+        assert_record_breakdown(907, 0, 10, 0);
     } else if (!strcmp(test, "prefix")) {
         state.instructions = 100;
         count_block(10, START);
@@ -200,7 +457,9 @@ int main(int argc, char **argv) {
         supplied_rcx = 4;
         observe_rep(WRITE, OP_rep_movs, 1, DR_REG_RCX);
         assert(state.rep_bytes == 14 && state.rep_entries == 2);
+        assert_rep_counts(&state, 14, 0, 2, 0);
         snapshot(true);
+        assert_record_breakdown(14, 0, 2, 0);
     } else if (!strcmp(test, "after-write")) {
         state.instructions = 100;
         count_block(8, START);
@@ -243,6 +502,7 @@ int main(int argc, char **argv) {
         }
         assert(state.replay_error && !state.restart_pc);
         assert(state.rep_bytes == 10 && state.rep_entries == 1);
+        assert_rep_counts(&state, 10, 0, 1, 0);
         snapshot(false);
     } else if (!strcmp(test, "bad-checkpoints")) {
         for (int variant = 0; variant < 5; ++variant) {
@@ -417,6 +677,30 @@ class ClientReplayStateTests(unittest.TestCase):
 
     def test_suffix_ignores_meta_and_rejects_ambiguous_emulation_write(self):
         self.run_case("suffix")
+
+    def test_rep_breakdown_mixes_kinds_zero_repeats_and_unsupported_forms(self):
+        self.run_case("rep-breakdown-mixed")
+
+    def test_rep_breakdown_uses_each_width_and_architectural_count_register(self):
+        self.run_case("rep-breakdown-widths")
+
+    def test_disabled_rep_still_announces_version_and_zero_breakdown(self):
+        self.run_case("rep-breakdown-disabled")
+
+    def test_rep_breakdown_overflow_never_partially_updates_counters(self):
+        self.run_case("rep-breakdown-overflow")
+
+    def test_rep_breakdown_aggregates_threads_and_preserves_exec_snapshots(self):
+        self.run_case("rep-breakdown-aggregation")
+
+    def test_rep_breakdown_aggregate_overflow_invalidates_without_mutation(self):
+        self.run_case("rep-breakdown-aggregate-overflow")
+
+    def test_rep_replay_preserves_original_kind_and_charge_across_retries(self):
+        self.run_case("rep-breakdown-replay-kinds")
+
+    def test_shared_vm_child_publishes_only_its_own_rep_breakdown(self):
+        self.run_case("rep-breakdown-vfork")
 
     def test_partial_rep_multiple_faults_charge_original_request_once(self):
         self.run_case("partial-rep-twice")

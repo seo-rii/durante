@@ -630,6 +630,31 @@ fn valid_inner(value: &Value) -> bool {
         "unsupported_rep_entries",
         "signals_observed",
     ];
+    let Some(rep) = measurement["rep_bytes_enabled"].as_bool() else {
+        return false;
+    };
+    let detailed = measurement.get("rep_breakdown").is_some();
+    let read_breakdown = |row: &Value| {
+        if !detailed {
+            // A zero local accumulator is not an asserted legacy breakdown.
+            // Every level must omit the field, and the original report is kept.
+            return row
+                .get("rep_breakdown")
+                .is_none()
+                .then(durante::report::RepBreakdown::default);
+        }
+        let breakdown = durante::report::RepBreakdown::from_value(row.get("rep_breakdown")?)?;
+        breakdown
+            .matches_totals(
+                row["rep_bytes"].as_u64()?,
+                row["rep_entries"].as_u64()?,
+                rep,
+            )
+            .then_some(breakdown)
+    };
+    let Some(expected_breakdown) = read_breakdown(measurement) else {
+        return false;
+    };
     let mut ids = BTreeSet::new();
     let mut sums = BTreeMap::new();
     for process in processes {
@@ -642,7 +667,10 @@ fn valid_inner(value: &Value) -> bool {
         if !ids.insert(pid) || process["exit_code"].as_u64().is_none_or(|code| code > 255) {
             return false;
         }
-        sums.insert(pid, ([0_u64; 5], 0_u64));
+        sums.insert(
+            pid,
+            ([0_u64; 5], 0_u64, durante::report::RepBreakdown::default()),
+        );
     }
     if !measurement["root_pid"]
         .as_u64()
@@ -651,11 +679,12 @@ fn valid_inner(value: &Value) -> bool {
         return false;
     }
     let mut totals = [0_u64; 5];
+    let mut breakdown_totals = durante::report::RepBreakdown::default();
     for segment in segments {
         let Some(pid) = segment["pid"].as_u64() else {
             return false;
         };
-        let Some((sums, count)) = sums.get_mut(&pid) else {
+        let Some((sums, count, process_breakdown)) = sums.get_mut(&pid) else {
             return false;
         };
         *count += 1;
@@ -672,9 +701,20 @@ fn valid_inner(value: &Value) -> bool {
             };
             totals[index] = sum;
         }
+        let Some(breakdown) = read_breakdown(segment) else {
+            return false;
+        };
+        let Some(sum) = process_breakdown.checked_add(breakdown) else {
+            return false;
+        };
+        *process_breakdown = sum;
+        let Some(sum) = breakdown_totals.checked_add(breakdown) else {
+            return false;
+        };
+        breakdown_totals = sum;
     }
     for process in processes {
-        let (sums, count) = &sums[&process["pid"].as_u64().unwrap()];
+        let (sums, count, breakdown) = &sums[&process["pid"].as_u64().unwrap()];
         if process["images"].as_u64() != Some(*count) {
             return false;
         }
@@ -683,10 +723,10 @@ fn valid_inner(value: &Value) -> bool {
                 return false;
             }
         }
+        if read_breakdown(process) != Some(*breakdown) {
+            return false;
+        }
     }
-    let Some(rep) = measurement["rep_bytes_enabled"].as_bool() else {
-        return false;
-    };
     if (!rep && (totals[1] != 0 || totals[2] != 0 || totals[3] != 0))
         || (totals[2] == 0 && totals[1] != 0)
     {
@@ -702,10 +742,11 @@ fn valid_inner(value: &Value) -> bool {
     {
         return false;
     }
-    FIELDS
-        .iter()
-        .enumerate()
-        .all(|(index, key)| measurement[key].as_u64() == Some(totals[index]))
+    expected_breakdown == breakdown_totals
+        && FIELDS
+            .iter()
+            .enumerate()
+            .all(|(index, key)| measurement[key].as_u64() == Some(totals[index]))
 }
 
 fn cleanup_tree_bounded(root: &Path, depth: usize, entries: &mut usize) -> io::Result<()> {
@@ -1484,6 +1525,182 @@ mod tests {
         }
         unsupported["measurement"]["rep_telemetry_status"] = json!("movs_stos_only");
         assert!(!valid_inner(&unsupported));
+    }
+
+    fn inner_rep_breakdown_fixture() -> Value {
+        let vectors: Value =
+            serde_json::from_str(include_str!("../tests/protocol_vectors.json")).unwrap();
+        let rows = vectors["cases"][0]["files"]["process-1.jsonl"]
+            .as_array()
+            .unwrap();
+        let mut first = rows[0].clone();
+        first["rep_bytes_enabled"] = json!(true);
+        first["rep_breakdown_version"] = json!(1);
+        let mut last = rows.last().unwrap().clone();
+        last["seq"] = json!(3);
+        last["rep_bytes"] = json!(22);
+        last["rep_entries"] = json!(5);
+        last["rep_movs_bytes"] = json!(17);
+        last["rep_stos_bytes"] = json!(5);
+        last["rep_movs_entries"] = json!(2);
+        last["rep_stos_entries"] = json!(3);
+        let mut spawn = first.clone();
+        spawn["event"] = json!("spawn");
+        spawn["seq"] = json!(2);
+        spawn["child_pid"] = json!(2);
+        spawn["syscall"] = json!(57);
+        spawn["supported"] = json!(true);
+        let mut child_start = first.clone();
+        child_start["pid"] = json!(2);
+        child_start["segment"] = json!("2-1");
+        child_start["origin"] = json!("fork");
+        child_start["parent_pid"] = json!(1);
+        child_start["parent_segment"] = json!("1-1");
+        let mut child_end = last.clone();
+        child_end["pid"] = json!(2);
+        child_end["segment"] = json!("2-1");
+        child_end["seq"] = json!(2);
+        child_end["rep_bytes"] = json!(8);
+        child_end["rep_entries"] = json!(2);
+        child_end["rep_movs_bytes"] = json!(3);
+        child_end["rep_stos_bytes"] = json!(5);
+        child_end["rep_movs_entries"] = json!(1);
+        child_end["rep_stos_entries"] = json!(1);
+        let encode = |rows: &[Value]| {
+            let mut bytes = Vec::new();
+            for row in rows {
+                serde_json::to_writer(&mut bytes, row).unwrap();
+                bytes.push(b'\n');
+            }
+            bytes
+        };
+        let root = encode(&[first, spawn, last]);
+        let child = encode(&[child_start, child_end]);
+        let measurement = durante::collect::collect_bytes(&[(1, &root), (2, &child)], 1);
+        assert_eq!(measurement["valid"], true, "{measurement}");
+        json!({"schema":1,"authority":"diagnostic_only",
+            "integrity_verified":false,"measurement_contract":durante::report::measurement_contract(),
+            "security":{"counter_integrity":"application_mutable"},
+            "execution":{"state":"complete","cleanup_complete":true,"records_cleanup_complete":true},
+            "measurement":measurement})
+    }
+
+    #[test]
+    fn inner_rep_breakdown_requires_consistent_presence_and_typed_objects_at_every_level() {
+        let valid = inner_rep_breakdown_fixture();
+        assert!(valid_inner(&valid));
+        let levels = [
+            "/measurement",
+            "/measurement/processes/0",
+            "/measurement/processes/1",
+            "/measurement/segments/0",
+            "/measurement/segments/1",
+        ];
+        let mut legacy = valid.clone();
+        for level in levels {
+            legacy
+                .pointer_mut(level)
+                .unwrap()
+                .as_object_mut()
+                .unwrap()
+                .remove("rep_breakdown");
+        }
+        assert!(valid_inner(&legacy));
+        for level in levels {
+            let mut mixed = valid.clone();
+            mixed
+                .pointer_mut(level)
+                .unwrap()
+                .as_object_mut()
+                .unwrap()
+                .remove("rep_breakdown");
+            assert!(!valid_inner(&mixed), "missing {level}");
+            let mut mixed = legacy.clone();
+            mixed.pointer_mut(level).unwrap()["rep_breakdown"] =
+                valid.pointer(level).unwrap()["rep_breakdown"].clone();
+            assert!(!valid_inner(&mixed), "unspecified {level}");
+            for malformed in [
+                Value::Null,
+                json!(true),
+                json!([]),
+                json!([1, 17, 5, 2, 3]),
+                json!({}),
+                json!({"version":2,"movs_bytes":0,"stos_bytes":0,"movs_entries":0,"stos_entries":0}),
+            ] {
+                let mut wrong = valid.clone();
+                wrong.pointer_mut(level).unwrap()["rep_breakdown"] = malformed;
+                assert!(!valid_inner(&wrong), "malformed {level}");
+            }
+            for field in [
+                "version",
+                "movs_bytes",
+                "stos_bytes",
+                "movs_entries",
+                "stos_entries",
+            ] {
+                for malformed in [json!(true), json!(1.0), json!(-1), Value::Null, json!("1")] {
+                    let mut wrong = valid.clone();
+                    wrong.pointer_mut(level).unwrap()["rep_breakdown"][field] = malformed;
+                    assert!(!valid_inner(&wrong), "invalid {level} {field}");
+                }
+                let mut missing = valid.clone();
+                missing.pointer_mut(level).unwrap()["rep_breakdown"]
+                    .as_object_mut()
+                    .unwrap()
+                    .remove(field);
+                assert!(!valid_inner(&missing), "missing {level} {field}");
+            }
+            let mut extra = valid.clone();
+            extra.pointer_mut(level).unwrap()["rep_breakdown"]["extra"] = json!(0);
+            assert!(!valid_inner(&extra), "extra {level}");
+        }
+    }
+
+    #[test]
+    fn inner_rep_breakdown_rechecks_component_sums_even_when_old_totals_match() {
+        let valid = inner_rep_breakdown_fixture();
+        for level in [
+            "/measurement",
+            "/measurement/processes/0",
+            "/measurement/processes/1",
+            "/measurement/segments/0",
+            "/measurement/segments/1",
+        ] {
+            let mut wrong = valid.clone();
+            let breakdown = &mut wrong.pointer_mut(level).unwrap()["rep_breakdown"];
+            let movs = breakdown["movs_bytes"].as_u64().unwrap();
+            let stos = breakdown["stos_bytes"].as_u64().unwrap();
+            breakdown["movs_bytes"] = json!(movs + 1);
+            breakdown["stos_bytes"] = json!(stos - 1);
+            assert!(
+                !valid_inner(&wrong),
+                "same old total hid a changed partition at {level}"
+            );
+
+            let mut no_entries = valid.clone();
+            let row = no_entries.pointer_mut(level).unwrap();
+            row["rep_breakdown"]["movs_entries"] = json!(0);
+            row["rep_breakdown"]["stos_entries"] = row["rep_entries"].clone();
+            assert!(
+                !valid_inner(&no_entries),
+                "per-kind bytes lost their entries at {level}"
+            );
+
+            let mut overflowing = valid.clone();
+            let row = overflowing.pointer_mut(level).unwrap();
+            row["rep_breakdown"]["movs_bytes"] = json!(u64::MAX);
+            row["rep_breakdown"]["stos_bytes"] = json!(1);
+            row["rep_bytes"] = json!(0);
+            assert!(!valid_inner(&overflowing), "partition wrapped at {level}");
+        }
+        // Offset two segment changes so even the tree's per-kind totals stay
+        // unchanged. Independent per-process validation must still reject it.
+        let mut regrouped = valid;
+        regrouped["measurement"]["segments"][0]["rep_breakdown"]["movs_bytes"] = json!(18);
+        regrouped["measurement"]["segments"][0]["rep_breakdown"]["stos_bytes"] = json!(4);
+        regrouped["measurement"]["segments"][1]["rep_breakdown"]["movs_bytes"] = json!(2);
+        regrouped["measurement"]["segments"][1]["rep_breakdown"]["stos_bytes"] = json!(6);
+        assert!(!valid_inner(&regrouped));
     }
 
     #[test]

@@ -87,10 +87,25 @@ fuzz_target!(|data: &[u8]| {
             vec![s, terminal(2, 1, 2, "end", count(data, 18).max(1), rep)],
         ));
     }
+    if byte(data, 0) & 16 != 0 {
+        for (_, rows) in &mut streams {
+            for row in rows {
+                if row["event"] == "start" {
+                    row["rep_breakdown_version"] = json!(1);
+                } else if row["event"] == "end" || row["event"] == "exec_attempt" {
+                    row["rep_entries"] = json!(if rep { 2 } else { 0 });
+                    row["rep_movs_bytes"] = json!(if rep { 5 } else { 0 });
+                    row["rep_stos_bytes"] = json!(if rep { 3 } else { 0 });
+                    row["rep_movs_entries"] = json!(if rep { 1 } else { 0 });
+                    row["rep_stos_entries"] = json!(if rep { 1 } else { 0 });
+                }
+            }
+        }
+    }
     let process = byte(data, 26) as usize % streams.len();
     let row = byte(data, 27) as usize % streams[process].1.len();
     let event = &mut streams[process].1[row];
-    match byte(data, 1) % 16 {
+    match byte(data, 1) % 24 {
         0 => {}
         1 => event["seq"] = json!(count(data, 2)),
         2 => event["pid"] = json!(byte(data, 2)),
@@ -106,7 +121,30 @@ fuzz_target!(|data: &[u8]| {
         12 => event["supported"] = json!(false),
         13 => event["segment"] = json!("2-1"),
         14 => event["event"] = json!("interrupted"),
-        _ => event["authority"] = json!("trusted"),
+        15 => event["authority"] = json!("trusted"),
+        16 => event["rep_breakdown_version"] = json!(byte(data, 2)),
+        17 => event["rep_breakdown_version"] = json!(true),
+        18 => event["rep_movs_bytes"] = json!(null),
+        19 => {
+            event.as_object_mut().unwrap().remove("rep_movs_bytes");
+        }
+        20 => {
+            event
+                .as_object_mut()
+                .unwrap()
+                .remove("rep_breakdown_version");
+        }
+        21 => {
+            event["rep_movs_bytes"] = json!(count(data, 2));
+            event["rep_stos_bytes"] = json!(count(data, 10));
+            event["rep_movs_entries"] = json!(1);
+            event["rep_stos_entries"] = json!(1);
+        }
+        22 => event["rep_movs_entries"] = json!(true),
+        _ => {
+            event["rep_movs_bytes"] = json!(5);
+            event["rep_movs_entries"] = json!(0);
+        }
     }
     let owned: Vec<_> = streams
         .iter()

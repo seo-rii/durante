@@ -84,6 +84,7 @@ class JitReplayPolicyTests(unittest.TestCase):
         self.assertEqual(execution_errors(row), [])
         measurement = {"valid": True, "complete": True, "instructions": 123,
                        "rep_bytes": 16, "rep_entries": 2,
+                       "rep_breakdown": {"version": 1, "movs_bytes": 16, "stos_bytes": 0, "movs_entries": 2, "stos_entries": 0},
                        "unsupported_rep_entries": 0, "signals_observed": 0}
         self.assertEqual(accounting_errors(measurement, 123, "rep-forward", True), [])
         for change in ({"instructions": 124}, {"rep_bytes": 12}, {"rep_entries": 3},
@@ -116,6 +117,11 @@ class JitReplayPolicyTests(unittest.TestCase):
                 row = {"valid": True, "complete": True, "instructions": 123,
                        "rep_bytes": oracle["rep_bytes"] if enabled else 0,
                        "rep_entries": oracle["rep_entries"] if enabled else 0,
+                       "rep_breakdown": {"version": 1,
+                                         "movs_bytes": (oracle["rep_bytes"] - (10 if fixture == "rep-stos" else 0)) if enabled else 0,
+                                         "stos_bytes": 10 if enabled and fixture == "rep-stos" else 0,
+                                         "movs_entries": (oracle["rep_entries"] - (1 if fixture == "rep-stos" else 0)) if enabled else 0,
+                                         "stos_entries": 1 if enabled and fixture == "rep-stos" else 0},
                        "unsupported_rep_entries": 0, "signals_observed": 0}
                 self.assertEqual(accounting_errors(row, 123, fixture, enabled), [])
                 for key, value in (("instructions", 126), ("instructions", 122),
@@ -127,6 +133,13 @@ class JitReplayPolicyTests(unittest.TestCase):
                 if fixture.startswith("rep-") and enabled:
                     self.assertTrue(accounting_errors({**row, "rep_bytes": 12}, 123, fixture, enabled))
                 self.assertTrue(accounting_errors({}, 123, fixture, enabled))
+                # A preserved combined total cannot hide a changed operation
+                # kind or a partially completed request after replay.
+                changed = dict(row["rep_breakdown"])
+                changed["movs_bytes"], changed["stos_bytes"] = changed["stos_bytes"], changed["movs_bytes"]
+                if enabled:
+                    self.assertTrue(accounting_errors({**row, "rep_breakdown": changed}, 123, fixture, enabled))
+                self.assertTrue(accounting_errors({**row, "rep_breakdown": None}, 123, fixture, enabled))
 
     def test_all_native_engine_and_counter_observations_are_required(self):
         rows = [{"fixture": fixture, "execution_mode": label, "core": core,

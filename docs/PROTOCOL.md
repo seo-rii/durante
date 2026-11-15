@@ -47,6 +47,12 @@ parent image ID. This includes a vfork child's pre-exec work. Each new exec imag
 has origin `initial`, parent 0 and empty parent segment. All images must agree
 on REP mode.
 
+New clients also advertise `rep_breakdown_version: 1` on every `start`.
+All images and processes must agree on its presence and version. An absent
+capability denotes legacy telemetry with an unspecified operation split; it
+does not imply zero MOVS or STOS work. Unknown versions and mixed legacy/new
+trees are unavailable to collectors that understand the extension.
+
 `spawn` is written by the parent only after successful process creation. Fields
 are `child_pid`, Linux x86-64 `syscall` number (clone 56, fork 57, vfork 58, clone3
 435), and boolean `supported`. Unsupported edges invalidate the total. Failed
@@ -82,6 +88,40 @@ not exact retired instructions. `app_exit_seen` must be true for an end;
 `app_exit_code` is an integer from 0 through 255. Nonzero exit codes do not discard
 completed work. Exec checkpoints do not require an application exit event.
 
+For advertised breakdown version 1, a selected `end` or successful
+`exec_attempt` checkpoint also requires these four scalar fields:
+
+```json
+{
+  "rep_movs_bytes": 65,
+  "rep_stos_bytes": 66,
+  "rep_movs_entries": 3,
+  "rep_stos_entries": 3
+}
+```
+
+Each counter is an unsigned 64-bit integer. MOVS and STOS bytes must sum exactly
+to `rep_bytes`, and their entry counts to `rep_entries`, without overflow.
+Nonzero bytes of either kind require a nonzero entry count of that kind. A
+zero-RCX instruction contributes one entry and zero bytes. Disabled REP
+telemetry emits explicit zeros for all four counters. Unsupported REP operations
+remain in `unsupported_rep_entries` and do not enter either supported bucket.
+
+`rep_movs_bytes` is requested copy length, not source reads plus destination writes;
+`rep_stos_bytes` is requested fill length. Element widths 1/2/4/8, direction and
+RCX/ECX addressing use the same existing byte-demand semantics. These counters
+do not assert completed transfers, cache misses, memory bandwidth or elapsed
+time. Internal code replay retains each original request once in its original
+operation bucket, including partially completed REP retries.
+
+Present raw counters always receive strict unsigned integer type checks.
+Capability, required presence and arithmetic checks apply to selected terminal
+values. A failed exec checkpoint is discarded as before; its provisional
+counters do not enter the final total. Legacy selected terminals omit all four
+fields. Raw events retain their scalar-only format and schema/client version 1:
+older collectors can still compute
+the unchanged combined totals, but cannot claim operation-level telemetry.
+
 ## Aggregate
 
 Verify every nonroot process has exactly one successful spawn edge whose parent
@@ -97,6 +137,23 @@ A successful result has `schema: 1`, `authority: "diagnostic_only"`,
 `segments` preserve the selected components for auditing. No CPU-ms conversion
 is performed. Failure returns `valid: false`, `complete: false` and a bounded
 reason; it must not expose partial totals as a valid measurement.
+
+When the complete tree advertises the extension, `rep_breakdown` is also emitted
+on the aggregate, every process and every selected image segment. All four
+counters are checked and summed at each level. Legacy aggregates omit the object
+at every level; failed aggregates expose none of it. `isolate` independently
+checks these partitions and component sums before retaining an inner report.
+The aggregate's object is a closed, versioned structure, for example:
+
+```json
+"rep_breakdown": {
+  "version": 1,
+  "movs_bytes": 65,
+  "stos_bytes": 66,
+  "movs_entries": 3,
+  "stos_entries": 3
+}
+```
 
 ## Result contract and consumers
 
@@ -155,3 +212,19 @@ requested transfer. A partial result retains its unsupported-entry total, and
 agree. A missing status in an older schema-1 report means unspecified coverage;
 it must not be interpreted as complete coverage. Execution status, instruction
 validity, REP coverage and counter integrity are separate decisions.
+
+## Operation-breakdown qualification
+
+`tests/smoke.py` checks MOVS/STOS widths and zero-count entries individually.
+`tests/rep_breakdown.py` exercises a fixed mixed workload through ordinary
+execution, fork, vfork, thread completion, exec and failed exec. Native and
+engine-only controls validate memory/output; release/debug counter modes and
+the supervisor validate exact per-image, per-process and total operation demand.
+The separate code-replay suite checks preserved MOVS/STOS attribution across
+partial forward/backward copies, fills and repeated code replacement.
+
+Shared protocol vectors, grammar fuzzing and Rust/Python differential mutation
+tests cover the new optional capability and partition arithmetic. The new fields
+are a prerequisite for models with different copy/fill coefficients. They do not
+provide coefficients or qualify a time conversion; instruction-mix differences
+such as branches and sorting remain separate model work.

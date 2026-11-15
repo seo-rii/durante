@@ -21,6 +21,8 @@ MAX_EVENTS = 4096
 MAX_LINE_BYTES = 3072
 U64_MAX = (1 << 64) - 1
 FIELDS = ('instructions', 'rep_bytes', 'rep_entries', 'unsupported_rep_entries', 'signals_observed')
+REP_BREAKDOWN_FIELDS = ('movs_bytes', 'stos_bytes', 'movs_entries', 'stos_entries')
+REP_BREAKDOWN_RAW_FIELDS = tuple('rep_' + field for field in REP_BREAKDOWN_FIELDS)
 
 
 def measurement_contract():
@@ -72,7 +74,8 @@ def parse_integer(raw):
 
 
 UINT_FIELDS = ('schema', 'client_version', 'pid', 'seq', 'parent_pid', 'child_pid',
-               'syscall', *FIELDS, 'threads_started', 'threads_finished', 'app_exit_code')
+               'syscall', *FIELDS, 'threads_started', 'threads_finished', 'app_exit_code',
+               'rep_breakdown_version', *REP_BREAKDOWN_RAW_FIELDS)
 TEXT_FIELDS = ('authority', 'metric', 'segment', 'event', 'origin', 'parent_segment',
                'sdk_version', 'quality')
 BOOL_FIELDS = ('rep_bytes_enabled', 'supported', 'valid', 'accounting_error',
@@ -91,6 +94,8 @@ def validate_field_types(record):
             require(math.isfinite(value), 'nonfinite JSON')
         if key in UINT_FIELDS:
             uint(value, key)
+            if key == 'rep_breakdown_version':
+                require(value == 1, 'unsupported REP breakdown capability')
         elif key in TEXT_FIELDS:
             require(type(value) is str, 'invalid string field')
         elif key in BOOL_FIELDS:
@@ -175,7 +180,7 @@ def load_records(directory):
         os.close(root)
 
 
-def terminal(record, is_exec, rep_enabled):
+def terminal(record, is_exec, rep_enabled, rep_breakdown_version):
     values = {key: uint(record.get(key), key) for key in FIELDS}
     require(record.get('valid') is True and record.get('accounting_error') is False,
             'invalid terminal accounting')
@@ -193,13 +198,41 @@ def terminal(record, is_exec, rep_enabled):
     code = uint(record.get('app_exit_code'), 'app_exit_code', 255)
     if not is_exec:
         require(record.get('app_exit_seen') is True, 'missing application exit')
-    return {**values, 'threads': started, 'exit_code': None if is_exec else code}
+    result = {**values, 'threads': started, 'exit_code': None if is_exec else code}
+    require(all((field in record) == (rep_breakdown_version is not None)
+                for field in REP_BREAKDOWN_RAW_FIELDS),
+            'REP breakdown capability mismatch')
+    if rep_breakdown_version is not None:
+        breakdown = {'version': rep_breakdown_version,
+                     **{field: uint(record['rep_' + field], 'rep_' + field)
+                        for field in REP_BREAKDOWN_FIELDS}}
+        for kind in ('movs', 'stos'):
+            require(breakdown[kind + '_bytes'] == 0 or breakdown[kind + '_entries'] > 0,
+                    'REP kind bytes without entries')
+        for unit in ('bytes', 'entries'):
+            movs, stos = breakdown['movs_' + unit], breakdown['stos_' + unit]
+            require(movs <= U64_MAX - stos, 'REP breakdown partition overflow')
+            require(movs + stos == values['rep_' + unit], 'REP breakdown partition mismatch')
+        result['rep_breakdown'] = breakdown
+    return result
+
+
+def empty_rep_breakdown():
+    return {'version': 1, **{field: 0 for field in REP_BREAKDOWN_FIELDS}}
+
+
+def add_rep_breakdown(total, values):
+    for field in REP_BREAKDOWN_FIELDS:
+        require(total[field] <= U64_MAX - values[field], 'REP breakdown aggregate overflow')
+        total[field] += values[field]
 
 
 def aggregate(streams, root_pid):
     require(pid(root_pid) and root_pid in streams, 'root PID absent')
     require(0 < len(streams) <= MAX_PROCESSES, 'process count exceeded')
     segments = set(); processes = {}; spawn_edges = {}; rep_mode = None
+    rep_breakdown_version = None; breakdown_mode_set = False
+    total_breakdown = empty_rep_breakdown()
     total = {field: 0 for field in FIELDS}; images = 0; all_segments = []
     for process, records in streams.items():
         require(pid(process) and 0 < len(records) <= MAX_EVENTS, 'invalid process stream')
@@ -221,6 +254,10 @@ def aggregate(streams, root_pid):
                 require(type(mode) is bool and record.get('sdk_version') == '11.3.0', 'start metadata mismatch')
                 if rep_mode is None: rep_mode = mode
                 require(rep_mode == mode, 'mixed REP modes')
+                version = record.get('rep_breakdown_version')
+                if not breakdown_mode_set:
+                    rep_breakdown_version = version; breakdown_mode_set = True
+                require(rep_breakdown_version == version, 'mixed REP breakdown capabilities')
                 origin = record.get('origin'); parent = record.get('parent_pid'); parent_segment = record.get('parent_segment')
                 if state is None:
                     first = record
@@ -231,7 +268,7 @@ def aggregate(streams, root_pid):
                 else:
                     require(pending_exec is not None, 'exec image without checkpoint')
                     require(origin == 'initial' and type(parent) is int and parent == 0 and parent_segment == '', 'invalid exec origin')
-                    summaries.append((state, terminal(pending_exec, True, rep_mode)))
+                    summaries.append((state, terminal(pending_exec, True, rep_mode, rep_breakdown_version)))
                 state = segment; segments.add(segment); sequence = 1; pending_exec = None
                 continue
             require(state is not None and not ended and segment == state, 'event outside live segment')
@@ -253,21 +290,27 @@ def aggregate(streams, root_pid):
                 pending_exec = None
             elif event == 'end':
                 require(pending_exec is None, 'exec outcome missing')
-                summaries.append((state, terminal(record, False, rep_mode)))
+                summaries.append((state, terminal(record, False, rep_mode, rep_breakdown_version)))
                 ended = True
             else:
                 raise Invalid('unsupported or interrupted lifecycle event')
         require(ended and first is not None, 'process has no completed final image')
         process_totals = {field: 0 for field in FIELDS}
+        process_breakdown = empty_rep_breakdown()
         for segment, values in summaries:
             images += 1
             for field in FIELDS:
                 require(total[field] <= U64_MAX - values[field], 'tree counter overflow')
                 total[field] += values[field]; process_totals[field] += values[field]
+            if rep_breakdown_version is not None:
+                add_rep_breakdown(total_breakdown, values['rep_breakdown'])
+                add_rep_breakdown(process_breakdown, values['rep_breakdown'])
             all_segments.append({'pid': process, 'segment': segment, **values})
         processes[process] = {'pid': process, 'parent_pid': first['parent_pid'],
             'parent_segment': first['parent_segment'], 'images': len(summaries),
             'exit_code': summaries[-1][1]['exit_code'], **process_totals}
+        if rep_breakdown_version is not None:
+            processes[process]['rep_breakdown'] = process_breakdown
     require(set(spawn_edges) == set(processes) - {root_pid}, 'missing or unannounced child process')
     for child, (parent, parent_segment) in spawn_edges.items():
         require(parent in processes and processes[child]['parent_pid'] == parent and
@@ -277,7 +320,7 @@ def aggregate(streams, root_pid):
     for _ in processes:
         visited |= {child for child, (parent, _) in spawn_edges.items() if parent in visited}
     require(visited == set(processes), 'disconnected process graph')
-    return {'schema': 1, 'authority': 'diagnostic_only', 'metric': 'bb_entry_app_instructions',
+    result = {'schema': 1, 'authority': 'diagnostic_only', 'metric': 'bb_entry_app_instructions',
             'integrity_verified': False, 'measurement_contract': measurement_contract(),
             'scope': 'process_tree_user_code', 'valid': True, 'complete': True,
             'root_pid': root_pid, 'process_count': len(processes), 'image_count': images,
@@ -287,6 +330,9 @@ def aggregate(streams, root_pid):
             **total, 'processes': [processes[p] for p in sorted(processes)], 'segments': all_segments,
             'limits': {'max_processes': MAX_PROCESSES, 'max_file_bytes': MAX_FILE_BYTES,
                        'max_total_bytes': MAX_TOTAL_BYTES, 'max_events_per_process': MAX_EVENTS}}
+    if rep_breakdown_version is not None:
+        result['rep_breakdown'] = total_breakdown
+    return result
 
 
 def collect(directory, root_pid):

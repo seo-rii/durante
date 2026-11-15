@@ -67,8 +67,19 @@ def accounting_errors(measurement, expected, fixture, rep):
               "rep_bytes": oracle["rep_bytes"] if rep else 0,
               "rep_entries": oracle["rep_entries"] if rep else 0,
               "unsupported_rep_entries": 0, "signals_observed": 0}
-    return [f"unexpected {key}: expected {value}" for key, value in fields.items()
-            if type(measurement.get(key)) is not type(value) or measurement[key] != value]
+    errors = [f"unexpected {key}: expected {value}" for key, value in fields.items()
+              if type(measurement.get(key)) is not type(value) or measurement[key] != value]
+    # Initial generated-code installation uses MOVS. Only the rep-stos case
+    # adds a 10-byte STOS request; retries must preserve that split exactly.
+    stos_bytes, stos_entries = (10, 1) if rep and fixture == "rep-stos" else (0, 0)
+    breakdown = {"version": 1, "movs_bytes": fields["rep_bytes"] - stos_bytes,
+                 "stos_bytes": stos_bytes, "movs_entries": fields["rep_entries"] - stos_entries,
+                 "stos_entries": stos_entries}
+    actual = measurement.get("rep_breakdown")
+    if (not isinstance(actual, dict) or actual.keys() != breakdown.keys()
+            or any(type(actual[key]) is not int or actual[key] != value for key, value in breakdown.items())):
+        errors.append("incorrect REP breakdown across code replay")
+    return errors
 
 
 def execution_errors(row):
