@@ -35,7 +35,8 @@ CPYTHON_STARTUP_CONTROLS = {
                 "import threading\nprint('imports:ok')\n", "imports:ok\n"),
 }
 CPYTHON_HASH_WORKLOADS = ("allocation-gc", *CPYTHON_STARTUP_CONTROLS)
-CPYTHON_PROBE = """import gc, json, os, pathlib, subprocess, sys, threading
+ADDR_NO_RANDOMIZE = 0x40000
+CPYTHON_PROBE_LEGACY = """import gc, json, os, pathlib, subprocess, sys, threading
 paths = sorted({str(pathlib.Path(value).resolve())
                 for module in list(sys.modules.values())
                 for attribute in ("__file__", "__cached__")
@@ -49,6 +50,12 @@ print(json.dumps({"executable": str(pathlib.Path(sys.executable).resolve()),
                   "hash_algorithm": sys.hash_info.algorithm,
                   "stdlib_paths": paths}, sort_keys=True))
 """
+CPYTHON_PROBE = CPYTHON_PROBE_LEGACY.replace(
+    'print(json.dumps({',
+    'personality = int(pathlib.Path("/proc/self/personality").read_text().strip(), 16)\n'
+    'print(json.dumps({"process_personality": {"value": personality, '
+    '"addr_no_randomize": bool(personality & 0x40000)}, ', 1)
+CPYTHON_PROBES = {1: CPYTHON_PROBE_LEGACY, 2: CPYTHON_PROBE}
 MAX_JSON = 32 * 1024 * 1024
 LIMITATIONS = [
     "fresh processes including startup; no persistent-runtime warmup or steady-state claim",
@@ -59,6 +66,7 @@ LIMITATIONS = [
     "run-profile observations do not qualify isolate; existing isolate evidence remains a separate prerequisite",
     "explicit CPython hash controls change startup flags and do not qualify the default isolated profile",
     "CPython startup/import controls include loader, output and shutdown work; they are not region counts or counter correctness proofs",
+    "recorded ADDR_NO_RANDOMIZE is inherited process state, not proof that all runtime allocation addresses are deterministic; legacy state is unknown",
 ]
 
 
@@ -216,13 +224,24 @@ def profile_environment(profile):
 def probe_errors(collection, profile, files):
     name = hash_profile(profile)
     if name == "isolated":
-        if collection.get("cpython_probe") is not None or profile.get("cpython_effective") is not None:
+        if (collection.get("cpython_probe") is not None or profile.get("cpython_effective") is not None
+                or profile.get("cpython_probe_version") is not None):
             return ["isolated profile contains an unsolicited hash-control probe"]
         return []
     probe = collection.get("cpython_probe") or {}
     effective = profile.get("cpython_effective")
     try:
         observed = json.loads(probe.get("stdout", ""))
+        version = profile.get("cpython_probe_version", 1)
+        if type(version) is not int or version not in CPYTHON_PROBES:
+            raise ValueError("unknown CPython startup probe version")
+        if version == 2:
+            personality = observed.get("process_personality")
+            if (not valid_personality(personality)
+                    or not workloads.same_json(personality, profile.get("host", {}).get("process_personality"))):
+                raise ValueError("native CPython and harness process personality differ or are unavailable")
+        elif "process_personality" in observed or "process_personality" in profile.get("host", {}):
+            raise ValueError("legacy CPython probe cannot establish process personality")
         expected_flags = {"isolated": 0, "ignore_environment": 0, "safe_path": True,
                           "no_user_site": 1, "no_site": 1, "hash_randomization": 1}
         seed = CPYTHON_HASH_PROFILES[name]
@@ -230,7 +249,7 @@ def probe_errors(collection, profile, files):
                 or type(probe.get("exit_code")) is not int or probe["exit_code"] != 0
                 or probe.get("timeout") is not False or probe.get("stderr") != "" or probe.get("errors")
                 or probe.get("python_hash_seed") != seed
-                or probe.get("command") != [profile["runtime_executable"], *CPYTHON_CONTROL_FLAGS, "-c", CPYTHON_PROBE]
+                or probe.get("command") != [profile["runtime_executable"], *CPYTHON_CONTROL_FLAGS, "-c", CPYTHON_PROBES[version]]
                 or not workloads.same_json(observed, effective)
                 or not workloads.same_json(observed.get("flags"), expected_flags)
                 or observed.get("python_environment") != {"PYTHONHASHSEED": seed}
@@ -256,6 +275,7 @@ def collect_cpython_probe(args, collection, provenance):
     profile = collection["profile"]
     if hash_profile(profile) == "isolated":
         return
+    profile["cpython_probe_version"] = 2
     directory = args.output_dir / "cpython-startup-probe"
     directory.mkdir(mode=0o700)
     command = [profile["runtime_executable"], *CPYTHON_CONTROL_FLAGS, "-c", CPYTHON_PROBE]
@@ -310,6 +330,8 @@ def profile_errors(profile):
             or not isinstance(cpus, list) or len(cpus) != 1
             or cpus[0].get("processor") != str(affinity[0]) or not cpus[0].get("flags")):
         errors.append("fixed single-CPU ISA profile is unavailable")
+    if "process_personality" in host and not valid_personality(host["process_personality"]):
+        errors.append("recorded process personality is invalid or inconsistent")
     return errors
 
 
@@ -439,6 +461,13 @@ def fixed_environment(environment=None):
         os.environ.update(previous)
 
 
+def valid_personality(value):
+    return (isinstance(value, dict) and value.keys() == {"value", "addr_no_randomize"}
+            and type(value.get("value")) is int and 0 <= value["value"] <= (1 << 32) - 1
+            and type(value.get("addr_no_randomize")) is bool
+            and value["addr_no_randomize"] == bool(value["value"] & ADDR_NO_RANDOMIZE))
+
+
 def host_profile(cpus):
     if sys.platform != "linux" or platform.machine() != "x86_64":
         raise ValueError("repeatability collection requires Linux x86-64")
@@ -450,8 +479,13 @@ def host_profile(cpus):
             selected.append({key: fields.get(key) for key in ("processor", "vendor_id", "cpu family", "model", "model name", "stepping", "microcode", "flags")})
     if len(selected) != len(cpus) or any(not row["flags"] for row in selected):
         raise ValueError("selected CPU ISA profile is unavailable")
+    personality = bounded_bytes(Path("/proc/self/personality"), 32).decode("ascii").strip()
+    if not re.fullmatch(r"[0-9a-fA-F]{8}", personality):
+        raise ValueError("process personality is unavailable")
+    value = int(personality, 16)
     return {"system": platform.system(), "machine": platform.machine(), "kernel": platform.release(),
-            "affinity": sorted(os.sched_getaffinity(0)), "cpus": selected}
+            "affinity": sorted(os.sched_getaffinity(0)), "cpus": selected,
+            "process_personality": {"value": value, "addr_no_randomize": bool(value & ADDR_NO_RANDOMIZE)}}
 
 
 def input_paths(args, executable):

@@ -89,7 +89,7 @@ def controlled_collection_fixture(name):
         "python_environment": {"PYTHONHASHSEED": seed}, "hash_sentinel": -123456789,
         "hash_algorithm": "synthetic-hash", "stdlib_paths": ["/runtime/pathlib.py"]}
     profile["cpython_effective"] = effective
-    collection["cpython_probe"] = {"command": ["/runtime/python3", *repeatability.CPYTHON_CONTROL_FLAGS, "-c", repeatability.CPYTHON_PROBE],
+    collection["cpython_probe"] = {"command": ["/runtime/python3", *repeatability.CPYTHON_CONTROL_FLAGS, "-c", repeatability.CPYTHON_PROBE_LEGACY],
         "stdout": json.dumps(effective), "stderr": "", "exit_code": 0, "errors": [],
         "timeout": False, "infrastructure_ok": True, "cleanup_complete": True, "python_hash_seed": seed}
     files = collection["input_provenance"]["files"]
@@ -116,6 +116,20 @@ def startup_collection_fixture():
     collection["rows"] = [{**item, **observation(by_name[item["workload"]], item["mode"], profile, Path("/unit") / str(index)),
                            "python_hash_seed": "1"}
                           for index, item in enumerate(collection["plan"])]
+    collection["profile_sha256"] = repeatability.digest(profile)
+    return collection
+
+
+def personality_collection_fixture(value):
+    collection = startup_collection_fixture()
+    profile = collection["profile"]
+    personality = {"value": value, "addr_no_randomize": bool(value & repeatability.ADDR_NO_RANDOMIZE)}
+    for item in (profile["host"], collection["host_before"], collection["host_after"]):
+        item["process_personality"] = copy.deepcopy(personality)
+    profile["cpython_probe_version"] = 2
+    profile["cpython_effective"]["process_personality"] = copy.deepcopy(personality)
+    collection["cpython_probe"]["command"][-1] = repeatability.CPYTHON_PROBE
+    collection["cpython_probe"]["stdout"] = json.dumps(profile["cpython_effective"])
     collection["profile_sha256"] = repeatability.digest(profile)
     return collection
 
@@ -321,6 +335,48 @@ class RepeatabilityTests(unittest.TestCase):
                 with self.subTest(runtime=runtime, workload=workload), self.assertRaisesRegex(ValueError, "require cpython"):
                     repeatability.collect(SimpleNamespace(runtime=runtime, workload=[workload], cpython_hash_profile="isolated"))
 
+    def test_versioned_personality_matches_native_probe_and_preserves_unknown_legacy(self):
+        legacy = controlled_collection_fixture("seed-1")
+        self.assertNotIn("process_personality", legacy["profile"]["host"])
+        self.assertTrue(repeatability.evaluate(legacy)["qualification_passed"])
+        for value in (0, repeatability.ADDR_NO_RANDOMIZE):
+            current = personality_collection_fixture(value)
+            before = copy.deepcopy(current)
+            self.assertTrue(repeatability.evaluate(current)["qualification_passed"])
+            self.assertEqual(current, before)
+        for change in ("missing native flag", "missing host flag", "wrong bit", "native mismatch", "changed after", "unknown version", "boolean version", "legacy command"):
+            with self.subTest(change=change):
+                current = personality_collection_fixture(repeatability.ADDR_NO_RANDOMIZE)
+                profile = current["profile"]
+                if change == "missing native flag":
+                    profile["cpython_effective"].pop("process_personality")
+                elif change == "missing host flag":
+                    profile["host"].pop("process_personality")
+                elif change == "wrong bit":
+                    profile["cpython_effective"]["process_personality"]["addr_no_randomize"] = False
+                elif change == "native mismatch":
+                    profile["cpython_effective"]["process_personality"] = {"value": 0, "addr_no_randomize": False}
+                elif change == "changed after":
+                    current["host_after"]["process_personality"] = {"value": 0, "addr_no_randomize": False}
+                elif change == "unknown version":
+                    profile["cpython_probe_version"] = 3
+                elif change == "boolean version":
+                    profile["cpython_probe_version"] = True
+                else:
+                    current["cpython_probe"]["command"][-1] = repeatability.CPYTHON_PROBE_LEGACY
+                current["cpython_probe"]["stdout"] = json.dumps(profile["cpython_effective"])
+                current["profile_sha256"] = repeatability.digest(profile)
+                self.assertFalse(repeatability.evaluate(current)["collection_passed"])
+
+    def test_personality_value_and_flag_must_be_explicit_consistent_types(self):
+        for value in (0, repeatability.ADDR_NO_RANDOMIZE, (1 << 32) - 1):
+            self.assertTrue(repeatability.valid_personality({"value": value, "addr_no_randomize": bool(value & repeatability.ADDR_NO_RANDOMIZE)}))
+        for personality in (None, {}, {"value": 0}, {"value": True, "addr_no_randomize": False},
+                            {"value": 0.0, "addr_no_randomize": False}, {"value": -1, "addr_no_randomize": True},
+                            {"value": 1 << 32, "addr_no_randomize": False}, {"value": 0, "addr_no_randomize": 0},
+                            {"value": 0, "addr_no_randomize": True}, {"value": 0, "addr_no_randomize": False, "other": 1}):
+            self.assertFalse(repeatability.valid_personality(personality))
+
     def test_native_startup_and_import_controls_have_exact_outputs_and_one_process(self):
         prlimit = repeatability.executable_path("prlimit")
         if not prlimit:
@@ -386,6 +442,9 @@ class RepeatabilityTests(unittest.TestCase):
                 self.assertEqual(observed["flags"]["ignore_environment"], 0)
                 self.assertEqual(observed["python_environment"], {"PYTHONHASHSEED": "1"})
                 self.assertTrue(observed["stdlib_paths"])
+                personality = observed["process_personality"]
+                self.assertTrue(repeatability.valid_personality(personality))
+                self.assertEqual(personality["value"], int(Path("/proc/self/personality").read_text(), 16))
             self.assertEqual(observations[1]["hash_sentinel"], observations[2]["hash_sentinel"])
 
     def test_parser_rejects_duplicate_json_and_preserves_integer_precision(self):

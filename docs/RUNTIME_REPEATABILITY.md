@@ -28,6 +28,11 @@ first allowed CPU; select another with `--cpu`. It records affinity, the CPU's
 model/microcode/ISA flags and kernel before and after. This fixes CPU placement,
 not competing host load, scheduling, ASLR, runtime hash seeds or GC/JIT decisions.
 Run campaigns sequentially on an otherwise quiet host when comparing evidence.
+New collections also record the harness's Linux process-personality value and
+its `ADDR_NO_RANDOMIZE` bit. Controlled CPython startup probes record that same
+state after native exec and must agree with the harness. The probe has an
+explicit version; old collections retain their original probe and unknown
+personality state rather than being labeled ASLR enabled or disabled retroactively.
 
 The child environment is fixed to `PATH=/bin:/usr/bin` on Linux, `LANG=C`,
 `LC_ALL=C`, `TZ=UTC`, and `MALLOC_ARENA_MAX=2`; inherited runtime option variables
@@ -115,10 +120,39 @@ python3 tests/runtime_repeatability.py collect \
   --output-dir .results/repeatability-cpython-startup
 ```
 
-The [isolate workload evidence](ISOLATED_RUNTIMES.md) uses these same functional
-fixtures with a different execution boundary and resource profile. A repeatability
-pass here applies only to `run`. It neither imports an isolate pass as a repeated
-sample nor qualifies a new isolate profile.
+The [isolate workload evidence](ISOLATED_RUNTIMES.md) uses the ordinary functional
+workload fixtures with a different execution boundary and resource profile.
+It does not cover the opt-in startup/import controls. A repeatability pass here
+applies only to `run`. It neither imports an isolate pass as a repeated sample
+nor qualifies a new isolate profile.
+
+## Per-process address-layout comparison
+
+On a host that permits the existing `setarch x86_64 -R` command, an operator can
+start the entire collection under that wrapper. This sets the inherited
+`ADDR_NO_RANDOMIZE` process flag; it does not change the host's ASLR configuration.
+Record the full wrapper command and hash the wrapper binary as a named input:
+
+```sh
+setarch x86_64 -R python3 tests/runtime_repeatability.py collect \
+  --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so \
+  --runner-bin target/release/durante --runtime cpython \
+  --workload startup --workload imports --cpython-hash-profile seed-1 \
+  --runtime-file /usr/bin/setarch \
+  --repeats 3 --max-spread-ppm 0 --timeout-ms 30000 --campaign-seconds 300 \
+  --output-dir .results/repeatability-cpython-address-control
+```
+
+The harness and separate native CPython preflight must report the same numeric
+personality and flag. These observations describe inherited process state, not
+the addresses of every instrumented process or deterministic allocator behavior.
+No global setting or permanent runtime option is changed. If the host denies
+the wrapper, retain that failure; do not silently run with ordinary layout.
+Predeclare a fresh bounded comparison and keep the original observations. A
+reduction in spread would support layout as a contributing input; neither a
+reduction nor an exact finite sample establishes language-wide repeatability or
+rules out counter defects. Earlier observations that did not record personality
+remain unknown, even when a later control explicitly records this flag.
 
 ## Collect and evaluate
 
@@ -296,6 +330,42 @@ code and were not the measured workload, so they neither establish GC as the
 cause nor rule out address-dependent runtime work. The original isolated and
 both hash-control collections retain the same evaluation decisions and numeric
 results, with only the additional explanatory limitation for these new controls.
+
+## Bounded address-layout observation
+
+The next declared plan started the same 24 startup/import observations under
+`/usr/bin/setarch x86_64 -R`, keeping the selected CPU, hash seed, modes, measured
+programs, binaries, repeat count and **0 ppm** threshold. The full wrapper command
+and its binary identity were retained, with the binary also included in the
+collection's before/after inputs. The new versioned native probe and harness
+both reported personality `262144` with `ADDR_NO_RANDOMIZE=true`; that control
+was explicitly checked before interpreting the result. No host setting changed.
+
+All 24 observations again passed output, accounting and cleanup. Source, named
+inputs, wrapper and CPU profile remained unchanged. Collection took 23.737
+seconds. Instruction ranges were smaller in this finite comparison:
+
+| Control | Metered mode | Minimum instructions | Exact median | Maximum instructions | Range |
+| --- | --- | ---: | ---: | ---: | ---: |
+| `startup` | Client, REP disabled | 19,657,227 | 19,657,227 | 19,657,251 | 24 |
+| `startup` | Supervisor, REP enabled | 19,657,227 | 19,657,227 | 19,657,227 | 0 |
+| `imports` | Client, REP disabled | 75,434,010 | 75,434,010 | 75,434,094 | 84 |
+| `imports` | Supervisor, REP enabled | 75,434,010 | 75,434,028 | 75,434,041 | 31 |
+
+Every other counter had zero range per group. The overall repeatability result
+still failed and returned 1 because three instruction groups exceeded 0 ppm;
+the one exact group does not qualify the whole plan. All observations remain
+present without retry or threshold change, and offline evaluation reproduces
+the result exactly.
+
+The earlier startup/import collection did not record personality and retains
+that unknown state; it was not relabeled or rerun. The new metadata/probe differs
+from that historical collection, and these small sequential samples do not
+isolate every changing runtime input. The observed reduction supports further
+layout-controlled investigation, but neither establishes a causal share for
+ASLR nor resolves the remaining variation, proves counter correctness or
+qualifies the original allocation workload. Matching harness/native flags also
+does not prove fixed addresses inside every instrumented execution.
 
 ## Tests
 
