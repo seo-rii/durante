@@ -41,6 +41,18 @@ enum Command {
         #[arg(long, value_parser = parse_pid)]
         root_pid: u32,
     },
+    /// Collect guest callbacks after reaping QEMU and checking external policy.
+    CollectQemu {
+        /// Closed completion record from the QEMU guest-work plugin.
+        #[arg(long)]
+        input: PathBuf,
+        /// Emulator PID observed by the supervisor.
+        #[arg(long, value_parser = parse_pid)]
+        root_pid: u32,
+        /// Normal process exit code observed by the supervisor (0 through 255).
+        #[arg(long)]
+        exit_code: u8,
+    },
     /// Run the native counter, reap the process tree, and write a diagnostic report.
     Run {
         /// Trusted DynamoRIO launcher executable.
@@ -126,6 +138,22 @@ fn parse_output_limit(value: &str) -> Result<u64, String> {
         .ok_or_else(|| "output limit must be between 1 and 67108864 bytes".to_owned())
 }
 
+fn print_collection(result: serde_json::Value) -> Result<i32, String> {
+    let stdout = io::stdout();
+    let mut output = stdout.lock();
+    match serde_json::to_writer(&mut output, &result)
+        .map_err(io::Error::other)
+        .and_then(|()| writeln!(output))
+    {
+        Ok(()) => Ok(if result["valid"] == true && result["complete"] == true {
+            0
+        } else {
+            1
+        }),
+        Err(_) => Err("cannot write collection result".to_owned()),
+    }
+}
+
 fn main() {
     let cli = match Cli::try_parse() {
         Ok(cli) => cli,
@@ -178,21 +206,13 @@ fn main() {
             }
         }
         Command::Collect { dir, root_pid } => {
-            let result = durante::collect::collect(&dir, root_pid);
-            let stdout = io::stdout();
-            let mut output = stdout.lock();
-            match serde_json::to_writer(&mut output, &result)
-                .map_err(io::Error::other)
-                .and_then(|()| writeln!(output))
-            {
-                Ok(()) => Ok(if result["valid"] == true && result["complete"] == true {
-                    0
-                } else {
-                    1
-                }),
-                Err(_) => Err("cannot write collection result".to_owned()),
-            }
+            print_collection(durante::collect::collect(&dir, root_pid))
         }
+        Command::CollectQemu {
+            input,
+            root_pid,
+            exit_code,
+        } => print_collection(durante::qemu::collect(&input, root_pid, exit_code)),
         Command::Run {
             drrun,
             client,

@@ -7,9 +7,16 @@ posix_spawn paths and exec image changes, then sums complete process/image recor
 without charging inherited parent counters again.
 
 This is **diagnostic measurement**, not CPU milliseconds, exact hardware-retired
-instructions, a memory limit, or a trusted security boundary. Its counters share
-the measured program's address space. A caller must retain its own sandbox,
+instructions, a memory limit, or a trusted security boundary. The native counters
+share the measured program's address space. A caller must retain its own sandbox,
 resource limits, output validation and complete-tree cleanup.
+
+The optional [QEMU guest counter](docs/QEMU.md) measures guest instruction
+callbacks inside the same emulator that enforces aonohako's SIMD/AVX policy.
+It provides a separate `qemu_tcg` result contract and `collect-qemu` command;
+its counts are not interchangeable with DynamoRIO basic-block counts. The
+aonohako API still needs a follow-up integration before it can accept CPU
+restrictions together with work measurement.
 
 The optional isolation profile supports bounded stdout/stderr capture with
 `--output-dir NEW_DIR --output-limit-bytes N`. Exceeding the combined quota stops
@@ -19,7 +26,7 @@ states and the remaining external resource-owner requirements.
 
 See [SECURITY.md](SECURITY.md) for confirmed tampering limits, supervisor
 hardening, containment requirements and reproducible sanitizer fuzzing. A
-structurally valid result is still application-mutable and must not authorize
+structurally valid native result is still application-mutable and must not authorize
 trusted time, billing or security decisions.
 
 All collector and supervisor results carry a versioned `measurement_contract`
