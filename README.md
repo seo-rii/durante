@@ -274,6 +274,11 @@ still inside shared-VM creation remains unqualified; incomplete trees must not
 produce partial totals. Use the default SDK preparation above for this fix;
 `--upstream-only` is for fresh, unpatched diagnostic comparisons.
 
+[Vfork synchronization regression](docs/VFORK_SYNC.md) additionally holds a child
+behind a gate while another thread requests a cache reset. It checks another
+worker's continued progress, successful/failed exec, and a rejected clone followed
+by successful creation, using release/debug runtimes and the actual supervisor.
+
 ```sh
 python3 tests/concurrent_spawn.py \
   --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so \

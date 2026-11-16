@@ -923,3 +923,262 @@ index efc1bbb1cd..ad839efb02 100644
 +        sigprocmask_syscall(SIG_BLOCK, &mask, NULL, sizeof(mask));
      }
      ostd->suspended_sigcxt = NULL;
+
+--- a/core/globals.h
++++ b/core/globals.h
+@@ -850,6 +850,18 @@
+     reg_t sys_param4; /* used for post_system_call i#173 and i#2759 */
+     bool sys_was_int; /* was the last system call via do_int_syscall? */
+     bool sys_xbp;     /* PR 313715: store orig xbp */
++#    ifdef LINUX
++    /* Protected by thread_initexit_lock.  Published before a shared-VM vfork
++     * syscall and cleared only when that parent returns from the kernel.
++     * A parent waiting for its child cannot acknowledge a suspend signal.
++     */
++    bool vfork_in_progress;
++    /* Parent-side handle to the stack reserved for an app clone.  On success
++     * the child owns it and may already have freed it before the parent runs;
++     * only a failed kernel clone permits dereferencing this handle.
++     */
++    void *pending_clone_record;
++#    endif
+ #    ifdef DEBUG
+     bool mprot_multi_areas; /* PR 410921: mprotect of 2 or more vmareas? */
+ #    endif
+--- a/core/synch.c
++++ b/core/synch.c
+@@ -1416,6 +1416,21 @@
+                     threads[i]->dcontext->client_data->left_unsuspended = true;
+                     continue;
+                 }
++#ifdef LINUX
++                /* A CLONE_VFORK parent cannot handle our suspend signal until
++                 * its child leaves the shared address space.  That child may
++                 * need thread_initexit_lock or already be suspended by us.
++                 * Publication uses this same lock, so a parent cannot enter
++                 * vfork after a negative check while we retain the lock.
++                 * Only callers that permit abort use this path: mandatory
++                 * RETRY/IGNORE synchronization retains its existing behavior.
++                 */
++                if (TEST(THREAD_SYNCH_SUSPEND_FAILURE_ABORT, flags) &&
++                    threads[i]->dcontext->vfork_in_progress) {
++                    all_synched = false;
++                    goto synch_with_all_abort;
++                }
++#endif
+                 /* speed things up a tad */
+                 if (synch_array[i] != SYNCH_WITH_ALL_NOTIFIED) {
+                     ASSERT(synch_array[i] == SYNCH_WITH_ALL_NEW);
+@@ -1546,7 +1561,15 @@
+     *threads_out = threads;
+     *num_threads_out = num_threads;
+     dynamo_all_threads_synched = all_synched;
+-    ASSERT(exiting_thread_count - expect_self_exiting == 0);
++    if (!all_synched && TEST(THREAD_SYNCH_SUSPEND_FAILURE_ABORT, flags)) {
++        /* Keep thread records alive through the metadata updates above even
++         * after abort has resumed their threads.  A failed synchronization
++         * need not have waited for all exiting threads.
++         */
++        d_r_mutex_unlock(&thread_initexit_lock);
++        d_r_mutex_unlock(&all_threads_synch_lock);
++    } else
++        ASSERT(exiting_thread_count - expect_self_exiting == 0);
+     /* FIXME case 9392: where on all_synch failure we do not release the locks in the
+      * non-abort exit path */
+     return all_synched;
+@@ -1568,8 +1591,8 @@
+                     os_thread_resume(threads[i]);
+                     ASSERT(ok);
+                 }
+-                /* ensure synch_with_success is set to false on exit path,
+-                 * even though locks are released and not fully valid
++                /* The common exit marks resumed records unsuccessful while
++                 * thread_initexit_lock still protects their contexts.
+                  */
+                 synch_array[i] = SYNCH_WITH_ALL_NEW;
+             } else if (synch_array[i] == SYNCH_WITH_ALL_NOTIFIED) {
+@@ -1577,9 +1600,6 @@
+             }
+         }
+     }
+-    d_r_mutex_unlock(&thread_initexit_lock);
+-    d_r_mutex_unlock(&all_threads_synch_lock);
+-    ASSERT(exiting_thread_count - expect_self_exiting == 0);
+     ASSERT(!all_synched); /* ensure our OUT values will be NULL,0
+                              for THREAD_SYNCH_SUSPEND_FAILURE_ABORT */
+     goto synch_with_all_exit;
+--- a/core/unix/os.c
++++ b/core/unix/os.c
+@@ -2879,6 +2879,41 @@
+     ATOMIC_INC(int, uninit_thread_count);
+ }
+
++#ifdef LINUX
++/* Called only in the parent, after DR and private-library TLS are restored.
++ * A successful child owns its stack and may already have exited: do not
++ * dereference the saved record in that case.
++ */
++static void
++os_new_thread_post(dcontext_t *dcontext, bool success)
++{
++    void *record = dcontext->pending_clone_record;
++    ASSERT(record != NULL);
++    dcontext->pending_clone_record = NULL;
++    if (!success) {
++        d_r_mutex_lock(&thread_initexit_lock);
++        destroy_failed_clone_record(dcontext, record);
++        ASSERT(uninit_thread_count > 0);
++        ATOMIC_DEC(int, uninit_thread_count);
++        d_r_mutex_unlock(&thread_initexit_lock);
++    }
++}
++
++/* Serialize publication with abortable synch-all's suspend decision.  This must
++ * run with DR TLS, before os_clone_pre() on entry and after its restoration on
++ * return.  Child initialization does not end the parent's kernel vfork wait.
++ */
++static void
++set_vfork_in_progress(dcontext_t *dcontext, bool in_progress)
++{
++    ASSERT(!is_couldbelinking(dcontext));
++    d_r_mutex_lock(&thread_initexit_lock);
++    ASSERT(dcontext->vfork_in_progress != in_progress);
++    dcontext->vfork_in_progress = in_progress;
++    d_r_mutex_unlock(&thread_initexit_lock);
++}
++#endif
++
+ /* This is called from pre_system_call() and before cloning a client thread in
+  * dr_create_client_thread. Hence os_clone_pre is used for app threads as well
+  * as client threads. Do not add anything that we do not want to happen while
+@@ -7039,6 +7074,7 @@
+      * Note: This must be done after sys_param0 is set.
+      */
+     if (is_thread_create_syscall(dcontext, dr_clone_args)) {
++        ASSERT(dcontext->pending_clone_record == NULL);
+         if (dcontext->sys_num == SYS_clone3) {
+             /* create_clone_record modifies some fields in clone_args for the
+              * clone3 syscall. Instead of reusing the app's copy of
+@@ -7061,7 +7097,8 @@
+             *sys_param_addr(dcontext, SYSCALL_PARAM_CLONE3_CLONE_ARGS) =
+                 (reg_t)dr_clone_args;
+             /* The pointer to the app's clone_args was saved in sys_param0 above. */
+-            create_clone_record(dcontext, NULL, dr_clone_args, app_clone_args);
++            dcontext->pending_clone_record =
++                create_clone_record(dcontext, NULL, dr_clone_args, app_clone_args);
+         } else {
+             /* We replace the app-provided stack pointer with our own stack
+              * pointer in create_clone_record. Save the original pointer so
+@@ -7069,10 +7106,12 @@
+              * restored in the child in restore_clone_param_from_clone_record.
+              */
+             dcontext->sys_param1 = sys_param(dcontext, SYSCALL_PARAM_CLONE_STACK);
+-            create_clone_record(dcontext,
+-                                sys_param_addr(dcontext, SYSCALL_PARAM_CLONE_STACK), NULL,
+-                                NULL);
+-        }
++            dcontext->pending_clone_record = create_clone_record(
++                dcontext, sys_param_addr(dcontext, SYSCALL_PARAM_CLONE_STACK), NULL,
++                NULL);
++        }
++        if (TEST(CLONE_VFORK, flags))
++            set_vfork_in_progress(dcontext, true);
+         os_clone_pre(dcontext);
+         os_new_thread_pre();
+     } else {
+@@ -7502,9 +7541,11 @@
+ #    ifdef MACOS
+         create_clone_record(dcontext, (reg_t *)&mc->xsp, NULL, NULL);
+ #    else
+-        create_clone_record(dcontext, (reg_t *)&mc->xsp /*child uses parent sp*/, NULL,
+-                            NULL);
++        ASSERT(dcontext->pending_clone_record == NULL);
++        dcontext->pending_clone_record = create_clone_record(
++            dcontext, (reg_t *)&mc->xsp /*child uses parent sp*/, NULL, NULL);
+ #    endif
++        IF_LINUX(set_vfork_in_progress(dcontext, true));
+         os_clone_pre(dcontext);
+         os_new_thread_pre();
+         break;
+@@ -9109,13 +9150,14 @@
+          */
+         if (was_thread_create_syscall(dcontext)) {
+             /* Read clone3 flags before freeing DR's saved clone_args. */
+-            bool completed_vfork = success && result > 0 &&
+-                TEST(CLONE_VFORK, sysnum == SYS_clone3
+-                         ? get_stored_clone3_flags(dcontext)
+-                         : dcontext->sys_param0);
++            bool was_vfork = TEST(CLONE_VFORK, sysnum == SYS_clone3
++                                     ? get_stored_clone3_flags(dcontext)
++                                     : dcontext->sys_param0);
++            bool completed_vfork = success && result > 0 && was_vfork;
+             if (INTERNAL_OPTION(private_loader))
+                 os_switch_lib_tls(dcontext, false /*to dr*/);
+             /* i#2089: we already restored the DR tls in os_clone_post() */
++            os_new_thread_post(dcontext, success);
+
+             if (sysnum == SYS_clone3) {
+                 /* Free DR's copy of clone_args and restore the pointer to the
+@@ -9144,6 +9186,9 @@
+             }
+             if (completed_vfork)
+                 cleanup_after_vfork_execve(dcontext, (thread_id_t)result);
++            /* A failed clone also releases the pre-syscall publication. */
++            if (was_vfork)
++                set_vfork_in_progress(dcontext, false);
+         }
+         break;
+     }
+@@ -9186,8 +9231,10 @@
+             }
+             /* i#2089: we already restored the DR tls in os_clone_post() */
+         }
++        IF_LINUX(os_new_thread_post(dcontext, success));
+         if (success && result > 0)
+             cleanup_after_vfork_execve(dcontext, (thread_id_t)result);
++        IF_LINUX(set_vfork_in_progress(dcontext, false));
+         break;
+     }
+ #endif
+--- a/core/unix/signal.c
++++ b/core/unix/signal.c
+@@ -982,6 +982,27 @@
+ }
+
+ #ifdef LINUX
++void
++destroy_failed_clone_record(dcontext_t *dcontext, void *clone_record)
++{
++    clone_record_t *record = (clone_record_t *)clone_record;
++    thread_sig_info_t *info = (thread_sig_info_t *)dcontext->signal_field;
++    ASSERT_OWN_MUTEX(true, &thread_initexit_lock);
++    ASSERT(record->parent_info == info && record->caller_id == dcontext->owning_thread);
++    if (!TEST(CLONE_SIGHAND, record->clone_flags)) {
++        /* Undo only this unstarted child's reservation from handle_clone().
++         * Shared-handler and itimer references are acquired by the child,
++         * so a failed clone has no child reference to release.
++         */
++        d_r_mutex_lock(&info->child_lock);
++        ASSERT(info->num_unstarted_children > 0);
++        info->num_unstarted_children--;
++        d_r_mutex_unlock(&info->child_lock);
++    }
++    /* The record itself is embedded in this never-used child stack. */
++    stack_free(record->dstack, DYNAMORIO_STACK_SIZE);
++}
++
+ /* clone3 can clear our handlers before the child has any TLS or signal state.
+  * Restore only the fault handlers needed by safe_read during TLS initialization.
+  * The remaining handlers are restored after signal_thread_inherit is complete.
+--- a/core/unix/os_exports.h
++++ b/core/unix/os_exports.h
+@@ -542,6 +542,9 @@
+ get_clone_record(reg_t xsp);
+
+ #ifdef LINUX
++/* No child was created; caller holds thread_initexit_lock. */
++void
++destroy_failed_clone_record(dcontext_t *dcontext, void *clone_record);
+ void
+ signal_prepare_clone_child(void *clone_record);
+ void
