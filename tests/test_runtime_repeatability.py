@@ -21,11 +21,12 @@ def host():
             "affinity": [2], "cpus": [{"processor": "2", "flags": "sse sse2"}]}
 
 
-def required_inputs():
+def required_inputs(runtime="cpython"):
+    fixture = "workload.py" if runtime == "cpython" else "workload.js"
     return repeatability.REQUIRED_INPUTS | {
         "source:tests/runtime_repeatability.py", "source:tests/runtime_workloads.py",
         "source:tests/runtime_compat.py", "source:collect.py",
-        "source:tests/runtime_workload_fixtures/workload.py"}
+        "source:tests/runtime_workload_fixtures/" + fixture}
 
 
 def measured(rep):
@@ -53,17 +54,20 @@ def observation(case, mode, profile, directory):
     return row
 
 
-def collection_fixture():
-    case = next(case for case in repeatability.workloads.workload_cases({"cpython": "/runtime/python3"}, Path("/unit/classes")) if case.name == "cpython-allocation-gc")
-    profile = {"runtime": "cpython", "runtime_executable": "/runtime/python3", "classes_directory": "/unit/classes",
+def collection_fixture(runtime="cpython"):
+    executable = "/runtime/python3" if runtime == "cpython" else "/runtime/node"
+    case = next(case for case in repeatability.workloads.workload_cases({runtime: executable}, Path("/unit/classes")) if case.name == runtime + "-allocation-gc")
+    profile = {"runtime": runtime, "runtime_executable": executable, "classes_directory": "/unit/classes",
                "workload_names": [case.name], "workloads": [asdict(case)], "execution_profile": "run",
                "environment": repeatability.FIXED_ENV, "fresh_processes": True,
-               "runtime_image": None, "versions": {"cpython": {"path": "/runtime/python3", "version": "synthetic unit fixture"}},
+               "runtime_image": None, "versions": {runtime: {"path": executable, "version": "synthetic unit fixture"}},
                "runner": "/runtime/durante", "drrun": "/runtime/drrun", "client": "/runtime/client.so",
-               "timeout_ms": 1000, "host": host(), "input_sha256": {key: "a" * 64 for key in required_inputs()}}
+               "timeout_ms": 1000, "host": host(), "input_sha256": {key: "a" * 64 for key in required_inputs(runtime)}}
     identity = {"sha256": "a" * 64}
     files = {key: {"before": copy.deepcopy(identity), "after": copy.deepcopy(identity), "unchanged": True}
-             for key in required_inputs()}
+             for key in required_inputs(runtime)}
+    fixture = "workload.py" if runtime == "cpython" else "workload.js"
+    files["source:tests/runtime_workload_fixtures/" + fixture]["path"] = str(repeatability.workloads.FIXTURES / fixture)
     plan = repeatability.fixed_plan([case], 3)
     rows = [{**item, **observation(case, item["mode"], profile, Path("/unit") / str(index))}
             for index, item in enumerate(plan)]
@@ -78,7 +82,7 @@ def collection_fixture():
 def controlled_collection_fixture(name):
     collection = collection_fixture()
     profile = collection["profile"]
-    case = repeatability.controlled_cases(repeatability.profile_cases(profile), name)[0]
+    case = repeatability.controlled_cases(repeatability.profile_cases(profile, collection["input_provenance"]["files"]), name)[0]
     profile["cpython_hash_profile"] = name
     profile["workloads"] = [asdict(case)]
     profile["environment"] = repeatability.profile_environment(profile)
@@ -263,9 +267,54 @@ class RepeatabilityTests(unittest.TestCase):
                 result = repeatability.evaluate(collection)
                 self.assertFalse(result["qualification_passed"], result)
 
+    def test_offline_fixture_paths_survive_evaluator_checkout_relocation(self):
+        for runtime in ("cpython", "node"):
+            with self.subTest(runtime=runtime):
+                collection = collection_fixture(runtime)
+                before = copy.deepcopy(collection)
+                expected = repeatability.evaluate(collection)
+                self.assertTrue(expected["qualification_passed"], expected)
+                with patch.object(repeatability.workloads, "FIXTURES", Path("/relocated-checkout/tests/runtime_workload_fixtures")):
+                    observed = repeatability.evaluate(collection)
+                self.assertEqual(observed, expected)
+                self.assertEqual(collection, before)
+
+    def test_offline_fixture_paths_require_consistent_commands_and_provenance(self):
+        for runtime in ("cpython", "node"):
+            fixture = "workload.py" if runtime == "cpython" else "workload.js"
+            source = "source:tests/runtime_workload_fixtures/" + fixture
+            for change in ("missing input", "missing path", "relative path", "changed path",
+                           "changed identity", "changed input hash", "declared command", "actual command"):
+                with self.subTest(runtime=runtime, change=change):
+                    collection = collection_fixture(runtime)
+                    profile = collection["profile"]
+                    files = collection["input_provenance"]["files"]
+                    original_path = files[source]["path"]
+                    if change == "missing input":
+                        files.pop(source)
+                        profile["input_sha256"].pop(source)
+                    elif change == "missing path":
+                        files[source].pop("path")
+                    elif change == "relative path":
+                        files[source]["path"] = fixture
+                    elif change == "changed path":
+                        files[source]["path"] = "/changed/" + fixture
+                    elif change == "changed identity":
+                        files[source]["after"]["sha256"] = "b" * 64
+                    elif change == "changed input hash":
+                        profile["input_sha256"][source] = "b" * 64
+                    elif change == "declared command":
+                        command = profile["workloads"][0]["command"]
+                        command[command.index(original_path)] = "/changed/" + fixture
+                    else:
+                        command = collection["rows"][0]["command"]
+                        command[command.index(original_path)] = "/changed/" + fixture
+                    collection["profile_sha256"] = repeatability.digest(profile)
+                    self.assertFalse(repeatability.evaluate(collection)["qualification_passed"])
+
     def test_named_hash_profiles_change_only_explicit_seed_and_keep_default_commands(self):
         isolated = collection_fixture()
-        self.assertEqual(repeatability.profile_cases(isolated["profile"])[0].command[1:3], ["-I", "-S"])
+        self.assertEqual(repeatability.profile_cases(isolated["profile"], isolated["input_provenance"]["files"])[0].command[1:3], ["-I", "-S"])
         controlled = [controlled_collection_fixture(name) for name in ("random", "seed-1")]
         for collection in controlled:
             before = copy.deepcopy(collection)
@@ -467,6 +516,8 @@ class RepeatabilityTests(unittest.TestCase):
                                    javac=str(dummy), java_major=17, cpu=2, workload=["allocation-gc"], repeats=3,
                                    max_spread_ppm=0, timeout_ms=1000, campaign_seconds=600)
             calls = []
+            inputs = {key: dummy for key in required_inputs()}
+            inputs["source:tests/runtime_workload_fixtures/workload.py"] = repeatability.workloads.FIXTURES / "workload.py"
 
             def run_case(options, case, mode):
                 calls.append(mode)
@@ -477,7 +528,7 @@ class RepeatabilityTests(unittest.TestCase):
                         "timeout": False, "stdout": "", "stderr": ""}
 
             with patch.object(repeatability, "executable_path", return_value=str(dummy)), \
-                    patch.object(repeatability, "input_paths", return_value={key: dummy for key in required_inputs()}), \
+                    patch.object(repeatability, "input_paths", return_value=inputs), \
                     patch.object(repeatability, "host_profile", side_effect=lambda cpus: host()), \
                     patch.object(repeatability.os, "sched_getaffinity", return_value={2}), \
                     patch.object(repeatability.os, "sched_setaffinity"), \

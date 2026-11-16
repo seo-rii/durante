@@ -296,7 +296,7 @@ def collect_cpython_probe(args, collection, provenance):
         raise ValueError("; ".join(errors))
 
 
-def profile_cases(profile):
+def profile_cases(profile, files):
     runtime = profile["runtime"]
     if runtime not in workloads.RUNTIMES or profile.get("execution_profile") != "run":
         raise ValueError("unknown runtime or execution profile")
@@ -304,6 +304,22 @@ def profile_cases(profile):
     if not isinstance(selected, list) or not selected or len(selected) != len(set(selected)):
         raise ValueError("empty or duplicate workload selection")
     available = workloads.workload_cases({runtime: profile["runtime_executable"]}, Path(profile["classes_directory"]))
+    if runtime in ("cpython", "node"):
+        fixture = "workload.py" if runtime == "cpython" else "workload.js"
+        source = files.get("source:tests/runtime_workload_fixtures/" + fixture)
+        path = source.get("path") if isinstance(source, dict) else None
+        if not isinstance(path, str) or not Path(path).is_absolute():
+            raise ValueError("recorded fixture source path is unavailable or invalid")
+        # Evaluation may use another checkout. Bind only the fixed fixture slot
+        # to its recorded invocation path; all other command/oracle fields stay
+        # independently reconstructed, and provenance is checked below.
+        fixture_index = 3 if runtime == "cpython" else 1 + len(workloads.NODE_FLAGS)
+        for index, case in enumerate(available):
+            command = list(case.command)
+            if len(command) <= fixture_index or command[fixture_index] != str(workloads.FIXTURES / fixture):
+                raise ValueError("fixed runtime fixture command layout changed")
+            command[fixture_index] = path
+            available[index] = replace(case, command=command)
     if runtime == "cpython":
         available += cpython_startup_cases(profile["runtime_executable"])
     cases = controlled_cases([case for case in available if case.name in selected], hash_profile(profile))
@@ -367,7 +383,9 @@ def evaluate(collection):
         options, profile = collection["options"], collection["profile"]
         repetitions = integer(options["repeats"], 3, 9, "repetitions")
         threshold = integer(options["max_spread_ppm"], 0, 1_000_000, "maximum spread ppm")
-        cases = profile_cases(profile)
+        provenance = collection["input_provenance"]
+        files = provenance["files"]
+        cases = profile_cases(profile, files)
         result.update(options=options, profile_sha256=collection.get("profile_sha256"))
         if collection.get("profile_sha256") != digest(profile):
             failures.append("profile digest differs from the recorded profile")
@@ -375,8 +393,6 @@ def evaluate(collection):
         before, after = collection.get("host_before"), collection.get("host_after")
         if not before or before != after or profile.get("host") != before:
             failures.append("CPU affinity/ISA/host profile changed or is unavailable")
-        provenance = collection["input_provenance"]
-        files = provenance["files"]
         failures.extend(probe_errors(collection, profile, files))
         required = REQUIRED_INPUTS | {"source:tests/runtime_repeatability.py", "source:tests/runtime_workloads.py",
                                     "source:tests/runtime_compat.py", "source:collect.py"}

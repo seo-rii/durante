@@ -215,6 +215,12 @@ integer partitions. It does not rerun the runtime or independently attest saved
 JSON. Raw Rust/Python collector agreement is checked during collection by the
 existing workload harness. Keep the complete output directory as evidence.
 
+Offline evaluation reconstructs CPython and Node fixture commands using their
+recorded source-provenance paths, so moving the evaluator to another checkout
+does not change the recorded result. It does not open or execute those fixture
+paths. Missing or inconsistent fixture provenance, changed commands and changed
+input identities still fail; the recorded profile and threshold remain unchanged.
+
 ## Exact statistics and coverage
 
 Each workload and metered mode is evaluated separately. The metrics are
