@@ -432,7 +432,134 @@ seven objects and GC state also does not cover every allocation or the full
 execution history. These observations confirm the selected controls inside
 these instrumented processes; they neither identify the original instruction
 spread's cause nor establish counter correctness or language-wide repeatability.
-The residual variation remains unresolved.
+Those observations did not locate the residual variation. The following
+location diagnostic distinguishes actual clock paths in a new complete sample.
+
+## Instruction-location follow-up
+
+The 2026-11-16 follow-up retained the exact startup/import Python programs,
+CPython 3.11.2, `-P -s -S`, seed `1`, CPU 0 and the `setarch x86_64 -R` control.
+A test client based on main `0318100` additionally recorded each observed BB
+entry by PC and instruction length, resolving its loaded ELF GNU build-id and
+module-relative offset at exit.
+Its weighted histogram had to equal the complete one-process, one-image,
+one-thread counter report, with zero replay rollbacks and independent collector
+agreement. A static assembly oracle independently required 26 instructions;
+its loaded build-id also matched `readelf`'s inspection of the file.
+
+The first declared six-row diagnostic completed in 20.48 seconds. All startup
+and import executions passed output and accounting checks, but the three import
+histograms reached the 32,768-entry observation cap. They remain diagnostic
+failures, and the whole attempt retains exit 1. The three complete startup
+histograms each contained 32,450 entries and 19,657,227 instructions. These
+finite startup observations do not qualify the original repeatability plan.
+
+A separate version increased only the histogram storage capacity to 65,536
+entries. It retained the 1-MiB file bound, 30-second row wall limit, 90-second
+CPU limit and 300-second campaign admission budget. Three newly declared import
+observations completed in 8.14 seconds; every histogram was complete, contained
+41,550–41,552 entries and occupied at most 645,694 bytes. All named inputs,
+CPU-profile checks, collector comparisons, cleanup and affinity restoration
+passed. No earlier failed row was replaced or reclassified.
+
+Every changing BB in this complete sample belonged to `linux-vdso.so.1`, GNU
+build-id `ffe081a9105536e4e18729470ad623c16ac6de8f`, on kernel
+`6.1.0-54-cloud-amd64`. All other module/offset/length entry counts were identical.
+Disassembly of the matching vDSO identified `__vdso_clock_gettime`'s sequence
+recheck and nanosecond-normalization paths. All three rows entered and returned
+from that function 566 times. A sequence change repeated a 31-instruction path;
+one normalization pass executed six additional instructions relative to its
+direct-return path.
+
+| Import observation | Instructions | Extra sequence passes | Normalization passes |
+| --- | ---: | ---: | ---: |
+| 1 | 75,434,041 | 1 | 0 |
+| 2 | 75,434,070 | 0 | 10 |
+| 3 | 75,434,082 | 0 | 12 |
+
+These are direct observations of changing locations, rather than subtraction of
+separate whole-program experiments. Summing the recorded vDSO BB charges gives
+32,867, 32,896 and 32,908 instructions; every other recorded module contributes
+the same 75,401,174 instructions. The changing clock paths account for all
+observed spread in these three rows. They are actual time-dependent user-space
+work, not evidence of a counter arithmetic defect. Their clock BBs remain part
+of the metric: neither the clock nor its count is suppressed or frozen.
+
+Those initial diagnostics did not observe module unloads, so exit-time identity
+could not exclude an intervening unload and address reuse. The final test client
+adds an unload callback and rejects such a histogram explicitly. A separately
+declared three-row import validation then completed in 8.49 seconds with zero
+unloads, 41,550 entries and 645,670 bytes per histogram. Counts were 75,434,010,
+75,434,041 and 75,434,010. Only the seven BBs in the same sequence-retry path
+changed: their extra 2 + 5 + 3 + 2 + 3 + 8 + 8 instructions account for the whole
+31-instruction difference. Every other BB count was identical, and direct
+non-vDSO charges remained 75,401,174 in each row. The independent 26-instruction
+oracle passed, and a real `dlopen`/call/`dlclose` fixture was rejected specifically
+for its one module unload despite valid output and lifecycle accounting. Named
+inputs, cleanup, CPU-profile checks and affinity restoration all passed. The
+earlier samples remain separate; the new guard does not attest their lifetimes
+retroactively.
+
+The histogram observes the counter's existing insertion calls, so sum agreement
+is a consistency check, not an independent proof of every runtime count. The
+assembly oracle and matching disassembly supply separate checks. Instrumentation
+also changes execution timing and can change which clock paths occur. Earlier
+whole-process ranges such as 24, 84 and 31 are consistent with these path costs,
+but those older rows have no location histograms and their causes are not
+retroactively assigned. The original isolated/allocation/hash-control results
+and their **0 ppm** failures remain unchanged. This identifies a residual
+mechanism in the controlled sample; it does not establish exact repeatability
+for every CPython program or explain all earlier address-dependent spread.
+
+## Reproducing location diagnostics
+
+Build the separate test client and its independent oracle against the prepared
+SDK. The normal client does not compile the histogram code or expose a profiling
+option:
+
+```sh
+cmake -S tests/count_locations -B build-count-locations \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DDynamoRIO_DIR="$PWD/toolkit/sdk/DynamoRIO-Linux-11.3.0-1/cmake"
+cmake --build build-count-locations -j2
+setarch x86_64 -R python3 tests/count_locations.py \
+  --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 \
+  --client build-count-locations/libcount_locations.so \
+  --runner-bin target/release/durante \
+  --oracle build-count-locations/count_locations_oracle \
+  --unload-oracle build-count-locations/count_locations_unload_oracle \
+  --unload-module build-count-locations/libcount_locations_unload_module.so \
+  --workload imports --cpu 0 --output-dir .results/count-locations
+```
+
+Choose an allowed CPU and a fresh output directory. The tool first checks the
+native/instrumented assembly oracle, an expected-rejection `dlclose` oracle and
+a separate native startup probe, then
+runs exactly three observations of each selected startup/import control. Use
+repeatable `--runtime-file PATH` arguments for additional named loader/library
+inputs. The probe inventories its standard-library files; it does not attest
+every later process state or loaded dependency. Inherited `PYTHON*` variables
+remain removed except the explicit seed-1 control.
+
+`count-locations.tsv` is retained beside each row's raw lifecycle records.
+Capture is bounded by 65,536 distinct BB/length entries, 128 modules and 1 MiB;
+unknown module identity, any observed module unload, overflow, replay, extra
+threads or incomplete capture
+prevent an accepted comparison. The tool preserves failed and unrun rows and
+does not retry. Its `passed` means complete diagnostic capture and accounting,
+with `qualification_claim: false`; it never changes the repeatability gate or
+requires time-dependent variation to appear in every finite sample.
+
+Module identities are resolved at exit. The test client therefore observes
+module unloads from initialization and rejects the histogram if any occur;
+reloading another image at the same address cannot silently inherit earlier
+BB charges. This diagnostic covers loaded ELF modules, not arbitrary generated
+or self-modifying code.
+
+CI uses `--oracle-only` to exercise the actual diagnostic client, ELF identity
+reader, independently known 26-instruction count and rejection of a real
+`dlopen`/call/`dlclose` fixture. It does not depend on a particular clock phase
+or permit a count-spread exception.
 
 ## Tests
 
@@ -440,4 +567,5 @@ The regression suite uses small native CPython probes but needs no runtime build
 
 ```sh
 python3 -m unittest discover -s tests -p 'test_runtime_repeatability.py' -v
+python3 -m unittest discover -s tests -p 'test_count_locations.py' -v
 ```
