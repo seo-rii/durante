@@ -42,6 +42,11 @@ Each workload runs in four modes:
 4. `durante run`, with its normal REP-enabled client, lifecycle supervision,
    report publication and cleanup checks.
 
+The separate [Java safepoint recurrence tool](JVM_SAFEPOINT.md) preserves the
+known BUG-006 bootstrap abort, repeats this Java process fixture in a fixed
+four-mode plan, and offers a separate debugger context capture. A successful
+recurrence campaign is non-reproduction, not a fix for that open JVM failure.
+
 The instrumented modes use Durante's canonical basic-block execution profile,
 with DynamoRIO trace building disabled (`-disable_traces`) and 32-MiB code/heap
 reservations. Trace building is an engine optimization; disabling it preserves

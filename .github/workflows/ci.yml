@@ -55,11 +55,15 @@ jobs:
         timeout-minutes: 5
         with:
           python-version: '3.12'
+      - name: Install GDB for native signal translation regression
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y gdb
       - name: Verify runner build tools and required runtimes
         shell: bash
         run: |
           set -euo pipefail
-          for tool in gcc g++ cmake patch python3 pypy3 node; do command -v "$tool"; done
+          for tool in gcc g++ cmake patch python3 pypy3 node gdb prlimit nm; do command -v "$tool"; done
           test -x "$JAVA_HOME_17_X64/bin/java"
           test -x "$JAVA_HOME_17_X64/bin/javac"
           gcc --version
@@ -67,6 +71,7 @@ jobs:
           python3 --version
           pypy3 --version
           node --version
+          gdb --version
           "$JAVA_HOME_17_X64/bin/java" -version
       - name: Install the tested Rust toolchain
         run: rustup toolchain install 1.94.0 --profile minimal --component rustfmt --component clippy
@@ -94,6 +99,8 @@ jobs:
           cmake -S client -B build -DCMAKE_BUILD_TYPE=Release -DDynamoRIO_DIR="$PWD/toolkit/sdk/DynamoRIO-Linux-11.3.0-1/cmake"
           cmake --build build -j2
       - name: Validate lifecycle records and aggregation
+        env:
+          DURANTE_TEST_CONTEXT_SDK: ${{ github.workspace }}/toolkit/sdk/DynamoRIO-Linux-11.3.0-1
         run: python3 -m unittest discover -s tests -v
       - name: Stop forbidden native instructions with release and debug runtimes
         run: python3 tests/native_cpu_policy.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/native-cpu-policy
