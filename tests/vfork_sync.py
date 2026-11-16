@@ -18,6 +18,30 @@ MODES = ("engine-only", "client-rep-off", "supervisor")
 OUTPUT = "vfork-sync:child-ready\nvfork-sync:complete\n"
 
 
+def classify_diagnostic(row):
+    """Apply the fixed debug startup exception after all shared workload gates."""
+    stderr = row.get("stderr", "")
+    classification = "none" if stderr == "" else "unexpected"
+    # The pinned debug core reports an unenumerated CPU cache size at startup.
+    # A successful exec can initialize it again in the child's replacement image;
+    # the other fixed actions do not introduce another startup.
+    if (row.get("profile") == "debug" and row.get("mode") in MODES
+            and row.get("call") in CALLS and row.get("action") in ACTIONS):
+        notice = "<Unknown processor cache size>\n"
+        if stderr == notice:
+            classification = "cpu_cache_size_unknown"
+        elif row["action"] == "exec" and stderr == notice * 2:
+            classification = "cpu_cache_size_unknown_after_exec"
+    row["diagnostic_classification"] = classification
+    if classification in ("cpu_cache_size_unknown", "cpu_cache_size_unknown_after_exec"):
+        diagnostic_error = "unexpected application or runtime diagnostic"
+        if diagnostic_error in row["errors"]:
+            # Remove only the shared stderr rejection, once. All output, exit,
+            # cleanup and accounting failures remain, as does the raw evidence.
+            row["errors"].remove(diagnostic_error)
+            row["passed"] = row["infrastructure_ok"] and not row["errors"]
+
+
 def digest(path):
     with path.open("rb") as stream:
         return hashlib.file_digest(stream, "sha256").hexdigest()
@@ -100,6 +124,7 @@ def main():
                             for mode in args.modes:
                                 row = run_case(args, workload, mode)
                                 row.update(profile=profile, call=call, action=action, repeat=repeat)
+                                classify_diagnostic(row)
                                 rows.append(row)
         else:
             errors.append("native controls failed; this test requires working clone3")

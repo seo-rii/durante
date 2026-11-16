@@ -43,10 +43,26 @@ Both `clone` and `clone3` cover normal child exit, successful exec, failed exec,
 and a kernel-rejected clone followed by a successful clone on the same parent
 thread. Native signal handling verifies the test nudge itself. Instrumented
 execution requires the runtime to consume it, exact application output, empty
-stderr, bounded completion, and complete descendant cleanup. Measured modes also
+stderr apart from the classified debug startup notice below, bounded completion,
+and complete descendant cleanup. Measured modes also
 check the process/image topology and compare the Rust aggregate with the Python
 reference. No child or failed observation is retried or accepted as an expected
 failure. `plan.json` and `results.json` retain input hashes and every row.
+
+For these fixed `clone`/`clone3` cases, the debug profile may report exactly
+`<Unknown processor cache size>` followed by a newline. The harness records it as
+`cpu_cache_size_unknown`; successful `exec` may report exactly two such lines,
+classified as `cpu_cache_size_unknown_after_exec`. This exception applies only
+to the three instrumented modes. Native and release runs still require empty
+stderr. Any other diagnostic, changed whitespace or excessive repetition fails.
+The original stderr, records and measurements remain intact. Classification
+removes only the shared stderr rejection; incorrect output, nonzero exits,
+timeouts, cleanup failures and accounting failures still reject the observation.
+The shared workload harness retains its strict stderr policy.
+
+```sh
+python3 -m unittest discover -s tests -p 'test_vfork_sync.py' -v
+```
 
 The default wall limit is ten seconds per target; the production supervisor has
 its existing five-second publication allowance. Resource limits and process-tree
