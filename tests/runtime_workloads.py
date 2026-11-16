@@ -164,8 +164,12 @@ def run_case(args, workload, mode):
             records.mkdir(mode=0o700)
             prefix += ["-c", str(args.client), "-outdir", str(records)]
         command = [*prefix, "--", *command]
+    controls = {}
+    seed = getattr(args, "python_hash_seed", None)
+    if workload.runtime == "cpython" and seed is not None:
+        controls["python_hash_seed"] = seed
     row = run_process(command, directory, args.timeout_ms + (5000 if mode == "supervisor" else 0),
-                      args.prlimit, cpu_seconds=90)
+                      args.prlimit, cpu_seconds=90, **controls)
     row.update(workload=workload.name, runtime=workload.runtime, mode=mode, command=command,
                expected_stdout=workload.expected, expected_processes=workload.processes,
                expected_images=workload.images, telemetry_status="not-requested")
