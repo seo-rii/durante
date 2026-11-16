@@ -91,6 +91,9 @@ static app_pc cpu_policy_exit_pc;
 static int replay_without_tls;
 static int app_exit_code;
 static size_t file_bytes;
+#ifdef DURANTE_TEST_COUNT_LOCATIONS
+#include "../tests/count_locations/profile.h"
+#endif
 
 static void fail(const char *m) {
   dr_fprintf(STDERR, "durante: %s\n", m);
@@ -509,6 +512,9 @@ static void count_block(int instructions, app_pc first_pc) {
     return;
   }
   data->instructions += (uint64_t)instructions;
+#ifdef DURANTE_TEST_COUNT_LOCATIONS
+  profile_count(first_pc, (uint64_t)instructions);
+#endif
 }
 
 /* A fault can leave the middle of a BB whose entire length was charged at
@@ -559,6 +565,9 @@ static void code_replay(void *ctx, int reason, app_pc source_pc,
     return;
   }
   d->instructions -= rollback;
+#ifdef DURANTE_TEST_COUNT_LOCATIONS
+  profile_replay(rollback);
+#endif
   if (retry) {
     d->restart_pc = target_pc;
     d->restart_entered = false;
@@ -880,6 +889,10 @@ static void process_exit(void) {
     report_file = -1;
   }
   dr_mutex_unlock(state_lock);
+#ifdef DURANTE_TEST_COUNT_LOCATIONS
+  profile_dump();
+  drmgr_unregister_module_unload_event(profile_module_unload);
+#endif
   drmgr_unregister_bb_instrumentation_event(analyze_block);
   drmgr_unregister_thread_init_event(thread_init);
   drmgr_unregister_thread_exit_event(thread_exit);
@@ -936,6 +949,10 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
   }
   if (!drmgr_init())
     fail("extension initialization failed");
+#ifdef DURANTE_TEST_COUNT_LOCATIONS
+  if (!drmgr_register_module_unload_event(profile_module_unload))
+    fail("test module lifetime registration failed");
+#endif
   state_lock = dr_mutex_create();
   tls_index = drmgr_register_tls_field();
   if (!state_lock || tls_index < 0 ||
