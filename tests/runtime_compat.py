@@ -29,6 +29,7 @@ PYTHON_FIXTURES = (
     ("native_libraries", "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad\n30000\n", 1),
     ("subprocess_tree", "child:7\n", 2),
 )
+PYTHON_IMPLEMENTATION_PROBE = "import sys; print(sys.implementation.name)"
 
 
 def file_identity(path):
@@ -513,6 +514,28 @@ def unqualified_required_runtimes(results, required):
                          for row in results))
 
 
+def probe_python_implementation(runtime, executable, directory, timeout_ms, prlimit):
+    """Check the selected interpreter itself before labeling its workload results."""
+    if runtime not in ("cpython", "pypy"):
+        raise ValueError("Python implementation probe requires cpython or pypy")
+    directory.mkdir(mode=0o700)
+    command = [executable, "-I", "-S", "-c", PYTHON_IMPLEMENTATION_PROBE]
+    row = run_process(command, directory, timeout_ms, prlimit)
+    passed = (type(row.get("exit_code")) is int and row["exit_code"] == 0
+              and row.get("infrastructure_ok") is True
+              and row.get("stdout") == runtime + "\n" and row.get("stderr") == "")
+    # This evidence also joins repeatability profile metadata. Keep per-launch
+    # PIDs and elapsed time out of the implementation's stable description.
+    evidence = {"command": command, "requested_implementation": runtime, "passed": passed,
+                "execution": {key: row[key] for key in (
+                    "exit_code", "stdout", "stderr", "infrastructure_ok", "timeout",
+                    "cleanup_complete", "errors") if key in row}}
+    (directory / "probe.json").write_text(json.dumps(evidence, indent=2) + "\n")
+    if not passed:
+        raise ValueError("Python implementation probe failed for selected runtime: " + runtime)
+    return evidence
+
+
 def runtime_commands(args, work, paths, javac, provenance):
     versions = {}
     for name, path in paths.items():
@@ -530,6 +553,9 @@ def runtime_commands(args, work, paths, javac, provenance):
             versions[name] = {"path": path, "resolved_path": identity["resolved_path"],
                               "sha256": identity["sha256"],
                               "version": (result["stdout"] + result["stderr"]).strip()}
+            if name in ("cpython", "pypy"):
+                versions[name]["implementation_probe"] = probe_python_implementation(
+                    name, path, work / ("implementation-" + name), min(args.timeout_ms, 10000), args.prlimit)
     if paths["java"]:
         compiler = work / "javac"
         compiler.mkdir()

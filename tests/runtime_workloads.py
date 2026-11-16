@@ -11,7 +11,8 @@ import time
 
 from concurrent_spawn import bounded_number, cleanup_orphans, collector, own_subreaper
 from runtime_compat import (InputProvenance, bounded_bytes, bounded_json, collect_records,
-                            executable_path, file_identity, run_process, telemetry_status)
+                            executable_path, file_identity, probe_python_implementation,
+                            run_process, telemetry_status)
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "tests/runtime_workload_fixtures"
@@ -229,6 +230,9 @@ def probe_and_compile(args, paths, provenance):
         if runtime == "pypy" and not re.search(r"\[PyPy [0-9]+[.]", version):
             raise ValueError("selected PyPy executable does not report a PyPy version")
         versions[runtime] = {"path": executable, "version": version}
+        if runtime in ("cpython", "pypy"):
+            versions[runtime]["implementation_probe"] = probe_python_implementation(
+                runtime, executable, args.output_dir / ("implementation-" + runtime), 10000, args.prlimit)
     classes = args.output_dir / "classes"
     if "java" in paths:
         classes.mkdir(mode=0o700)
