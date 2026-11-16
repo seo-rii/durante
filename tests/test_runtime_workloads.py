@@ -3,6 +3,7 @@ from contextlib import ExitStack, redirect_stdout
 import copy
 import io
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -57,15 +58,38 @@ class RuntimeWorkloadTests(unittest.TestCase):
 
     def test_exact_launch_topology_includes_both_jspawnhelper_images(self):
         cases = workloads.workload_cases({"java": "/selected/java", "node": "/selected/node",
-                                           "cpython": "/selected/python"}, self.root)
+                                           "cpython": "/selected/python", "pypy": "/selected/pypy"}, self.root)
         by_name = {case.name: case for case in cases}
         self.assertEqual((by_name["java-processes-posix_spawn"].processes,
                           by_name["java-processes-posix_spawn"].images), (3, 7))
-        for name in ("java-processes-fork", "node-processes", "cpython-processes"):
+        for name in ("java-processes-fork", "node-processes", "cpython-processes", "pypy-processes"):
             self.assertEqual((by_name[name].processes, by_name[name].images), (3, 5))
         self.assertIn("-Djdk.lang.Process.launchMechanism=POSIX_SPAWN",
                       by_name["java-processes-posix_spawn"].command)
         self.assertIn("-Djdk.lang.Process.launchMechanism=FORK", by_name["java-processes-fork"].command)
+        self.assertEqual(by_name["pypy-processes"].command[:3], ["/selected/pypy", "-I", "-S"])
+
+    def test_inherited_python_and_pypy_settings_do_not_change_workload_environment(self):
+        prlimit = workloads.executable_path("prlimit")
+        if not prlimit:
+            self.skipTest("Linux prlimit unavailable")
+        inherited = {"PYTHONHASHSEED": "99", "PYPY_GC_NURSERY": "1048576",
+                     "PYPY_GC_MAX": "1MB", "PYPYJIT": "off", "PYPYLOG": ":-"}
+        script = ("import json, os; print(json.dumps({key: os.environ.get(key) for key in "
+                  + repr(tuple(inherited)) + "}))")
+        for seed in (None, "1"):
+            with self.subTest(explicit_hash_seed=seed):
+                directory = self.root / ("environment-" + str(seed))
+                directory.mkdir()
+                with patch.dict(os.environ, inherited):
+                    row = workloads.run_process([sys.executable, "-I", "-S", "-c", script],
+                                                directory, 1000, prlimit, python_hash_seed=seed)
+                self.assertEqual(row["exit_code"], 0, row)
+                self.assertTrue(row["infrastructure_ok"], row)
+                self.assertEqual(row["stderr"], "")
+                expected = dict.fromkeys(inherited)
+                expected["PYTHONHASHSEED"] = seed
+                self.assertEqual(json.loads(row["stdout"]), expected)
 
     def test_accepted_measurement_must_equal_the_real_reference_collector(self):
         records, result = self.records()
@@ -154,7 +178,8 @@ class RuntimeWorkloadTests(unittest.TestCase):
         self.assertTrue(workloads.matrix_errors([case], rows))
         self.assertTrue(workloads.matrix_errors([], []))
 
-    def invoke(self, *, missing=False, changed=False, cleaned=True, wrong_output=False):
+    def invoke(self, *, missing=False, changed=False, cleaned=True, wrong_output=False,
+               runtime="cpython", version="Python 3.12.0\n", declared_file=None):
         artifacts = self.root / "artifacts"
         for name in ("sdk/bin64/drrun", "sdk/lib64/release/libdynamorio.so", "client", "runner", "python"):
             path = artifacts / name
@@ -163,9 +188,14 @@ class RuntimeWorkloadTests(unittest.TestCase):
             path.chmod(0o700)
         selected_python = artifacts / ("missing" if missing else "python")
         output = self.root / "result"
-        args = ["--runtime", "cpython", "--cpython", str(selected_python),
+        args = ["--runtime", runtime, "--" + runtime, str(selected_python),
                 "--sdk", str(artifacts / "sdk"), "--client", str(artifacts / "client"),
                 "--runner-bin", str(artifacts / "runner"), "--output-dir", str(output)]
+        library = artifacts / "runtime.so"
+        if declared_file:
+            args += ["--runtime-file", str(library)]
+            if declared_file != "missing":
+                library.write_bytes(b"runtime implementation")
         changed_once = False
 
         def case(arguments, workload, mode):
@@ -173,6 +203,9 @@ class RuntimeWorkloadTests(unittest.TestCase):
             if changed and not changed_once:
                 changed_once = True
                 (artifacts / "runner").write_bytes(b"replaced during otherwise successful execution")
+            if declared_file == "changed" and not changed_once:
+                changed_once = True
+                library.write_bytes(b"runtime implementation changed")
             return {"workload": workload.name, "runtime": workload.runtime, "mode": mode,
                     "passed": not wrong_output}
 
@@ -180,7 +213,7 @@ class RuntimeWorkloadTests(unittest.TestCase):
             stack.enter_context(patch.object(workloads, "own_subreaper", return_value=(SimpleNamespace(prctl=lambda *args: 0), 0)))
             stack.enter_context(patch.object(workloads, "cleanup_orphans", return_value=cleaned))
             stack.enter_context(patch.object(workloads, "run_process", return_value={
-                "exit_code": 0, "infrastructure_ok": True, "stdout": "Python 3.12.0\n", "stderr": ""}))
+                "exit_code": 0, "infrastructure_ok": True, "stdout": version, "stderr": ""}))
             executed = stack.enter_context(patch.object(workloads, "run_case", side_effect=case))
             console = io.StringIO()
             stack.enter_context(redirect_stdout(console))
@@ -195,6 +228,42 @@ class RuntimeWorkloadTests(unittest.TestCase):
         self.assertFalse(report["passed"])
         executed.assert_not_called()
         self.assertIn("binary:cpython", [row["input"] for row in report["input_provenance"]["errors"]])
+
+    def test_explicit_pypy_requires_all_twelve_observations_and_hashes_declared_library(self):
+        code, report, executed = self.invoke(runtime="pypy", declared_file="stable",
+            version="Python 3.10.16\n[PyPy 7.3.19 with GCC 10.2.1]\n")
+        self.assertEqual(code, 0, report)
+        self.assertEqual(report["required_runtimes"], ["pypy"])
+        self.assertEqual(report["observations"], 12)
+        self.assertEqual(report["checks_passed"], 12)
+        self.assertEqual(executed.call_count, 12)
+        self.assertEqual({row["runtime"] for row in report["rows"]}, {"pypy"})
+        self.assertTrue(report["input_provenance"]["files"]["operator:runtime-file:0"]["unchanged"])
+
+    def test_missing_selected_pypy_is_not_partial_success(self):
+        code, report, executed = self.invoke(runtime="pypy", missing=True)
+        self.assertEqual(code, 1)
+        executed.assert_not_called()
+        self.assertIn("binary:pypy", [row["input"] for row in report["input_provenance"]["errors"]])
+
+    def test_cpython_cannot_satisfy_an_explicit_pypy_request(self):
+        code, report, executed = self.invoke(runtime="pypy")
+        self.assertEqual(code, 1)
+        executed.assert_not_called()
+        self.assertTrue(any("does not report a PyPy version" in error for error in report["failures"]))
+
+    def test_missing_declared_runtime_library_fails_before_execution(self):
+        code, report, executed = self.invoke(declared_file="missing")
+        self.assertEqual(code, 1)
+        executed.assert_not_called()
+        self.assertIn("operator:runtime-file:0", [row["input"] for row in report["input_provenance"]["errors"]])
+
+    def test_changed_declared_runtime_library_invalidates_successful_observations(self):
+        code, report, _ = self.invoke(declared_file="changed")
+        self.assertEqual(code, 1)
+        self.assertEqual(report["checks_passed"], 12)
+        self.assertFalse(report["inputs_unchanged"])
+        self.assertFalse(report["input_provenance"]["files"]["operator:runtime-file:0"]["unchanged"])
 
     def test_changed_inputs_invalidate_otherwise_successful_cases(self):
         code, report, _ = self.invoke(changed=True)

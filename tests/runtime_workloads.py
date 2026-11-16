@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Require bounded Java, CPython and Node workloads to pass every execution mode."""
+"""Require selected managed-runtime workloads to pass every execution mode."""
 import argparse
 from dataclasses import dataclass
 import json
@@ -15,6 +15,8 @@ from runtime_compat import (InputProvenance, bounded_bytes, bounded_json, collec
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "tests/runtime_workload_fixtures"
+# Keep the existing default and repeatability profiles stable. PyPy has explicit
+# workload qualification below, without implicitly adding a repeatability profile.
 RUNTIMES = ("java", "cpython", "node")
 MODES = ("native", "engine-only", "client-rep-off", "supervisor")
 JAVA_FLAGS = ("-Xmx64m", "-Xss256k", "-XX:CompressedClassSpaceSize=32m",
@@ -224,6 +226,8 @@ def probe_and_compile(args, paths, provenance):
         version = (row.get("stdout", "") + row.get("stderr", "")).strip()
         if runtime == "java" and not re.search(r'\bversion "' + str(args.java_major) + r'[.\"]', version):
             raise ValueError("Java executable does not match required major " + str(args.java_major))
+        if runtime == "pypy" and not re.search(r"\[PyPy [0-9]+[.]", version):
+            raise ValueError("selected PyPy executable does not report a PyPy version")
         versions[runtime] = {"path": executable, "version": version}
     classes = args.output_dir / "classes"
     if "java" in paths:
@@ -254,9 +258,12 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("sdk", "client", "runner-bin", "output-dir"):
         parser.add_argument("--" + name, type=Path, required=True)
-    parser.add_argument("--runtime", choices=RUNTIMES, action="append",
-                        help="required runtime; repeat to select a subset, default: all three")
-    for name, default in (("java", "java"), ("javac", "javac"), ("cpython", "python3"), ("node", "node")):
+    parser.add_argument("--runtime", choices=(*RUNTIMES, "pypy"), action="append",
+                        help="required runtime; repeat to select a subset; default: java, cpython, node")
+    parser.add_argument("--runtime-file", type=Path, action="append", default=[],
+                        help="additional runtime library/module to hash before and after")
+    for name, default in (("java", "java"), ("javac", "javac"), ("cpython", "python3"),
+                          ("node", "node"), ("pypy", "pypy3")):
         parser.add_argument("--" + name, default=default)
     parser.add_argument("--java-major", type=int, choices=(17, 21), default=17)
     parser.add_argument("--timeout-ms", type=bounded_number(1000, 180000), default=120000)
@@ -280,6 +287,8 @@ def main(argv=None):
                    "binary:core": args.sdk / "lib64/release/libdynamorio.so", "binary:prlimit": args.prlimit,
                    "binary:harness-python": Path(sys.executable).resolve()})
     inputs.update({"binary:" + runtime: path for runtime, path in paths.items()})
+    inputs.update({"operator:runtime-file:" + str(index): path.absolute()
+                   for index, path in enumerate(args.runtime_file)})
     if "java" in selected:
         inputs["binary:javac"] = args.javac
         java_home = Path(paths["java"]).resolve().parent.parent if paths["java"] else None

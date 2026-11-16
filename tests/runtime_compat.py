@@ -293,9 +293,9 @@ def run_process(command, directory, timeout_ms, prlimit=None, *, cpu_seconds=40,
         harness_affinity = None
     with stdout.open("wb") as out, stderr.open("wb") as err:
         environment = {key: value for key, value in os.environ.items()
-                       if not key.startswith("PYTHON") and key not in (
+                       if not key.startswith(("PYTHON", "PYPY")) and key not in (
                            "NODE_OPTIONS", "NODE_V8_COVERAGE", "JAVA_TOOL_OPTIONS",
-                           "_JAVA_OPTIONS", "JDK_JAVA_OPTIONS", "PYPYLOG", "PYPYJIT")}
+                           "_JAVA_OPTIONS", "JDK_JAVA_OPTIONS")}
         environment.update({"LANG": "C", "LC_ALL": "C"})
         # Only the named repeatability control may reintroduce one Python input.
         # Every inherited PYTHON* value remains removed.

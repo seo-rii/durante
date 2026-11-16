@@ -1,6 +1,6 @@
 # Managed runtime workloads
 
-`tests/runtime_workloads.py` exercises bounded Java, CPython and Node workloads
+`tests/runtime_workloads.py` exercises bounded Java, CPython, PyPy and Node workloads
 through the actual `durante run` CLI. This supplements the startup, arithmetic,
 interpreter/JIT and library checks in [QUALIFICATION.md](QUALIFICATION.md).
 Every selected runtime and every execution mode is required. There are no
@@ -13,7 +13,14 @@ known-failure exceptions or optional-runtime skips in this harness.
 | Child processes | Two sequential child runtimes receive seeds 7 and 11. Their individually checked outputs contribute `seed² + 17`, producing `processes:204`. Each child must exit normally. |
 
 Java's GC fixture uses collection counts from the management API with Serial GC.
-CPython requires a positive cyclic-collection count. Node observes actual `gc`
+CPython requires a positive cyclic-collection count. PyPy requires four complete
+major collections, each within 1,000 calls to the documented
+[`gc.collect_step()` API](https://doc.pypy.org/gc_info.html#semi-manual-gc-management).
+An intermediate step alone is insufficient: `major_is_done` must become true
+for every requested collection. PyPy's `gc.collect()` does not return CPython's
+reclaimed-object count, so the fixture uses this runtime-specific completion
+evidence while checking the same allocation checksum and retained data.
+Node observes actual `gc`
 performance entries after explicit GC, using the documented
 [performance observer API](https://nodejs.org/api/perf_hooks.html#garbage-collection-gc-details).
 The number and timing of collections are deliberately absent from the output
@@ -130,8 +137,8 @@ structurally consistent: scheduling and GC make exact instruction totals unstabl
 Handled signals remain visible in measurement quality, and unsupported optional
 REP forms remain `partial` telemetry.
 
-The thread and allocation fixtures have one process and one image. CPython and
-Node each launch two children, requiring three processes and five images
+The thread and allocation fixtures have one process and one image. CPython, PyPy
+and Node each launch two children, requiring three processes and five images
 (the parent plus each child's initial fork image and target exec image).
 Java's process fixture runs twice, explicitly selecting `FORK` and `POSIX_SPAWN`.
 `FORK` requires the same 3/5 topology. `POSIX_SPAWN` requires three processes and
@@ -171,6 +178,29 @@ it never becomes successful partial coverage. Use a fresh output directory for
 every run. Each complete default matrix contains ten workloads and forty
 observations, including both Java process-launch mechanisms.
 
+PyPy is an explicit selection, separate from the forty-observation default:
+
+```sh
+python3 tests/runtime_workloads.py \
+  --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so \
+  --runner-bin target/release/durante --output-dir .results/pypy-workloads \
+  --runtime pypy --pypy /path/to/pypy/bin/pypy3 \
+  --runtime-file /path/to/pypy/bin/libpypy3.10-c.so
+```
+
+This requires all twelve observations: three workloads in each of the four modes.
+The version probe rejects an executable that does not identify itself as PyPy.
+The separate CI process-tree job installs PyPy 3.10 / 7.3.19 and runs this matrix
+plus the GC fixture tests under PyPy itself. It also hashes that installation's
+adjacent `libpypy*-c.so`, where the shared interpreter implementation resides.
+`--runtime-file` is repeatable and can name additional runtime libraries or modules
+on any selected runtime; a missing or changed declared file fails qualification.
+Use the paths from the installation being tested. These declared files supplement
+the executable hashes, without claiming a complete dependency inventory.
+PyPy runs with its JIT enabled and default GC configuration; the fixture's explicit
+collections establish GC completion, not compilation of any particular loop.
+This adds no PyPy profile to the separate repeatability tool.
+
 The separate `runtime-workloads` workflow runs both Java 17 and Java 21 jobs on
 Ubuntu 24.04. Each job also requires CPython 3.12 and the runner's Node installation.
 It selects `JAVA_HOME_17_X64` or `JAVA_HOME_21_X64` explicitly, verifies the tools,
@@ -178,19 +208,24 @@ builds the pinned SDK/client/CLI and preserves all workload results even on fail
 Those JDK environment variables are documented by
 [GitHub's Ubuntu 24.04 runner image](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md#java).
 Point releases and host images can change; actual versions and input hashes are
-recorded in every result. Existing PyPy coverage remains in `runtime_compat.py`;
-this added workload suite does not claim PyPy GC or threading qualification.
+recorded in every result. The smaller PyPy startup/arithmetic/library checks in
+`runtime_compat.py` remain required alongside the new workload matrix.
 
 ```sh
 python3 -m unittest discover -s tests -p 'test_runtime_workloads.py' -v
 python3 -m unittest discover -s tests -p 'test_java_process_fixture.py' -v
 python3 -m unittest discover -s tests -p 'test_node_thread_fixture.py' -v
+pypy3 -I -m unittest discover -s tests -p 'test_python_gc_fixture.py' -v
 ```
 
 The unit suite executes the real CPython workloads and checks the actual inherited
 CPU limits. It also exercises missing runtimes,
 wrong Java majors, omitted or duplicate modes, missing child images, altered
 measurements, promoted trust claims, cleanup failure and changed input files.
+The Python GC tests execute all three native workloads and observe the real
+collector API under the interpreter running the tests. Negative cases reject
+zero reclaimed objects, unfinished PyPy collections, unrelated statistics,
+collector exceptions and retained-data corruption even after successful GC.
 The Java fixture tests compile and execute the real parent with deterministic
 child executables. They check successful output, failures at either child seed,
 nonzero exits, binary output and the 128-byte diagnostic bound. Both Java 17 and
@@ -214,7 +249,7 @@ use per-process 2-GiB address-space, 90-second CPU, 1-MiB regular-file and zero-
 limits through `prlimit`; the original compatibility harness keeps its 40-second
 CPU default. The default wall deadline is 120 seconds per observation, with five
 extra seconds around the supervised mode for report/cleanup handling. Child
-fixtures impose 45-second deadlines for Java and fifteen seconds for CPython/Node.
+fixtures impose 45-second deadlines for Java and fifteen seconds for CPython/PyPy/Node.
 These bounds allow the measured instrumentation cost: GC completed in about
 32 seconds locally, and a Java process-launch probe reached the earlier
 fifteen-second child deadline. They are termination limits, not performance
@@ -222,6 +257,12 @@ acceptance thresholds. The twenty-minute campaign bound
 is checked between observations; a final in-progress observation can exceed it
 by its own bounded deadline. These are fixed fixture bounds, not runtime-wide
 capacity claims or aggregate cgroup limits.
+
+The harness removes inherited `PYTHON*` and `PYPY*` settings, including PyPy GC,
+JIT and logging overrides, as well as the existing Java/Node option variables.
+The repeatability tool's named Python hash-seed control is the only Python
+environment value it explicitly restores. PyPy workload observations do not
+disable the JIT or change its thresholds to pass the matrix.
 
 An outer subreaper owns orphaned test descendants and checks cleanup even after
 failure. Inputs include the source fixtures and imported harness modules, selected
