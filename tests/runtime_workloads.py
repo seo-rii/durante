@@ -16,8 +16,8 @@ from runtime_compat import (InputProvenance, bounded_bytes, bounded_json, collec
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "tests/runtime_workload_fixtures"
-# Keep the existing default and repeatability profiles stable. PyPy has explicit
-# workload qualification below, without implicitly adding a repeatability profile.
+# Keep the default workload matrix stable. PyPy requires explicit selection in
+# this harness and in the separate repeatability tool.
 RUNTIMES = ("java", "cpython", "node")
 MODES = ("native", "engine-only", "client-rep-off", "supervisor")
 JAVA_FLAGS = ("-Xmx64m", "-Xss256k", "-XX:CompressedClassSpaceSize=32m",

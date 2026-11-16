@@ -205,7 +205,9 @@ Use the paths from the installation being tested. These declared files supplemen
 the executable hashes, without claiming a complete dependency inventory.
 PyPy runs with its JIT enabled and default GC configuration; the fixture's explicit
 collections establish GC completion, not compilation of any particular loop.
-This adds no PyPy profile to the separate repeatability tool.
+The separate [repeatability tool](RUNTIME_REPEATABILITY.md) accepts an explicit
+PyPy profile and repeats the same workloads, retaining every attempt and assessing
+raw-count spread separately from execution success.
 
 The separate `runtime-workloads` workflow runs both Java 17 and Java 21 jobs on
 Ubuntu 24.04. Each job also requires CPython 3.12 and the runner's Node installation.
