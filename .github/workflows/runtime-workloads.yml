@@ -63,6 +63,7 @@ jobs:
           jdk_root="${!jdk_variable}"
           PATH="$jdk_root/bin:$PATH" python3 -m unittest discover -s tests -p 'test_java_process_fixture.py' -v
           python3 -m unittest discover -s tests -p 'test_node_thread_fixture.py' -v
+          python3 -m unittest discover -s tests -p 'test_process_snapshot.py' -v
           python3 -m unittest discover -s tests -p 'test_runtime_workloads.py' -v
           python3 -m unittest discover -s tests -p 'test_runtime_exit_faults.py' -v
       - name: Require Java, CPython and Node workloads through Durante
@@ -93,3 +94,23 @@ jobs:
           path: .results/
           include-hidden-files: true
           if-no-files-found: error
+      - name: Preserve the failed job's runtime binaries
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: runtime-workloads-java-${{ matrix.java }}-failed-runtime
+          # Another job can build a different core from the same source recipe.
+          # Keep this job's bytes so results.json hashes can identify a replay.
+          path: |
+            build/libdurante.so
+            target/release/durante
+            toolkit/sdk/DynamoRIO-Linux-11.3.0-1/.durante-runtime.json
+            toolkit/sdk/DynamoRIO-Linux-11.3.0-1/License.txt
+            toolkit/sdk/DynamoRIO-Linux-11.3.0-1/bin64/drrun
+            toolkit/sdk/DynamoRIO-Linux-11.3.0-1/lib64/release/libdynamorio.so
+            toolkit/sdk/DynamoRIO-Linux-11.3.0-1/lib64/release/libdynamorio.so.debug
+            toolkit/sdk/DynamoRIO-Linux-11.3.0-1/lib64/release/libdrpreload.so
+            toolkit/sdk/DynamoRIO-Linux-11.3.0-1/ext/lib64/release/libdrmgr.so
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 7
