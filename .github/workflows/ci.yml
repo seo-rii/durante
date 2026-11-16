@@ -115,6 +115,11 @@ jobs:
         run: python3 tests/signal_state.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/signal-state --require-isa sse2 --repeats 2
       - name: Qualify interpreter and JIT fixtures against native and engine controls
         run: python3 tests/runtime_compat.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/runtime-compat --require-runtime cpython --require-runtime pypy --require-runtime node --require-qualified-runtime java --java "$JAVA_HOME_17_X64/bin/java" --javac "$JAVA_HOME_17_X64/bin/javac" --timeout-ms 40000
+      - name: Require PyPy threads, major GC and child-process accounting
+        run: |
+          pypy3 -I -m unittest discover -s tests -p 'test_python_gc_fixture.py' -v
+          pypy_library="$(pypy3 -I -S -c 'from pathlib import Path; import sys; files = list(Path(sys.executable).resolve().parent.glob("libpypy*-c.so")); assert len(files) == 1, files; print(files[0])')"
+          python3 tests/runtime_workloads.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --runtime pypy --pypy "$(command -v pypy3)" --runtime-file "$pypy_library" --output-dir .results/pypy-workloads --timeout-ms 120000
       - name: Repeat default tiered Java execution against the production runtime
         run: python3 tests/java_tiered.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --java "$JAVA_HOME_17_X64/bin/java" --javac "$JAVA_HOME_17_X64/bin/javac" --output-dir .results/java-tiered --repeats 30
       - name: Qualify generated-code permission changes and RWX rewriting

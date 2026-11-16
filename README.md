@@ -98,8 +98,10 @@ reduces address-space reservations; it does not waive target limits.
 Build and test on Linux x86-64. The client supports GCC or Clang; native test
 fixtures additionally require GCC. The full development suite uses Python 3.11
 or newer; the SDK builder also supports Python 3.10.
-PyPy is tested when installed, and absence is reported
-as a coverage gap. No SDK or generated executable is committed.
+The CI process-tree job requires PyPy 7.3.19, including its managed workloads.
+Local smoke checks report an absent PyPy as a coverage gap; explicitly selecting
+PyPy in the workload harness requires it to be present. No SDK or generated
+executable is committed.
 
 The [fixed-fixture overhead experiment](docs/OVERHEAD.md) compares native execution,
 the engine alone, and the counter with REP telemetry off/on. It reports per-run
@@ -336,11 +338,13 @@ or qualification of the separate `isolate` profile. Generated-code unit tests
 alone do not establish JVM compatibility.
 
 The [managed runtime workload suite](docs/RUNTIME_WORKLOADS.md) additionally
-requires Java 17/21, CPython and Node threading, allocation/GC and child-process
-fixtures through native/engine controls and the actual `durante run` path.
+requires Java 17/21, CPython, PyPy and Node threading, allocation/GC and
+child-process fixtures through native/engine controls and the actual
+`durante run` path. The default matrix covers Java, CPython and Node;
+`--runtime pypy` selects the separate twelve-observation PyPy matrix required in CI.
 
 The [runtime repeatability tool](docs/RUNTIME_REPEATABILITY.md) repeats those
-fixed profiles in fresh processes, preserving failed and unrun observations.
+Java, CPython and Node profiles in fresh processes, preserving failed and unrun observations.
 It separates collection success from exact integer spread qualification for
 instructions and combined/per-operation REP counters; it defines no time weights.
 

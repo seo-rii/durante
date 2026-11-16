@@ -1,4 +1,4 @@
-"""Fixed CPython workloads; all child output is part of the fixture oracle."""
+"""Fixed CPython/PyPy workloads; all child output is part of the fixture oracle."""
 import gc
 from pathlib import Path
 import subprocess
@@ -45,7 +45,18 @@ def allocation_gc():
             cycle.append(cycle)
             checksum += block[0] + block[-1]
         if round_number % 4 == 3:
-            collected += gc.collect()
+            if sys.implementation.name == "pypy":
+                # PyPy does not report reclaimed object counts. Its synchronous
+                # step result proves that a whole major collection completed:
+                # https://doc.pypy.org/gc_info.html#semi-manual-gc-management
+                for _ in range(1000):
+                    if gc.collect_step().major_is_done:
+                        collected += 1
+                        break
+                else:
+                    raise RuntimeError("PyPy major collection did not finish within 1000 steps")
+            else:
+                collected += gc.collect()
     if collected <= 0:
         raise RuntimeError("no cyclic collection observed")
     retained = 0
