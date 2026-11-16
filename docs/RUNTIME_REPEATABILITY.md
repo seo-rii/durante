@@ -93,10 +93,10 @@ profiles differ from the default isolated profile and cannot approve that
 profile or arbitrary CPython programs. ASLR, address-dependent behavior, GC and
 other uncontrolled runtime decisions may still matter.
 
-## CPython startup and import controls
+## Python startup and import controls
 
 The repeatability tool additionally accepts explicit `--workload startup` and
-`--workload imports` selections for CPython only. These controls are absent from
+`--workload imports` selections for CPython and PyPy. These controls are absent from
 the default plan and from the ordinary language compatibility matrix. `startup`
 executes an inline program that prints one fixed line; `imports` imports the same
 `gc`, `pathlib`, `subprocess`, `sys` and `threading` modules as the allocation
@@ -106,14 +106,15 @@ or its explicit collections. The original fixture is unchanged.
 Each complete inline program, exact output and single-process/image oracle is
 recorded in the profile. The evaluator reconstructs those fixed commands and
 keeps statistics separate by workload and execution mode. Runtime, harness and
-named module files retain before/after hashes. The native startup probe remains
-separate from the measured processes; it does not prove their GC or allocator
-states. Counts include the loader, interpreter initialization, printing and
+named module files retain before/after hashes. The native implementation probe
+and any explicit CPython hash-control probe remain separate from the measured
+processes; they do not prove their GC or allocator states. Counts include the
+loader, interpreter initialization, printing and
 shutdown. These are complete-process controls, not measurements of separate
 regions, and subtracting their independent totals would not produce an exact
 allocation-loop count.
 
-A bounded follow-up to the hash comparison selects both controls with `seed-1`,
+A bounded CPython follow-up to the hash comparison selects both controls with `seed-1`,
 three repetitions, all four modes and the same **0 ppm** gate. This declares
 24 observations before execution. Keep all results and stop after that plan;
 do not add repetitions based on a promising range. The earlier allocation
@@ -131,6 +132,30 @@ python3 tests/runtime_repeatability.py collect \
   --repeats 3 --max-spread-ppm 0 --timeout-ms 30000 --campaign-seconds 300 \
   --output-dir .results/repeatability-cpython-startup
 ```
+
+For PyPy, select the same two programs explicitly while retaining `-I -S`, the
+default JIT/GC configuration and the ordinary fixed environment:
+
+```sh
+python3 tests/runtime_repeatability.py collect \
+  --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so \
+  --runner-bin target/release/durante --runtime pypy \
+  --runtime-bin /path/to/pypy/bin/pypy3 \
+  --runtime-file /path/to/pypy/bin/libpypy3.10-c.so \
+  --workload startup --workload imports --repeats 3 --max-spread-ppm 0 \
+  --timeout-ms 120000 --campaign-seconds 600 \
+  --output-dir .results/repeatability-pypy-startup
+```
+
+This plans 24 observations; omitting both explicit selections still runs only
+the three ordinary PyPy workloads. CPython's `random`/`seed-1` hash controls
+remain unavailable for PyPy, and isolated startup does not fix hash seeds or
+allocation addresses. Retain all observations, including qualification failures.
+If these controls vary, the ordinary thread, allocation/GC and subprocess loops
+are unnecessary for observing variation. That does not identify its cause,
+show that all earlier variation arose at startup, or justify subtracting startup
+counts from a workload. The location-diagnostic tool below remains specific to
+CPython; these PyPy controls do not add a PyPy instruction-location trace.
 
 The [isolate workload evidence](ISOLATED_RUNTIMES.md) uses the ordinary functional
 workload fixtures with a different execution boundary and resource profile.
@@ -203,8 +228,8 @@ The default executable is `pypy3`; the harness itself still runs with CPython
 3.11 or newer. The existing CI PyPy workload matrix establishes execution and
 accounting behavior, while these repeated observations assess count spread.
 Neither successful execution nor adding this profile establishes exact PyPy
-repeatability. CPython's hash controls and `startup`/`imports` selections remain
-specific to CPython and are rejected for PyPy.
+repeatability. The explicit `startup`/`imports` controls above also support PyPy;
+the `random`/`seed-1` hash controls remain specific to CPython.
 
 `--runtime-bin` selects an explicit runtime path. Java also accepts `--javac` and
 `--java-major 17|21`. Omit `--workload` for all workloads of the selected runtime,
@@ -308,6 +333,43 @@ collection, whose SHA256 is
 `c24de5145d83d60b02773e87cf75b00da5e86045e86aa93a1d6bc87ffbe7c5db`.
 This finite observation neither establishes the cause of the variation nor
 qualifies other PyPy installations, workloads or the separate isolate profile.
+
+## Bounded PyPy startup/import comparison
+
+A separate fixed campaign on 2026-11-16 used the same PyPy 7.3.19 / Python
+3.10.16 installation, CPU 0, `-I -S`, fixed environment, default JIT/GC settings,
+120-second invocation limit and 600-second campaign limit. It declared three
+repetitions of each startup/import control in all four modes: 24 observations,
+with the unchanged **0 ppm** criterion. The original 36-observation workload
+collection remains separate and unchanged.
+
+All 24 observations passed output, topology, accounting and cleanup checks;
+before/after host and named input identities agreed. Instruction totals varied
+even for the startup program, which only prints one fixed line:
+
+| Control | Metered mode | Minimum instructions | Exact median | Maximum instructions |
+| --- | --- | ---: | ---: | ---: |
+| Startup | Client, REP disabled | 51,776,137 | 51,793,637 | 51,801,419 |
+| Startup | Supervisor, REP enabled | 51,790,101 | 51,805,264 | 51,814,370 |
+| Imports | Client, REP disabled | 171,383,478 | 171,384,569 | 171,468,277 |
+| Imports | Supervisor, REP enabled | 171,355,780 | 171,461,719 | 171,495,924 |
+
+Every other recorded metric had zero range within its group. Collection passed,
+while exact-count qualification failed in all four metered groups. Collection
+and offline evaluation both exited 1 with identical evaluations; no attempt was
+dropped, no threshold changed and no successful retry substituted. The saved
+collection SHA256 is
+`53e0891418d24c33badbdafe25e5bfa8c14f8119700294668986bd96055f0da6`.
+The earlier ordinary PyPy collection retained the same metrics and failed gate
+when re-evaluated by the updated tool.
+
+This shows that the ordinary thread, explicit GC and child-process loops are
+not required to observe spread. These complete-process counts still include
+loader work, interpreter initialization, output and shutdown. They do not locate
+the variable instructions, distinguish runtime behavior from an instrumentation
+error, or explain every earlier sample. Subtracting these independent totals
+would not isolate workload instructions, and neither sample qualifies PyPy's
+exact repeatability.
 
 ## Bounded CPython observation
 

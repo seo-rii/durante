@@ -140,17 +140,22 @@ def controlled_collection_fixture(name):
     return collection
 
 
-def startup_collection_fixture():
-    collection = controlled_collection_fixture("seed-1")
+def startup_collection_fixture(runtime="cpython"):
+    collection = controlled_collection_fixture("seed-1") if runtime == "cpython" else collection_fixture(runtime)
     profile = collection["profile"]
-    cases = repeatability.controlled_cases(repeatability.cpython_startup_cases(profile["runtime_executable"]), "seed-1")
+    name = repeatability.hash_profile(profile)
+    cases = repeatability.controlled_cases(
+        repeatability.python_startup_cases(runtime, profile["runtime_executable"]), name)
     profile["workload_names"] = [case.name for case in cases]
     profile["workloads"] = [asdict(case) for case in cases]
     collection["plan"] = repeatability.fixed_plan(cases, 3)
     by_name = {case.name: case for case in cases}
-    collection["rows"] = [{**item, **observation(by_name[item["workload"]], item["mode"], profile, Path("/unit") / str(index)),
-                           "python_hash_seed": "1"}
+    collection["rows"] = [{**item, **observation(by_name[item["workload"]], item["mode"], profile, Path("/unit") / str(index))}
                           for index, item in enumerate(collection["plan"])]
+    seed = repeatability.CPYTHON_HASH_PROFILES[name]
+    if seed is not None:
+        for row in collection["rows"]:
+            row["python_hash_seed"] = seed
     collection["profile_sha256"] = repeatability.digest(profile)
     return collection
 
@@ -283,8 +288,8 @@ class RepeatabilityTests(unittest.TestCase):
                 collection["profile_sha256"] = repeatability.digest(collection["profile"])
                 self.assertFalse(repeatability.evaluate(collection)["collection_passed"])
 
-    def test_pypy_profiles_reject_cpython_hash_startup_and_import_controls(self):
-        for control in ("random", "seed-1", "startup", "imports", "hash probe", "forwarded seed"):
+    def test_pypy_profiles_reject_cpython_hash_controls(self):
+        for control in ("random", "seed-1", "hash probe", "forwarded seed"):
             with self.subTest(control=control):
                 collection = collection_fixture("pypy")
                 if control in ("random", "seed-1"):
@@ -292,8 +297,6 @@ class RepeatabilityTests(unittest.TestCase):
                     with self.assertRaisesRegex(ValueError, "require cpython"):
                         repeatability.collect(SimpleNamespace(runtime="pypy", workload=["allocation-gc"],
                                                               cpython_hash_profile=control))
-                elif control in ("startup", "imports"):
-                    collection["profile"]["workload_names"] = ["pypy-" + control]
                 elif control == "hash probe":
                     collection["cpython_probe"] = {"stdout": "{}"}
                 else:
@@ -491,36 +494,90 @@ class RepeatabilityTests(unittest.TestCase):
                 self.assertFalse(repeatability.evaluate(collection)["qualification_passed"])
 
     def test_startup_controls_keep_separate_complete_groups_and_fixed_commands(self):
-        collection = startup_collection_fixture()
-        before = copy.deepcopy(collection)
-        result = repeatability.evaluate(collection)
-        self.assertTrue(result["qualification_passed"], result)
-        self.assertEqual(collection, before)
-        self.assertEqual(len(collection["plan"]), 24)
-        self.assertEqual({(group["workload"], group["mode"]) for group in result["groups"]},
-                         {(name, mode) for name in ("cpython-startup", "cpython-imports") for mode in repeatability.METERED})
-        for name in ("cpython-startup", "cpython-imports"):
-            changed = copy.deepcopy(collection)
-            row = next(row for row in changed["rows"] if row["workload"] == name and row["mode"] == "supervisor")
-            change_counter(row, "instructions", row["measurement"]["instructions"] + 1)
-            observed = repeatability.evaluate(changed)
-            self.assertTrue(observed["collection_passed"], observed)
-            self.assertFalse(observed["qualification_passed"])
-            failed = [group for group in observed["groups"] if not group["passed"]]
-            self.assertEqual([(group["workload"], group["mode"]) for group in failed], [(name, "supervisor")])
-        changed = copy.deepcopy(collection)
-        changed["profile"]["workloads"][0]["command"][-1] += "# changed inline program\n"
-        changed["profile_sha256"] = repeatability.digest(changed["profile"])
-        self.assertFalse(repeatability.evaluate(changed)["collection_passed"])
+        for runtime in ("cpython", "pypy"):
+            with self.subTest(runtime=runtime):
+                collection = startup_collection_fixture(runtime)
+                before = copy.deepcopy(collection)
+                result = repeatability.evaluate(collection)
+                self.assertTrue(result["collection_complete"], result)
+                self.assertTrue(result["qualification_passed"], result)
+                self.assertEqual(collection, before)
+                self.assertEqual(len(collection["plan"]), 24)
+                names = [runtime + "-" + name for name in ("startup", "imports")]
+                self.assertEqual({(group["workload"], group["mode"]) for group in result["groups"]},
+                                 {(name, mode) for name in names for mode in repeatability.METERED})
+                for name in names:
+                    changed = copy.deepcopy(collection)
+                    row = next(row for row in changed["rows"] if row["workload"] == name and row["mode"] == "supervisor")
+                    change_counter(row, "instructions", row["measurement"]["instructions"] + 1)
+                    observed = repeatability.evaluate(changed)
+                    self.assertTrue(observed["collection_passed"], observed)
+                    self.assertFalse(observed["qualification_passed"])
+                    failed = [group for group in observed["groups"] if not group["passed"]]
+                    self.assertEqual([(group["workload"], group["mode"]) for group in failed], [(name, "supervisor")])
+                for target in ("declared", "observed"):
+                    with self.subTest(runtime=runtime, changed_command=target):
+                        changed = copy.deepcopy(collection)
+                        command = (changed["profile"]["workloads"][0] if target == "declared"
+                                   else changed["rows"][0])["command"]
+                        command[-1] += "# changed inline program\n"
+                        changed["profile_sha256"] = repeatability.digest(changed["profile"])
+                        self.assertFalse(repeatability.evaluate(changed)["collection_passed"])
 
-    def test_startup_controls_are_cpython_only_and_do_not_enter_default_workloads(self):
-        ordinary = repeatability.workloads.workload_cases({"cpython": "/runtime/python"}, Path("/classes"))
-        self.assertEqual([case.name for case in ordinary],
-                         ["cpython-threads", "cpython-allocation-gc", "cpython-processes"])
-        for runtime in ("java", "node", "pypy"):
+    def test_python_startup_cases_have_the_same_exact_inline_sources_and_one_image(self):
+        controls = {
+            "startup": ("print('startup:ok')\n", "startup:ok\n"),
+            "imports": ("import gc\nfrom pathlib import Path\nimport subprocess\nimport sys\n"
+                        "import threading\nprint('imports:ok')\n", "imports:ok\n"),
+        }
+        self.assertEqual(repeatability.PYTHON_STARTUP_CONTROLS, controls)
+        for runtime in ("cpython", "pypy"):
+            with self.subTest(runtime=runtime):
+                cases = repeatability.python_startup_cases(runtime, "/runtime/python")
+                self.assertEqual([case.name for case in cases], [runtime + "-" + name for name in controls])
+                for case, (source, expected) in zip(cases, controls.values()):
+                    self.assertEqual(case.runtime, runtime)
+                    self.assertEqual(case.command, ["/runtime/python", "-I", "-S", "-c", source])
+                    self.assertEqual(case.expected, expected)
+                    self.assertEqual((case.processes, case.images, case.minimum_threads), (1, 1, 1))
+        for runtime in ("java", "node", "python", "", None):
+            with self.subTest(runtime=runtime), self.assertRaises(ValueError):
+                repeatability.python_startup_cases(runtime, "/runtime/other")
+
+    def test_python_startup_profiles_survive_offline_checkout_relocation(self):
+        for runtime in ("cpython", "pypy"):
+            with self.subTest(runtime=runtime):
+                collection = startup_collection_fixture(runtime)
+                before = copy.deepcopy(collection)
+                expected = repeatability.evaluate(collection)
+                self.assertTrue(expected["qualification_passed"], expected)
+                with patch.object(repeatability.workloads, "FIXTURES", Path("/different-checkout/fixtures")):
+                    observed = repeatability.evaluate(collection)
+                self.assertEqual(observed, expected)
+                self.assertEqual(collection, before)
+
+    def test_startup_controls_are_python_only_and_do_not_enter_default_workloads(self):
+        for runtime in ("cpython", "pypy"):
+            ordinary = repeatability.workloads.workload_cases({runtime: "/runtime/python"}, Path("/classes"))
+            self.assertEqual([case.name for case in ordinary],
+                             [runtime + "-" + name for name in ("threads", "allocation-gc", "processes")])
+        for runtime in ("java", "node"):
             for workload in ("startup", "imports"):
-                with self.subTest(runtime=runtime, workload=workload), self.assertRaisesRegex(ValueError, "require cpython"):
+                with self.subTest(runtime=runtime, workload=workload), self.assertRaises(ValueError):
                     repeatability.collect(SimpleNamespace(runtime=runtime, workload=[workload], cpython_hash_profile="isolated"))
+
+    def test_pypy_startup_controls_still_reject_cpython_hash_options(self):
+        for name in ("random", "seed-1"):
+            for selected in (["startup"], ["imports"], ["startup", "imports"]):
+                with self.subTest(hash_profile=name, workloads=selected), self.assertRaisesRegex(ValueError, "require cpython"):
+                    repeatability.collect(SimpleNamespace(runtime="pypy", workload=selected, cpython_hash_profile=name))
+            collection = startup_collection_fixture("pypy")
+            cases = repeatability.python_startup_cases("pypy", collection["profile"]["runtime_executable"])
+            with self.assertRaises(ValueError):
+                repeatability.controlled_cases(cases, name)
+            collection["profile"]["cpython_hash_profile"] = name
+            collection["profile_sha256"] = repeatability.digest(collection["profile"])
+            self.assertFalse(repeatability.evaluate(collection)["collection_passed"])
 
     def test_versioned_personality_matches_native_probe_and_preserves_unknown_legacy(self):
         legacy = controlled_collection_fixture("seed-1")
@@ -570,7 +627,7 @@ class RepeatabilityTests(unittest.TestCase):
             self.skipTest("Linux prlimit unavailable")
         with tempfile.TemporaryDirectory() as temporary:
             for name in ("isolated", "seed-1"):
-                cases = repeatability.controlled_cases(repeatability.cpython_startup_cases(sys.executable), name)
+                cases = repeatability.controlled_cases(repeatability.python_startup_cases("cpython", sys.executable), name)
                 for case in cases:
                     directory = Path(temporary) / (name + case.name)
                     directory.mkdir()
@@ -644,14 +701,14 @@ class RepeatabilityTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     repeatability.read_collection(path)
 
-    def collect_mocked(self, outcome, runtime="cpython", default_runtime=False):
+    def collect_mocked(self, outcome, runtime="cpython", default_runtime=False, selected=("allocation-gc",)):
         with tempfile.TemporaryDirectory() as temporary:
             directory = Path(temporary)
             dummy = directory / "identity"
             dummy.write_bytes(b"unit fixture")
             args = SimpleNamespace(sdk=directory, client=dummy, runner_bin=dummy, output_dir=directory / "results",
                                    runtime=runtime, runtime_bin=None if default_runtime else str(dummy), runtime_file=[], runtime_image=None,
-                                   javac=str(dummy), java_major=17, cpu=2, workload=["allocation-gc"], repeats=3,
+                                   javac=str(dummy), java_major=17, cpu=2, workload=None if selected is None else list(selected), repeats=3,
                                    max_spread_ppm=0, timeout_ms=1000, campaign_seconds=600)
             calls = []
             inputs = {key: dummy for key in required_inputs(runtime)}
@@ -661,6 +718,9 @@ class RepeatabilityTests(unittest.TestCase):
                 calls.append(mode)
                 if outcome == "exception":
                     raise OSError("unit observation exception")
+                if outcome == "success":
+                    profile = repeatability.read_collection(args.output_dir / "collection.json")["profile"]
+                    return observation(case, mode, profile, options.output_dir / (case.name + "-" + mode))
                 return {"command": ["mocked"], "passed": False, "errors": ["recorded failure"],
                         "infrastructure_ok": outcome != "cleanup", "cleanup_complete": outcome != "cleanup", "exit_code": 7,
                         "timeout": False, "stdout": "", "stderr": ""}
@@ -681,6 +741,26 @@ class RepeatabilityTests(unittest.TestCase):
             recorded = repeatability.read_collection(args.output_dir / "collection.json")
             self.assertTrue((args.output_dir / "evaluation.json").is_file())
             return calls, recorded, result
+
+    def test_pypy_collect_keeps_the_default_plan_and_runs_only_requested_startup_controls(self):
+        selections = ((None, ["threads", "allocation-gc", "processes"]),
+                      (("startup", "imports"), ["startup", "imports"]),
+                      (("allocation-gc", "imports"), ["allocation-gc", "imports"]))
+        for selected, names in selections:
+            with self.subTest(selected=selected):
+                calls, recorded, result = self.collect_mocked("success", "pypy", selected=selected)
+                self.assertTrue(result["collection_complete"], result)
+                self.assertTrue(result["collection_passed"], result)
+                self.assertTrue(result["qualification_passed"], result)
+                self.assertEqual(recorded["profile"]["workload_names"], ["pypy-" + name for name in names])
+                self.assertEqual(len(recorded["plan"]), 12 * len(names))
+                self.assertEqual(calls, list(repeatability.workloads.MODES) * (3 * len(names)))
+                self.assertNotIn("cpython_probe", recorded)
+                self.assertNotIn("cpython_hash_profile", recorded["profile"])
+                self.assertNotIn("PYTHONHASHSEED", recorded["profile"]["environment"])
+                for case in recorded["profile"]["workloads"]:
+                    self.assertEqual(case["command"][1:3], ["-I", "-S"])
+                self.assertTrue(all("python_hash_seed" not in row for row in recorded["rows"]))
 
     def test_pypy_default_binary_keeps_failed_observations_and_the_full_fixed_plan(self):
         calls, recorded, result = self.collect_mocked("program failure", "pypy", default_runtime=True)

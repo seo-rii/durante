@@ -14,7 +14,7 @@ import time
 from concurrent_spawn import bounded_number, cleanup_orphans, own_subreaper
 from runtime_compat import (InputProvenance, bounded_bytes, collect_records,
                             executable_path, inspect_accounting, run_process)
-from runtime_repeatability import (CPYTHON_CONTROL_FLAGS, CPYTHON_STARTUP_CONTROLS,
+from runtime_repeatability import (CPYTHON_CONTROL_FLAGS, PYTHON_STARTUP_CONTROLS,
                                    FIXED_ENV, collect_cpython_probe,
                                    fixed_environment, host_profile, publish)
 
@@ -241,7 +241,7 @@ def collect(args):
                 if deadline - time.monotonic() < ROW_ALLOWANCE:
                     row["errors"].append("full row and publication/cleanup allowance unavailable")
                     continue
-                source, expected = CPYTHON_STARTUP_CONTROLS[row["workload"]]
+                source, expected = PYTHON_STARTUP_CONTROLS[row["workload"]]
                 target = [args.runtime_bin, *CPYTHON_CONTROL_FLAGS, "-c", source]
                 directory = args.output_dir / ("repeat-%d-%s" % (row["repeat"], row["workload"]))
                 observation, profile = observe(args, directory, target, expected, True)
@@ -288,13 +288,13 @@ def main(argv=None):
         parser.add_argument("--" + name, type=Path, required=True)
     parser.add_argument("--runtime-bin", default=sys.executable)
     parser.add_argument("--runtime-file", type=Path, action="append", default=[])
-    parser.add_argument("--workload", choices=CPYTHON_STARTUP_CONTROLS, action="append")
+    parser.add_argument("--workload", choices=PYTHON_STARTUP_CONTROLS, action="append")
     parser.add_argument("--oracle-only", action="store_true")
     parser.add_argument("--cpu", type=bounded_number(0, 1048575))
     args = parser.parse_args(argv)
     if args.oracle_only and args.workload:
         parser.error("--oracle-only cannot discard requested CPython workloads")
-    args.workload = [] if args.oracle_only else list(dict.fromkeys(args.workload or CPYTHON_STARTUP_CONTROLS))
+    args.workload = [] if args.oracle_only else list(dict.fromkeys(args.workload or PYTHON_STARTUP_CONTROLS))
     for name in ("sdk", "client", "runner_bin", "oracle", "unload_oracle", "unload_module", "output_dir"):
         setattr(args, name, getattr(args, name).absolute())
     args.prlimit, args.readelf = executable_path("prlimit"), executable_path("readelf")

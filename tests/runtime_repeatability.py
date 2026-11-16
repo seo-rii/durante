@@ -30,12 +30,12 @@ REQUIRED_INPUTS = {"binary:runtime", "binary:client", "binary:runner", "binary:d
 FIXED_ENV = {"PATH": os.defpath, "LANG": "C", "LC_ALL": "C", "TZ": "UTC", "MALLOC_ARENA_MAX": "2"}
 CPYTHON_HASH_PROFILES = {"isolated": None, "random": "random", "seed-1": "1"}
 CPYTHON_CONTROL_FLAGS = ("-P", "-s", "-S")
-CPYTHON_STARTUP_CONTROLS = {
+PYTHON_STARTUP_CONTROLS = {
     "startup": ("print('startup:ok')\n", "startup:ok\n"),
     "imports": ("import gc\nfrom pathlib import Path\nimport subprocess\nimport sys\n"
                 "import threading\nprint('imports:ok')\n", "imports:ok\n"),
 }
-CPYTHON_HASH_WORKLOADS = ("allocation-gc", *CPYTHON_STARTUP_CONTROLS)
+CPYTHON_HASH_WORKLOADS = ("allocation-gc", *PYTHON_STARTUP_CONTROLS)
 ADDR_NO_RANDOMIZE = 0x40000
 CPYTHON_PROBE_LEGACY = """import gc, json, os, pathlib, subprocess, sys, threading
 paths = sorted({str(pathlib.Path(value).resolve())
@@ -66,7 +66,7 @@ LIMITATIONS = [
     "application-mutable diagnostic counts, not CPU time, time coefficients or trusted judgement",
     "run-profile observations do not qualify isolate; existing isolate evidence remains a separate prerequisite",
     "explicit CPython hash controls change startup flags and do not qualify the default isolated profile",
-    "CPython startup/import controls include loader, output and shutdown work; they are not region counts or counter correctness proofs",
+    "Python startup/import controls include loader, output and shutdown work; they are not region counts or counter correctness proofs",
     "recorded ADDR_NO_RANDOMIZE is inherited process state, not proof that all runtime allocation addresses are deterministic; legacy state is unknown",
 ]
 
@@ -206,12 +206,14 @@ def controlled_cases(cases, name):
     return [replace(case, command=[case.command[0], *CPYTHON_CONTROL_FLAGS, *case.command[3:]]) for case in cases]
 
 
-def cpython_startup_cases(executable):
+def python_startup_cases(runtime, executable):
     # These opt-in controls belong only to this repeatability tool. Do not add
     # them to the ordinary language compatibility matrix or its default plan.
-    return [workloads.Workload("cpython-" + name, "cpython", [executable, "-I", "-S", "-c", source],
+    if runtime not in ("cpython", "pypy"):
+        raise ValueError("startup and imports controls require cpython or pypy")
+    return [workloads.Workload(runtime + "-" + name, runtime, [executable, "-I", "-S", "-c", source],
                                expected, 1, 1)
-            for name, (source, expected) in CPYTHON_STARTUP_CONTROLS.items()]
+            for name, (source, expected) in PYTHON_STARTUP_CONTROLS.items()]
 
 
 def profile_environment(profile):
@@ -321,8 +323,8 @@ def profile_cases(profile, files):
                 raise ValueError("fixed runtime fixture command layout changed")
             command[fixture_index] = path
             available[index] = replace(case, command=command)
-    if runtime == "cpython":
-        available += cpython_startup_cases(profile["runtime_executable"])
+    if runtime in ("cpython", "pypy"):
+        available += python_startup_cases(runtime, profile["runtime_executable"])
     cases = controlled_cases([case for case in available if case.name in selected], hash_profile(profile))
     if selected != [case.name for case in cases] or not workloads.same_json(profile.get("workloads"), [asdict(case) for case in cases]):
         raise ValueError("recorded commands or workload oracle do not match the fixed profile")
@@ -526,8 +528,8 @@ def input_paths(args, executable):
 
 def collect(args):
     selected_hash_profile = getattr(args, "cpython_hash_profile", "isolated")
-    if args.runtime != "cpython" and set(args.workload or []) & CPYTHON_STARTUP_CONTROLS.keys():
-        raise ValueError("startup and imports controls require cpython")
+    if args.runtime not in ("cpython", "pypy") and set(args.workload or []) & PYTHON_STARTUP_CONTROLS.keys():
+        raise ValueError("startup and imports controls require cpython or pypy")
     if (selected_hash_profile not in CPYTHON_HASH_PROFILES
             or selected_hash_profile != "isolated" and (args.runtime != "cpython" or not args.workload
                 or not set(args.workload) <= set(CPYTHON_HASH_WORKLOADS))):
@@ -541,8 +543,8 @@ def collect(args):
     args.drrun = args.sdk / "bin64/drrun"
     classes = args.output_dir / "classes"
     cases = workloads.workload_cases({args.runtime: executable or str(Path(args.runtime_bin or args.runtime).absolute())}, classes)
-    if args.runtime == "cpython" and args.workload:
-        cases += cpython_startup_cases(cases[0].command[0])
+    if args.runtime in ("cpython", "pypy") and args.workload:
+        cases += python_startup_cases(args.runtime, cases[0].command[0])
     if args.workload:
         cases = [case for case in cases if any(case.name == args.runtime + "-" + name or case.name.startswith(args.runtime + "-" + name + "-") for name in args.workload)]
     cases = controlled_cases(cases, selected_hash_profile)
@@ -657,8 +659,8 @@ def main(argv=None):
     capture.add_argument("--runtime-bin", help="selected runtime executable; default: java/python3/node/pypy3")
     capture.add_argument("--runtime-file", type=Path, action="append", default=[], help="additional runtime library/module to hash before and after")
     capture.add_argument("--runtime-image", help="operator-supplied immutable sha256 image digest; metadata, not attestation")
-    capture.add_argument("--workload", choices=(*workloads.OUTPUTS, *CPYTHON_STARTUP_CONTROLS), action="append",
-                         help="default: ordinary workloads; CPython startup/imports controls require explicit selection")
+    capture.add_argument("--workload", choices=(*workloads.OUTPUTS, *PYTHON_STARTUP_CONTROLS), action="append",
+                         help="default: ordinary workloads; CPython/PyPy startup/imports controls require explicit selection")
     capture.add_argument("--javac", default="javac")
     capture.add_argument("--java-major", type=int, choices=(17, 21), default=17)
     capture.add_argument("--cpu", type=bounded_number(0, 1048575), help="one allowed logical CPU; default: first allowed CPU")
