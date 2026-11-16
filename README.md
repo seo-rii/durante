@@ -29,6 +29,12 @@ unavailable byte telemetry independently of instruction validity. See the
 [result contract](docs/PROTOCOL.md#result-contract-and-consumers) before consuming
 reports; a valid count is not a trusted verdict or a CPU-time conversion.
 
+Native executions can opt into `--disallow-cpu-feature avx` or `simd` on `run`
+and `isolate`. The existing DynamoRIO client stops before a forbidden instruction
+executes and records the violation; allowed runs retain the normal native work
+metric. See [CPU feature restrictions](docs/CPU_FEATURE_POLICY.md) for semantics,
+embedding arguments and the same in-process integrity limits as measurement.
+
 New clients also report versioned `rep_breakdown` counters for MOVS and STOS
 requested bytes and entries separately, at image/process/tree level. This lets
 reference-model experiments distinguish copying from filling without changing
@@ -45,7 +51,7 @@ archive SHA-256 before extracting the required build/runtime subset.
 It then builds the 64-bit release and debug runtime cores from the same pinned
 source commit with the [concurrent process and signal patch](toolkit/patches/dynamorio-vfork-lifetime.patch)
 and [code replay patch](toolkit/patches/dynamorio-code-replay.patch).
-The source archive is also hash-pinned. Python 3.11 or newer, CMake, a C/C++
+The source archive is also hash-pinned. Python 3.10 or newer, CMake, a C/C++
 compiler and `patch` are needed for this one-time build; this adds no compilation
 to measured runs.
 The SDK's `.durante-runtime.json` records the source, both patches and installed core
@@ -86,8 +92,9 @@ python3 tests/smoke.py \
 reduces address-space reservations; it does not waive target limits.
 
 Build and test on Linux x86-64. The client supports GCC or Clang; native test
-fixtures additionally require GCC. Development scripts use Python 3.11 or newer,
-including the SDK fetcher. PyPy is tested when installed, and absence is reported
+fixtures additionally require GCC. The full development suite uses Python 3.11
+or newer; the SDK builder also supports Python 3.10.
+PyPy is tested when installed, and absence is reported
 as a coverage gap. No SDK or generated executable is committed.
 
 The [fixed-fixture overhead experiment](docs/OVERHEAD.md) compares native execution,
@@ -201,9 +208,11 @@ Python runtime dependency in its execution sandbox. Shared
 [protocol vectors](tests/protocol_vectors.json) exercise complete and incomplete
 trees, exec boundaries, duplicate records and overflow handling.
 
-The client does not capture or replace target stdout/stderr, set its exit status,
-change fork to another syscall, or weaken sandbox policies. It writes separate
-lifecycle records. The caller must put resource bounds around execution and
+The client does not capture or replace target stdout/stderr, change fork to
+another syscall, or weaken sandbox policies. Measurement-only execution leaves
+the target's exit status unchanged; enabled CPU policies stop forbidden
+instructions and deny unsupported execution transitions. The client writes
+separate lifecycle records. The caller must put resource bounds around execution and
 cleanup; the collector neither waits for processes nor kills them. A live or
 truncated tree is unavailable, never a valid partial total.
 

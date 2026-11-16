@@ -117,6 +117,163 @@ def bounded_json(path):
     return json.loads(bounded_bytes(path, MAX_REPORT))
 
 
+def _proc_stat(data, pid):
+    fields = data[data.rindex(b")") + 2:].split()
+    if int(data.split(b" ", 1)[0]) != pid or len(fields) < 20:
+        raise ValueError("invalid process stat")
+    return {"pid": pid, "starttime_ticks": int(fields[19]),
+            "parent_pid": int(fields[1]), "state": fields[0].decode("ascii")}
+
+
+def process_identity(pid, proc_root=Path("/proc")):
+    """Capture identity while Popen still owns its unreaped root process."""
+    row = _proc_stat(bounded_bytes(proc_root / str(pid) / "stat", 4096), pid)
+    return {key: row[key] for key in ("pid", "starttime_ticks")}
+
+
+def process_snapshot(identity, *, proc_root=Path("/proc"), time_budget=0.05,
+                     max_processes=64, max_threads=128, max_total_threads=256,
+                     max_bytes=262144, clock=time.monotonic):
+    """Best-effort owned-tree observation; never an atomic or complete host view."""
+    started = clock()
+    result = {"schema": 1, "root_identity": identity, "started_monotonic": started,
+              "complete": True, "processes": [], "issues": [], "bytes_read": 0,
+              "threads_observed": 0, "threads_inspected": 0, "root_revalidated": False,
+              "limits": {"seconds": time_budget, "processes": max_processes,
+                         "threads_per_process": max_threads, "total_threads": max_total_threads,
+                         "read_bytes": max_bytes, "compact_json_bytes": 262144}}
+
+    class LimitReached(Exception):
+        pass
+
+    def issue(reason, pid=None, tid=None):
+        result["complete"] = False
+        if len(result["issues"]) < 64:
+            result["issues"].append({"reason": reason, "pid": pid, "tid": tid})
+
+    def check():
+        if clock() - started >= time_budget:
+            raise LimitReached("time limit")
+        if result["bytes_read"] >= max_bytes:
+            raise LimitReached("read byte limit")
+
+    def read(path, limit):
+        check()
+        available = max_bytes - result["bytes_read"]
+        with path.open("rb") as stream:
+            data = stream.read(min(limit + 1, available))
+        result["bytes_read"] += len(data)
+        check()
+        if len(data) > limit:
+            raise ValueError("proc file exceeds byte limit")
+        return data
+
+    def stat_at(path, pid):
+        return _proc_stat(read(path / "stat", 4096), pid)
+
+    def details(path):
+        fields = dict(line.split(b":", 1) for line in read(path / "status", 16384).splitlines() if b":" in line)
+        return {"tgid": int(fields[b"Tgid"]), "tracer_pid": int(fields[b"TracerPid"]),
+                "cpu_affinity_list": fields[b"Cpus_allowed_list"].decode("ascii").strip(),
+                "wchan": read(path / "wchan", 1024).decode("ascii").strip()}
+
+    def matches(stat, expected):
+        return all(stat[key] == expected[key] for key in ("pid", "starttime_ticks"))
+
+    pending, seen = [], set()
+    try:
+        if (not isinstance(identity, dict) or type(identity.get("pid")) is not int
+                or type(identity.get("starttime_ticks")) is not int):
+            raise ValueError("launch root identity unavailable")
+        root = proc_root / str(identity["pid"])
+        if not matches(stat_at(root, identity["pid"]), identity):
+            raise ValueError("root identity changed")
+        pending.append((identity, None))
+        seen.add(identity["pid"])
+        while pending:
+            check()
+            expected, parent = pending.pop(0)
+            pid = expected["pid"]
+            path = proc_root / str(pid)
+            try:
+                if parent and not matches(stat_at(proc_root / str(parent["pid"]), parent["pid"]), parent):
+                    issue("parent identity changed", pid)
+                    continue
+                before = stat_at(path, pid)
+                if not matches(before, expected) or (parent and before["parent_pid"] != parent["pid"]):
+                    issue("process identity or parent changed", pid)
+                    continue
+                process = {**before, **details(path), "parent_identity": parent,
+                           "threads": [], "threads_inspected": 0, "identity_revalidated": False}
+                if process["tgid"] != pid:
+                    issue("child is no longer the expected process leader", pid)
+                    continue
+                result["processes"].append(process)
+                children = []
+                with os.scandir(path / "task") as tasks:
+                    for task in tasks:
+                        check()
+                        if not task.name.isdigit():
+                            continue
+                        if process["threads_inspected"] >= max_threads:
+                            issue("per-process thread limit", pid)
+                            break
+                        if result["threads_inspected"] >= max_total_threads:
+                            raise LimitReached("total thread limit")
+                        process["threads_inspected"] += 1
+                        result["threads_inspected"] += 1
+                        tid, thread_path = int(task.name), path / "task" / task.name
+                        try:
+                            thread_before = stat_at(thread_path, tid)
+                            thread = {**thread_before, **details(thread_path)}
+                            child_ids = [int(value) for value in read(thread_path / "children", 8192).split()]
+                            if thread["tgid"] != pid or not matches(stat_at(thread_path, tid), thread_before):
+                                issue("thread identity changed", pid, tid)
+                                continue
+                            thread["children"] = child_ids[:max_processes]
+                            process["threads"].append(thread)
+                            result["threads_observed"] += 1
+                            if len(child_ids) > max_processes:
+                                issue("child process limit", pid, tid)
+                            for child_pid in child_ids[:max_processes]:
+                                if child_pid in seen:
+                                    continue
+                                if len(seen) >= max_processes:
+                                    issue("process limit", pid, tid)
+                                    break
+                                try:
+                                    child = stat_at(proc_root / str(child_pid), child_pid)
+                                    if child["parent_pid"] != pid:
+                                        issue("child parent changed", child_pid, tid)
+                                        continue
+                                    children.append((child, {"pid": pid, "starttime_ticks": before["starttime_ticks"],
+                                                              "thread_id": tid, "thread_starttime_ticks": thread_before["starttime_ticks"]}))
+                                    seen.add(child_pid)
+                                except (OSError, ValueError, KeyError, UnicodeError) as error:
+                                    issue("child unavailable: " + type(error).__name__, child_pid, tid)
+                        except (OSError, ValueError, KeyError, UnicodeError) as error:
+                            issue("thread unavailable: " + type(error).__name__, pid, tid)
+                process["identity_revalidated"] = matches(stat_at(path, pid), before)
+                if process["identity_revalidated"]:
+                    pending.extend(children)
+                else:
+                    issue("process changed during observation", pid)
+            except (OSError, ValueError, KeyError, UnicodeError) as error:
+                issue("process unavailable: " + type(error).__name__, pid)
+        result["root_revalidated"] = matches(stat_at(root, identity["pid"]), identity)
+        if not result["root_revalidated"]:
+            issue("root changed during observation", identity["pid"])
+    except LimitReached as error:
+        issue(str(error))
+    except (OSError, ValueError, KeyError, UnicodeError) as error:
+        issue("root unavailable: " + type(error).__name__, identity.get("pid") if isinstance(identity, dict) else None)
+    result["elapsed_seconds"] = round(clock() - started, 6)
+    if len(json.dumps(result, separators=(",", ":")).encode()) > 262144:
+        result["processes"] = []
+        issue("compact JSON byte limit")
+    return result
+
+
 def run_process(command, directory, timeout_ms, prlimit=None, *, cpu_seconds=40, python_hash_seed=None):
     """One bounded process tree; always reap the harness's adopted descendants."""
     if python_hash_seed not in (None, "random", "1"):
@@ -129,6 +286,11 @@ def run_process(command, directory, timeout_ms, prlimit=None, *, cpu_seconds=40,
                "--core=0", "--", *command]
     started = time.monotonic()
     timed_out = False
+    snapshot, identity, identity_error = None, None, None
+    try:
+        harness_affinity = sorted(os.sched_getaffinity(0))
+    except OSError:
+        harness_affinity = None
     with stdout.open("wb") as out, stderr.open("wb") as err:
         environment = {key: value for key, value in os.environ.items()
                        if not key.startswith("PYTHON") and key not in (
@@ -144,22 +306,43 @@ def run_process(command, directory, timeout_ms, prlimit=None, *, cpu_seconds=40,
                                    env=environment)
         pid = process.pid
         try:
+            try:
+                identity = process_identity(pid)
+            except (OSError, ValueError, UnicodeError) as error:
+                identity_error = type(error).__name__
             code = process.wait(timeout=timeout_ms / 1000)
         except subprocess.TimeoutExpired:
             timed_out = True
-            os.killpg(pid, signal.SIGTERM)
+            try:
+                snapshot = process_snapshot(identity)
+            except Exception as error:
+                snapshot = {"schema": 1, "complete": False, "error": type(error).__name__}
+            try:
+                os.killpg(pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
             try:
                 code = process.wait(timeout=2)
             except subprocess.TimeoutExpired:
-                os.killpg(pid, signal.SIGKILL)
+                try:
+                    os.killpg(pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
                 code = process.wait(timeout=3)
         finally:
-            if process.poll() is None:
-                os.killpg(pid, signal.SIGKILL)
-                process.wait(timeout=3)
-            cleaned = cleanup_orphans()
+            try:
+                if process.poll() is None:
+                    try:
+                        os.killpg(pid, signal.SIGKILL)
+                    except ProcessLookupError:
+                        pass
+                    process.wait(timeout=3)
+            finally:
+                cleaned = cleanup_orphans()
     row = {"root_pid": pid, "exit_code": code, "timeout": timed_out,
            "cleanup_complete": cleaned, "elapsed_s": round(time.monotonic() - started, 4),
+           "root_identity": identity, "root_identity_error": identity_error,
+           "harness_cpu_affinity": harness_affinity, "timeout_snapshot": snapshot,
            "errors": [], "functional_ok": False, "accounting_ok": False}
     try:
         row["stdout"] = bounded_bytes(stdout).decode("utf-8")

@@ -64,6 +64,9 @@ enum Command {
         /// Retain an automatically created records directory and report its path.
         #[arg(long)]
         keep_records: bool,
+        /// Stop before executing a forbidden instruction; repeat for both policies.
+        #[arg(long = "disallow-cpu-feature", value_parser = ["avx", "simd"])]
+        disallowed_cpu_features: Vec<String>,
         /// Target executable and arguments, passed directly without a shell.
         #[arg(required = true, last = true, num_args = 1..)]
         command: Vec<OsString>,
@@ -91,6 +94,9 @@ enum Command {
         /// Combined captured-byte limit (default 1 MiB, at most 64 MiB).
         #[arg(long, requires = "output_dir", value_parser = parse_output_limit)]
         output_limit_bytes: Option<u64>,
+        /// Forward the native instruction policy into the isolated run.
+        #[arg(long = "disallow-cpu-feature", value_parser = ["avx", "simd"])]
+        disallowed_cpu_features: Vec<String>,
         #[arg(required = true, last = true, num_args = 1..)]
         command: Vec<OsString>,
     },
@@ -127,7 +133,7 @@ fn parse_output_limit(value: &str) -> Result<u64, String> {
 }
 
 fn main() {
-    let cli = match Cli::try_parse() {
+    let mut cli = match Cli::try_parse() {
         Ok(cli) => cli,
         Err(error)
             if matches!(
@@ -155,6 +161,25 @@ fn main() {
             std::process::exit(2);
         }
     };
+    if let Command::Run {
+        disallowed_cpu_features,
+        ..
+    }
+    | Command::Isolate {
+        disallowed_cpu_features,
+        ..
+    } = &mut cli.command
+    {
+        disallowed_cpu_features.sort_unstable();
+        if disallowed_cpu_features.len() > 2
+            || disallowed_cpu_features
+                .windows(2)
+                .any(|pair| pair[0] == pair[1])
+        {
+            eprintln!("durante: duplicate or excessive CPU feature restrictions");
+            std::process::exit(2);
+        }
+    }
     let result = match cli.command {
         Command::Doctor {
             profile,
@@ -201,6 +226,7 @@ fn main() {
             timeout_ms,
             records_dir,
             keep_records,
+            disallowed_cpu_features,
             command,
         } => {
             #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
@@ -213,6 +239,7 @@ fn main() {
                     timeout_ms,
                     records_dir,
                     keep_records,
+                    disallowed_cpu_features,
                     command,
                 })
             }
@@ -226,6 +253,7 @@ fn main() {
                     timeout_ms,
                     records_dir,
                     keep_records,
+                    disallowed_cpu_features,
                     command,
                 );
                 Err("durante run requires Linux x86-64".to_owned())
@@ -240,6 +268,7 @@ fn main() {
             timeout_ms,
             output_dir,
             output_limit_bytes,
+            disallowed_cpu_features,
             command,
         } => {
             #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
@@ -253,6 +282,7 @@ fn main() {
                     timeout_ms,
                     output_dir,
                     output_limit_bytes: output_limit_bytes.unwrap_or(output::DEFAULT_LIMIT),
+                    disallowed_cpu_features,
                     command,
                 })
             }
@@ -268,6 +298,7 @@ fn main() {
                     command,
                     output_dir,
                     output_limit_bytes,
+                    disallowed_cpu_features,
                 );
                 Err("durante isolate requires Linux x86-64".to_owned())
             }

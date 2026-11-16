@@ -48,7 +48,10 @@ def _hash_file(path):
     if not stat.S_ISREG(path.lstat().st_mode):
         raise RuntimeError("runtime input or artifact is not a regular file")
     with path.open("rb") as stream:
-        return hashlib.file_digest(stream, "sha256").hexdigest()
+        digest = hashlib.sha256()
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+        return digest.hexdigest()
 
 
 def _inputs(patch, replay_patch=None):

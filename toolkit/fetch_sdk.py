@@ -33,7 +33,13 @@ def main():
         partial.rename(archive)
     if archive.stat().st_size != EXPECTED_BYTES:
         raise SystemExit("SDK asset size does not match the pinned GitHub release")
-    digest = hashlib.file_digest(archive.open("rb"), "sha256").hexdigest()
+    # Runtime-image builders include Ubuntu 22.04's Python 3.10. Keep archive
+    # verification bounded without relying on Python 3.11's file_digest API.
+    checksum = hashlib.sha256()
+    with archive.open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            checksum.update(block)
+    digest = checksum.hexdigest()
     if digest != EXPECTED_SHA256:
         raise SystemExit("SDK SHA-256 mismatch")
     selected = ("bin64/", "lib64/", "include/", "cmake/", "ext/lib64/",
