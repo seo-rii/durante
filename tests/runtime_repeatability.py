@@ -20,6 +20,7 @@ from runtime_compat import InputProvenance, bounded_bytes, executable_path, file
 import runtime_workloads as workloads
 
 ROOT = Path(__file__).resolve().parents[1]
+RUNTIMES = (*workloads.RUNTIMES, "pypy")
 COUNTERS = ("instructions", "rep_bytes", "rep_entries", "unsupported_rep_entries", "signals_observed")
 KINDS = ("movs_bytes", "stos_bytes", "movs_entries", "stos_entries")
 METERED = ("client-rep-off", "supervisor")
@@ -298,14 +299,14 @@ def collect_cpython_probe(args, collection, provenance):
 
 def profile_cases(profile, files):
     runtime = profile["runtime"]
-    if runtime not in workloads.RUNTIMES or profile.get("execution_profile") != "run":
+    if runtime not in RUNTIMES or profile.get("execution_profile") != "run":
         raise ValueError("unknown runtime or execution profile")
     selected = profile["workload_names"]
     if not isinstance(selected, list) or not selected or len(selected) != len(set(selected)):
         raise ValueError("empty or duplicate workload selection")
     available = workloads.workload_cases({runtime: profile["runtime_executable"]}, Path(profile["classes_directory"]))
-    if runtime in ("cpython", "node"):
-        fixture = "workload.py" if runtime == "cpython" else "workload.js"
+    if runtime in ("cpython", "pypy", "node"):
+        fixture = "workload.js" if runtime == "node" else "workload.py"
         source = files.get("source:tests/runtime_workload_fixtures/" + fixture)
         path = source.get("path") if isinstance(source, dict) else None
         if not isinstance(path, str) or not Path(path).is_absolute():
@@ -313,7 +314,7 @@ def profile_cases(profile, files):
         # Evaluation may use another checkout. Bind only the fixed fixture slot
         # to its recorded invocation path; all other command/oracle fields stay
         # independently reconstructed, and provenance is checked below.
-        fixture_index = 3 if runtime == "cpython" else 1 + len(workloads.NODE_FLAGS)
+        fixture_index = 1 + len(workloads.NODE_FLAGS) if runtime == "node" else 3
         for index, case in enumerate(available):
             command = list(case.command)
             if len(command) <= fixture_index or command[fixture_index] != str(workloads.FIXTURES / fixture):
@@ -398,7 +399,7 @@ def evaluate(collection):
                                     "source:tests/runtime_compat.py", "source:collect.py"}
         if profile["runtime"] == "java":
             required |= {"binary:javac", "binary:java:jspawnhelper", "binary:java:modules", "binary:java:server/libjvm.so", "generated:RuntimeWorkload.class"}
-        fixture = {"java": "RuntimeWorkload.java", "node": "workload.js", "cpython": "workload.py"}[profile["runtime"]]
+        fixture = {"java": "RuntimeWorkload.java", "node": "workload.js", "cpython": "workload.py", "pypy": "workload.py"}[profile["runtime"]]
         required.add("source:tests/runtime_workload_fixtures/" + fixture)
         if (not required <= files.keys() or provenance.get("errors") or collection.get("inputs_unchanged") is not True
                 or any(not item.get("before") or item.get("before") != item.get("after") or item.get("unchanged") is not True for item in files.values())):
@@ -535,7 +536,7 @@ def collect(args):
     for name in ("sdk", "client", "runner_bin", "output_dir"):
         setattr(args, name, getattr(args, name).absolute())
     args.output_dir.mkdir(parents=True, mode=0o700, exist_ok=False)
-    executable = executable_path(args.runtime_bin or {"java": "java", "cpython": "python3", "node": "node"}[args.runtime])
+    executable = executable_path(args.runtime_bin or {"java": "java", "cpython": "python3", "node": "node", "pypy": "pypy3"}[args.runtime])
     args.javac, args.prlimit = executable_path(args.javac), executable_path("prlimit")
     args.drrun = args.sdk / "bin64/drrun"
     classes = args.output_dir / "classes"
@@ -650,10 +651,10 @@ def main(argv=None):
     capture = commands.add_parser("collect", help="retain every planned fresh-process observation")
     for name in ("sdk", "client", "runner-bin", "output-dir"):
         capture.add_argument("--" + name, type=Path, required=True)
-    capture.add_argument("--runtime", choices=workloads.RUNTIMES, required=True)
+    capture.add_argument("--runtime", choices=RUNTIMES, required=True)
     capture.add_argument("--cpython-hash-profile", choices=tuple(CPYTHON_HASH_PROFILES), default="isolated",
                          help="explicit single-process diagnostic: isolated (default), controlled random, or seed-1")
-    capture.add_argument("--runtime-bin", help="selected runtime executable; default: java/python3/node")
+    capture.add_argument("--runtime-bin", help="selected runtime executable; default: java/python3/node/pypy3")
     capture.add_argument("--runtime-file", type=Path, action="append", default=[], help="additional runtime library/module to hash before and after")
     capture.add_argument("--runtime-image", help="operator-supplied immutable sha256 image digest; metadata, not attestation")
     capture.add_argument("--workload", choices=(*workloads.OUTPUTS, *CPYTHON_STARTUP_CONTROLS), action="append",

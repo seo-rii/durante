@@ -5,7 +5,7 @@
 counts stay within an explicitly selected range for one recorded execution
 profile. Successful execution alone does not answer that question.
 
-Java, CPython and Node reuse the existing thread, allocation/GC and child-process
+Java, CPython, PyPy and Node reuse the existing thread, allocation/GC and child-process
 fixtures and exact output/topology checks. Java's process workload includes both
 `POSIX_SPAWN` and `FORK`. Each selected workload runs all four existing modes:
 native, engine-only, client with REP disabled, and the REP-enabled `durante run`
@@ -23,12 +23,12 @@ this inventory. `--runtime-image sha256:...` records an operator-supplied immuta
 image digest; it is deployment metadata, not runtime or host attestation. The
 named files are not a complete inventory of every dynamically loaded dependency.
 
-New CPython collections also run the workload harness's native implementation
+New CPython and PyPy collections also run the workload harness's native implementation
 probe before any counted workload: the selected executable must report
-`sys.implementation.name == "cpython"`. A PyPy executable cannot be admitted as
-a CPython profile, including the default isolated hash profile. The command and
-result are retained in `implementation-cpython/probe.json` and
-`profile.versions.cpython.implementation_probe`. This is separate from the
+`sys.implementation.name` matching the selected `cpython` or `pypy` runtime.
+Swapping the executables fails setup, including the default isolated hash
+profile. The command and result are retained in `implementation-<runtime>/probe.json`
+and `profile.versions.<runtime>.implementation_probe`. This is separate from the
 hash-control probe below and is not a measured repetition. Existing collections
 are unchanged; missing historical implementation evidence is not added retroactively.
 
@@ -49,7 +49,10 @@ are excluded. The selected executable paths are resolved before this change.
 Java keeps the workload suite's 64-MiB heap, two active processors, small code and
 class reservations and Serial GC. Its tiered JIT is not disabled. Node keeps its
 64-MiB old-space limit and explicit GC access, with default JIT behavior. CPython
-keeps `-I -S`. These options appear in the profile; a different JIT/GC/ISA profile
+and PyPy keep `-I -S`. PyPy retains its default JIT and GC configuration; the
+allocation fixture requires four completed major collections through
+`gc.collect_step()`, as described in the workload suite. These options appear
+in the profile; a different JIT/GC/ISA profile
 requires a different collection. The tool does not use `-Xint` or JIT-off as a
 general solution and does not prove that any particular method was compiled.
 
@@ -182,6 +185,27 @@ python3 tests/runtime_repeatability.py evaluate \
   --output .results/repeatability-cpython/reevaluation.json
 ```
 
+Select PyPy explicitly and include the shared interpreter library from the
+installation under test:
+
+```sh
+python3 tests/runtime_repeatability.py collect \
+  --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so \
+  --runner-bin target/release/durante --runtime pypy \
+  --runtime-bin /path/to/pypy/bin/pypy3 \
+  --runtime-file /path/to/pypy/bin/libpypy3.10-c.so \
+  --repeats 3 --max-spread-ppm 0 \
+  --output-dir .results/repeatability-pypy
+```
+
+This plans 36 observations: three workloads, four modes and three repetitions.
+The default executable is `pypy3`; the harness itself still runs with CPython
+3.11 or newer. The existing CI PyPy workload matrix establishes execution and
+accounting behavior, while these repeated observations assess count spread.
+Neither successful execution nor adding this profile establishes exact PyPy
+repeatability. CPython's hash controls and `startup`/`imports` selections remain
+specific to CPython and are rejected for PyPy.
+
 `--runtime-bin` selects an explicit runtime path. Java also accepts `--javac` and
 `--java-major 17|21`. Omit `--workload` for all workloads of the selected runtime,
 or repeat it for a subset. Repetitions are bounded to 3–9, the per-invocation
@@ -224,7 +248,7 @@ integer partitions. It does not rerun the runtime or independently attest saved
 JSON. Raw Rust/Python collector agreement is checked during collection by the
 existing workload harness. Keep the complete output directory as evidence.
 
-Offline evaluation reconstructs CPython and Node fixture commands using their
+Offline evaluation reconstructs CPython, PyPy and Node fixture commands using their
 recorded source-provenance paths, so moving the evaluator to another checkout
 does not change the recorded result. It does not open or execute those fixture
 paths. Missing or inconsistent fixture provenance, changed commands and changed
@@ -258,7 +282,34 @@ REP work stays unsupported, handled signals remain visible, and counts remain
 application-mutable diagnostics. There is no conversion to CPU nanoseconds,
 language coefficient, production time limit, or guarantee for other workloads.
 
-## Bounded local observation
+## Bounded PyPy observation
+
+On 2026-11-16, PyPy 7.3.19 / Python 3.10.16 ran all three workloads in all four
+modes, three times each, on CPU 0 with the default JIT/GC settings. The predeclared
+limits were 120 seconds per invocation, a 600-second campaign and **0 ppm**.
+All 36 executions passed the output, topology, accounting and cleanup checks;
+the recorded input hashes and host profile were unchanged. The native probe
+confirmed `sys.implementation.name == "pypy"`. Instruction counts varied in
+every metered group:
+
+| Workload | Metered mode | Minimum instructions | Exact median | Maximum instructions |
+| --- | --- | ---: | ---: | ---: |
+| Threads | Client, REP disabled | 183,829,429 | 183,988,420 | 184,070,563 |
+| Threads | Supervisor, REP enabled | 183,814,223 | 183,883,269 | 184,376,988 |
+| Allocation/GC | Client, REP disabled | 239,023,015 | 239,147,580 | 239,257,151 |
+| Allocation/GC | Supervisor, REP enabled | 239,045,918 | 239,063,506 | 239,367,152 |
+| Processes | Client, REP disabled | 538,212,492 | 538,262,476 | 538,506,013 |
+| Processes | Supervisor, REP enabled | 538,319,967 | 538,327,749 | 538,415,189 |
+
+Every other recorded metric had zero range within its group. Collection passed,
+but exact-count qualification did not; collection and offline re-evaluation both
+exited 1 and produced identical evaluations. All attempts remain in the saved
+collection, whose SHA256 is
+`c24de5145d83d60b02773e87cf75b00da5e86045e86aa93a1d6bc87ffbe7c5db`.
+This finite observation neither establishes the cause of the variation nor
+qualifies other PyPy installations, workloads or the separate isolate profile.
+
+## Bounded CPython observation
 
 On 2026-11-15, the unchanged implementation at `2be6c66` collected CPython 3.11.2
 `allocation-gc` on one allowed logical CPU, using three repetitions of each mode,
@@ -572,7 +623,11 @@ or permit a count-spread exception.
 
 ## Tests
 
-The regression suite uses small native CPython probes but needs no runtime build:
+The regression suite uses small native CPython probes but needs no runtime build.
+It covers PyPy's complete fixed plan, fixture relocation, topology/provenance
+failures, interpreter-label consistency and the separation of successful
+collection from count-spread qualification. Existing CI test discovery includes
+these regressions; the actual PyPy workload matrix remains required separately.
 
 ```sh
 python3 -m unittest discover -s tests -p 'test_runtime_repeatability.py' -v
