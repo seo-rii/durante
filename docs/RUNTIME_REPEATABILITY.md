@@ -23,6 +23,15 @@ this inventory. `--runtime-image sha256:...` records an operator-supplied immuta
 image digest; it is deployment metadata, not runtime or host attestation. The
 named files are not a complete inventory of every dynamically loaded dependency.
 
+New CPython collections also run the workload harness's native implementation
+probe before any counted workload: the selected executable must report
+`sys.implementation.name == "cpython"`. A PyPy executable cannot be admitted as
+a CPython profile, including the default isolated hash profile. The command and
+result are retained in `implementation-cpython/probe.json` and
+`profile.versions.cpython.implementation_probe`. This is separate from the
+hash-control probe below and is not a measured repetition. Existing collections
+are unchanged; missing historical implementation evidence is not added retroactively.
+
 The harness and its children use one allowed logical CPU, defaulting to the
 first allowed CPU; select another with `--cpu`. It records affinity, the CPU's
 model/microcode/ISA flags and kernel before and after. This fixes CPU placement,

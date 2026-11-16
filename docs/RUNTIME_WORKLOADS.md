@@ -190,6 +190,12 @@ python3 tests/runtime_workloads.py \
 
 This requires all twelve observations: three workloads in each of the four modes.
 The version probe rejects an executable that does not identify itself as PyPy.
+Both Python selections also execute a separate native implementation probe:
+`sys.implementation.name` must match the requested `cpython` or `pypy` name.
+Swapped executables fail before workload observations; matching arithmetic or
+GC output under the other interpreter cannot satisfy the requested coverage.
+The bounded command and result remain in `implementation-<runtime>/probe.json`
+and successful `versions` metadata, alongside the existing version and hashes.
 The separate CI process-tree job installs PyPy 3.10 / 7.3.19 and runs this matrix
 plus the GC fixture tests under PyPy itself. It also hashes that installation's
 adjacent `libpypy*-c.so`, where the shared interpreter implementation resides.

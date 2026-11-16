@@ -45,7 +45,8 @@ class RuntimeProvenanceTests(unittest.TestCase):
 
     def probe(self, command, directory, timeout_ms, prlimit):
         self.calls.append((command, prlimit))
-        return {"exit_code": 0, "infrastructure_ok": True, "stdout": "version\n", "stderr": ""}
+        stdout = "cpython\n" if command[-1] == runtime.PYTHON_IMPLEMENTATION_PROBE else "version\n"
+        return {"exit_code": 0, "infrastructure_ok": True, "stdout": stdout, "stderr": ""}
 
     def successful_case(self, args, work, name, language, target, expected, processes, index):
         return {"runtime": language, "fixture": name, "status": "passed", "rows": []}

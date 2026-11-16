@@ -188,7 +188,20 @@ Pinned setup actions select cached PyPy 7.3.19/Python 3.10 and CPython 3.12; the
 harness runs under CPython. Java uses the runner's explicit `JAVA_HOME_17_X64`
 installation. The job verifies the preinstalled compiler, CMake, patch and Node
 instead of refreshing OS packages. Missing required tools fail immediately;
-setup steps have deadlines. Actual runtime versions remain in each report. SIMD baseline coverage is required;
+setup steps have deadlines. Actual runtime versions remain in each report.
+Before creating Python fixture cases, the selected executable also runs
+`-I -S -c 'import sys; print(sys.implementation.name)'`. The reported
+[`sys.implementation.name`](https://docs.python.org/3/library/sys.html#sys.implementation)
+must exactly match `cpython` or `pypy` as requested. A CPython executable passed
+as `--pypy`, or a PyPy executable passed as `--cpython`, fails qualification
+before any workload runs. This prevents a successful fixture under the wrong
+interpreter from being counted as language coverage.
+The separate native probe keeps the existing process/resource controls and a
+wall limit of at most ten seconds. Its command and execution evidence are saved
+in `implementation-<runtime>/probe.json`, including rejected observations;
+successful evidence also appears in the runtime's `implementation_probe` report
+field. Version output, executable paths and before/after hashes remain recorded.
+SIMD baseline coverage is required;
 AVX2 and AVX-512 execution depends on that runner's CPU and OS feature mask.
 Running a runtime with JIT enabled does not prove a particular hot function was
 compiled. The separately asserted generated-code fixture in `tests/smoke.py`

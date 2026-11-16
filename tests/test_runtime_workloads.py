@@ -13,6 +13,7 @@ import unittest
 from unittest.mock import patch
 
 import runtime_workloads as workloads
+import runtime_compat as compatibility
 
 
 class RuntimeWorkloadTests(unittest.TestCase):
@@ -179,7 +180,7 @@ class RuntimeWorkloadTests(unittest.TestCase):
         self.assertTrue(workloads.matrix_errors([], []))
 
     def invoke(self, *, missing=False, changed=False, cleaned=True, wrong_output=False,
-               runtime="cpython", version="Python 3.12.0\n", declared_file=None):
+               runtime="cpython", version="Python 3.12.0\n", declared_file=None, implementation=None):
         artifacts = self.root / "artifacts"
         for name in ("sdk/bin64/drrun", "sdk/lib64/release/libdynamorio.so", "client", "runner", "python"):
             path = artifacts / name
@@ -198,6 +199,12 @@ class RuntimeWorkloadTests(unittest.TestCase):
                 library.write_bytes(b"runtime implementation")
         changed_once = False
 
+        def probe(command, directory, timeout_ms, prlimit):
+            stdout = version
+            if command[-1] == compatibility.PYTHON_IMPLEMENTATION_PROBE:
+                stdout = (runtime if implementation is None else implementation) + "\n"
+            return {"exit_code": 0, "infrastructure_ok": True, "stdout": stdout, "stderr": ""}
+
         def case(arguments, workload, mode):
             nonlocal changed_once
             if changed and not changed_once:
@@ -212,8 +219,8 @@ class RuntimeWorkloadTests(unittest.TestCase):
         with ExitStack() as stack:
             stack.enter_context(patch.object(workloads, "own_subreaper", return_value=(SimpleNamespace(prctl=lambda *args: 0), 0)))
             stack.enter_context(patch.object(workloads, "cleanup_orphans", return_value=cleaned))
-            stack.enter_context(patch.object(workloads, "run_process", return_value={
-                "exit_code": 0, "infrastructure_ok": True, "stdout": version, "stderr": ""}))
+            stack.enter_context(patch.object(workloads, "run_process", side_effect=probe))
+            stack.enter_context(patch.object(compatibility, "run_process", side_effect=probe))
             executed = stack.enter_context(patch.object(workloads, "run_case", side_effect=case))
             console = io.StringIO()
             stack.enter_context(redirect_stdout(console))
@@ -238,7 +245,24 @@ class RuntimeWorkloadTests(unittest.TestCase):
         self.assertEqual(report["checks_passed"], 12)
         self.assertEqual(executed.call_count, 12)
         self.assertEqual({row["runtime"] for row in report["rows"]}, {"pypy"})
+        probe = report["versions"]["pypy"]["implementation_probe"]
+        self.assertTrue(probe["passed"])
+        self.assertEqual(probe["execution"]["stdout"], "pypy\n")
         self.assertTrue(report["input_provenance"]["files"]["operator:runtime-file:0"]["unchanged"])
+
+    def test_pypy_cannot_satisfy_a_cpython_workload_request(self):
+        code, report, executed = self.invoke(runtime="cpython", implementation="pypy",
+            version="Python 3.10.16\n[PyPy 7.3.19 with GCC 10.2.1]\n")
+        self.assertEqual(code, 1)
+        executed.assert_not_called()
+        self.assertTrue(any("implementation probe failed" in error for error in report["failures"]))
+
+    def test_python_implementation_must_agree_even_with_a_matching_pypy_version_banner(self):
+        code, report, executed = self.invoke(runtime="pypy", implementation="cpython",
+            version="Python 3.10.16\n[PyPy 7.3.19 with GCC 10.2.1]\n")
+        self.assertEqual(code, 1)
+        executed.assert_not_called()
+        self.assertTrue(any("implementation probe failed" in error for error in report["failures"]))
 
     def test_missing_selected_pypy_is_not_partial_success(self):
         code, report, executed = self.invoke(runtime="pypy", missing=True)
