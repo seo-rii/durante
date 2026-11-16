@@ -2,7 +2,8 @@
 import copy
 import unittest
 
-from rep_breakdown import accounting_errors
+from jit_lifecycle import diagnostic_classification as jit_diagnostic_classification
+from rep_breakdown import accounting_errors, diagnostic_classification, OUTPUT
 
 
 def ordinary():
@@ -17,6 +18,36 @@ def ordinary():
 
 
 class RepBreakdownOracleTests(unittest.TestCase):
+    def test_successful_exec_preserves_two_known_debug_startup_notices(self):
+        # Exact stderr from CI run 43685110737, job 132723846339. All three
+        # controls exited 0 with the fixed output; both counter modes also
+        # passed the unchanged per-image/process/tree REP oracle.
+        notice = "<Unknown processor cache size>\n"
+        for mode in ("engine", "counter-off", "counter-on"):
+            row = {"fixture": "exec", "execution_mode": mode, "core": "debug",
+                   "exit_code": 0, "stdout": OUTPUT, "stderr": notice * 2}
+            before = copy.deepcopy(row)
+            self.assertEqual(diagnostic_classification(row), "cpu_cache_size_unknown_after_exec")
+            self.assertEqual(jit_diagnostic_classification(row), "unexpected")
+            self.assertEqual(row, before)
+
+    def test_exec_notice_does_not_expand_other_fixture_or_diagnostic_acceptance(self):
+        notice = "<Unknown processor cache size>\n"
+        row = {"fixture": "exec", "execution_mode": "counter-on", "core": "debug",
+               "exit_code": 0, "stdout": OUTPUT, "stderr": notice * 2}
+        for change in (
+                *({"fixture": fixture} for fixture in ("ordinary", "fork", "vfork", "thread", "failed-exec")),
+                {"core": "release"}, {"core": None}, {"execution_mode": "native"},
+                {"execution_mode": "supervisor"}, {"stderr": notice * 3},
+                {"stderr": notice * 2 + "assertion failed\n"},
+                {"stderr": "Option parsing error\n" + notice * 2},
+                {"stderr": (notice * 2).rstrip("\n")}, {"stderr": (notice * 2).replace("\n", "\r\n")}):
+            with self.subTest(change=change):
+                self.assertEqual(diagnostic_classification({**row, **change}), "unexpected")
+        for fixture in ("ordinary", "fork", "exec", "failed-exec", "thread", "vfork"):
+            for stderr, expected in (("", "none"), (notice, "cpu_cache_size_unknown")):
+                self.assertEqual(diagnostic_classification({**row, "fixture": fixture, "stderr": stderr}), expected)
+
     def test_operation_swap_cannot_hide_behind_unchanged_totals(self):
         self.assertEqual(accounting_errors(ordinary(), "ordinary", True), [])
         for level in ("total", "processes", "segments"):

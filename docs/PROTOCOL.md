@@ -237,6 +237,12 @@ validity, REP coverage and counter integrity are separate decisions.
 execution, fork, vfork, thread completion, exec and failed exec. Native and
 engine-only controls validate memory/output; release/debug counter modes and
 the supervisor validate exact per-image, per-process and total operation demand.
+The known debug-core CPU-cache-size notice remains visible in stderr and is
+classified separately from unexpected diagnostics. The fixed successful-exec
+fixture may emit that exact notice twice, once for each engine/image startup;
+this exception applies only to its direct debug controls. Other repeated notices,
+extra messages, release/native diagnostics and incorrect output or REP counts
+still fail. The single-image JIT suite retains its one-notice policy.
 The separate code-replay suite checks preserved MOVS/STOS attribution across
 partial forward/backward copies, fills and repeated code replacement.
 
