@@ -38,6 +38,10 @@ MODELS = {
     "M2 static + mispredicts": STATIC + ["mispredicts"],
     "M3 static + mispredicts + cache misses": STATIC + ["mispredicts", "l1d_misses", "ll_misses"],
     "M3c compact": ["instructions", "divs", "fp_ops", "mispredicts", "l1d_misses", "ll_misses"],
+    # Static per-block cost from a generic latency model: issue bound or a
+    # self-loop's recurrence, whichever is longer, plus dynamic penalties.
+    "M4 latency bound": ["bound_cycles"],
+    "M5 latency bound + penalties": ["bound_cycles", "mispredicts", "l1d_misses", "ll_misses"],
 }
 
 
@@ -129,6 +133,8 @@ def values(record):
     f = record["features"]
     out = {name: f[name] for name in STATIC}
     out["mispredicts"] = f["mispredicts"]
+    if "bound_cycles_x16" in f:
+        out["bound_cycles"] = f["bound_cycles_x16"] / 16
     if "cache" in record:
         out["l1d_misses"] = record["cache"]["l1d"]["misses"]
         out["ll_misses"] = record["cache"]["ll"]["misses"]
@@ -140,8 +146,11 @@ def fit(args):
     data = json.loads(args.input.read_text())
     workloads = data.get("workloads", data)
     keys = sorted(workloads)
-    times = np.array([workloads[k]["native_ns"] for k in keys], float)
-    evaluation = {"input_sha256": digest(args.input), "workloads": keys, "models": {}}
+    # Interference on a shared host only adds time, so the minimum is the
+    # more robust estimate there; the median is kept for quiet reference hosts.
+    estimate = min if args.estimator == "min" else statistics.median
+    times = np.array([estimate(workloads[k]["native_samples"]) for k in keys], float)
+    evaluation = {"input_sha256": digest(args.input), "estimator": args.estimator, "workloads": keys, "models": {}}
     for label, names in MODELS.items():
         rows = [values(workloads[k]) for k in keys]
         if any(name not in row for row in rows for name in names):
@@ -155,15 +164,18 @@ def fit(args):
             train = [j for j in range(len(keys)) if j != i]
             weights = nnls(xs[train] / times[train, None], np.ones(len(train)))
             errors[key] = float((xs[i] @ weights - times[i]) / times[i])
-        weights = nnls(xs / times[:, None], np.ones(len(keys))) / scale
+        weights = nnls(xs / times[:, None], np.ones(len(keys)))
+        in_sample = np.abs((xs @ weights - times) / times)
+        weights = weights / scale
         absolute = np.abs(np.array(list(errors.values())))
         evaluation["models"][label] = {
             "features": names, "loo_signed_error": errors,
             "median_abs_error": float(np.median(absolute)), "max_abs_error": float(absolute.max()),
             "within_20_percent": int((absolute <= 0.2).sum()),
+            "in_sample_max_abs_error": float(in_sample.max()),
             "all_data_ns_per_feature": dict(zip(names, map(float, weights)))}
         print(f"{label:40s} LOO |error| median {np.median(absolute) * 100:5.1f}%  max {absolute.max() * 100:6.1f}%  "
-              f"within 20% {int((absolute <= 0.2).sum())}/{len(keys)}")
+              f"within 20% {int((absolute <= 0.2).sum())}/{len(keys)}  in-sample max {in_sample.max() * 100:5.1f}%")
     if args.output:
         args.output.write_text(json.dumps(evaluation, indent=2) + "\n")
     return 0
@@ -183,6 +195,7 @@ def main():
     f = sub.add_parser("fit")
     f.add_argument("--input", type=Path, required=True)
     f.add_argument("--output", type=Path)
+    f.add_argument("--estimator", choices=["median", "min"], default="median")
     args = parser.parse_args()
     if args.command == "collect":
         if not 3 <= args.repeats <= 25:
