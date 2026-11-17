@@ -1,4 +1,7 @@
 """Harness logic for the exploratory runtime CPUID observations."""
+import os
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -41,6 +44,17 @@ class CpuidRuntimeHarnessTests(unittest.TestCase):
         for kept in ("-SSE4_2", "-SSE4_1", "-SSSE3", "-POPCNT", "-SSE3"):
             self.assertNotIn(kept, removed)
         self.assertTrue(all(word.startswith("~") for word in cpuid_runtimes.OPENSSL_MASK.split(":")))
+
+    def test_deterministic_cpython_options_pin_the_hash_seed(self):
+        # -I would ignore PYTHONHASHSEED; the deterministic options must not.
+        self.assertNotIn("-I", cpuid_runtimes.DETERMINISM["cpython"])
+        env = {"PATH": os.environ.get("PATH", ""), **cpuid_runtimes.DETERMINISM_ENV["cpython"]}
+        command = [sys.executable, *cpuid_runtimes.DETERMINISM["cpython"], "-c",
+                   "import sys; print(hash('durante'), sys.flags.hash_randomization)"]
+        outputs = {subprocess.run(command, env=env, capture_output=True, text=True, check=True).stdout
+                   for _ in range(2)}
+        self.assertEqual(len(outputs), 1)
+        self.assertTrue(outputs.pop().strip().endswith(" 0"))
 
 
 if __name__ == "__main__":

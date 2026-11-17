@@ -8,8 +8,9 @@ the same options, instruction counts and their exact relative spread.
 
 Groups (each repeated --repeats times, each run writing a fresh result file):
 - the default runtime under `none` (host CPUID) and the selected profile;
-- runtime determinism options (Node --predictable, Java -Xbatch with Serial GC
-  and one active processor), which control JIT/GC thread scheduling;
+- runtime determinism options (CPython hash seed 0 with -s -P instead of -I,
+  Node --predictable, Java -Xbatch with Serial GC and one active processor),
+  which fix the hash seed and JIT/GC thread scheduling;
 - an "above profile" mask that removes only features the profile does not
   report (AVX, AVX2, AVX-512, BMI, LZCNT, FMA, SHA, ERMS, FSRM), simulating a
   host that lacks them, through GLIBC_TUNABLES and OPENSSL_ia32cap.
@@ -37,13 +38,18 @@ GLIBC_MASK = ("glibc.cpu.hwcaps=-AVX512F,-AVX512VL,-AVX512BW,-AVX512DQ,-AVX2,-AV
 # OpenSSL capability words: CPUID.1 EDX|ECX<<32, then leaf 7 EBX|ECX<<32.
 # Clears AVX (word 0 bit 60) and AVX2, BMI1/2, AVX-512F, ADX, SHA (word 1).
 OPENSSL_MASK = "~0x1000000000000000:~0x20090128"
-DETERMINISM = {"cpython": [], "node": ["--predictable"],
+# Default and deterministic options per runtime, with deterministic environment.
+# CPython's -I implies -E, which ignores PYTHONHASHSEED, so the deterministic
+# group replaces it with its other parts (-s -P) and pins the hash seed.
+DEFAULT = {"cpython": ["-I"], "node": [], "java": []}
+DETERMINISM = {"cpython": ["-s", "-P"], "node": ["--predictable"],
                "java": ["-Xbatch", "-XX:+UseSerialGC", "-XX:ActiveProcessorCount=1"]}
+DETERMINISM_ENV = {"cpython": {"PYTHONHASHSEED": "0"}}
 
 
 def commands(args, workdir):
     return {
-        "cpython": ([args.python, "-I"], [str(HERE / "work.py"), "2"]),
+        "cpython": ([args.python], [str(HERE / "work.py"), "2"]),
         "node": ([args.node], [str(HERE / "work.js"), "200000"]),
         "java": ([args.java, "-Xshare:auto", "-XX:-UsePerfData"], ["-cp", str(workdir), "Work", "200000"]),
     }
@@ -59,9 +65,10 @@ def run(args, workloads, output, runtime, profile, options=(), env=None):
         drrun = [str(args.sdk / "bin64/drrun")] + (["-debug"] if args.engine_debug else [])
         command = drrun + ["-quiet", "-disable_traces", "-c", str(args.client), "-profile", profile,
                            "-out", result, "--"] + command
+    # No inherited PYTHON* variable applies: -I ignores them, and the
+    # deterministic CPython group sets only PYTHONHASHSEED.
     full_env = {k: v for k, v in os.environ.items()
-                if k not in ("JAVA_TOOL_OPTIONS", "GLIBC_TUNABLES", "OPENSSL_ia32cap")}
-    full_env["PYTHONHASHSEED"] = "0"
+                if k not in ("JAVA_TOOL_OPTIONS", "GLIBC_TUNABLES", "OPENSSL_ia32cap") and not k.startswith("PYTHON")}
     full_env.update(env or {})
     started = time.monotonic()
     process = subprocess.run(["setarch", "-R"] + command, env=full_env, capture_output=True,
@@ -120,13 +127,12 @@ def main():
     mask = {"GLIBC_TUNABLES": GLIBC_MASK, "OPENSSL_ia32cap": OPENSSL_MASK}
     results = []
     for runtime in runtimes:
-        stable = DETERMINISM[runtime]
-        if stable:
-            results.append(group(args, workloads, output, "default", runtime, args.profile))
+        stable, stable_env = DETERMINISM[runtime], DETERMINISM_ENV.get(runtime, {})
+        results.append(group(args, workloads, output, "default", runtime, args.profile, DEFAULT[runtime]))
         for profile in ("none", args.profile):
-            results.append(group(args, workloads, output, "deterministic", runtime, profile, stable))
+            results.append(group(args, workloads, output, "deterministic", runtime, profile, stable, stable_env))
             results.append(group(args, workloads, output, "deterministic + above-profile mask", runtime,
-                                 profile, stable, mask))
+                                 profile, stable, {**stable_env, **mask}))
     summary = {"profile": args.profile, "repeats": args.repeats, "groups": results,
                "all_ok": all(item["ok"] for item in results)}
     (output / "result.json").write_text(json.dumps(summary, indent=2) + "\n")

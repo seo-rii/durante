@@ -86,24 +86,34 @@ repeated fresh processes. The "above-profile mask" removes only features the
 profiles never report, through `GLIBC_TUNABLES` and `OPENSSL_ia32cap`, to
 simulate a host that lacks them.
 
-Local run on 2026-11-17 (same host as above, stock release core,
-`x86-64-v2`, 3 repetitions per group; result SHA-256
-`906dae446a429257ec6c0ca67e679c405a205fa0fea1628829036dfc96604156`). Every group
+Local runs on 2026-11-17 (same host as above, stock release core,
+`x86-64-v2`, 3 repetitions per group; Node and Java result SHA-256
+`906dae446a429257ec6c0ca67e679c405a205fa0fea1628829036dfc96604156`, CPython
+result SHA-256
+`5294623f8ac4142d23eaca27262f377fde7b6388b10b328944e2c23adf0f8646`). Every group
 exited normally and matched native output. Medians:
 
 | Runtime and options | Host CPUID: mask effect | `x86-64-v2`: mask effect | `x86-64-v2` spread |
 | --- | ---: | ---: | ---: |
-| CPython 3.13.18 (`PYTHONHASHSEED=0`) | 230.50M → 298.92M (+29.7%) | 300.03M → 300.09M (+0.021%) | 98-221 ppm |
+| CPython 3.13.18 `-s -P`, `PYTHONHASHSEED=0` | 230.40M → 298.83M (+29.7%) | 299,966,809 → 299,977,961 (+0.0037%) | 0.02-0.07 ppm |
 | Node 22.23.4 `--predictable` | 224.43M → 258.17M (+15.0%) | 259.28M → 259.31M (+0.013%) | 116-173 ppm |
 | OpenJDK 21.0.12 `-Xbatch -XX:+UseSerialGC -XX:ActiveProcessorCount=1` | 1451.1M → 1458.7M (+0.52%) | 1439.6M → 1439.2M (-0.031%) | 300-316 ppm |
 
 With host CPUID visible, the same work changes by up to 30% with features the
-host lacks (OpenSSL and glibc dispatch). With the profile, the change is within
-the run-to-run spread. HotSpot reports the virtual processor (`family 6 model 0`,
+host lacks (OpenSSL and glibc dispatch). With the profile, Node's and Java's
+changes are within their run-to-run spread. CPython, whose spread is 20
+instructions once its seed is pinned, still changes by a constant 11,152
+instructions (0.0037%), against 68.4M (+29.7%) with host CPUID; this
+observation does not identify the source of that residue. HotSpot reports the virtual processor (`family 6 model 0`,
 SSE through SSE4.2, `UseAVX=0`, `UseAES=false`) and V8/OpenSSL select the same
 baseline paths.
 
-The profile does not make JIT runtimes repeatable by itself. With default
+The profile does not make runtimes repeatable by itself. CPython picks a
+random string-hash seed per process: with `-I` (which implies `-E` and so
+ignores `PYTHONHASHSEED`) the same workload spread 274 ppm under `x86-64-v2`,
+and with the seed pinned through `-s -P` and `PYTHONHASHSEED=0` it spread 20
+instructions. An earlier run of this harness passed `-I` together with
+`PYTHONHASHSEED=0`, so its CPython seed was not actually pinned. With default
 options, Node's counts varied by 20.2% and Java's by 7.7% across identical
 runs, from background compilation and GC thread scheduling. The listed options
 reduce that to a few hundred ppm; they change the amount of work (Node's
