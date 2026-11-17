@@ -68,6 +68,18 @@ instruction. Every `start` record carries `cpuid_profile_version: 1` and
 measurement whose receipt differs from the request. See the
 [protocol](PROTOCOL.md).
 
+## Runtime observations
+
+`tests/cpuid_runtimes.py` runs one fixed CPython, Node and Java workload
+(sorting, a SHA-256 digest and, for CPython, zlib) natively and under the same
+stock-core test client, with ASLR disabled. Every group compares output with a
+native run of the same options and reports the exact instruction spread over
+repeated fresh processes. The "above-profile mask" removes only features the
+profiles never report, through `GLIBC_TUNABLES` and `OPENSSL_ia32cap`, to
+simulate a host that lacks them.
+
+RUNTIME_RESULTS_PLACEHOLDER
+
 ## Not virtualized
 
 - `/proc/cpuinfo`, `AT_HWCAP`/`AT_HWCAP2` and sysfs CPU topology still show the
