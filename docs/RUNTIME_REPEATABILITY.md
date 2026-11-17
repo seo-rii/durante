@@ -38,7 +38,7 @@ model/microcode/ISA flags and kernel before and after. This fixes CPU placement,
 not competing host load, scheduling, ASLR, runtime hash seeds or GC/JIT decisions.
 Run campaigns sequentially on an otherwise quiet host when comparing evidence.
 New collections also record the harness's Linux process-personality value and
-its `ADDR_NO_RANDOMIZE` bit. Controlled CPython startup probes record that same
+its `ADDR_NO_RANDOMIZE` bit. Controlled CPython and PyPy startup probes record that same
 state after native exec and must agree with the harness. The probe has an
 explicit version; old collections retain their original probe and unknown
 personality state rather than being labeled ASLR enabled or disabled retroactively.
@@ -107,7 +107,7 @@ Each complete inline program, exact output and single-process/image oracle is
 recorded in the profile. The evaluator reconstructs those fixed commands and
 keeps statistics separate by workload and execution mode. Runtime, harness and
 named module files retain before/after hashes. The native implementation probe
-and any explicit CPython hash-control probe remain separate from the measured
+and any explicit Python hash-control probe remain separate from the measured
 processes; they do not prove their GC or allocator states. Counts include the
 loader, interpreter initialization, printing and
 shutdown. These are complete-process controls, not measurements of separate
@@ -149,13 +149,70 @@ python3 tests/runtime_repeatability.py collect \
 
 This plans 24 observations; omitting both explicit selections still runs only
 the three ordinary PyPy workloads. CPython's `random`/`seed-1` hash controls
-remain unavailable for PyPy, and isolated startup does not fix hash seeds or
+remain unavailable for PyPy; its separate controls are described below.
+Isolated startup does not fix hash seeds or
 allocation addresses. Retain all observations, including qualification failures.
 If these controls vary, the ordinary thread, allocation/GC and subprocess loops
 are unnecessary for observing variation. That does not identify its cause,
 show that all earlier variation arose at startup, or justify subtracting startup
 counts from a workload. The location-diagnostic tool below remains specific to
 CPython; these PyPy controls do not add a PyPy instruction-location trace.
+
+### Explicit PyPy hash controls
+
+`--pypy-hash-profile random|seed-1` selects `-s -S` with respectively
+`PYTHONHASHSEED=random` or `1`. It requires `--runtime pypy` and explicit
+`allocation-gc`, `startup` or `imports` selections. The default remains `-I -S`
+with no forwarded hash variable; mixing CPython and PyPy controls, applying a
+foreign control or selecting threads/child processes fails before collection.
+The JIT, GC and resource limits are unchanged.
+
+PyPy 7.3.19 does not support `-P` or expose `sys.flags.safe_path`. Its
+[`app_main.py`](https://github.com/pypy/pypy/blob/release-pypy3.10-v7.3.19/pypy/interpreter/app_main.py)
+also retains a `hash_randomization` flag that reports `0` with both selected
+seed values. That flag alone does not establish that string hashing is
+unrandomized. The native probe records the selected environment, observed hash
+sentinel and algorithm separately. Native CI tests check that two fresh
+`seed-1` probes agree; they do not require random probes to differ.
+
+Unlike the CPython control, `-s -S` retains the script/current-directory import
+path. Use only these fixed repository fixtures in the fresh per-observation
+directories. The versioned `pypy-startup-probe` records its implementation,
+effective flags, working directory, `sys.path`, executable and inherited process
+personality, plus named module source/cache paths for before/after hashing.
+The offline evaluator reconstructs the exact command and checks the evidence.
+This native probe has the same flags and environment as the measured workloads;
+it does not capture their individual seeds, complete module inventory or memory
+layout. Its `-c` import path is not the script fixture's import path.
+
+For a prospective comparison, run `random` then `seed-1`, each with both startup
+controls, three repetitions, all four modes and the **0 ppm** gate. This fixes
+48 workload observations in advance; retain every row and stop after that plan.
+Both collections also include their version/implementation and hash probes.
+
+```sh
+for hash_profile in random seed-1; do
+  if python3 tests/runtime_repeatability.py collect \
+    --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so \
+    --runner-bin target/release/durante --runtime pypy \
+    --runtime-bin /path/to/pypy/bin/pypy3 \
+    --runtime-file /path/to/pypy/bin/libpypy3.10-c.so \
+    --pypy-hash-profile "$hash_profile" --workload startup --workload imports \
+    --repeats 3 --max-spread-ppm 0 --timeout-ms 120000 --campaign-seconds 600 \
+    --output-dir ".results/repeatability-pypy-$hash_profile"; then
+    result=0
+  else
+    result=$?
+  fi
+  # Exit 1 retains a failed qualification; exit 2 is an invalid invocation.
+  test "$result" -le 1 || exit "$result"
+done
+```
+
+A smaller spread is evidence for these recorded profiles, not a causal proof or
+a qualification of the default isolated profile. Residual variation still needs
+its own explanation. Do not subtract startup totals or change production startup
+flags based only on this finite comparison.
 
 The [isolate workload evidence](ISOLATED_RUNTIMES.md) uses the ordinary functional
 workload fixtures with a different execution boundary and resource profile.
@@ -370,6 +427,40 @@ the variable instructions, distinguish runtime behavior from an instrumentation
 error, or explain every earlier sample. Subtracting these independent totals
 would not isolate workload instructions, and neither sample qualifies PyPy's
 exact repeatability.
+
+## Bounded PyPy hash comparison
+
+On 2026-11-17, a predeclared comparison ran `random` then `seed-1` with PyPy
+7.3.19 / Python 3.10.16, `-s -S`, CPU 0, default JIT/GC and the unchanged
+120-second invocation / 600-second campaign / **0 ppm** limits. Each profile
+contained both startup controls, four modes and three repetitions: 48 total
+observations. All passed output, topology, accounting and cleanup checks;
+named inputs and host state were unchanged. The native probes reported
+`siphash24`, the requested environment and personality `0` in both cases.
+
+| Control | Metered mode | Random instruction range | Seed-1 instruction range |
+| --- | --- | ---: | ---: |
+| Startup | Client, REP disabled | 27,626 | 8,250 |
+| Startup | Supervisor, REP enabled | 16,302 | 50,279 |
+| Imports | Client, REP disabled | 8,781 | 132,530 |
+| Imports | Supervisor, REP enabled | 149,787 | 58,569 |
+
+Every other metric had zero range within its group. Both complete collections
+failed exact-count qualification in all four metered groups. Collection and
+offline evaluation exited 1 and agreed exactly. No attempt was dropped, retried
+or replaced, and no threshold changed. Collection SHA256 values are:
+
+- `random`: `932b8724d6032a2aaa70b3a6c06b9b25470032983b0f16cc8e855b930de3eccc`
+- `seed-1`: `2ce04de848ab0f7c8cc3855b2a784bc50c03881ccaa5073f274d79a19e904678`
+
+The prior PyPy ordinary/startup collections and CPython random/seed-1 collections
+retained their original statistics and failed gates after re-evaluation.
+Fixed hashing did not eliminate the observed variation, and the spread reduction
+was not consistent across these groups. This finite comparison does not locate
+the variable instructions or separate runtime work from instrumentation effects.
+It does not justify changing the default isolated profile or approving a time
+coefficient. The original failures remain unresolved evidence, not superseded
+samples.
 
 ## Bounded CPython observation
 
@@ -685,13 +776,20 @@ or permit a count-spread exception.
 
 ## Tests
 
-The regression suite uses small native CPython probes but needs no runtime build.
+The regression suite uses small native CPython and PyPy probes but needs no
+DynamoRIO build. Set `DURANTE_TEST_PYPY` to require a specific PyPy executable;
+an unavailable explicitly selected executable fails instead of skipping. Without
+that variable, native PyPy tests use `pypy3` from PATH or report a skip. CI requires
+the pinned PyPy and sets the variable explicitly.
 It covers PyPy's complete fixed plan, fixture relocation, topology/provenance
 failures, interpreter-label consistency and the separation of successful
-collection from count-spread qualification. Existing CI test discovery includes
+collection from count-spread qualification. Hash-control tests exercise actual
+seed forwarding through the shared workload runner, profile reconstruction, probe
+validation and fresh-process fixed-seed sentinels. Existing CI test discovery includes
 these regressions; the actual PyPy workload matrix remains required separately.
 
 ```sh
 python3 -m unittest discover -s tests -p 'test_runtime_repeatability.py' -v
+DURANTE_TEST_PYPY=/path/to/pypy3 python3 -m unittest discover -s tests -p 'test_pypy_hash_controls.py' -v
 python3 -m unittest discover -s tests -p 'test_count_locations.py' -v
 ```

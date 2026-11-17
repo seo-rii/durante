@@ -30,12 +30,15 @@ REQUIRED_INPUTS = {"binary:runtime", "binary:client", "binary:runner", "binary:d
 FIXED_ENV = {"PATH": os.defpath, "LANG": "C", "LC_ALL": "C", "TZ": "UTC", "MALLOC_ARENA_MAX": "2"}
 CPYTHON_HASH_PROFILES = {"isolated": None, "random": "random", "seed-1": "1"}
 CPYTHON_CONTROL_FLAGS = ("-P", "-s", "-S")
+PYPY_HASH_PROFILES = dict(CPYTHON_HASH_PROFILES)
+PYPY_CONTROL_FLAGS = ("-s", "-S")
 PYTHON_STARTUP_CONTROLS = {
     "startup": ("print('startup:ok')\n", "startup:ok\n"),
     "imports": ("import gc\nfrom pathlib import Path\nimport subprocess\nimport sys\n"
                 "import threading\nprint('imports:ok')\n", "imports:ok\n"),
 }
 CPYTHON_HASH_WORKLOADS = ("allocation-gc", *PYTHON_STARTUP_CONTROLS)
+PYPY_HASH_WORKLOADS = CPYTHON_HASH_WORKLOADS
 ADDR_NO_RANDOMIZE = 0x40000
 CPYTHON_PROBE_LEGACY = """import gc, json, os, pathlib, subprocess, sys, threading
 paths = sorted({str(pathlib.Path(value).resolve())
@@ -57,6 +60,11 @@ CPYTHON_PROBE = CPYTHON_PROBE_LEGACY.replace(
     'print(json.dumps({"process_personality": {"value": personality, '
     '"addr_no_randomize": bool(personality & 0x40000)}, ', 1)
 CPYTHON_PROBES = {1: CPYTHON_PROBE_LEGACY, 2: CPYTHON_PROBE}
+# PyPy 7.3.19 has neither -P nor sys.flags.safe_path. Preserve the historical
+# CPython probe bytes while recording the different PyPy path/flag contract.
+PYPY_PROBE = CPYTHON_PROBE.replace('"safe_path", ', '').replace(
+    '"executable":', '"implementation": sys.implementation.name, '
+    '"working_directory": os.getcwd(), "sys_path": sys.path, "executable":', 1)
 MAX_JSON = 32 * 1024 * 1024
 LIMITATIONS = [
     "fresh processes including startup; no persistent-runtime warmup or steady-state claim",
@@ -66,6 +74,7 @@ LIMITATIONS = [
     "application-mutable diagnostic counts, not CPU time, time coefficients or trusted judgement",
     "run-profile observations do not qualify isolate; existing isolate evidence remains a separate prerequisite",
     "explicit CPython hash controls change startup flags and do not qualify the default isolated profile",
+    "explicit PyPy hash controls use -s -S, retain the script/current-directory import path and do not qualify -I -S; hash_randomization alone does not establish the effective seed",
     "Python startup/import controls include loader, output and shutdown work; they are not region counts or counter correctness proofs",
     "recorded ADDR_NO_RANDOMIZE is inherited process state, not proof that all runtime allocation addresses are deterministic; legacy state is unknown",
 ]
@@ -187,23 +196,28 @@ def measurement_values(measurement, case, rep):
 
 
 def hash_profile(profile):
-    name = profile.get("cpython_hash_profile", "isolated")
-    if name not in CPYTHON_HASH_PROFILES or (name != "isolated" and profile.get("runtime") != "cpython"):
-        raise ValueError("unknown or incompatible CPython hash profile")
-    return name
+    selected = "isolated"
+    for runtime, profiles in (("cpython", CPYTHON_HASH_PROFILES), ("pypy", PYPY_HASH_PROFILES)):
+        name = profile.get(runtime + "_hash_profile", "isolated")
+        if name not in profiles or (name != "isolated" and profile.get("runtime") != runtime):
+            raise ValueError("unknown or incompatible " + runtime + " hash profile")
+        if name != "isolated":
+            selected = name
+    return selected
 
 
-def controlled_cases(cases, name):
+def controlled_cases(cases, name, runtime="cpython"):
     if name == "isolated":
         return cases
     # Child-process fixtures deliberately retain their own -I flags. Hash
     # controls apply only to these explicitly selected single-process cases.
-    if not cases or any(case.name not in {"cpython-" + workload for workload in CPYTHON_HASH_WORKLOADS}
+    if runtime not in ("cpython", "pypy") or not cases or any(case.name not in {runtime + "-" + workload for workload in CPYTHON_HASH_WORKLOADS}
                         for case in cases):
-        raise ValueError("explicit CPython hash controls require allocation-gc, startup or imports")
+        raise ValueError("explicit " + runtime + " hash controls require allocation-gc, startup or imports")
     if any(case.command[1:3] != ["-I", "-S"] for case in cases):
-        raise ValueError("default CPython startup contract changed")
-    return [replace(case, command=[case.command[0], *CPYTHON_CONTROL_FLAGS, *case.command[3:]]) for case in cases]
+        raise ValueError("default Python startup contract changed")
+    flags = CPYTHON_CONTROL_FLAGS if runtime == "cpython" else PYPY_CONTROL_FLAGS
+    return [replace(case, command=[case.command[0], *flags, *case.command[3:]]) for case in cases]
 
 
 def python_startup_cases(runtime, executable):
@@ -226,11 +240,15 @@ def profile_environment(profile):
 
 def probe_errors(collection, profile, files):
     name = hash_profile(profile)
+    for runtime in ("cpython", "pypy"):
+        if name == "isolated" or runtime != profile.get("runtime"):
+            if (collection.get(runtime + "_probe") is not None or profile.get(runtime + "_effective") is not None
+                    or profile.get(runtime + "_probe_version") is not None):
+                return ["isolated or foreign profile contains an unsolicited hash-control probe"]
     if name == "isolated":
-        if (collection.get("cpython_probe") is not None or profile.get("cpython_effective") is not None
-                or profile.get("cpython_probe_version") is not None):
-            return ["isolated profile contains an unsolicited hash-control probe"]
         return []
+    if profile["runtime"] == "pypy":
+        return pypy_probe_errors(collection, profile, files)
     probe = collection.get("cpython_probe") or {}
     effective = profile.get("cpython_effective")
     try:
@@ -276,7 +294,7 @@ def probe_errors(collection, profile, files):
 
 def collect_cpython_probe(args, collection, provenance):
     profile = collection["profile"]
-    if hash_profile(profile) == "isolated":
+    if profile["runtime"] != "cpython" or hash_profile(profile) == "isolated":
         return
     profile["cpython_probe_version"] = 2
     directory = args.output_dir / "cpython-startup-probe"
@@ -293,6 +311,83 @@ def collect_cpython_probe(args, collection, provenance):
         raise ValueError("CPython probe module inventory unavailable")
     for index, path in enumerate(paths):
         provenance.files["probe:cpython-module:" + str(index)] = {
+            "path": path, "before": file_identity(path), "after": None, "unchanged": False}
+    errors = probe_errors(collection, profile, provenance.files)
+    if errors:
+        raise ValueError("; ".join(errors))
+
+
+def pypy_probe_errors(collection, profile, files):
+    probe = collection.get("pypy_probe") or {}
+    try:
+        observed = json.loads(probe.get("stdout", ""))
+        version = profile.get("pypy_probe_version")
+        if type(version) is not int or version != 1:
+            raise ValueError("unknown PyPy startup probe version")
+        personality = observed.get("process_personality")
+        if (not valid_personality(personality)
+                or not workloads.same_json(personality, profile.get("host", {}).get("process_personality"))):
+            raise ValueError("native PyPy and harness process personality differ or are unavailable")
+        seed = PYPY_HASH_PROFILES[hash_profile(profile)]
+        flags = observed.get("flags")
+        # This flag remains 0 on PyPy 7.3.19 even with an explicit seed. The
+        # forwarded input and observed sentinel are recorded independently.
+        if (not isinstance(flags, dict) or type(flags.get("hash_randomization")) is not int
+                or flags["hash_randomization"] not in (0, 1)
+                or not workloads.same_json(flags, {"isolated": 0, "ignore_environment": 0,
+                    "no_user_site": 1, "no_site": 1, "hash_randomization": flags["hash_randomization"]})):
+            raise ValueError("effective PyPy startup flags differ")
+        if (probe.get("infrastructure_ok") is not True or probe.get("cleanup_complete") is not True
+                or type(probe.get("exit_code")) is not int or probe["exit_code"] != 0
+                or probe.get("timeout") is not False or probe.get("stderr") != "" or probe.get("errors")
+                or probe.get("python_hash_seed") != seed
+                or probe.get("command") != [profile["runtime_executable"], *PYPY_CONTROL_FLAGS, "-c", PYPY_PROBE]
+                or not workloads.same_json(observed, profile.get("pypy_effective"))
+                or observed.get("implementation") != "pypy"
+                or observed.get("python_environment") != {"PYTHONHASHSEED": seed}
+                or observed.get("executable") != files["binary:runtime"]["before"]["resolved_path"]
+                or type(observed.get("hash_sentinel")) is not int
+                or not -(1 << 63) <= observed["hash_sentinel"] < (1 << 63)
+                or not isinstance(observed.get("hash_algorithm"), str) or not observed["hash_algorithm"]):
+            raise ValueError("effective PyPy hash input or runtime identity differs")
+        directory, search = observed.get("working_directory"), observed.get("sys_path")
+        if (not isinstance(directory, str) or not Path(directory).is_absolute()
+                or directory != probe.get("directory")
+                or not isinstance(search, list) or not 2 <= len(search) <= 256 or search[0] != ""
+                or any(not isinstance(path, str) or not Path(path).is_absolute() for path in search[1:])):
+            raise ValueError("PyPy probe working directory or import path is unavailable or incompatible")
+        paths = observed.get("stdlib_paths")
+        if (not isinstance(paths, list) or not 1 <= len(paths) <= 256
+                or any(not isinstance(path, str) or not Path(path).is_absolute() for path in paths)
+                or paths != sorted(set(paths))):
+            raise ValueError("PyPy probe module paths are unavailable or invalid")
+        for index, path in enumerate(paths):
+            if files["probe:pypy-module:" + str(index)]["path"] != path:
+                raise ValueError("PyPy module provenance differs from its probe")
+    except (ValueError, KeyError, TypeError, AttributeError) as error:
+        return ["PyPy startup probe unavailable or incompatible: " + str(error)]
+    return []
+
+
+def collect_pypy_probe(args, collection, provenance):
+    profile = collection["profile"]
+    if profile["runtime"] != "pypy" or hash_profile(profile) == "isolated":
+        return
+    profile["pypy_probe_version"] = 1
+    directory = args.output_dir / "pypy-startup-probe"
+    directory.mkdir(mode=0o700)
+    command = [profile["runtime_executable"], *PYPY_CONTROL_FLAGS, "-c", PYPY_PROBE]
+    row = workloads.run_process(command, directory, 10000, args.prlimit,
+                                python_hash_seed=args.python_hash_seed)
+    row.update(command=command, directory=str(directory))
+    collection["pypy_probe"] = row
+    effective = json.loads(row.get("stdout", ""))
+    profile["pypy_effective"] = effective
+    paths = effective.get("stdlib_paths", [])
+    if not isinstance(paths, list) or not 1 <= len(paths) <= 256:
+        raise ValueError("PyPy probe module inventory unavailable")
+    for index, path in enumerate(paths):
+        provenance.files["probe:pypy-module:" + str(index)] = {
             "path": path, "before": file_identity(path), "after": None, "unchanged": False}
     errors = probe_errors(collection, profile, provenance.files)
     if errors:
@@ -325,7 +420,7 @@ def profile_cases(profile, files):
             available[index] = replace(case, command=command)
     if runtime in ("cpython", "pypy"):
         available += python_startup_cases(runtime, profile["runtime_executable"])
-    cases = controlled_cases([case for case in available if case.name in selected], hash_profile(profile))
+    cases = controlled_cases([case for case in available if case.name in selected], hash_profile(profile), runtime)
     if selected != [case.name for case in cases] or not workloads.same_json(profile.get("workloads"), [asdict(case) for case in cases]):
         raise ValueError("recorded commands or workload oracle do not match the fixed profile")
     return cases
@@ -527,13 +622,16 @@ def input_paths(args, executable):
 
 
 def collect(args):
-    selected_hash_profile = getattr(args, "cpython_hash_profile", "isolated")
+    selected_hash_profile = "isolated"
     if args.runtime not in ("cpython", "pypy") and set(args.workload or []) & PYTHON_STARTUP_CONTROLS.keys():
         raise ValueError("startup and imports controls require cpython or pypy")
-    if (selected_hash_profile not in CPYTHON_HASH_PROFILES
-            or selected_hash_profile != "isolated" and (args.runtime != "cpython" or not args.workload
+    for runtime, profiles in (("cpython", CPYTHON_HASH_PROFILES), ("pypy", PYPY_HASH_PROFILES)):
+        name = getattr(args, runtime + "_hash_profile", "isolated")
+        if (name not in profiles or name != "isolated" and (args.runtime != runtime or not args.workload
                 or not set(args.workload) <= set(CPYTHON_HASH_WORKLOADS))):
-        raise ValueError("explicit CPython hash controls require cpython and allocation-gc, startup or imports")
+            raise ValueError("explicit " + runtime + " hash controls require " + runtime + " and allocation-gc, startup or imports")
+        if name != "isolated":
+            selected_hash_profile = name
     args.python_hash_seed = CPYTHON_HASH_PROFILES[selected_hash_profile]
     for name in ("sdk", "client", "runner_bin", "output_dir"):
         setattr(args, name, getattr(args, name).absolute())
@@ -547,7 +645,7 @@ def collect(args):
         cases += python_startup_cases(args.runtime, cases[0].command[0])
     if args.workload:
         cases = [case for case in cases if any(case.name == args.runtime + "-" + name or case.name.startswith(args.runtime + "-" + name + "-") for name in args.workload)]
-    cases = controlled_cases(cases, selected_hash_profile)
+    cases = controlled_cases(cases, selected_hash_profile, args.runtime)
     provenance = InputProvenance(input_paths(args, executable))
     profile = {"runtime": args.runtime, "runtime_executable": cases[0].command[0],
                "classes_directory": str(classes), "workload_names": [case.name for case in cases],
@@ -556,7 +654,7 @@ def collect(args):
                "timeout_ms": args.timeout_ms, "fresh_processes": True, "environment": FIXED_ENV,
                "runtime_image": args.runtime_image, "versions": {}, "host": None, "input_sha256": {}}
     if selected_hash_profile != "isolated":
-        profile["cpython_hash_profile"] = selected_hash_profile
+        profile[args.runtime + "_hash_profile"] = selected_hash_profile
         profile["environment"] = profile_environment(profile)
     plan = fixed_plan(cases, args.repeats)
     by_name = {case.name: case for case in cases}
@@ -589,6 +687,7 @@ def collect(args):
         with fixed_environment(profile["environment"]):
             profile["versions"], _ = workloads.probe_and_compile(args, {args.runtime: executable}, provenance)
             collect_cpython_probe(args, collection, provenance)
+            collect_pypy_probe(args, collection, provenance)
             profile["input_sha256"] = {name: item["before"]["sha256"] for name, item in provenance.files.items()}
             collection["profile_sha256"] = digest(profile)
             collection["setup_complete"] = True
@@ -656,6 +755,8 @@ def main(argv=None):
     capture.add_argument("--runtime", choices=RUNTIMES, required=True)
     capture.add_argument("--cpython-hash-profile", choices=tuple(CPYTHON_HASH_PROFILES), default="isolated",
                          help="explicit single-process diagnostic: isolated (default), controlled random, or seed-1")
+    capture.add_argument("--pypy-hash-profile", choices=tuple(PYPY_HASH_PROFILES), default="isolated",
+                         help="explicit PyPy diagnostic: isolated (default), or -s -S with random/seed-1; retains current/script import path")
     capture.add_argument("--runtime-bin", help="selected runtime executable; default: java/python3/node/pypy3")
     capture.add_argument("--runtime-file", type=Path, action="append", default=[], help="additional runtime library/module to hash before and after")
     capture.add_argument("--runtime-image", help="operator-supplied immutable sha256 image digest; metadata, not attestation")

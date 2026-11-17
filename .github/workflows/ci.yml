@@ -101,6 +101,7 @@ jobs:
       - name: Validate lifecycle records and aggregation
         env:
           DURANTE_TEST_CONTEXT_SDK: ${{ github.workspace }}/toolkit/sdk/DynamoRIO-Linux-11.3.0-1
+          DURANTE_TEST_PYPY: pypy3
         run: python3 -m unittest discover -s tests -v
       - name: Verify bounded instruction-location diagnostics with an independent oracle
         run: |
