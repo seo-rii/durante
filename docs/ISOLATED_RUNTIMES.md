@@ -222,11 +222,26 @@ reasons, source/artifact hashes before and after the run, and independent owner
 cleanup observations. Both original inputs and the actual staged driver,
 relocated CLI/launcher/manifests/runtime libraries must remain unchanged.
 For Java child failures, inspect the case's `captured/stderr`: the fixture records
-the child seed, exit code and up to 128 stdout bytes as Base64, as described in
+the child seed, numeric exit code, truncation flag and up to 4,096 stdout bytes
+as Base64, as described in
 the [shared workload diagnostics](RUNTIME_WORKLOADS.md#execution-controls-and-accounting).
 `results.json` must have both `passed` and
 `cleanup_complete` true. Missing reports and partial matrices never count as
 successful coverage.
+
+PR #45's first CI attempt retained a real Java 21 failure in the relocated
+child-launch suite: native controls passed 6/6 and isolated cases passed 5/6.
+`java-processes-fork-repeat-1/isolate` reported child seed 11, numeric exit 134
+and a HotSpot `Internal Error (sharedRuntime.cpp:560), pid=30, tid=31` header.
+The parent exited 1, terminal accounting was incomplete, and no instruction
+total was accepted. Cleanup completed with no OOM or PID-limit events.
+The original 128-byte stdout prefix ended at the header; it did not retain the
+guarantee text, stack or crash-report path, and the artifact contained no
+`hs_err` file. The saved evidence does not establish the original signal or
+whether this has the same cause as earlier JVM failures. The larger prefix
+improves future evidence; it does not correct this runtime failure or qualify
+the failed observation. The original attempt remains available in
+[CI run 43886827903, attempt 1](https://github.com/seo-rii/durante/actions/runs/43886827903/attempts/1).
 
 Passing CI does not qualify every local build. Retain the earlier failed reports
 alongside the runtime comparison above. These observations cover the tested

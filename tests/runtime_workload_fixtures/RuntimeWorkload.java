@@ -1,6 +1,7 @@
 import java.lang.management.ManagementFactory;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -8,6 +9,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class RuntimeWorkload {
+    // Keep fatal-error explanations beyond the header without unbounded output.
+    private static final int CHILD_STDOUT_PREFIX_BYTES = 4096;
+
     private static long collections() {
         return ManagementFactory.getGarbageCollectorMXBeans().stream()
             .mapToLong(bean -> Math.max(0, bean.getCollectionCount())).sum();
@@ -83,13 +87,16 @@ public class RuntimeWorkload {
                 child.destroyForcibly().waitFor();
                 throw new AssertionError("child deadline");
             }
-            byte[] captured = child.getInputStream().readNBytes(128);
+            byte[] captured = child.getInputStream().readNBytes(CHILD_STDOUT_PREFIX_BYTES + 1);
+            boolean truncated = captured.length > CHILD_STDOUT_PREFIX_BYTES;
+            if (truncated) captured = Arrays.copyOf(captured, CHILD_STDOUT_PREFIX_BYTES);
             String text = new String(captured, StandardCharsets.UTF_8);
             int expected = seed * seed + 17;
             int exitCode = child.exitValue();
             if (exitCode != 0 || !text.equals("child:" + expected + "\n"))
                 throw new AssertionError("child output or exit mismatch: seed=" + seed
-                    + " exit=" + exitCode + " stdout_prefix_base64="
+                    + " exit=" + exitCode + " stdout_prefix_truncated=" + truncated
+                    + " stdout_prefix_base64="
                     + Base64.getEncoder().encodeToString(captured));
             total += expected;
         }
