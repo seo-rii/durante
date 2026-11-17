@@ -4,6 +4,8 @@ Build `libdurante.so` using the [repository instructions](../README.md).
 Launch it with `-outdir ABSOLUTE_PRIVATE_DIRECTORY`, optionally followed by
 `-rep_bytes`. Add `-disallow_cpu_feature avx` and/or
 `-disallow_cpu_feature simd` to stop before selected instructions execute.
+Add `-cpuid_profile x86-64-v1` or `x86-64-v2` to report one fixed virtual
+processor to application CPUID/XGETBV ([CPUID profiles](../docs/CPUID_PROFILE.md)).
 Values are exact lowercase spellings and duplicates are rejected. The earlier
 single-file `drmeter -o REPORT` interface is not used.
 

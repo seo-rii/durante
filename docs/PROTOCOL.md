@@ -1,7 +1,8 @@
 # Durante lifecycle protocol, schema 1
 
 The client is launched with `-outdir DIR [-rep_bytes]`, optionally followed by
-one or two `-disallow_cpu_feature avx|simd` pairs. DIR must already exist,
+one or two `-disallow_cpu_feature avx|simd` pairs and at most one
+`-cpuid_profile x86-64-v1|x86-64-v2` pair. DIR must already exist,
 be empty, private and writable by the target. `drrun -follow_children` must be
 active. The root PID is the launched target/engine PID, preserved through exec.
 The caller collects only after the entire tree has stopped and been reaped.
@@ -61,6 +62,17 @@ the capability, version and canonical policy. Partial metadata, unknown
 versions and mixed policy trees are unavailable. A successful aggregate adds
 the corresponding canonical `disallowed_cpu_features` array. Legacy aggregates
 omit it; absence must not satisfy an explicitly requested policy.
+
+A fixed virtual processor (`-cpuid_profile x86-64-v1|x86-64-v2`, CLI
+`--cpuid-profile`) adds `cpuid_profile_version: 1` and `cpuid_profile` to every
+`start`; both are absent when the host's CPUID is visible. The same agreement
+rules apply: every process and image must report the same version and profile,
+and partial metadata, unknown versions or names, receipts outside `start`, and
+trees mixing profiled and host-visible images are unavailable (`mixed CPUID
+profiles`). A successful aggregate adds `cpuid_profile`. Absence never
+satisfies a requested profile. An XGETBV index other than 0 or 1, or a failed
+register update, sets `accounting_error: true` on its image. See
+[CPUID profiles](CPUID_PROFILE.md).
 
 An executed forbidden instruction produces `cpu_feature_violation` with
 `feature: "avx"` or `"simd"` in its live image, with the normal next sequence

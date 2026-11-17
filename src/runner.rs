@@ -29,6 +29,8 @@ pub struct Options {
     pub records_dir: Option<PathBuf>,
     pub keep_records: bool,
     pub disallowed_cpu_features: Vec<String>,
+    /// Fixed virtual processor identity; `None` exposes host CPUID.
+    pub cpuid_profile: Option<String>,
     pub command: Vec<OsString>,
 }
 
@@ -372,6 +374,9 @@ pub fn run(options: Options) -> Result<i32, String> {
     if !options.disallowed_cpu_features.is_empty() {
         result["disallowed_cpu_features"] = json!(options.disallowed_cpu_features);
     }
+    if let Some(profile) = &options.cpuid_profile {
+        result["cpuid_profile"] = json!(profile);
+    }
     let outcome = execute(&options, drrun, client, &mut result);
     result["execution"]["wall_time_ms"] =
         json!(started.elapsed().as_millis().min(u64::MAX as u128) as u64);
@@ -431,6 +436,16 @@ pub(crate) fn policy_matches(report: &Value, expected: &[String]) -> bool {
     }
 }
 
+/// The client must confirm the requested virtual processor in every image. A
+/// legacy client, host CPUID or another profile cannot satisfy the request.
+pub(crate) fn cpuid_profile_matches(report: &Value, expected: Option<&str>) -> bool {
+    match (report.get("cpuid_profile"), expected) {
+        (None, None) => true,
+        (Some(value), Some(expected)) => value == expected,
+        _ => false,
+    }
+}
+
 fn execute(
     options: &Options,
     drrun: PathBuf,
@@ -464,6 +479,9 @@ fn execute(
         .arg("-rep_bytes");
     for feature in &options.disallowed_cpu_features {
         command.args(["-disallow_cpu_feature", feature]);
+    }
+    if let Some(profile) = &options.cpuid_profile {
+        command.args(["-cpuid_profile", profile]);
     }
     command
         .arg("--")
@@ -581,6 +599,15 @@ fn execute(
             measurement = invalid_measurement(
                 Some(root_pid),
                 "client CPU feature policy does not match the request",
+            );
+        }
+        if measurement["valid"] == true
+            && measurement["complete"] == true
+            && !cpuid_profile_matches(&measurement, options.cpuid_profile.as_deref())
+        {
+            measurement = invalid_measurement(
+                Some(root_pid),
+                "client CPUID profile does not match the request",
             );
         }
         if measurement["valid"] == true && measurement["complete"] == true {

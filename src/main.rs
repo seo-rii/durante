@@ -67,6 +67,9 @@ enum Command {
         /// Stop before executing a forbidden instruction; repeat for both policies.
         #[arg(long = "disallow-cpu-feature", value_parser = ["avx", "simd"])]
         disallowed_cpu_features: Vec<String>,
+        /// Report one fixed virtual processor to every application CPUID/XGETBV.
+        #[arg(long = "cpuid-profile", value_parser = ["x86-64-v1", "x86-64-v2"])]
+        cpuid_profile: Option<String>,
         /// Target executable and arguments, passed directly without a shell.
         #[arg(required = true, last = true, num_args = 1..)]
         command: Vec<OsString>,
@@ -97,6 +100,9 @@ enum Command {
         /// Forward the native instruction policy into the isolated run.
         #[arg(long = "disallow-cpu-feature", value_parser = ["avx", "simd"])]
         disallowed_cpu_features: Vec<String>,
+        /// Forward the fixed virtual processor identity into the isolated run.
+        #[arg(long = "cpuid-profile", value_parser = ["x86-64-v1", "x86-64-v2"])]
+        cpuid_profile: Option<String>,
         #[arg(required = true, last = true, num_args = 1..)]
         command: Vec<OsString>,
     },
@@ -227,6 +233,7 @@ fn main() {
             records_dir,
             keep_records,
             disallowed_cpu_features,
+            cpuid_profile,
             command,
         } => {
             #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
@@ -240,6 +247,7 @@ fn main() {
                     records_dir,
                     keep_records,
                     disallowed_cpu_features,
+                    cpuid_profile,
                     command,
                 })
             }
@@ -254,6 +262,7 @@ fn main() {
                     records_dir,
                     keep_records,
                     disallowed_cpu_features,
+                    cpuid_profile,
                     command,
                 );
                 Err("durante run requires Linux x86-64".to_owned())
@@ -269,6 +278,7 @@ fn main() {
             output_dir,
             output_limit_bytes,
             disallowed_cpu_features,
+            cpuid_profile,
             command,
         } => {
             #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
@@ -283,6 +293,7 @@ fn main() {
                     output_dir,
                     output_limit_bytes: output_limit_bytes.unwrap_or(output::DEFAULT_LIMIT),
                     disallowed_cpu_features,
+                    cpuid_profile,
                     command,
                 })
             }
@@ -299,6 +310,7 @@ fn main() {
                     output_dir,
                     output_limit_bytes,
                     disallowed_cpu_features,
+                    cpuid_profile,
                 );
                 Err("durante isolate requires Linux x86-64".to_owned())
             }

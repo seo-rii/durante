@@ -75,9 +75,10 @@ def parse_integer(raw):
 
 UINT_FIELDS = ('schema', 'client_version', 'pid', 'seq', 'parent_pid', 'child_pid',
                'syscall', *FIELDS, 'threads_started', 'threads_finished', 'app_exit_code',
-               'rep_breakdown_version', 'cpu_policy_version', *REP_BREAKDOWN_RAW_FIELDS)
+               'rep_breakdown_version', 'cpu_policy_version', 'cpuid_profile_version',
+               *REP_BREAKDOWN_RAW_FIELDS)
 TEXT_FIELDS = ('authority', 'metric', 'segment', 'event', 'origin', 'parent_segment',
-               'sdk_version', 'quality', 'cpu_policy', 'feature')
+               'sdk_version', 'quality', 'cpu_policy', 'cpuid_profile', 'feature')
 BOOL_FIELDS = ('rep_bytes_enabled', 'supported', 'valid', 'accounting_error',
                'threads_complete', 'app_exit_seen')
 
@@ -106,6 +107,9 @@ def validate_field_types(record):
     if 'cpu_policy_version' in record or 'cpu_policy' in record:
         require(record.get('event') == 'start', 'CPU policy outside start')
         cpu_policy(record)
+    if 'cpuid_profile_version' in record or 'cpuid_profile' in record:
+        require(record.get('event') == 'start', 'CPUID profile outside start')
+        cpuid_profile(record)
     if 'feature' in record:
         require(record.get('event') == 'cpu_feature_violation', 'CPU feature outside violation')
 
@@ -118,6 +122,17 @@ def cpu_policy(record):
     policy = record.get('cpu_policy')
     require(type(policy) is str and policy in ('avx', 'simd', 'avx,simd'), 'invalid CPU policy')
     return policy
+
+
+def cpuid_profile(record):
+    # Fixed virtual-CPU identity receipt; absent means host CPUID was visible.
+    if 'cpuid_profile_version' not in record and 'cpuid_profile' not in record:
+        return ''
+    require(uint(record.get('cpuid_profile_version'), 'cpuid_profile_version') == 1,
+            'unsupported CPUID profile version')
+    profile = record.get('cpuid_profile')
+    require(type(profile) is str and profile in ('x86-64-v1', 'x86-64-v2'), 'invalid CPUID profile')
+    return profile
 
 
 def parse_records(process, data):
@@ -248,6 +263,7 @@ def aggregate(streams, root_pid):
     # Validate all policy announcements before an early violation returns an
     # unavailable result: a violating stream must not hide mixed policies.
     policy = None
+    cpuid = None
     for records in streams.values():
         for record in records:
             validate_field_types(record)
@@ -255,7 +271,11 @@ def aggregate(streams, root_pid):
                 current = cpu_policy(record)
                 require(policy is None or policy == current, 'mixed CPU policies')
                 policy = current
+                current = cpuid_profile(record)
+                require(cpuid is None or cpuid == current, 'mixed CPUID profiles')
+                cpuid = current
     policy = policy or ''
+    cpuid = cpuid or ''
     segments = set(); processes = {}; spawn_edges = {}; rep_mode = None
     rep_breakdown_version = None; breakdown_mode_set = False
     total_breakdown = empty_rep_breakdown()
@@ -365,6 +385,8 @@ def aggregate(streams, root_pid):
         result['rep_breakdown'] = total_breakdown
     if policy:
         result['disallowed_cpu_features'] = policy.split(',')
+    if cpuid:
+        result['cpuid_profile'] = cpuid
     return result
 
 
