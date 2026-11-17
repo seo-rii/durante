@@ -50,11 +50,12 @@ squared relative error.
 cmake -S experiments/time_features -B build-time-features -DCMAKE_BUILD_TYPE=Release \
   -DDynamoRIO_DIR="$PWD/toolkit/sdk/DynamoRIO-Linux-11.3.0-1/cmake"
 cmake --build build-time-features
+mkdir -p .results
 python3 experiments/time_features.py collect --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 \
   --cachesim-root /path/to/full/DynamoRIO-Linux-11.3.0-1 \
   --client build-time-features/libtime_features_client.so \
   --work build-time-features/time_features_work --output-dir .results/time-features --cpu 2
-python3 experiments/time_features.py fit --input .results/time-features/dataset.json \
+python3 experiments/time_features.py fit --estimator min --input .results/time-features/dataset.json \
   --output .results/time-features/evaluation.json
 ```
 
@@ -73,6 +74,14 @@ came from a second deterministic feature pass on the same binary and inputs,
 whose static counts agreed with the first within 23 instructions per kernel.
 Dataset SHA-256: `6291a67c686e4c0855ae07cf66edb99d8189e7dda481c7c17b52d9c627986a0b`
 (work binary `f65f1ff3...5f373269`).
+
+The client used for this dataset omitted the base and index register
+dependencies of x86 `LEA`. The M4 and M5 rows and their per-kernel errors
+below use those historical counts. The corrected client waits for both
+registers and charges one ALU cycle for `LEA`. Its regression fixture measures
+two recurrence cycles per iteration for two chained `LEA` instructions.
+New M4 and M5 accuracy figures require recollecting those features and
+refitting on the same workloads. The historical table uses `--estimator min`.
 
 **Native timing on this host was itself unstable.** Pinned, deterministic runs
 of the same kernel varied by a median of 23% (max/min over 9 runs) and up to

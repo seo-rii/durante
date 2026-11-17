@@ -53,24 +53,24 @@ static int latency(instr_t *ins) {
   }
   return cycles;
 }
-static bool instr_is_lea_like(instr_t *ins) { return instr_get_opcode(ins) == OP_lea || instr_get_opcode(ins) == OP_nop_modrm; }
 static int slot(reg_id_t reg) {
   if (reg == DR_REG_NULL) return -1;
   if (reg_is_gpr(reg)) reg = reg_to_pointer_sized(reg);
   return reg < FLAGS_SLOT ? (int)reg : -1;
 }
 static void sources(instr_t *ins, int *ready, int *start) {
+  int op = instr_get_opcode(ins);
+  if (op == OP_nop_modrm) return; /* Its addressing operand is unused. */
   for (int i = 0; i < instr_num_srcs(ins); i++) {
     opnd_t o = instr_get_src(ins, i);
-    int address = 0;
+    int operand_ready = 0;
     for (int r = 0; r < opnd_num_regs_used(o); r++) {
       int s = slot(opnd_get_reg_used(o, r));
-      if (s < 0) continue;
-      if (opnd_is_memory_reference(o)) { if (ready[s] > address) address = ready[s]; }
-      else if (ready[s] > *start) *start = ready[s];
+      if (s >= 0 && ready[s] > operand_ready) operand_ready = ready[s];
     }
-    /* Load data arrives a fixed L1 latency after its address is known. */
-    if (opnd_is_memory_reference(o) && !instr_is_lea_like(ins) && address + 4 > *start) *start = address + 4;
+    /* LEA needs the address registers. Only a load waits for memory. */
+    if (opnd_is_memory_reference(o) && op != OP_lea) operand_ready += 4;
+    if (operand_ready > *start) *start = operand_ready;
   }
   for (int i = 0; i < instr_num_dsts(ins); i++) { /* address registers of stores */
     opnd_t o = instr_get_dst(ins, i);
