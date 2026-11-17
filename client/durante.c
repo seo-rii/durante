@@ -34,6 +34,14 @@
 #include "cpu_policy.h"
 #include "cpuid_emulation.h"
 #include "latency_bound.h"
+#ifdef DURANTE_TEST_BLOCK_LATENCY_BOUND
+/* The state-function harness stubs only IR accessors and supplies bounds. */
+static uint32_t DURANTE_TEST_BLOCK_LATENCY_BOUND(void *drcontext, void *tag, instrlist_t *bb,
+                                                 uint instructions);
+#define durante_block_latency_bound DURANTE_TEST_BLOCK_LATENCY_BOUND
+#else
+#define durante_block_latency_bound durante_latency_bound_x16
+#endif
 #include <errno.h>
 #include <fcntl.h>
 #include <stddef.h>
@@ -401,7 +409,7 @@ static dr_emit_flags_t analyze_block(void *drcontext, void *tag,
    * latency bound (UINT32_MAX when the block cannot be analyzed). */
   uint64_t bound = 0;
   if (latency_bound_enabled && count > 0)
-    bound = durante_latency_bound_x16(drcontext, tag, bb, count);
+    bound = durante_block_latency_bound(drcontext, tag, bb, count);
   *user_data = (void *)(ptr_uint_t)((uint64_t)count | bound << 32);
   return DR_EMIT_DEFAULT;
 }

@@ -25,7 +25,14 @@ HARNESS = r'''
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#define DURANTE_TEST_BLOCK_LATENCY_BOUND test_latency_bound
 #include CLIENT_SOURCE
+
+static uint32_t latency_bound_result;
+static uint32_t test_latency_bound(void *drcontext, void *tag, instrlist_t *bb, uint instructions) {
+    (void)drcontext; (void)tag; (void)bb; (void)instructions;
+    return latency_bound_result;
+}
 
 static thread_data_t state, parent_state, child_state;
 static thread_data_t *active = &state;
@@ -111,6 +118,9 @@ static void reset(void) {
     total_rep_movs_bytes = total_rep_stos_bytes = 0;
     total_rep_movs_entries = total_rep_stos_entries = 0;
     rep_bytes_enabled = true;
+    latency_bound_enabled = false;
+    total_latency_bound_x16 = 0;
+    latency_bound_result = 0;
     threads_started = 1;
     threads_ended = event_sequence = file_bytes = 0;
     accounting_error = false;
@@ -460,6 +470,81 @@ int main(int argc, char **argv) {
         assert_rep_counts(&state, 14, 0, 2, 0);
         snapshot(true);
         assert_record_breakdown(14, 0, 2, 0);
+    } else if (!strcmp(test, "latency-pack")) {
+        test_ir nodes[3] = {{1, NULL}, {0, NULL}, {1, NULL}};
+        nodes[0].next = &nodes[1];
+        nodes[1].next = &nodes[2];
+        void *packed = NULL;
+        latency_bound_result = 77; /* Ignored while the option is off. */
+        analyze_block(CTX, START, (instrlist_t *)nodes, false, false, &packed);
+        assert((ptr_uint_t)packed == 2);
+        latency_bound_enabled = true;
+        analyze_block(CTX, START, (instrlist_t *)nodes, false, false, &packed);
+        assert((ptr_uint_t)packed == (2 | (UINT64_C(77) << 32)));
+        latency_bound_result = UINT32_MAX;
+        analyze_block(CTX, START, (instrlist_t *)nodes, false, false, &packed);
+        assert((uint32_t)(ptr_uint_t)packed == 2 && (ptr_uint_t)packed >> 32 == UINT32_MAX);
+    } else if (!strcmp(test, "latency-records")) {
+        start_record(NULL, "initial", 0, "");
+        assert(!strstr(record, "latency_bound"));
+        state.instructions = 1;
+        snapshot(true);
+        assert(!strstr(record, "latency_bound"));
+        latency_bound_enabled = true;
+        start_record(NULL, "initial", 0, "");
+        assert(strstr(record, "\"latency_bound_version\":1"));
+        count_block_latency(4, START, 16);
+        assert(state.instructions == 5 && state.latency_bound_x16 == 16);
+        snapshot(true);
+        assert(strstr(record, "\"latency_bound_x16\":16"));
+        assert(add_thread(&state) && total_latency_bound_x16 == 16);
+        threads_ended = 1;
+        snapshot_event("end", NULL, false);
+        assert(strstr(record, "\"valid\":true") && strstr(record, "\"latency_bound_x16\":16"));
+    } else if (!strcmp(test, "latency-replay")) {
+        latency_bound_enabled = true;
+        /* A retried write returns its whole unexecuted suffix: 3 of 7. */
+        state.instructions = 100;
+        state.latency_bound_x16 = 1000;
+        count_block_latency(7, START, 70);
+        before_write(WRITE, NEXT, 3);
+        code_replay(CTX, DR_DURANTE_REPLAY_RETRY, WRITE, WRITE);
+        assert(state.instructions == 104 && state.latency_bound_x16 == 1040);
+        count_block_latency(3, WRITE, 13);
+        assert(state.instructions == 107 && state.latency_bound_x16 == 1053);
+        /* A completed write keeps its own charge: 2 of 3, rounded down. */
+        before_write(WRITE, NEXT, 3);
+        code_replay(CTX, DR_DURANTE_REPLAY_AFTER_WRITE, NULL, NEXT);
+        assert(state.instructions == 105 && state.latency_bound_x16 == 1045);
+        assert(!state.replay_error && !state.latency_error);
+        snapshot(true);
+        assert(strstr(record, "\"latency_bound_x16\":1045"));
+    } else if (!strcmp(test, "latency-invalid")) {
+        latency_bound_enabled = true;
+        state.instructions = 1;
+        count_block_latency(2, START, -1); /* UINT32_MAX: unanalyzable block. */
+        assert(state.latency_error && state.instructions == 3);
+        snapshot(false);
+        reset();
+        latency_bound_enabled = true;
+        state.instructions = 1;
+        state.latency_bound_x16 = UINT64_MAX - 1;
+        count_block_latency(1, START, 2);
+        assert(state.counter_overflows && state.latency_bound_x16 == UINT64_MAX - 1);
+        snapshot(false);
+        reset();
+        latency_bound_enabled = true;
+        /* A share larger than the charged bound cannot be returned. */
+        state.instructions = 10;
+        state.write_pc = WRITE;
+        state.write_next_pc = NEXT;
+        state.write_suffix = 2;
+        state.write_block_instructions = 2;
+        state.write_block_bound_x16 = 50;
+        state.latency_bound_x16 = 10;
+        code_replay(CTX, DR_DURANTE_REPLAY_RETRY, WRITE, WRITE);
+        assert(state.latency_error && state.latency_bound_x16 == 10);
+        snapshot(false);
     } else if (!strcmp(test, "after-write")) {
         state.instructions = 100;
         count_block(8, START);
@@ -704,6 +789,18 @@ class ClientReplayStateTests(unittest.TestCase):
 
     def test_partial_rep_multiple_faults_charge_original_request_once(self):
         self.run_case("partial-rep-twice")
+
+    def test_latency_bound_is_packed_only_when_enabled(self):
+        self.run_case("latency-pack")
+
+    def test_latency_bound_capability_and_counter_reach_records(self):
+        self.run_case("latency-records")
+
+    def test_latency_bound_replay_returns_proportional_share(self):
+        self.run_case("latency-replay")
+
+    def test_unanalyzable_overflowing_or_underflowing_latency_bound_is_invalid(self):
+        self.run_case("latency-invalid")
 
     def test_completed_store_retains_its_instruction_charge(self):
         self.run_case("after-write")

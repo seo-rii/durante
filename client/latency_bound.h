@@ -34,7 +34,7 @@
 #define DURANTE_LATENCY_SLOTS 1024
 #define DURANTE_LATENCY_FLAGS_SLOT (DURANTE_LATENCY_SLOTS - 1)
 
-static int durante_latency_cycles(instr_t *ins) {
+static inline int durante_latency_cycles(instr_t *ins) {
   switch (instr_get_opcode(ins)) {
   case OP_imul:
   case OP_mul:
@@ -59,7 +59,7 @@ static int durante_latency_cycles(instr_t *ins) {
 }
 
 /* General-purpose subregisters share their full register's slot. */
-static int durante_latency_slot(reg_id_t reg) {
+static inline int durante_latency_slot(reg_id_t reg) {
   if (reg == DR_REG_NULL)
     return -1;
   if (reg_is_gpr(reg))
@@ -67,7 +67,7 @@ static int durante_latency_slot(reg_id_t reg) {
   return reg < DURANTE_LATENCY_FLAGS_SLOT ? (int)reg : -1;
 }
 
-static uint32_t durante_latency_start(instr_t *ins, const uint32_t *ready) {
+static inline uint32_t durante_latency_start(instr_t *ins, const uint32_t *ready) {
   uint32_t start = 0;
   int op = instr_get_opcode(ins);
   bool address_only = op == OP_lea || op == OP_nop_modrm;
@@ -106,7 +106,7 @@ static uint32_t durante_latency_start(instr_t *ins, const uint32_t *ready) {
 
 /* One pass over the block's application instructions with persistent ready
  * times. Returns the latest finish time. */
-static uint32_t durante_latency_pass(instrlist_t *bb, uint32_t *ready) {
+static inline uint32_t durante_latency_pass(instrlist_t *bb, uint32_t *ready) {
   uint32_t finish = 0;
   for (instr_t *ins = instrlist_first_app(bb); ins; ins = instr_get_next_app(ins)) {
     uint flags = instr_get_eflags(ins, DR_QUERY_DEFAULT);
@@ -135,7 +135,7 @@ static uint32_t durante_latency_pass(instrlist_t *bb, uint32_t *ready) {
  * UINT32_MAX when the block cannot be analyzed, which the caller must treat as
  * an accounting failure. Deterministic for identical lists, so translation
  * passes reproduce it. */
-static uint32_t durante_latency_bound_x16(void *drcontext, void *tag,
+static inline uint32_t durante_latency_bound_x16(void *drcontext, void *tag,
                                           instrlist_t *bb, uint instructions) {
   if (instructions == 0 || instructions > (1u << 16))
     return UINT32_MAX;
