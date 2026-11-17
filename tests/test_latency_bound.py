@@ -15,7 +15,7 @@ class LatencyBoundExpectationTests(unittest.TestCase):
 
     def test_recurrences_follow_the_latency_table(self):
         cycles = {mode: body_b / 16 for mode, (_, _, _, _, body_b) in latency_bound.KERNELS.items()}
-        self.assertEqual(cycles, {0: 2 * 3, 1: 4 + 1, 2: 8 / 4, 3: 1 + 20})
+        self.assertEqual(cycles, {0: 2 * 3, 1: 4 + 1, 2: 8 / 4, 3: 1 + 20, 4: 2 * 1})
 
     def test_totals_are_exact_and_linear_in_iterations(self):
         self.assertEqual(latency_bound.expected(0, 1000), {"instructions": 4005, "latency_bound_x16": 95940})

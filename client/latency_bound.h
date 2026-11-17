@@ -70,7 +70,6 @@ static inline int durante_latency_slot(reg_id_t reg) {
 static inline uint32_t durante_latency_start(instr_t *ins, const uint32_t *ready) {
   uint32_t start = 0;
   int op = instr_get_opcode(ins);
-  bool address_only = op == OP_lea || op == OP_nop_modrm;
   for (int i = 0; i < instr_num_srcs(ins); ++i) {
     opnd_t o = instr_get_src(ins, i);
     bool memory = opnd_is_memory_reference(o);
@@ -86,9 +85,12 @@ static inline uint32_t durante_latency_start(instr_t *ins, const uint32_t *ready
         start = ready[s];
       }
     }
-    /* Loaded data arrives a fixed latency after its address is known. */
-    if (memory && !address_only && address + 4 > start)
-      start = address + 4;
+    if (memory && op != OP_nop_modrm) {
+      /* LEA consumes its address registers. A load also waits for data. */
+      uint32_t source_ready = op == OP_lea ? address : address + 4;
+      if (source_ready > start)
+        start = source_ready;
+    }
   }
   /* A store cannot issue before its address registers are ready. */
   for (int i = 0; i < instr_num_dsts(ins); ++i) {

@@ -2,7 +2,8 @@
  * loop ITERATIONS times and exits 0, so its blocks and their bounds can be
  * derived by hand (see tests/latency_bound.py). The loop body after the first
  * iteration is a block whose final branch targets its own start.
- * MODE: 0 multiply chain; 1 pointer chase; 2 independent ALU; 3 divide chain. */
+ * MODE: 0 multiply chain; 1 pointer chase; 2 independent ALU; 3 divide chain;
+ * 4 address-generation chain. */
 #ifndef MODE
 #define MODE 0
 #endif
@@ -43,6 +44,13 @@ loop:
     xor %edx, %edx
     div %rbx
     add $1000, %rax
+    dec %ecx
+    jnz loop
+#elif MODE == 4
+    mov $1, %eax
+loop:
+    lea (%rax,%rax,2), %rax
+    lea (%rax,%rax,2), %rax
     dec %ecx
     jnz loop
 #else

@@ -20,8 +20,8 @@ include the same header.
 - Latency: integer multiply 3 cycles, integer divide 20, scalar FP divide and
   square root 14, the listed FP add/subtract/multiply/convert instructions and
   any other instruction DynamoRIO classifies as floating point 4, all others 1.
-- A memory source is ready 4 cycles after its address registers. A store waits
-  for its address registers. `lea` and multi-byte `nop` only compute addresses.
+- A memory source is ready 4 cycles after its address registers. Stores and
+  `lea` wait for their address registers. A multi-byte `nop` ignores its operand.
 - Only register and flag dependencies are tracked (general-purpose
   subregisters share their full register). Memory dependencies, execution
   ports, caches, branch prediction and the front end are not modeled.
@@ -66,10 +66,11 @@ Combined instruction and REP counters are unchanged by the option.
 
 ## Evidence
 
-`tests/latency_bound.py` builds four libc-free loop fixtures
-(`tests/latency_bound/kernels.S`): a dependent multiply chain (6 cycles per
+`tests/latency_bound.py` builds five libc-free loop fixtures in
+`tests/latency_bound/kernels.S`. They cover a dependent multiply chain (6 cycles per
 iteration), an L1 pointer chase (5), independent ALU work limited by issue
-width (2), and a divide chain (21). Each has an entry block, a self-loop body
+width (2), a divide chain (21), and two dependent `lea` instructions (2).
+Each has an entry block, a self-loop body
 and an exit block whose bounds follow from the model by hand; two iteration
 counts must reproduce the exact totals under the stock-core test client (release
 and debug core). With `--client` and `--runner-bin`, the production client must
@@ -79,7 +80,7 @@ and no bound without the flag. The code-replay fixtures from
 bound of at least the issue cost.
 
 In the exploratory work-feature study (`experiments/time_features`, a separate
-change), this bound alone predicted 9 of 18 single-cost kernels within 20%
+change), a prototype that omitted `lea` address dependencies predicted 9 of 18 single-cost kernels within 20%
 under leave-one-out fitting (median error 25%, against 82% for instructions
 alone), all of them compute-bound; it failed where time was dominated by branch
 mispredictions or memory. That was one noisy host and a generic table, so it

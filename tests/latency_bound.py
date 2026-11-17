@@ -30,6 +30,7 @@ KERNELS = {
     1: ("pointer chase", 5, 20, 3, 80),
     2: ("independent ALU (issue bound)", 9, 36, 8, 32),
     3: ("divide chain", 8, 32, 5, 336),
+    4: ("address-generation chain", 6, 24, 4, 32),
 }
 EXIT_INSTRUCTIONS, EXIT_BOUND = 3, 12
 ITERATIONS = (1000, 2000)
