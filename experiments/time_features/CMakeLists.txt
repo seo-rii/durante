@@ -1,0 +1,13 @@
+cmake_minimum_required(VERSION 3.16)
+project(durante_time_features C)
+find_package(DynamoRIO 11.3 EXACT REQUIRED)
+# Exploratory feature client; not the production meter.
+add_library(time_features_client SHARED featclient.c)
+configure_DynamoRIO_client(time_features_client)
+use_DynamoRIO_extension(time_features_client drmgr)
+set_target_properties(time_features_client PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS YES)
+target_compile_options(time_features_client PRIVATE -Wall -Wextra -Werror)
+# The corpus uses the judge's ordinary C flags; hot loops make no library calls.
+add_executable(time_features_work work.c)
+target_compile_options(time_features_work PRIVATE -O2 -Wall -Wextra -Werror)
+target_link_options(time_features_work PRIVATE -static)
