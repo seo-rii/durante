@@ -149,11 +149,17 @@ and [OpenJDK 21 ProcessImpl](https://github.com/openjdk/jdk21u/blob/master/src/j
 The helper images cannot silently disappear from accepted accounting.
 
 If a Java child exits with the wrong status or output, the fixture's stderr
-records the child's input `seed`, numeric `exit` code and `stdout_prefix_base64`.
-The last field preserves the exact first **128 bytes at most** from the child's
+records the child's input `seed`, numeric `exit` code, `stdout_prefix_truncated`
+and `stdout_prefix_base64`.
+The last field preserves the exact first **4,096 bytes at most** from the child's
 stdout, including newlines and invalid UTF-8, without adding unbounded output to
-the report. An empty value means no stdout was captured; a 128-byte prefix may
-omit later bytes. The separate `child deadline` assertion identifies expiration
+the report. One extra byte is read to distinguish an exact 4,096-byte output from
+a truncated prefix. An empty value means no stdout was captured;
+`stdout_prefix_truncated=true` means more bytes followed the retained prefix.
+Earlier records contain at most 128 bytes and no truncation flag; their missing
+details cannot be recovered from a new diagnostic format. This prefix is not a
+complete JVM crash report, and a numeric child exit alone does not prove which
+signal, if any, terminated it. The separate `child deadline` assertion identifies expiration
 of the existing 45-second child deadline. Successful children still require exit
 0 and the exact expected output.
 
@@ -236,7 +242,8 @@ zero reclaimed objects, unfinished PyPy collections, unrelated statistics,
 collector exceptions and retained-data corruption even after successful GC.
 The Java fixture tests compile and execute the real parent with deterministic
 child executables. They check successful output, failures at either child seed,
-nonzero exits, binary output and the 128-byte diagnostic bound. Both Java 17 and
+nonzero exits, binary output, fatal explanations after byte 128 and the exact
+4,096-byte/truncation boundary. Both Java 17 and
 Java 21 workflow jobs run these tests with their selected JDK.
 The Node tests run the actual workloads and use real workers with a test-only
 preloader to force startup ordering and failures. They verify overlapping worker

@@ -33,10 +33,11 @@ class JavaProcessFixtureTests(unittest.TestCase):
                                "RuntimeWorkload", "processes", str(executable)],
                               capture_output=True, timeout=15)
 
-    def failure(self, result, seed, exit_code, output):
+    def failure(self, result, seed, exit_code, output, *, truncated=False):
         self.assertNotEqual(result.returncode, 0)
         self.assertEqual(result.stdout, b"")
         detail = (f"child output or exit mismatch: seed={seed} exit={exit_code} "
+                  f"stdout_prefix_truncated={str(truncated).lower()} "
                   f"stdout_prefix_base64={base64.b64encode(output).decode()}")
         self.assertIn(detail.encode() + b"\n", result.stderr)
         self.assertNotIn(b"child deadline", result.stderr)
@@ -59,12 +60,35 @@ class JavaProcessFixtureTests(unittest.TestCase):
         result = self.child(f"sys.stdout.buffer.write({output!r})\n")
         self.failure(result, 7, 0, output)
 
-    def test_failure_output_is_bounded_to_the_original_128_byte_prefix(self):
-        output = b"x" * 129
-        result = self.child(f"sys.stdout.buffer.write({output!r})\n")
-        self.failure(result, 7, 0, output[:128])
+    def test_fatal_exit_preserves_explanation_and_frames_beyond_128_bytes(self):
+        explanation = b"# Internal Error (sharedRuntime.cpp:560), fatal explanation"
+        frame = b"# V [libjvm.so+0x1234] SharedRuntime::diagnostic_test_frame"
+        output = b"# fatal header " + b"x" * 160 + b"\n" + explanation + b"\n" + frame + b"\n"
+        self.assertGreater(output.index(explanation), 128)
+        result = self.child(f"sys.stdout.buffer.write({output!r})\nsys.exit(134)\n")
+        self.failure(result, 7, 134, output)
         encoded = re.search(rb"stdout_prefix_base64=([^\n]*)", result.stderr).group(1)
-        self.assertEqual(len(base64.b64decode(encoded, validate=True)), 128)
+        decoded = base64.b64decode(encoded, validate=True)
+        self.assertIn(explanation, decoded)
+        self.assertIn(frame, decoded)
+
+    def test_failure_prefix_preserves_raw_bytes_and_marks_the_exact_4096_byte_boundary(self):
+        output = bytes(range(256)) * 16 + b"\xff"
+        for size in (4095, 4096, 4097):
+            with self.subTest(size=size):
+                captured = output[:size]
+                result = self.child(f"sys.stdout.buffer.write({captured!r})\n")
+                self.failure(result, 7, 0, captured[:4096], truncated=size > 4096)
+                encoded = re.search(rb"stdout_prefix_base64=([^\n]*)", result.stderr).group(1)
+                decoded = base64.b64decode(encoded, validate=True)
+                self.assertEqual(len(decoded), min(size, 4096))
+                self.assertEqual(decoded, captured[:4096])
+
+    def test_correct_child_line_followed_by_excess_output_is_still_rejected(self):
+        expected = b"child:66\n"
+        output = expected + b"x" * (4097 - len(expected))
+        result = self.child(f"sys.stdout.buffer.write({output!r})\n")
+        self.failure(result, 7, 0, output[:4096], truncated=True)
 
 
 if __name__ == "__main__":
