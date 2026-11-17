@@ -373,6 +373,13 @@ fn validate_field_types(event: &Event) -> Result<(), Error> {
         require(text(event, "event")? == "start", "CPU policy outside start")?;
         cpu_policy(event)?;
     }
+    if event.contains_key("cpuid_profile_version") || event.contains_key("cpuid_profile") {
+        require(
+            text(event, "event")? == "start",
+            "CPUID profile outside start",
+        )?;
+        cpuid_profile(event)?;
+    }
     if event.contains_key("feature") {
         require(
             text(event, "event")? == "cpu_feature_violation",
@@ -458,6 +465,23 @@ fn cpu_policy(event: &Event) -> Result<&str, Error> {
         "invalid CPU policy",
     )?;
     Ok(policy)
+}
+
+/// Fixed virtual-CPU identity receipt. Absent means host CPUID was visible.
+fn cpuid_profile(event: &Event) -> Result<&str, Error> {
+    if !event.contains_key("cpuid_profile_version") && !event.contains_key("cpuid_profile") {
+        return Ok("");
+    }
+    require(
+        uint(event, "cpuid_profile_version")? == 1,
+        "unsupported CPUID profile version",
+    )?;
+    let profile = text(event, "cpuid_profile")?;
+    require(
+        matches!(profile, "x86-64-v1" | "x86-64-v2"),
+        "invalid CPUID profile",
+    )?;
+    Ok(profile)
 }
 
 struct Terminal {
@@ -563,6 +587,7 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
     // A violating process may have no final image. Check every advertised
     // policy first so an early violation cannot hide a mixed-policy tree.
     let mut policy = None;
+    let mut cpuid = None;
     for (_, records) in &streams {
         for record in records {
             validate_field_types(record)?;
@@ -573,10 +598,19 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
                     "mixed CPU policies",
                 )?;
                 policy = Some(current);
+                // Every image must observe the same virtual processor; a
+                // host-visible image would reintroduce CPU-dependent paths.
+                let current = cpuid_profile(record)?;
+                require(
+                    cpuid.is_none_or(|previous| previous == current),
+                    "mixed CPUID profiles",
+                )?;
+                cpuid = Some(current);
             }
         }
     }
     let policy = policy.unwrap_or("").to_owned();
+    let cpuid = cpuid.unwrap_or("").to_owned();
     let mut seen_segments = BTreeSet::new();
     let mut processes = BTreeMap::new();
     let mut spawn_edges = BTreeMap::<u32, (u32, String)>::new();
@@ -819,6 +853,9 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
     }
     if !policy.is_empty() {
         result["disallowed_cpu_features"] = json!(policy.split(',').collect::<Vec<_>>());
+    }
+    if !cpuid.is_empty() {
+        result["cpuid_profile"] = json!(cpuid);
     }
     Ok(result)
 }

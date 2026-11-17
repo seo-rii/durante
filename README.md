@@ -35,6 +35,12 @@ executes and records the violation; allowed runs retain the normal native work
 metric. See [CPU feature restrictions](docs/CPU_FEATURE_POLICY.md) for semantics,
 embedding arguments and the same in-process integrity limits as measurement.
 
+`--cpuid-profile x86-64-v1` or `x86-64-v2` on `run` and `isolate` reports one
+fixed virtual processor to every application CPUID/XGETBV, so library and
+runtime dispatch, and therefore counts, no longer follow the host processor.
+See [CPUID profiles](docs/CPUID_PROFILE.md) for the table, host checks and
+remaining host-visible inputs.
+
 New clients also report versioned `rep_breakdown` counters for MOVS and STOS
 requested bytes and entries separately, at image/process/tree level. This lets
 reference-model experiments distinguish copying from filling without changing

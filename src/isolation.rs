@@ -36,6 +36,7 @@ pub struct Options {
     pub output_dir: Option<PathBuf>,
     pub output_limit_bytes: u64,
     pub disallowed_cpu_features: Vec<String>,
+    pub cpuid_profile: Option<String>,
     pub command: Vec<OsString>,
 }
 
@@ -834,6 +835,9 @@ pub fn run(options: Options) -> Result<i32, String> {
     if !options.disallowed_cpu_features.is_empty() {
         result["disallowed_cpu_features"] = json!(options.disallowed_cpu_features);
     }
+    if let Some(profile) = &options.cpuid_profile {
+        result["cpuid_profile"] = json!(profile);
+    }
     result["output"] = match &options.output_dir {
         Some(path) => json!({"mode":"capture_requested", "directory":path,
             "limit_bytes":options.output_limit_bytes, "published":false, "complete":false}),
@@ -1036,6 +1040,9 @@ fn execute(
     for feature in &options.disallowed_cpu_features {
         command.args(["--disallow-cpu-feature", feature]);
     }
+    if let Some(profile) = &options.cpuid_profile {
+        command.args(["--cpuid-profile", profile]);
+    }
     command
         .arg("--")
         .args(&options.command)
@@ -1194,6 +1201,13 @@ fn execute(
     if valid_inner(&inner)
         && runner::policy_matches(&inner, &options.disallowed_cpu_features)
         && runner::policy_matches(&inner["measurement"], &options.disallowed_cpu_features)
+        && runner::cpuid_profile_matches(&inner, options.cpuid_profile.as_deref())
+        && (inner["measurement"]["valid"] != true
+            || inner["measurement"]["complete"] != true
+            || runner::cpuid_profile_matches(
+                &inner["measurement"],
+                options.cpuid_profile.as_deref(),
+            ))
     {
         result["untrusted_inner_report"] = inner;
     } else {
