@@ -68,6 +68,55 @@ instruction. Every `start` record carries `cpuid_profile_version: 1` and
 measurement whose receipt differs from the request. See the
 [protocol](PROTOCOL.md).
 
+## Runtime observations
+
+```sh
+cmake -S tests/cpuid_profile -B build-cpuid \
+  -DDynamoRIO_DIR="$PWD/toolkit/sdk/DynamoRIO-Linux-11.3.0-1/cmake"
+cmake --build build-cpuid
+python3 tests/cpuid_runtimes.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 \
+  --client build-cpuid/libcpuid_profile_client.so --output-dir .results/cpuid-runtimes
+```
+
+`tests/cpuid_runtimes.py` runs one fixed CPython, Node and Java workload
+(sorting, a SHA-256 digest and, for CPython, zlib) natively and under the same
+stock-core test client, with ASLR disabled. Every group compares output with a
+native run of the same options and reports the exact instruction spread over
+repeated fresh processes. The "above-profile mask" removes only features the
+profiles never report, through `GLIBC_TUNABLES` and `OPENSSL_ia32cap`, to
+simulate a host that lacks them.
+
+Local run on 2026-11-17 (same host as above, stock release core,
+`x86-64-v2`, 3 repetitions per group; result SHA-256
+`906dae446a429257ec6c0ca67e679c405a205fa0fea1628829036dfc96604156`). Every group
+exited normally and matched native output. Medians:
+
+| Runtime and options | Host CPUID: mask effect | `x86-64-v2`: mask effect | `x86-64-v2` spread |
+| --- | ---: | ---: | ---: |
+| CPython 3.13.18 (`PYTHONHASHSEED=0`) | 230.50M → 298.92M (+29.7%) | 300.03M → 300.09M (+0.021%) | 98-221 ppm |
+| Node 22.23.4 `--predictable` | 224.43M → 258.17M (+15.0%) | 259.28M → 259.31M (+0.013%) | 116-173 ppm |
+| OpenJDK 21.0.12 `-Xbatch -XX:+UseSerialGC -XX:ActiveProcessorCount=1` | 1451.1M → 1458.7M (+0.52%) | 1439.6M → 1439.2M (-0.031%) | 300-316 ppm |
+
+With host CPUID visible, the same work changes by up to 30% with features the
+host lacks (OpenSSL and glibc dispatch). With the profile, the change is within
+the run-to-run spread. HotSpot reports the virtual processor (`family 6 model 0`,
+SSE through SSE4.2, `UseAVX=0`, `UseAES=false`) and V8/OpenSSL select the same
+baseline paths.
+
+The profile does not make JIT runtimes repeatable by itself. With default
+options, Node's counts varied by 20.2% and Java's by 7.7% across identical
+runs, from background compilation and GC thread scheduling. The listed options
+reduce that to a few hundred ppm; they change the amount of work (Node's
+median falls from 389M to 259M instructions), so a time model must be
+qualified with the same options. Changing V8 code-generation flags alone added
+about 51M instructions under both host CPUID and the profile, which is a
+constant cost of a non-default V8 configuration rather than CPU dispatch; the
+harness therefore simulates missing host features only through library
+dispatch controls.
+
+This is one workload per runtime on one host through the stock-core test
+client, not runtime qualification under Durante's lifecycle accounting.
+
 ## Not virtualized
 
 - `/proc/cpuinfo`, `AT_HWCAP`/`AT_HWCAP2` and sysfs CPU topology still show the
