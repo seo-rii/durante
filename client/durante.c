@@ -33,6 +33,7 @@
 #include "durante_runtime.h"
 #include "cpu_policy.h"
 #include "cpuid_emulation.h"
+#include "latency_bound.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <stddef.h>
@@ -61,6 +62,13 @@ typedef struct {
   bool replay_error;
   /* A CPUID-profile request outside the fixed table (sticky invalidity). */
   bool cpuid_error;
+  /* Optional static latency bound (latency_bound.h), in 1/16 cycles. The
+   * current block's charge is kept so a replay can return its unexecuted
+   * share; an unanalyzable block or underflow is sticky invalidity. */
+  uint64_t latency_bound_x16;
+  uint32_t block_instructions, block_bound_x16;
+  uint32_t write_block_instructions, write_block_bound_x16;
+  bool latency_error;
   app_pc write_pc, write_next_pc, restart_pc;
   uint64_t write_suffix, write_rep_request, restart_rep_request;
   int write_rep_opcode, write_rep_bytes, write_rep_count_reg;
@@ -88,6 +96,8 @@ static uint64_t total_rep_movs_bytes, total_rep_stos_bytes,
     total_rep_movs_entries, total_rep_stos_entries;
 static bool rep_bytes_enabled, accounting_error, app_exit_seen, report_written;
 static bool deny_avx, deny_simd;
+static bool latency_bound_enabled;
+static uint64_t total_latency_bound_x16;
 static app_pc cpu_policy_exit_pc;
 /* A replay callback must never do I/O or take a lock, even on a broken TLS
  * invariant.  This sticky process/shared-VM flag invalidates every snapshot. */
@@ -189,6 +199,10 @@ static void start_record(thread_data_t *d, const char *origin,
   if (deny_avx || deny_simd)
     dr_snprintf(policy_fields, sizeof(policy_fields),
                 ",\"cpu_policy_version\":1,\"cpu_policy\":\"%s\"", policy);
+  char latency_fields[40] = "";
+  if (latency_bound_enabled)
+    dr_snprintf(latency_fields, sizeof(latency_fields), ",\"latency_bound_version\":%d",
+                DURANTE_LATENCY_BOUND_VERSION);
   char cpuid_fields[96] = "";
   if (durante_cpuid_active != DURANTE_CPUID_NONE)
     dr_snprintf(cpuid_fields, sizeof(cpuid_fields),
@@ -199,9 +213,10 @@ static void start_record(thread_data_t *d, const char *origin,
               ",\"origin\":\"%s\",\"parent_pid\":%d,"
               "\"parent_segment\":\"%s\",\"rep_bytes_enabled\":%s,"
               "\"rep_breakdown_version\":1,\"sdk_"
-              "version\":\"11.3.0\"%s%s",
+              "version\":\"11.3.0\"%s%s%s",
               origin, (int)parent, parent_segment,
-              rep_bytes_enabled ? "true" : "false", policy_fields, cpuid_fields);
+              rep_bytes_enabled ? "true" : "false", policy_fields, cpuid_fields,
+              latency_fields);
   route_event(d, "start", fields);
 }
 static void open_stream(const char *origin, process_id_t parent,
@@ -214,8 +229,9 @@ static void open_stream(const char *origin, process_id_t parent,
 
 static bool add_thread(thread_data_t *d) {
   if (!d || d->rep_error || d->replay_error || d->cpuid_error || d->restart_pc ||
-      d->counter_overflows ||
+      d->counter_overflows || d->latency_error ||
       UINT64_MAX - total_instructions < d->instructions ||
+      UINT64_MAX - total_latency_bound_x16 < d->latency_bound_x16 ||
       UINT64_MAX - total_signals < d->signals ||
       UINT64_MAX - total_rep_bytes < d->rep_bytes ||
       UINT64_MAX - total_rep_entries < d->rep_entries ||
@@ -226,6 +242,7 @@ static bool add_thread(thread_data_t *d) {
       UINT64_MAX - total_unsupported_rep_entries < d->unsupported_rep_entries)
     return false;
   total_instructions += d->instructions;
+  total_latency_bound_x16 += d->latency_bound_x16;
   total_signals += d->signals;
   total_rep_bytes += d->rep_bytes;
   total_rep_entries += d->rep_entries;
@@ -241,6 +258,7 @@ static void snapshot_event(const char *kind, void *ctx, bool is_exec) {
   thread_data_t *d = ctx ? drmgr_get_tls_field(ctx, tls_index) : NULL;
   bool child = d && d->child_pid;
   uint64_t instructions = child ? 0 : total_instructions,
+           latency = child ? 0 : total_latency_bound_x16,
            signals = child ? 0 : total_signals,
            bytes = child ? 0 : total_rep_bytes,
            entries = child ? 0 : total_rep_entries,
@@ -255,10 +273,11 @@ static void snapshot_event(const char *kind, void *ctx, bool is_exec) {
   error = error || __atomic_load_n(&replay_without_tls, __ATOMIC_RELAXED);
   if (is_exec || child) {
     error = error || !d || d->rep_error || d->replay_error || d->cpuid_error ||
-            d->restart_pc || d->counter_overflows ||
+            d->restart_pc || d->counter_overflows || d->latency_error ||
             started != ended + 1;
     if (d) {
       if (UINT64_MAX - instructions < d->instructions ||
+          UINT64_MAX - latency < d->latency_bound_x16 ||
           UINT64_MAX - signals < d->signals ||
           UINT64_MAX - bytes < d->rep_bytes ||
           UINT64_MAX - entries < d->rep_entries ||
@@ -270,6 +289,7 @@ static void snapshot_event(const char *kind, void *ctx, bool is_exec) {
         error = true;
       else {
         instructions += d->instructions;
+        latency += d->latency_bound_x16;
         signals += d->signals;
         bytes += d->rep_bytes;
         entries += d->rep_entries;
@@ -306,6 +326,11 @@ static void snapshot_event(const char *kind, void *ctx, bool is_exec) {
       (unsigned long long)ended, complete ? "true" : "false",
       error ? "true" : "false", exit_seen ? "true" : "false", exit_code,
       valid ? "true" : "false", signals ? "signals_observed" : "uninterrupted");
+  if (latency_bound_enabled) {
+    size_t used = strlen(fields);
+    dr_snprintf(fields + used, sizeof(fields) - used, ",\"latency_bound_x16\":%llu",
+                (unsigned long long)latency);
+  }
   route_event(d, kind, fields);
 }
 
@@ -357,8 +382,6 @@ static void thread_exit(void *ctx) {
 static dr_emit_flags_t analyze_block(void *drcontext, void *tag,
                                      instrlist_t *bb, bool for_trace,
                                      bool translating, void **user_data) {
-  (void)drcontext;
-  (void)tag;
   (void)for_trace;
   (void)translating;
   uint count = 0;
@@ -374,7 +397,12 @@ static dr_emit_flags_t analyze_block(void *drcontext, void *tag,
       ++count;
     }
   }
-  *user_data = (void *)(ptr_uint_t)count;
+  /* The low half carries the instruction count, the high half the optional
+   * latency bound (UINT32_MAX when the block cannot be analyzed). */
+  uint64_t bound = 0;
+  if (latency_bound_enabled && count > 0)
+    bound = durante_latency_bound_x16(drcontext, tag, bb, count);
+  *user_data = (void *)(ptr_uint_t)((uint64_t)count | bound << 32);
   return DR_EMIT_DEFAULT;
 }
 
@@ -500,7 +528,7 @@ static bool x32_syscall(int number) {
   return number >= 0 && (((unsigned int)number & X32_SYSCALL_BIT) != 0);
 }
 
-static void count_block(int instructions, app_pc first_pc) {
+static thread_data_t *charge_block(int instructions, app_pc first_pc) {
   thread_data_t *data = drmgr_get_tls_field(dr_get_current_drcontext(), tls_index);
   if (data == NULL || instructions <= 0)
     fail("instruction count without valid thread state");
@@ -518,12 +546,33 @@ static void count_block(int instructions, app_pc first_pc) {
   if (UINT64_MAX - data->instructions < (uint64_t)instructions) {
     /* Sticky invalidity: subsequent blocks cannot make an overflow usable. */
     data->counter_overflows = 1;
-    return;
+    return NULL;
   }
   data->instructions += (uint64_t)instructions;
 #ifdef DURANTE_TEST_COUNT_LOCATIONS
   profile_count(first_pc, (uint64_t)instructions);
 #endif
+  return data;
+}
+
+static void count_block(int instructions, app_pc first_pc) {
+  charge_block(instructions, first_pc);
+}
+
+/* The bound is charged at the same point as the count, so a block's bound is
+ * counted exactly when its instructions are. */
+static void count_block_latency(int instructions, app_pc first_pc, int bound_x16) {
+  thread_data_t *data = charge_block(instructions, first_pc);
+  if (data == NULL)
+    return;
+  data->block_instructions = (uint32_t)instructions;
+  data->block_bound_x16 = (uint32_t)bound_x16;
+  if (bound_x16 < 0)
+    data->latency_error = true;
+  else if (UINT64_MAX - data->latency_bound_x16 < (uint64_t)bound_x16)
+    data->counter_overflows = 1;
+  else
+    data->latency_bound_x16 += (uint64_t)bound_x16;
 }
 
 /* A fault can leave the middle of a BB whose entire length was charged at
@@ -538,6 +587,9 @@ static void before_write(app_pc pc, app_pc next_pc, int suffix) {
   data->write_next_pc = next_pc;
   data->write_suffix = suffix > 0 ? (uint64_t)suffix : 0;
   data->write_rep = false;
+  /* The write belongs to the block most recently charged in this thread. */
+  data->write_block_instructions = data->block_instructions;
+  data->write_block_bound_x16 = data->block_bound_x16;
 }
 
 static void code_replay(void *ctx, int reason, app_pc source_pc,
@@ -572,6 +624,19 @@ static void code_replay(void *ctx, int reason, app_pc source_pc,
     d->replay_error = true;
     d->write_pc = NULL;
     return;
+  }
+  if (latency_bound_enabled) {
+    /* The unexecuted suffix returns its proportional share of the block's
+     * bound, rounded down, so every block keeps at least issue cost. */
+    uint64_t share = 0;
+    if (d->write_block_instructions == 0 || rollback > d->write_block_instructions)
+      d->latency_error = true;
+    else
+      share = (uint64_t)d->write_block_bound_x16 * rollback / d->write_block_instructions;
+    if (d->latency_bound_x16 < share)
+      d->latency_error = true;
+    else
+      d->latency_bound_x16 -= share;
   }
   d->instructions -= rollback;
 #ifdef DURANTE_TEST_COUNT_LOCATIONS
@@ -672,9 +737,17 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
     /* Preserve complete application state even when a signal handler reads
      * registers/flags that linear liveness analysis considers dead. */
     instr_t *first = instrlist_first_app(bb);
-    dr_insert_clean_call(drcontext, bb, where, (void *)count_block, false, 2,
-                         OPND_CREATE_INT32((int)(ptr_uint_t)user_data),
-                         OPND_CREATE_INTPTR(first ? instr_get_app_pc(first) : NULL));
+    uint64_t packed = (uint64_t)(ptr_uint_t)user_data;
+    int count = (int)(uint32_t)packed;
+    if (latency_bound_enabled)
+      dr_insert_clean_call(drcontext, bb, where, (void *)count_block_latency, false, 3,
+                           OPND_CREATE_INT32(count),
+                           OPND_CREATE_INTPTR(first ? instr_get_app_pc(first) : NULL),
+                           OPND_CREATE_INT32((int)(uint32_t)(packed >> 32)));
+    else
+      dr_insert_clean_call(drcontext, bb, where, (void *)count_block, false, 2,
+                           OPND_CREATE_INT32(count),
+                           OPND_CREATE_INTPTR(first ? instr_get_app_pc(first) : NULL));
   }
   if (instr_is_app(where) && (deny_avx || deny_simd)) {
     enum cpu_policy_decision decision = cpu_policy_classify(where, deny_avx, deny_simd);
@@ -875,7 +948,7 @@ static void fork_init(void *ctx) {
    * other-thread counters must still be reset. DR restores surviving TLS. */
   owner_pid = dr_get_process_id();
   total_instructions = total_signals = total_rep_bytes = total_rep_entries =
-      total_unsupported_rep_entries = 0;
+      total_unsupported_rep_entries = total_latency_bound_x16 = 0;
   total_rep_movs_bytes = total_rep_stos_bytes = total_rep_movs_entries =
       total_rep_stos_entries = 0;
   threads_started = 1;
@@ -936,7 +1009,7 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
   if (argc < 3 || strcmp(argv[1], "-outdir"))
     fail("usage: -c libdurante.so -outdir NEW_PRIVATE_DIRECTORY [-rep_bytes] "
          "[-disallow_cpu_feature avx|simd] [-cpuid_profile x86-64-v1|x86-64-v2] "
-         "-- program");
+         "[-latency_bound] -- program");
   if (strlen(argv[2]) >= sizeof(outdir) || argv[2][0] != '/')
     fail("report directory must be absolute");
   memcpy(outdir, argv[2], strlen(argv[2]) + 1);
@@ -944,6 +1017,8 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
   for (int i = 3; i < argc; ++i) {
     if (strcmp(argv[i], "-rep_bytes") == 0 && !rep_bytes_enabled) {
       rep_bytes_enabled = true;
+    } else if (strcmp(argv[i], "-latency_bound") == 0 && !latency_bound_enabled) {
+      latency_bound_enabled = true;
     } else if (strcmp(argv[i], "-disallow_cpu_feature") == 0 && i + 1 < argc) {
       const char *feature = argv[++i];
       if (strcmp(feature, "avx") == 0 && !deny_avx)

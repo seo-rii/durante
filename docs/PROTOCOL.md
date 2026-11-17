@@ -1,8 +1,8 @@
 # Durante lifecycle protocol, schema 1
 
 The client is launched with `-outdir DIR [-rep_bytes]`, optionally followed by
-one or two `-disallow_cpu_feature avx|simd` pairs and at most one
-`-cpuid_profile x86-64-v1|x86-64-v2` pair. DIR must already exist,
+one or two `-disallow_cpu_feature avx|simd` pairs, at most one
+`-cpuid_profile x86-64-v1|x86-64-v2` pair and at most one `-latency_bound`. DIR must already exist,
 be empty, private and writable by the target. `drrun -follow_children` must be
 active. The root PID is the launched target/engine PID, preserved through exec.
 The caller collects only after the entire tree has stopped and been reaped.
@@ -73,6 +73,14 @@ profiles`). A successful aggregate adds `cpuid_profile`. Absence never
 satisfies a requested profile. An XGETBV index other than 0 or 1, or a failed
 register update, sets `accounting_error: true` on its image. See
 [CPUID profiles](CPUID_PROFILE.md).
+
+The static latency bound (`-latency_bound`, CLI `--latency-bound`) adds
+`latency_bound_version: 1` to every `start`, and `latency_bound_x16` to every
+`end` and `exec_attempt` checkpoint; both are absent without it. Every process
+and image must agree on the capability. An unknown version, the capability
+outside `start`, the counter outside a terminal, a missing or unadvertised
+counter, a counter below `4 * instructions`, or an aggregate overflow is
+unavailable. See [Static latency bound](LATENCY_BOUND.md).
 
 An executed forbidden instruction produces `cpu_feature_violation` with
 `feature: "avx"` or `"simd"` in its live image, with the normal next sequence
@@ -172,6 +180,10 @@ on the aggregate, every process and every selected image segment. All four
 counters are checked and summed at each level. Legacy aggregates omit the object
 at every level; failed aggregates expose none of it. `isolate` independently
 checks these partitions and component sums before retaining an inner report.
+Likewise, a tree advertising the latency bound emits
+`"latency_bound": {"version": 1, "cycles_x16": N}` on the aggregate, every
+process and every selected image segment, summed at each level; `isolate`
+checks its presence and shape against the request.
 The aggregate's object is a closed, versioned structure, for example:
 
 ```json

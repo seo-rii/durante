@@ -393,6 +393,23 @@ fn validate_field_types(event: &Event) -> Result<(), Error> {
             "unsupported REP breakdown version",
         )?;
     }
+    if event.contains_key("latency_bound_version") {
+        require(
+            uint(event, "latency_bound_version")? == 1,
+            "unsupported latency bound capability",
+        )?;
+        require(
+            text(event, "event")? == "start",
+            "latency bound capability outside start",
+        )?;
+    }
+    if event.contains_key("latency_bound_x16") {
+        uint(event, "latency_bound_x16")?;
+        require(
+            matches!(text(event, "event")?, "end" | "exec_attempt"),
+            "latency bound outside terminal",
+        )?;
+    }
     for field in REP_BREAKDOWN_FIELDS {
         if event.contains_key(field) {
             uint(event, field)?;
@@ -487,6 +504,7 @@ fn cpuid_profile(event: &Event) -> Result<&str, Error> {
 struct Terminal {
     counters: [u64; 5],
     rep_breakdown: Option<RepBreakdown>,
+    latency_bound_x16: Option<u64>,
     threads: u64,
     exit_code: Option<u8>,
 }
@@ -495,6 +513,7 @@ fn terminal(
     is_exec: bool,
     rep_enabled: bool,
     breakdown_enabled: bool,
+    latency_enabled: bool,
 ) -> Result<Terminal, Error> {
     let mut counters = [0; 5];
     for (index, field) in FIELDS.iter().enumerate() {
@@ -555,6 +574,24 @@ fn terminal(
         )?;
         None
     };
+    require(
+        event.contains_key("latency_bound_x16") == latency_enabled,
+        "latency bound capability mismatch",
+    )?;
+    let latency_bound_x16 = if latency_enabled {
+        let bound = uint(event, "latency_bound_x16")?;
+        // Every charged block keeps at least its 4-wide issue cost (4/16 cycle
+        // per instruction), including after a proportional replay rollback.
+        require(
+            counters[0]
+                .checked_mul(4)
+                .is_some_and(|issue| bound >= issue),
+            "latency bound below issue cost",
+        )?;
+        Some(bound)
+    } else {
+        None
+    };
     let code =
         u8::try_from(uint(event, "app_exit_code")?).map_err(|_| "invalid application exit code")?;
     if !is_exec {
@@ -563,9 +600,13 @@ fn terminal(
     Ok(Terminal {
         counters,
         rep_breakdown,
+        latency_bound_x16,
         threads,
         exit_code: if is_exec { None } else { Some(code) },
     })
+}
+fn latency_json(cycles_x16: u64) -> Value {
+    json!({"version": 1, "cycles_x16": cycles_x16})
 }
 fn add_counters(target: &mut [u64; 5], source: &[u64; 5]) -> Result<(), Error> {
     for (a, b) in target.iter_mut().zip(source) {
@@ -616,6 +657,8 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
     let mut spawn_edges = BTreeMap::<u32, (u32, String)>::new();
     let mut rep_mode = None;
     let mut breakdown_mode = None;
+    let mut latency_mode = None;
+    let mut latency_total = 0u64;
     let mut totals = [0u64; 5];
     let mut breakdown_totals = RepBreakdown::default();
     let mut all_segments = Vec::new();
@@ -668,6 +711,12 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
                     "mixed REP breakdown capabilities",
                 )?;
                 breakdown_mode = Some(detailed);
+                let latency = record.contains_key("latency_bound_version");
+                require(
+                    latency_mode.is_none_or(|previous| previous == latency),
+                    "mixed latency bound capabilities",
+                )?;
+                latency_mode = Some(latency);
                 let parent = uint(&record, "parent_pid")?;
                 let parent_segment = text(&record, "parent_segment")?;
                 let origin = text(&record, "origin")?;
@@ -679,7 +728,7 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
                     )?;
                     selected.push((
                         previous_segment.clone(),
-                        terminal(&checkpoint, true, mode, detailed)?,
+                        terminal(&checkpoint, true, mode, detailed, latency)?,
                     ));
                 } else {
                     if process == root_pid {
@@ -766,6 +815,7 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
                             false,
                             rep_mode.ok_or("missing REP mode")?,
                             breakdown_mode.ok_or("missing REP breakdown capability")?,
+                            latency_mode.ok_or("missing latency bound capability")?,
                         )?,
                     ));
                     ended = true;
@@ -780,6 +830,7 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
         let (parent_pid, parent_segment) = first_origin.ok_or("missing process origin")?;
         let mut process_totals = [0u64; 5];
         let mut process_breakdown = RepBreakdown::default();
+        let mut process_latency = 0u64;
         let exit_code = selected.last().ok_or("missing terminal image")?.1.exit_code;
         let images = selected.len();
         for (segment, values) in selected {
@@ -796,12 +847,24 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
                     .ok_or("process REP breakdown overflow")?;
                 row["rep_breakdown"] = json!(breakdown);
             }
+            if let Some(bound) = values.latency_bound_x16 {
+                latency_total = latency_total
+                    .checked_add(bound)
+                    .ok_or("latency bound aggregate overflow")?;
+                process_latency = process_latency
+                    .checked_add(bound)
+                    .ok_or("latency bound aggregate overflow")?;
+                row["latency_bound"] = latency_json(bound);
+            }
             all_segments.push(row);
         }
         let mut row = json!({"pid": process, "parent_pid": parent_pid, "parent_segment": parent_segment, "images": images, "exit_code": exit_code});
         insert_counters(&mut row, &process_totals);
         if breakdown_mode == Some(true) {
             row["rep_breakdown"] = json!(process_breakdown);
+        }
+        if latency_mode == Some(true) {
+            row["latency_bound"] = latency_json(process_latency);
         }
         processes.insert(process, row);
     }
@@ -850,6 +913,9 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
     insert_counters(&mut result, &totals);
     if breakdown_mode == Some(true) {
         result["rep_breakdown"] = json!(breakdown_totals);
+    }
+    if latency_mode == Some(true) {
+        result["latency_bound"] = latency_json(latency_total);
     }
     if !policy.is_empty() {
         result["disallowed_cpu_features"] = json!(policy.split(',').collect::<Vec<_>>());

@@ -37,6 +37,7 @@ pub struct Options {
     pub output_limit_bytes: u64,
     pub disallowed_cpu_features: Vec<String>,
     pub cpuid_profile: Option<String>,
+    pub latency_bound: bool,
     pub command: Vec<OsString>,
 }
 
@@ -838,6 +839,9 @@ pub fn run(options: Options) -> Result<i32, String> {
     if let Some(profile) = &options.cpuid_profile {
         result["cpuid_profile"] = json!(profile);
     }
+    if options.latency_bound {
+        result["latency_bound_version"] = json!(1);
+    }
     result["output"] = match &options.output_dir {
         Some(path) => json!({"mode":"capture_requested", "directory":path,
             "limit_bytes":options.output_limit_bytes, "published":false, "complete":false}),
@@ -1043,6 +1047,9 @@ fn execute(
     if let Some(profile) = &options.cpuid_profile {
         command.args(["--cpuid-profile", profile]);
     }
+    if options.latency_bound {
+        command.arg("--latency-bound");
+    }
     command
         .arg("--")
         .args(&options.command)
@@ -1202,12 +1209,13 @@ fn execute(
         && runner::policy_matches(&inner, &options.disallowed_cpu_features)
         && runner::policy_matches(&inner["measurement"], &options.disallowed_cpu_features)
         && runner::cpuid_profile_matches(&inner, options.cpuid_profile.as_deref())
+        && (inner.get("latency_bound_version") == options.latency_bound.then_some(&json!(1)))
         && (inner["measurement"]["valid"] != true
             || inner["measurement"]["complete"] != true
-            || runner::cpuid_profile_matches(
+            || (runner::cpuid_profile_matches(
                 &inner["measurement"],
                 options.cpuid_profile.as_deref(),
-            ))
+            ) && runner::latency_bound_matches(&inner["measurement"], options.latency_bound)))
     {
         result["untrusted_inner_report"] = inner;
     } else {

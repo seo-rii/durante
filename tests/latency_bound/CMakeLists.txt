@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.16)
+project(durante_latency_bound C)
+find_package(DynamoRIO 11.3 EXACT REQUIRED)
+add_library(latency_bound_client SHARED client.c)
+configure_DynamoRIO_client(latency_bound_client)
+use_DynamoRIO_extension(latency_bound_client drmgr)
+set_target_properties(latency_bound_client PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS YES)
+target_compile_options(latency_bound_client PRIVATE -Wall -Wextra -Werror)

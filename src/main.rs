@@ -70,6 +70,9 @@ enum Command {
         /// Report one fixed virtual processor to every application CPUID/XGETBV.
         #[arg(long = "cpuid-profile", value_parser = ["x86-64-v1", "x86-64-v2"])]
         cpuid_profile: Option<String>,
+        /// Also count the static per-block latency bound (diagnostic, version 1).
+        #[arg(long = "latency-bound")]
+        latency_bound: bool,
         /// Target executable and arguments, passed directly without a shell.
         #[arg(required = true, last = true, num_args = 1..)]
         command: Vec<OsString>,
@@ -103,6 +106,9 @@ enum Command {
         /// Forward the fixed virtual processor identity into the isolated run.
         #[arg(long = "cpuid-profile", value_parser = ["x86-64-v1", "x86-64-v2"])]
         cpuid_profile: Option<String>,
+        /// Forward the latency-bound counter request into the isolated run.
+        #[arg(long = "latency-bound")]
+        latency_bound: bool,
         #[arg(required = true, last = true, num_args = 1..)]
         command: Vec<OsString>,
     },
@@ -234,6 +240,7 @@ fn main() {
             keep_records,
             disallowed_cpu_features,
             cpuid_profile,
+            latency_bound,
             command,
         } => {
             #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
@@ -248,6 +255,7 @@ fn main() {
                     keep_records,
                     disallowed_cpu_features,
                     cpuid_profile,
+                    latency_bound,
                     command,
                 })
             }
@@ -263,6 +271,7 @@ fn main() {
                     keep_records,
                     disallowed_cpu_features,
                     cpuid_profile,
+                    latency_bound,
                     command,
                 );
                 Err("durante run requires Linux x86-64".to_owned())
@@ -279,6 +288,7 @@ fn main() {
             output_limit_bytes,
             disallowed_cpu_features,
             cpuid_profile,
+            latency_bound,
             command,
         } => {
             #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
@@ -294,6 +304,7 @@ fn main() {
                     output_limit_bytes: output_limit_bytes.unwrap_or(output::DEFAULT_LIMIT),
                     disallowed_cpu_features,
                     cpuid_profile,
+                    latency_bound,
                     command,
                 })
             }
@@ -311,6 +322,7 @@ fn main() {
                     output_limit_bytes,
                     disallowed_cpu_features,
                     cpuid_profile,
+                    latency_bound,
                 );
                 Err("durante isolate requires Linux x86-64".to_owned())
             }
