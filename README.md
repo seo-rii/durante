@@ -347,6 +347,8 @@ The [runtime repeatability tool](docs/RUNTIME_REPEATABILITY.md) repeats those
 Java, CPython, PyPy and Node profiles in fresh processes, preserving failed and unrun observations.
 It separates collection success from exact integer spread qualification for
 instructions and combined/per-operation REP counters; it defines no time weights.
+Opt-in CPython and PyPy hash profiles compare startup inputs with recorded native
+probes; they preserve the default isolated profiles and do not qualify all programs.
 
 [SIMD and interpreter/JIT qualification](docs/QUALIFICATION.md) explains the
 additional native-control, output-preservation and exact-count tests. Per-run
