@@ -160,8 +160,7 @@ def collect(args):
     require(args.cpu in os.sched_getaffinity(0), "selected CPU is unavailable")
     tools = {"client": args.client, "drrun": args.sdk / "bin64/drrun",
              "core": args.sdk / "lib64/release/libdynamorio.so", "control": args.control}
-    for ext in ("drmgr", "drreg", "drutil"):
-        tools[ext] = args.sdk / f"ext/lib64/release/lib{ext}.so"
+    tools["drmgr"] = args.sdk / "ext/lib64/release/libdrmgr.so"
     if args.cachesim_root:
         root = args.cachesim_root
         tools.update({"cache_drrun": root / "bin64/drrun", "cache_core": root / "lib64/release/libdynamorio.so",

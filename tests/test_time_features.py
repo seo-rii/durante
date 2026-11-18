@@ -33,6 +33,7 @@ class TimeFeatureClientTests(unittest.TestCase):
     def setUpClass(cls):
         sdk = Path(os.environ.get("DURANTE_TEST_SDK",
             ROOT / "toolkit/sdk/DynamoRIO-Linux-11.3.0-1")).resolve()
+        cls.sdk = sdk
         cls.drrun = sdk / "bin64/drrun"
         if platform.machine() != "x86_64" or not cls.drrun.is_file():
             raise unittest.SkipTest("the x86-64 DynamoRIO SDK is required")
@@ -153,6 +154,45 @@ sample:
                 "adjacent_line": 2, "nonadjacent_line": 1,
             })
             self.assertEqual(report, reports[0])
+
+    def test_load_pattern_with_judge_cpuid_emulation(self):
+        # This program checks the actual CPUID and XGETBV results before
+        # running a three-iteration load loop and a four-byte REP MOVSB.
+        from test_load_probe import ASSEMBLY
+
+        installed = os.environ.get("DURANTE_TEST_BUNDLE")
+        if installed:
+            drrun = Path(installed) / "dynamorio/bin64/drrun"
+            meter = Path(installed) / "lib/libdurante.so"
+        else:
+            if not (self.sdk / ".durante-runtime.json").is_file():
+                self.skipTest("requires a patched SDK or DURANTE_TEST_BUNDLE")
+            drrun = self.drrun
+            dest = self.build / "meter"
+            subprocess.run(["cmake", "-S", ROOT / "client", "-B", dest, "-DCMAKE_BUILD_TYPE=Release",
+                            f"-DDynamoRIO_DIR={self.sdk}/cmake"], check=True, capture_output=True, timeout=60)
+            subprocess.run(["cmake", "--build", dest, "--target", "durante"], check=True,
+                           capture_output=True, timeout=60)
+            meter = dest / "libdurante.so"
+        app = self.build / "profile-fixture"
+        subprocess.run(["cc", "-nostdlib", "-static", "-no-pie", "-x", "assembler", "-", "-o", app],
+                       input=ASSEMBLY, text=True, check=True, timeout=30)
+        records = self.build / "profile-records"
+        records.mkdir()
+        out = self.build / "profile-pattern.json"
+        result = subprocess.run([drrun, "-quiet", "-client", meter,
+                                 "00000000", f'-outdir "{records}" -rep_bytes -cpuid_profile x86-64-v2 -latency_bound',
+                                 "-client", self.client, "00000001", f'-out "{out}" -bpred -load_pattern',
+                                 "-disable_traces", "--", app], capture_output=True, timeout=30)
+        self.assertEqual((result.returncode, result.stderr), (0, b""))
+        log, = records.iterdir()
+        start, end = map(json.loads, log.read_text().splitlines())
+        raw = json.loads(out.read_text())
+        self.assertEqual(start["cpuid_profile"], "x86-64-v2")
+        self.assertEqual((end["instructions"], end["rep_bytes"]), (33, 4))
+        self.assertEqual((raw["instructions"], raw["loads"]), (33, 7))
+        self.assertEqual(raw["load_pattern"], {"version": 1, "first": 1, "same_line": 2,
+                                               "adjacent_line": 0, "nonadjacent_line": 0})
 
     def test_load_pattern_rejects_a_second_application_thread(self):
         source = self.build / "thread.c"
