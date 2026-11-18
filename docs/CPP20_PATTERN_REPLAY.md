@@ -73,3 +73,6 @@ unmodified #53 host-native direct-child CPU observations. This metadata does
 not equate the native CPU's glibc dispatch or hardware predictor with the
 instrumented runtime. Raw process records and feature JSON are retained under
 the output directory. No replay duration is used as a target time.
+
+The subsequent timing experiment tests gshare on two additional algorithm
+families. [Prospective CPP20 results](CPP20_GSHARE_MODEL.md)

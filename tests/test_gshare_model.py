@@ -94,6 +94,20 @@ class GshareModelTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             gshare_model.evaluate({**original, "cases": original["cases"][:-1]})
 
+    def test_recorded_integer_and_window_rule_out_nonnegative_reweighting(self):
+        raw = json.loads((EXPERIMENTS / "results/cpp20-gshare-model.json").read_bytes())
+        result = gshare_model.evaluate(raw)
+        integer = result["cases"]["integer-4"]
+        window = result["cases"]["window_sum-4"]
+        # Even the largest integer count is at most 1.03 times the smallest
+        # window count in every dimension, so every nonnegative sum obeys it.
+        for key in gshare_model.MODELS["with_gshare"]:
+            self.assertLessEqual(100 * integer["counters"][key]["max"],
+                                 103 * window["counters"][key]["min"])
+        # Even the most favorable times cannot meet ±20% for both workloads.
+        self.assertGreater(100 * 80 * integer["native_ns"]["min"],
+                           103 * 120 * window["native_ns"]["max"])
+
     def test_public_cli_binds_both_corpora_and_reports_overhead_for_81_pairs(self):
         data = collection()
         base_bytes = (EXPERIMENTS / "load_corpus.json").read_bytes()
