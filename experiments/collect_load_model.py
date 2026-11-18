@@ -62,7 +62,7 @@ def quoted(path):
     return f'"{text}"'
 
 
-def run_with_meter(tools, program, stdin, expected, folder, probe_options, timeout, *, disable_aslr=False):
+def run_with_meter(tools, program, stdin, expected, folder, probe_options, timeout, *, prefix=()):
     folder.mkdir(mode=0o700)
     records = folder / "records"
     records.mkdir(mode=0o700)
@@ -71,9 +71,7 @@ def run_with_meter(tools, program, stdin, expected, folder, probe_options, timeo
     if probe_options is not None:
         cmd += ["-client", tools["probe"], "00000001", probe_options]
     cmd += ["-follow_children", "-disable_traces", "-vm_size", "32M", "-vmheap_size", "32M", "--", program]
-    if disable_aslr:
-        cmd = ["setarch", "-R", *cmd]
-    pid, cpu_ns = checked_run(cmd, stdin, expected, timeout)
+    pid, cpu_ns = checked_run([*prefix, *cmd], stdin, expected, timeout)
     receipt = aggregate_records(records, pid)
     require(receipt.get("complete") is True and receipt["valid"] is True and
             receipt["cpuid_profile"] == "x86-64-v2" and receipt["quality"] == "uninterrupted" and
@@ -101,7 +99,8 @@ def metered(tools, program, stdin, expected, folder, enabled, timeout):
     return cpu_ns, counters
 
 
-def collect(args, corpus):
+def collect(args, corpus, *, corpus_path=CORPUS, measure=metered, native_prefix=(),
+            metadata=None, expected_tools=None):
     require(args.cpu in os.sched_getaffinity(0) and 1 <= args.timeout <= 600, "invalid CPU or timeout")
     core = args.bundle / "dynamorio"
     tools = {"drrun": core / "bin64/drrun", "runtime": core / "lib64/release/libdynamorio.so",
@@ -109,6 +108,8 @@ def collect(args, corpus):
              "probe": args.probe}
     manifest = json.loads((core / ".durante-runtime.json").read_bytes())
     hashes = {name: digest(path) for name, path in tools.items()}
+    if expected_tools:
+        require(all(hashes[k] == v for k, v in expected_tools.items()), "judge installation differs from reference")
     require(manifest["artifacts"]["lib64/release/libdynamorio.so"] == hashes["runtime"] and
             manifest["inputs"]["patch_sha256"] == digest(ROOT / "toolkit/patches/dynamorio-vfork-lifetime.patch") and
             manifest["inputs"]["code_replay_patch_sha256"] == digest(ROOT / "toolkit/patches/dynamorio-code-replay.patch"),
@@ -120,13 +121,13 @@ def collect(args, corpus):
                 digest(folder / "Main.cpp") == fixture["source_sha256"], f"{family}: fixture digest mismatch")
         fixtures[family] = folder / "Main"
     args.output.mkdir(mode=0o700)
-    result = {"schema": 1, "complete": False, "cpuid_profile": "x86-64-v2", "corpus_sha256": digest(CORPUS),
+    result = {"schema": 1, "complete": False, "cpuid_profile": "x86-64-v2", "corpus_sha256": digest(corpus_path),
               "compiler_image": corpus["compiler_image"], "tools_sha256": hashes, "cpu": args.cpu,
               "kernel": platform.release(),
               "cpu_model": next((line.split(":", 1)[1].strip() for line in Path("/proc/cpuinfo").read_text().splitlines()
                                  if line.startswith("model name")), "unknown"),
               "order_seed": SEED, "native_clock": "direct-child wait4 user+system",
-              "repetitions": REPEATS, "cases": []}
+              "repetitions": REPEATS, "cases": [], **(metadata or {})}
     rows = {}
     for family, fixture in corpus["families"].items():
         for case in fixture["cases"]:
@@ -154,20 +155,20 @@ def collect(args, corpus):
             for family, scale in keys:
                 row, stdin, expected = rows[family, scale]
                 program = fixtures[family]
-                _, before = checked_run([program], stdin, expected, args.timeout)
+                _, before = checked_run([*native_prefix, program], stdin, expected, args.timeout)
                 # Reverse each case's ordering across rounds and balance within each round.
                 probe_first = (ordering[family, scale] + rep) % 2 == 0
                 sample = {"repetition": rep, "native_before_ns": before, "probe_first": probe_first}
                 for with_probe in (probe_first, not probe_first):
                     label = "probe" if with_probe else "meter"
                     folder = args.output / f"{family}-{scale}-{rep}-{label}"
-                    cpu_ns, counters = metered(tools, program, stdin, expected, folder, with_probe, args.timeout)
+                    cpu_ns, counters = measure(tools, program, stdin, expected, folder, with_probe, args.timeout)
                     sample[label + "_cpu_ns"] = cpu_ns
                     if with_probe:
                         sample.update(counters)
                     else:
                         sample["meter_only"] = counters
-                _, sample["native_after_ns"] = checked_run([program], stdin, expected, args.timeout)
+                _, sample["native_after_ns"] = checked_run([*native_prefix, program], stdin, expected, args.timeout)
                 row["repetitions"].append(sample)
                 checkpoint()
         require(hashes == {name: digest(path) for name, path in tools.items()}, "measurement tools changed")
@@ -181,8 +182,8 @@ def collect(args, corpus):
         checkpoint()
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+def parse_args(description):
+    parser = argparse.ArgumentParser(description=description)
     commands = parser.add_subparsers(dest="action", required=True)
     build = commands.add_parser("prepare")
     build.add_argument("--aonohako", type=Path, required=True)
@@ -193,7 +194,11 @@ def main():
     measure.add_argument("--timeout", type=int, default=120, help="per subprocess in seconds")
     for sub in (build, measure):
         sub.add_argument("--output", type=lambda p: Path(p).resolve(), required=True)
-    args = parser.parse_args()
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args(__doc__)
     corpus = json.loads(CORPUS.read_bytes())
     try:
         if args.action == "prepare":

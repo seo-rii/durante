@@ -40,13 +40,13 @@ def distribution(values):
     return {"min": values[0], "median": median, "max": values[-1], "relative_spread": spread}
 
 
-def read_cases(data):
+def read_cases(data, families=FAMILIES, counters=FEATURES):
     require(type(data["schema"]) is int and data["schema"] == 1 and data["complete"] is True and
             "failure" not in data and data["cpuid_profile"] == "x86-64-v2",
             "expected a complete fixed-CPUID x86-64-v2 collection")
     require(type(data["repetitions"]) is int and data["repetitions"] == REPEATS,
             "expected three repetitions")
-    roles = {family: role for role, families in FAMILIES.items() for family in families}
+    roles = {family: role for role, names in families.items() for family in names}
     summaries = {}
     samples = {}
     for case in data["cases"]:
@@ -61,12 +61,12 @@ def read_cases(data):
         native = []
         for row in rows:
             require(all(integer(row[k], 1) for k in ("native_before_ns", "native_after_ns", "instructions"))
-                    and all(integer(row[k]) for k in FEATURES[1:])
+                    and all(integer(row[k]) for k in counters)
                     and row["load_instructions"] <= row["instructions"], f"{key}: invalid timing or counter")
             native.extend((row["native_before_ns"], row["native_after_ns"]))
         summaries[key] = {
             "family": family, "scale": scale, "group": roles[family], "native_ns": distribution(native),
-            "counters": {k: distribution(row[k] for row in rows) for k in FEATURES},
+            "counters": {k: distribution(row[k] for row in rows) for k in counters},
         }
         samples[key] = sorted(rows, key=lambda row: row["repetition"])
     require(len(samples) == len(roles) * len(SCALES), "incomplete family/scale coverage")
@@ -74,7 +74,7 @@ def read_cases(data):
 
 
 def determinant(matrix):
-    """Exact cofactor expansion for the predeclared one- to three-column systems."""
+    """Exact cofactor expansion for the small predeclared systems."""
     if len(matrix) == 1:
         return matrix[0][0]
     return sum((-1)**j * value * determinant([row[:j] + row[j+1:] for row in matrix[1:]])
@@ -95,7 +95,7 @@ def fit(training, names):
     if normalized_det < MIN_NORMALIZED_DETERMINANT:
         return normalized_det, None
 
-    # The nonnegative optimum lies on one of at most eight faces. Solve each
+    # The nonnegative optimum lies on one of the 2**len(names) faces. Solve each
     # restricted least-squares system exactly by Cramer's rule and retain its
     # solution only if every active coefficient is nonnegative.
     best_weights = [Fraction(0)] * len(names)
@@ -117,14 +117,14 @@ def fit(training, names):
     return normalized_det, best_weights
 
 
-def evaluate(data):
-    cases, samples = read_cases(data)
+def evaluate(data, *, families=FAMILIES, counters=FEATURES, models=MODELS):
+    cases, samples = read_cases(data, families, counters)
     training = [case for case in cases.values() if case["group"] == "training"]
-    result = {"schema": 1, "cpuid_profile": "x86-64-v2", "families": FAMILIES,
+    result = {"schema": 1, "cpuid_profile": "x86-64-v2", "families": families,
               "max_relative_error": float(MAX_RELATIVE_ERROR),
               "min_normalized_gram_determinant": float(MIN_NORMALIZED_DETERMINANT),
               "cases": cases, "models": {}}
-    for label, names in MODELS.items():
+    for label, names in models.items():
         normalized_det, weights = fit(training, names)
         model = {"features": names, "normalized_gram_determinant": float(normalized_det),
                  "identified": weights is not None, "accuracy_gate_pass": False}
@@ -162,8 +162,9 @@ def score(rows):
             "max_absolute_relative_error": max(abs(row["relative_error"]) for row in rows)}
 
 
-def check_corpus(data, corpus_bytes):
-    expected = json.loads(corpus_bytes)
+def check_corpus(data, corpus_bytes, *, expected=None):
+    if expected is None:
+        expected = json.loads(corpus_bytes)
     require(data["corpus_sha256"] == hashlib.sha256(corpus_bytes).hexdigest() and
             data["compiler_image"] == expected["compiler_image"], "unexpected corpus or compiler image")
     for case in data["cases"]:
@@ -194,16 +195,16 @@ def overhead(cases):
     return {"all": summary(all_ratios), "cases": per_case}
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+def run_cli(evaluator, corpus_path, description, *, check_manifest=check_corpus):
+    parser = argparse.ArgumentParser(description=description)
     parser.add_argument("--input", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True, help="new diagnostic JSON file")
     args = parser.parse_args()
     try:
         raw = args.input.read_bytes()
         data = json.loads(raw)
-        check_corpus(data, Path(__file__).with_name("load_corpus.json").read_bytes())
-        result = evaluate(data)
+        check_manifest(data, corpus_path.read_bytes())
+        result = evaluator(data)
         result["descriptive_probe_to_meter_cpu_ratio"] = overhead(data["cases"])
         result["corpus_sha256"] = data["corpus_sha256"]
         result["compiler_image"] = data["compiler_image"]
@@ -212,8 +213,12 @@ def main():
         with args.output.open("x") as output:
             output.write(payload)
     except (KeyError, TypeError, ValueError, OSError) as exc:
-        parser.exit(1, f"load-model evaluation failed: {exc}\n")
+        parser.exit(1, f"model evaluation failed: {exc}\n")
     print(args.output)
+
+
+def main():
+    run_cli(evaluate, Path(__file__).with_name("load_corpus.json"), __doc__)
 
 
 if __name__ == "__main__":
