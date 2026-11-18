@@ -1,0 +1,1135 @@
+{
+  "schema": 1,
+  "complete": true,
+  "cpuid_profile": "x86-64-v2",
+  "corpus_sha256": "7148495309ec653e642aac86e1ed64ea44ee0218bf25f5a7e7f491846b734cf1",
+  "compiler_image": "sha256:5f1fee5fb589c9494f2155478bab0e01af620f73e99ebf2ff9177a09626d5bf3",
+  "tools_sha256": {
+    "drrun": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "runtime": "e2fdae59daa295d1c752876647937ecac80649cbba85d6e98b17e6a7cc4a1859",
+    "drmgr": "372cc1f1f95ffa29a1f11de4be14f99de5938bbcae11294a38d0a7932069429a",
+    "meter": "a495207e4cd227ccbaec467d8662b04dbfc208246b4ede712b36b8489a02c1ff",
+    "probe": "092f26714b8a1d11384394c0ba1858da2dd21cbc5d563d9c55dc8e388d81cee0"
+  },
+  "cpu": 2,
+  "kernel": "6.1.0-56-cloud-amd64",
+  "cpu_model": "AMD EPYC 7B12",
+  "order_seed": 20261118,
+  "native_clock": "direct-child wait4 user+system",
+  "repetitions": 3,
+  "cases": [
+    {
+      "family": "integer",
+      "scale": 1,
+      "input_sha256": "58102257e583a6dd723fbceb404fc82fc66f15117d61e6b80dece1b24e3aa2fd",
+      "binary_sha256": "13b1e1ba33375676c1c6071b2d0bb41c0148e2ee7d90f1c4085d3eb95124f29d",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 44063000,
+          "probe_first": false,
+          "meter_cpu_ns": 927019000,
+          "meter_only": {
+            "instructions": 167922266,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 1507423000,
+          "instructions": 167922266,
+          "rep_bytes": 3624,
+          "load_instructions": 22486,
+          "native_after_ns": 43948000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 43967000,
+          "probe_first": true,
+          "probe_cpu_ns": 1484246000,
+          "instructions": 167922266,
+          "rep_bytes": 3624,
+          "load_instructions": 22486,
+          "meter_cpu_ns": 937948000,
+          "meter_only": {
+            "instructions": 167922266,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 43769000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 43855000,
+          "probe_first": false,
+          "meter_cpu_ns": 1082178000,
+          "meter_only": {
+            "instructions": 167922266,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 1793095000,
+          "instructions": 167922266,
+          "rep_bytes": 3624,
+          "load_instructions": 22486,
+          "native_after_ns": 44711000
+        }
+      ]
+    },
+    {
+      "family": "integer",
+      "scale": 2,
+      "input_sha256": "9902ec78038acf436285ea163ff7b72ec7d4674a2510e8c881a63abe151a4f49",
+      "binary_sha256": "13b1e1ba33375676c1c6071b2d0bb41c0148e2ee7d90f1c4085d3eb95124f29d",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 85622000,
+          "probe_first": true,
+          "probe_cpu_ns": 2965563000,
+          "instructions": 335694426,
+          "rep_bytes": 3624,
+          "load_instructions": 22486,
+          "meter_cpu_ns": 1819731000,
+          "meter_only": {
+            "instructions": 335694426,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 85411000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 85768000,
+          "probe_first": false,
+          "meter_cpu_ns": 1807237000,
+          "meter_only": {
+            "instructions": 335694426,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 2902639000,
+          "instructions": 335694426,
+          "rep_bytes": 3624,
+          "load_instructions": 22486,
+          "native_after_ns": 86208000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 86465000,
+          "probe_first": true,
+          "probe_cpu_ns": 3548966000,
+          "instructions": 335694426,
+          "rep_bytes": 3624,
+          "load_instructions": 22486,
+          "meter_cpu_ns": 1971899000,
+          "meter_only": {
+            "instructions": 335694426,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 86554000
+        }
+      ]
+    },
+    {
+      "family": "integer",
+      "scale": 4,
+      "input_sha256": "09294a6f2c1c6a3a71c766b169af994547992af1099ead8ad61253f648dc08bf",
+      "binary_sha256": "13b1e1ba33375676c1c6071b2d0bb41c0148e2ee7d90f1c4085d3eb95124f29d",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 169121000,
+          "probe_first": false,
+          "meter_cpu_ns": 3581781000,
+          "meter_only": {
+            "instructions": 671238795,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 7327742000,
+          "instructions": 671238795,
+          "rep_bytes": 3624,
+          "load_instructions": 22492,
+          "native_after_ns": 171948000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 170934000,
+          "probe_first": true,
+          "probe_cpu_ns": 6895471000,
+          "instructions": 671238795,
+          "rep_bytes": 3624,
+          "load_instructions": 22492,
+          "meter_cpu_ns": 3880127000,
+          "meter_only": {
+            "instructions": 671238795,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 169578000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 232376000,
+          "probe_first": false,
+          "meter_cpu_ns": 5769134000,
+          "meter_only": {
+            "instructions": 671238795,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 8510841000,
+          "instructions": 671238795,
+          "rep_bytes": 3624,
+          "load_instructions": 22492,
+          "native_after_ns": 172953000
+        }
+      ]
+    },
+    {
+      "family": "rep_copy",
+      "scale": 1,
+      "input_sha256": "b61d14fabac7a8c4a193c44ce1394bbc7399ff3de0c728f96d280c832632a60b",
+      "binary_sha256": "255445d9e1311d5872c4da62e12df42c199012cfbc9b8c5dc6e8a8646cab2100",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 97031000,
+          "probe_first": true,
+          "probe_cpu_ns": 678379000,
+          "instructions": 47309130,
+          "rep_bytes": 2147487272,
+          "load_instructions": 8427701,
+          "meter_cpu_ns": 498735000,
+          "meter_only": {
+            "instructions": 47309130,
+            "rep_bytes": 2147487272
+          },
+          "native_after_ns": 96149000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 72886000,
+          "probe_first": false,
+          "meter_cpu_ns": 484652000,
+          "meter_only": {
+            "instructions": 47309130,
+            "rep_bytes": 2147487272
+          },
+          "probe_cpu_ns": 653703000,
+          "instructions": 47309130,
+          "rep_bytes": 2147487272,
+          "load_instructions": 8427701,
+          "native_after_ns": 92671000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 90402000,
+          "probe_first": true,
+          "probe_cpu_ns": 704990000,
+          "instructions": 47309130,
+          "rep_bytes": 2147487272,
+          "load_instructions": 8427701,
+          "meter_cpu_ns": 510215000,
+          "meter_only": {
+            "instructions": 47309130,
+            "rep_bytes": 2147487272
+          },
+          "native_after_ns": 93595000
+        }
+      ]
+    },
+    {
+      "family": "rep_copy",
+      "scale": 2,
+      "input_sha256": "034ae8e96eee99a30067d2f7c7b8055992ffb028e1a8309df36a17183c72b95e",
+      "binary_sha256": "255445d9e1311d5872c4da62e12df42c199012cfbc9b8c5dc6e8a8646cab2100",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 148495000,
+          "probe_first": false,
+          "meter_cpu_ns": 579963000,
+          "meter_only": {
+            "instructions": 47320443,
+            "rep_bytes": 4294970920
+          },
+          "probe_cpu_ns": 759295000,
+          "instructions": 47320443,
+          "rep_bytes": 4294970920,
+          "load_instructions": 8430779,
+          "native_after_ns": 140504000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 163200000,
+          "probe_first": true,
+          "probe_cpu_ns": 721988000,
+          "instructions": 47320443,
+          "rep_bytes": 4294970920,
+          "load_instructions": 8430779,
+          "meter_cpu_ns": 553328000,
+          "meter_only": {
+            "instructions": 47320443,
+            "rep_bytes": 4294970920
+          },
+          "native_after_ns": 150475000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 170009000,
+          "probe_first": false,
+          "meter_cpu_ns": 605053000,
+          "meter_only": {
+            "instructions": 47320443,
+            "rep_bytes": 4294970920
+          },
+          "probe_cpu_ns": 894087000,
+          "instructions": 47320443,
+          "rep_bytes": 4294970920,
+          "load_instructions": 8430779,
+          "native_after_ns": 189132000
+        }
+      ]
+    },
+    {
+      "family": "rep_copy",
+      "scale": 4,
+      "input_sha256": "0fe76953bddd45fec27d8d55ede03f2eab50c90d933c2432900985db384855bd",
+      "binary_sha256": "255445d9e1311d5872c4da62e12df42c199012cfbc9b8c5dc6e8a8646cab2100",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 287839000,
+          "probe_first": true,
+          "probe_cpu_ns": 1013330000,
+          "instructions": 47342971,
+          "rep_bytes": 8589938216,
+          "load_instructions": 8436923,
+          "meter_cpu_ns": 757486000,
+          "meter_only": {
+            "instructions": 47342971,
+            "rep_bytes": 8589938216
+          },
+          "native_after_ns": 292393000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 273001000,
+          "probe_first": false,
+          "meter_cpu_ns": 739218000,
+          "meter_only": {
+            "instructions": 47342971,
+            "rep_bytes": 8589938216
+          },
+          "probe_cpu_ns": 893619000,
+          "instructions": 47342971,
+          "rep_bytes": 8589938216,
+          "load_instructions": 8436923,
+          "native_after_ns": 242371000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 531370000,
+          "probe_first": true,
+          "probe_cpu_ns": 1641327000,
+          "instructions": 47342971,
+          "rep_bytes": 8589938216,
+          "load_instructions": 8436923,
+          "meter_cpu_ns": 1428007000,
+          "meter_only": {
+            "instructions": 47342971,
+            "rep_bytes": 8589938216
+          },
+          "native_after_ns": 475711000
+        }
+      ]
+    },
+    {
+      "family": "sort",
+      "scale": 1,
+      "input_sha256": "4f6635fab154104736e0968c922ca1ecddf0a43758e4bbf89005b1208689251e",
+      "binary_sha256": "d96565357cdd163ea7de5eb145aaf915b0b0ba9e238a46718e9e1352e51c4b75",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 34894000,
+          "probe_first": false,
+          "meter_cpu_ns": 677302000,
+          "meter_only": {
+            "instructions": 86522879,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 989698000,
+          "instructions": 86522879,
+          "rep_bytes": 3624,
+          "load_instructions": 15606402,
+          "native_after_ns": 34524000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 34147000,
+          "probe_first": true,
+          "probe_cpu_ns": 1005795000,
+          "instructions": 86522879,
+          "rep_bytes": 3624,
+          "load_instructions": 15606402,
+          "meter_cpu_ns": 719092000,
+          "meter_only": {
+            "instructions": 86522879,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 34359000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 38427000,
+          "probe_first": false,
+          "meter_cpu_ns": 828948000,
+          "meter_only": {
+            "instructions": 86522879,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 1589248000,
+          "instructions": 86522879,
+          "rep_bytes": 3624,
+          "load_instructions": 15606402,
+          "native_after_ns": 67878000
+        }
+      ]
+    },
+    {
+      "family": "sort",
+      "scale": 2,
+      "input_sha256": "be3b3a973edc5f34763d5808c7d0866e068ff309898e83e80bb37674405ce7a7",
+      "binary_sha256": "d96565357cdd163ea7de5eb145aaf915b0b0ba9e238a46718e9e1352e51c4b75",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 75788000,
+          "probe_first": true,
+          "probe_cpu_ns": 2367637000,
+          "instructions": 177112474,
+          "rep_bytes": 3624,
+          "load_instructions": 31872524,
+          "meter_cpu_ns": 1491593000,
+          "meter_only": {
+            "instructions": 177112474,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 72571000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 69472000,
+          "probe_first": false,
+          "meter_cpu_ns": 1330163000,
+          "meter_only": {
+            "instructions": 177112474,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 2014936000,
+          "instructions": 177112474,
+          "rep_bytes": 3624,
+          "load_instructions": 31872524,
+          "native_after_ns": 70300000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 71183000,
+          "probe_first": true,
+          "probe_cpu_ns": 2812860000,
+          "instructions": 177112474,
+          "rep_bytes": 3624,
+          "load_instructions": 31872524,
+          "meter_cpu_ns": 1888136000,
+          "meter_only": {
+            "instructions": 177112474,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 76067000
+        }
+      ]
+    },
+    {
+      "family": "sort",
+      "scale": 4,
+      "input_sha256": "ef801656107acf2762ce10512091bba7ae297ce0f4bc9be76b789f7ba54a4136",
+      "binary_sha256": "d96565357cdd163ea7de5eb145aaf915b0b0ba9e238a46718e9e1352e51c4b75",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 149602000,
+          "probe_first": false,
+          "meter_cpu_ns": 3749765000,
+          "meter_only": {
+            "instructions": 373668030,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 5627427000,
+          "instructions": 373668030,
+          "rep_bytes": 3624,
+          "load_instructions": 67622012,
+          "native_after_ns": 159029000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 146180000,
+          "probe_first": true,
+          "probe_cpu_ns": 4997850000,
+          "instructions": 373668030,
+          "rep_bytes": 3624,
+          "load_instructions": 67622012,
+          "meter_cpu_ns": 3804357000,
+          "meter_only": {
+            "instructions": 373668030,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 147084000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 168337000,
+          "probe_first": false,
+          "meter_cpu_ns": 4274079000,
+          "meter_only": {
+            "instructions": 373668030,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 5266843000,
+          "instructions": 373668030,
+          "rep_bytes": 3624,
+          "load_instructions": 67622012,
+          "native_after_ns": 145729000
+        }
+      ]
+    },
+    {
+      "family": "branch",
+      "scale": 1,
+      "input_sha256": "54e11706f19c1b6db05caecff1822a1481b450adfd659b2a93dcd33929d53b7f",
+      "binary_sha256": "d383e4da2a1953bc72d54fccac0fe98fe575fef2474e469edcf2567d18ece37c",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 39365000,
+          "probe_first": true,
+          "probe_cpu_ns": 5770692000,
+          "instructions": 229438487,
+          "rep_bytes": 3624,
+          "load_instructions": 16799663,
+          "meter_cpu_ns": 3528386000,
+          "meter_only": {
+            "instructions": 229438487,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 41699000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 33975000,
+          "probe_first": false,
+          "meter_cpu_ns": 2738203000,
+          "meter_only": {
+            "instructions": 229438487,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 4446017000,
+          "instructions": 229438487,
+          "rep_bytes": 3624,
+          "load_instructions": 16799663,
+          "native_after_ns": 34296000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 56005000,
+          "probe_first": true,
+          "probe_cpu_ns": 8284499000,
+          "instructions": 229438487,
+          "rep_bytes": 3624,
+          "load_instructions": 16799663,
+          "meter_cpu_ns": 5358908000,
+          "meter_only": {
+            "instructions": 229438487,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 64009000
+        }
+      ]
+    },
+    {
+      "family": "branch",
+      "scale": 2,
+      "input_sha256": "ae7a13222abd483670b1f3b55d2f9f42790bfcbfdad8356a1c717f37feb59661",
+      "binary_sha256": "d383e4da2a1953bc72d54fccac0fe98fe575fef2474e469edcf2567d18ece37c",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 67239000,
+          "probe_first": false,
+          "meter_cpu_ns": 5501495000,
+          "meter_only": {
+            "instructions": 458727191,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 8965556000,
+          "instructions": 458727191,
+          "rep_bytes": 3624,
+          "load_instructions": 33576879,
+          "native_after_ns": 67111000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 66246000,
+          "probe_first": true,
+          "probe_cpu_ns": 8901412000,
+          "instructions": 458727191,
+          "rep_bytes": 3624,
+          "load_instructions": 33576879,
+          "meter_cpu_ns": 5435219000,
+          "meter_only": {
+            "instructions": 458727191,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 66326000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 163304000,
+          "probe_first": false,
+          "meter_cpu_ns": 8960993000,
+          "meter_only": {
+            "instructions": 458727191,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 15771765000,
+          "instructions": 458727191,
+          "rep_bytes": 3624,
+          "load_instructions": 33576879,
+          "native_after_ns": 86711000
+        }
+      ]
+    },
+    {
+      "family": "branch",
+      "scale": 4,
+      "input_sha256": "16c3402cf255887d19eed335f65b177e4c9f57e5111da11ad7fca6806199710e",
+      "binary_sha256": "d383e4da2a1953bc72d54fccac0fe98fe575fef2474e469edcf2567d18ece37c",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 150975000,
+          "probe_first": true,
+          "probe_cpu_ns": 22857831000,
+          "instructions": 917304674,
+          "rep_bytes": 3624,
+          "load_instructions": 67131326,
+          "meter_cpu_ns": 13362617000,
+          "meter_only": {
+            "instructions": 917304674,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 164799000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 131544000,
+          "probe_first": false,
+          "meter_cpu_ns": 12237638000,
+          "meter_only": {
+            "instructions": 917304674,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 21811414000,
+          "instructions": 917304674,
+          "rep_bytes": 3624,
+          "load_instructions": 67131326,
+          "native_after_ns": 178250000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 136640000,
+          "probe_first": true,
+          "probe_cpu_ns": 21140424000,
+          "instructions": 917304674,
+          "rep_bytes": 3624,
+          "load_instructions": 67131326,
+          "meter_cpu_ns": 13013799000,
+          "meter_only": {
+            "instructions": 917304674,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 138448000
+        }
+      ]
+    },
+    {
+      "family": "rep_fill",
+      "scale": 1,
+      "input_sha256": "b61d14fabac7a8c4a193c44ce1394bbc7399ff3de0c728f96d280c832632a60b",
+      "binary_sha256": "316549bd773f5dba0b5978f423ba8fc93f9fb881339478e030f22b1b2f9d1bc7",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 50016000,
+          "probe_first": false,
+          "meter_cpu_ns": 255253000,
+          "meter_only": {
+            "instructions": 25800249,
+            "rep_bytes": 2147487272
+          },
+          "probe_cpu_ns": 339421000,
+          "instructions": 25800249,
+          "rep_bytes": 2147487272,
+          "load_instructions": 4221119,
+          "native_after_ns": 50036000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 42202000,
+          "probe_first": true,
+          "probe_cpu_ns": 321912000,
+          "instructions": 25800249,
+          "rep_bytes": 2147487272,
+          "load_instructions": 4221119,
+          "meter_cpu_ns": 221842000,
+          "meter_only": {
+            "instructions": 25800249,
+            "rep_bytes": 2147487272
+          },
+          "native_after_ns": 40362000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 50325000,
+          "probe_first": false,
+          "meter_cpu_ns": 226978000,
+          "meter_only": {
+            "instructions": 25800249,
+            "rep_bytes": 2147487272
+          },
+          "probe_cpu_ns": 362531000,
+          "instructions": 25800249,
+          "rep_bytes": 2147487272,
+          "load_instructions": 4221119,
+          "native_after_ns": 46905000
+        }
+      ]
+    },
+    {
+      "family": "rep_fill",
+      "scale": 2,
+      "input_sha256": "034ae8e96eee99a30067d2f7c7b8055992ffb028e1a8309df36a17183c72b95e",
+      "binary_sha256": "316549bd773f5dba0b5978f423ba8fc93f9fb881339478e030f22b1b2f9d1bc7",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 81178000,
+          "probe_first": true,
+          "probe_cpu_ns": 375792000,
+          "instructions": 25806954,
+          "rep_bytes": 4294970920,
+          "load_instructions": 4222661,
+          "meter_cpu_ns": 303383000,
+          "meter_only": {
+            "instructions": 25806954,
+            "rep_bytes": 4294970920
+          },
+          "native_after_ns": 87699000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 87587000,
+          "probe_first": false,
+          "meter_cpu_ns": 264206000,
+          "meter_only": {
+            "instructions": 25806954,
+            "rep_bytes": 4294970920
+          },
+          "probe_cpu_ns": 356893000,
+          "instructions": 25806954,
+          "rep_bytes": 4294970920,
+          "load_instructions": 4222661,
+          "native_after_ns": 82405000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 169694000,
+          "probe_first": true,
+          "probe_cpu_ns": 711485000,
+          "instructions": 25806954,
+          "rep_bytes": 4294970920,
+          "load_instructions": 4222661,
+          "meter_cpu_ns": 515551000,
+          "meter_only": {
+            "instructions": 25806954,
+            "rep_bytes": 4294970920
+          },
+          "native_after_ns": 146865000
+        }
+      ]
+    },
+    {
+      "family": "rep_fill",
+      "scale": 4,
+      "input_sha256": "0fe76953bddd45fec27d8d55ede03f2eab50c90d933c2432900985db384855bd",
+      "binary_sha256": "316549bd773f5dba0b5978f423ba8fc93f9fb881339478e030f22b1b2f9d1bc7",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 162638000,
+          "probe_first": false,
+          "meter_cpu_ns": 434468000,
+          "meter_only": {
+            "instructions": 25820266,
+            "rep_bytes": 8589938216
+          },
+          "probe_cpu_ns": 581238000,
+          "instructions": 25820266,
+          "rep_bytes": 8589938216,
+          "load_instructions": 4225733,
+          "native_after_ns": 182150000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 168965000,
+          "probe_first": true,
+          "probe_cpu_ns": 438586000,
+          "instructions": 25820266,
+          "rep_bytes": 8589938216,
+          "load_instructions": 4225733,
+          "meter_cpu_ns": 344395000,
+          "meter_only": {
+            "instructions": 25820266,
+            "rep_bytes": 8589938216
+          },
+          "native_after_ns": 139692000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 163324000,
+          "probe_first": false,
+          "meter_cpu_ns": 358343000,
+          "meter_only": {
+            "instructions": 25820266,
+            "rep_bytes": 8589938216
+          },
+          "probe_cpu_ns": 490681000,
+          "instructions": 25820266,
+          "rep_bytes": 8589938216,
+          "load_instructions": 4225733,
+          "native_after_ns": 179603000
+        }
+      ]
+    },
+    {
+      "family": "lower_bound",
+      "scale": 1,
+      "input_sha256": "d5ae8a2d6ba4522d6c06ecc3384ec50e575e3b82758bbcab3c829b0709a76120",
+      "binary_sha256": "a850357af0cfa40c4b1ad6bb64a79f0c2a37140efd3071a962d95f0ff8506815",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 33189000,
+          "probe_first": true,
+          "probe_cpu_ns": 898139000,
+          "instructions": 39732336,
+          "rep_bytes": 3624,
+          "load_instructions": 3561201,
+          "meter_cpu_ns": 544179000,
+          "meter_only": {
+            "instructions": 39732336,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 34475000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 28628000,
+          "probe_first": false,
+          "meter_cpu_ns": 344130000,
+          "meter_only": {
+            "instructions": 39732336,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 543491000,
+          "instructions": 39732336,
+          "rep_bytes": 3624,
+          "load_instructions": 3561201,
+          "native_after_ns": 27708000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 46794000,
+          "probe_first": true,
+          "probe_cpu_ns": 1162523000,
+          "instructions": 39732336,
+          "rep_bytes": 3624,
+          "load_instructions": 3561201,
+          "meter_cpu_ns": 788102000,
+          "meter_only": {
+            "instructions": 39732336,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 50344000
+        }
+      ]
+    },
+    {
+      "family": "lower_bound",
+      "scale": 2,
+      "input_sha256": "5938272eeb342e72e894bf690c5b9f5e301172dcdc1a4f422e19ce76dce1c731",
+      "binary_sha256": "a850357af0cfa40c4b1ad6bb64a79f0c2a37140efd3071a962d95f0ff8506815",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 52716000,
+          "probe_first": false,
+          "meter_cpu_ns": 768070000,
+          "meter_only": {
+            "instructions": 77481100,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 1420993000,
+          "instructions": 77481100,
+          "rep_bytes": 3624,
+          "load_instructions": 7100148,
+          "native_after_ns": 62169000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 55247000,
+          "probe_first": true,
+          "probe_cpu_ns": 1041590000,
+          "instructions": 77481100,
+          "rep_bytes": 3624,
+          "load_instructions": 7100148,
+          "meter_cpu_ns": 636798000,
+          "meter_only": {
+            "instructions": 77481100,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 56164000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 63622000,
+          "probe_first": false,
+          "meter_cpu_ns": 755596000,
+          "meter_only": {
+            "instructions": 77481100,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 1337773000,
+          "instructions": 77481100,
+          "rep_bytes": 3624,
+          "load_instructions": 7100148,
+          "native_after_ns": 55201000
+        }
+      ]
+    },
+    {
+      "family": "lower_bound",
+      "scale": 4,
+      "input_sha256": "c7b53aeb48798d5d2af6dbc959272b74a5782c64990c5de94862262fb75b3ff3",
+      "binary_sha256": "a850357af0cfa40c4b1ad6bb64a79f0c2a37140efd3071a962d95f0ff8506815",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 115482000,
+          "probe_first": true,
+          "probe_cpu_ns": 2449427000,
+          "instructions": 152978603,
+          "rep_bytes": 3624,
+          "load_instructions": 14178037,
+          "meter_cpu_ns": 1581301000,
+          "meter_only": {
+            "instructions": 152978603,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 109667000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 106820000,
+          "probe_first": false,
+          "meter_cpu_ns": 1196253000,
+          "meter_only": {
+            "instructions": 152978603,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 1952928000,
+          "instructions": 152978603,
+          "rep_bytes": 3624,
+          "load_instructions": 14178037,
+          "native_after_ns": 105613000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 114347000,
+          "probe_first": true,
+          "probe_cpu_ns": 2443252000,
+          "instructions": 152978603,
+          "rep_bytes": 3624,
+          "load_instructions": 14178037,
+          "meter_cpu_ns": 1333065000,
+          "meter_only": {
+            "instructions": 152978603,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 102772000
+        }
+      ]
+    },
+    {
+      "family": "window_sum",
+      "scale": 1,
+      "input_sha256": "1c717f8a059be27832853ed4d506f3c7ab305023703aefda2b2272606e13ee01",
+      "binary_sha256": "3c930fe86485cfdf0dd01a23807409c22721be1766cc1ab2493f340998512439",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 22016000,
+          "probe_first": false,
+          "meter_cpu_ns": 603214000,
+          "meter_only": {
+            "instructions": 218597563,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 1157950000,
+          "instructions": 218597563,
+          "rep_bytes": 3624,
+          "load_instructions": 33576940,
+          "native_after_ns": 23474000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 21242000,
+          "probe_first": true,
+          "probe_cpu_ns": 808458000,
+          "instructions": 218597563,
+          "rep_bytes": 3624,
+          "load_instructions": 33576940,
+          "meter_cpu_ns": 502663000,
+          "meter_only": {
+            "instructions": 218597563,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 21483000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 26825000,
+          "probe_first": false,
+          "meter_cpu_ns": 615560000,
+          "meter_only": {
+            "instructions": 218597563,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 1554071000,
+          "instructions": 218597563,
+          "rep_bytes": 3624,
+          "load_instructions": 33576940,
+          "native_after_ns": 29048000
+        }
+      ]
+    },
+    {
+      "family": "window_sum",
+      "scale": 2,
+      "input_sha256": "58a256fb0325d6a3a3c006fc9f2a504ae85cefeeb8f7cf622948f5833df0ac49",
+      "binary_sha256": "3c930fe86485cfdf0dd01a23807409c22721be1766cc1ab2493f340998512439",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 41583000,
+          "probe_first": true,
+          "probe_cpu_ns": 1916807000,
+          "instructions": 436701371,
+          "rep_bytes": 3624,
+          "load_instructions": 67131372,
+          "meter_cpu_ns": 1135128000,
+          "meter_only": {
+            "instructions": 436701371,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 40078000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 39574000,
+          "probe_first": false,
+          "meter_cpu_ns": 926729000,
+          "meter_only": {
+            "instructions": 436701371,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 1530040000,
+          "instructions": 436701371,
+          "rep_bytes": 3624,
+          "load_instructions": 67131372,
+          "native_after_ns": 39455000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 46927000,
+          "probe_first": true,
+          "probe_cpu_ns": 1982064000,
+          "instructions": 436701371,
+          "rep_bytes": 3624,
+          "load_instructions": 67131372,
+          "meter_cpu_ns": 1279292000,
+          "meter_only": {
+            "instructions": 436701371,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 40947000
+        }
+      ]
+    },
+    {
+      "family": "window_sum",
+      "scale": 4,
+      "input_sha256": "dbf49ee47089a80aa52cdee996311cf2aa9e70c5725925da0f83a35d14e2efb1",
+      "binary_sha256": "3c930fe86485cfdf0dd01a23807409c22721be1766cc1ab2493f340998512439",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 76957000,
+          "probe_first": false,
+          "meter_cpu_ns": 1810022000,
+          "meter_only": {
+            "instructions": 872908987,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 3212263000,
+          "instructions": 872908987,
+          "rep_bytes": 3624,
+          "load_instructions": 134240236,
+          "native_after_ns": 77993000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 80493000,
+          "probe_first": true,
+          "probe_cpu_ns": 3023461000,
+          "instructions": 872908987,
+          "rep_bytes": 3624,
+          "load_instructions": 134240236,
+          "meter_cpu_ns": 1807617000,
+          "meter_only": {
+            "instructions": 872908987,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 77874000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 79465000,
+          "probe_first": false,
+          "meter_cpu_ns": 1964777000,
+          "meter_only": {
+            "instructions": 872908987,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 3194623000,
+          "instructions": 872908987,
+          "rep_bytes": 3624,
+          "load_instructions": 134240236,
+          "native_after_ns": 76861000
+        }
+      ]
+    }
+  ]
+}
