@@ -90,6 +90,56 @@ cannot overlap. This counterexample applies to this model family and corpus.
 A qualified timing model needs additional information about the work the CPU
 performs. [Executable check against the raw observations](../tests/test_gshare_model.py)
 
+## Adding the production latency bound
+
+The production meter also recorded its v1 static latency bound during every
+gshare run. It assigns each basic block an issue-width or loop-recurrence
+cost, in sixteenths of a modeled cycle. We recovered this fifth feature
+after the study and checked it against the exploratory client's simultaneous
+bound, the frozen four counters and all 81 production receipts. The integer
+and window scale-4 runs had bounds of 8,590,535,988 and 3,491,636,912 units
+respectively, a ratio of 2.460. This is high enough to resolve the ordering
+used in the previous four-counter counterexample. [Latency-bound definition](LATENCY_BOUND.md)
+
+A different three-case comparison rules out ±20% accuracy on all 27 case
+medians even with this extra feature. For each of the five counters the
+large search performed at most two fifths of the large sort plus three fifths
+of the medium merge. The exact inequality holds across all three repetitions.
+
+| Case | Instructions | REP bytes | Load instructions | Gshare misses | Bound ×16 | Observed native CPU range (ms) |
+|---|---:|---:|---:|---:|---:|---:|
+| Binary search, scale 4 | 152,978,668 | 3,624 | 14,178,048 | 8,408,317 | 611,915,516 | 104.990–108.551 |
+| Sort, scale 4 | 373,668,023 | 3,624 | 67,622,014 | 19,557,115 | 1,494,673,064 | 142.830–145.977 |
+| Sorted merge, scale 2 | 74,466,475 | 3,624 | 8,410,820 | 1,100,078 | 297,866,824 | 14.430–15.714 |
+
+Any linear estimator with nonnegative counter weights inherits this
+inequality, including one with a common intercept since the mixture
+weights sum to one. Even the fastest observed search needs a prediction
+of at least 83.992 ms. At the slowest observed sort and merge times, their
+weighted maximum passing prediction is only
+`1.2 × (0.4 × 145.977 + 0.6 × 15.714) = 81.38304 ms`.
+The corresponding limits at the native medians are 84.658 and 79.6386 ms.
+No choice of these five weights can put the three cases inside the specified
+intervals on this dataset.
+
+This retrospective check uses the original shared-host measurements, including
+the same programs and native timings. It adds no qualification for new
+submissions. To test a further feature on these cases, first check whether it
+breaks the measured search/sort/merge inequality. Any new accuracy claim
+still needs independent inputs and a controlled reference machine.
+
+The public archive contains the original collection and the byte-for-byte
+production record and probe output from every dual-client execution.
+Filesystem ownership and timestamps were removed when packaging this subset.
+The verifier checks the archive and collection digests, reconstructs all 81
+bounds with the reference collector and emits the integer inequalities.
+It also accepts the original archived collection via `--archive`.
+[Public raw records](../experiments/results/cpp20-gshare-probe-records.tar.gz)
+
+```sh
+python3 experiments/joint_latency_screen.py
+```
+
 ## Reproduce
 
 Use the Linux x86-64 worker, pinned CPP20 compiler image, Aonohako checkout,
