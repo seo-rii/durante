@@ -3,8 +3,6 @@
  * workloads only; not a production meter. */
 #include "dr_api.h"
 #include "drmgr.h"
-#include "drreg.h"
-#include "drutil.h"
 #include "hashtable.h"
 #include <stdint.h>
 #include <string.h>
@@ -54,12 +52,23 @@ static void thread_started(void *dc) {
     pattern_error("requires a single application thread");
 }
 
-static void free_site(void *previous_line) {
-  dr_global_free(previous_line, sizeof(uintptr_t));
+typedef struct {
+  opnd_t operand;
+  uintptr_t previous_line;
+} load_site_t;
+
+static void free_site(void *site) {
+  dr_global_free(site, sizeof(load_site_t));
 }
 
-static void record_load(uintptr_t *previous_line, uintptr_t address) {
-  uintptr_t line = address >> 6, previous = *previous_line;
+static void record_load(load_site_t *site) {
+  dr_mcontext_t mc;
+  mc.size = sizeof(mc);
+  mc.flags = DR_MC_INTEGER | DR_MC_CONTROL;
+  if (!dr_get_mcontext(dr_get_current_drcontext(), &mc))
+    pattern_error("application address context unavailable");
+  uintptr_t line = (uintptr_t)opnd_compute_address(site->operand, &mc) >> 6;
+  uintptr_t previous = site->previous_line;
   uint64_t *counter;
   if (previous == UINTPTR_MAX) counter = &first;
   else if (line == previous) counter = &same_line;
@@ -67,7 +76,7 @@ static void record_load(uintptr_t *previous_line, uintptr_t address) {
   else counter = &nonadjacent_line;
   if (*counter == UINT64_MAX) pattern_error("counter overflow");
   ++*counter;
-  *previous_line = line;
+  site->previous_line = line;
 }
 
 static void instrument_load(void *dc, instrlist_t *bb, instr_t *where) {
@@ -83,24 +92,20 @@ static void instrument_load(void *dc, instrlist_t *bb, instr_t *where) {
   app_pc pc = instr_get_app_pc(where);
   if (pc == NULL) pattern_error("missing application PC");
   dr_mutex_lock(lock);
-  uintptr_t *previous = hashtable_lookup(&load_sites, pc);
-  if (!previous) {
-    previous = dr_global_alloc(sizeof(*previous));
-    *previous = UINTPTR_MAX;
-    hashtable_add(&load_sites, pc, previous);
+  load_site_t *site = hashtable_lookup(&load_sites, pc);
+  if (!site) {
+    site = dr_global_alloc(sizeof(*site));
+    site->operand = mem;
+    site->previous_line = UINTPTR_MAX;
+    hashtable_add(&load_sites, pc, site);
   }
   dr_mutex_unlock(lock);
 
-  reg_id_t addr;
-  /* drutil needs no second scratch register for these near x86 operands. */
-  if (drreg_reserve_register(dc, bb, where, NULL, &addr) != DRREG_SUCCESS ||
-      drreg_restore_app_values(dc, bb, where, mem, NULL) != DRREG_SUCCESS ||
-      !drutil_insert_get_mem_addr(dc, bb, where, mem, addr, addr))
-    pattern_error("cannot compute application load address");
-  dr_insert_clean_call(dc, bb, where, (void *)record_load, false, 2,
-                       OPND_CREATE_INTPTR(previous), opnd_create_reg(addr));
-  if (drreg_unreserve_register(dc, bb, where, addr) != DRREG_SUCCESS)
-    pattern_error("cannot restore application register");
+  /* The judge emulates CPUID using an application-context clean call in the
+   * app2app phase. Register management via drreg is incompatible with that
+   * callback in DynamoRIO 11.3. Read the unmodified address registers here. */
+  dr_insert_clean_call_ex(dc, bb, where, (void *)record_load, DR_CLEANCALL_READS_APP_CONTEXT,
+                          1, OPND_CREATE_INTPTR(site));
 }
 
 /* Crude static latency model (cycles), deliberately generic rather than tuned
@@ -233,8 +238,6 @@ static void finish(void) {
                (unsigned long long)first, (unsigned long long)same_line,
                (unsigned long long)adjacent_line, (unsigned long long)nonadjacent_line);
     hashtable_delete(&load_sites);
-    drreg_exit();
-    drutil_exit();
   }
   dr_fprintf(f, "\"bpred\":%s,\"cbr_executed\":%llu,\"mispredicts\":%llu}\n", bpred ? "true" : "false",
              (unsigned long long)cbr_executed, (unsigned long long)mispredicts);
@@ -250,10 +253,7 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
   drmgr_init();
   lock = dr_mutex_create();
   if (load_pattern) {
-    drreg_options_t opts = { .struct_size = sizeof(opts), .num_spill_slots = 2,
-                             .conservative = true };
-    if (!drutil_init() || drreg_init(&opts) != DRREG_SUCCESS ||
-        !drmgr_register_thread_init_event(thread_started))
+    if (!drmgr_register_thread_init_event(thread_started))
       pattern_error("cannot initialize instrumentation");
     hashtable_init_ex(&load_sites, 8, HASH_INTPTR, false, false, free_site, NULL, NULL);
   }

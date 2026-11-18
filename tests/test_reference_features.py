@@ -182,7 +182,7 @@ class ReferenceFeaturesTests(unittest.TestCase):
         data = self.root / "archive.json"
         data.write_text(json.dumps(self.dataset))
         for name in ["client.so", "control", "bin64/drrun", "lib64/release/libdynamorio.so",
-                     *[f"ext/lib64/release/lib{name}.so" for name in ("drmgr", "drreg", "drutil")]]:
+                     "ext/lib64/release/libdrmgr.so"]:
             path = self.root / name
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(name.encode())
@@ -201,8 +201,7 @@ class ReferenceFeaturesTests(unittest.TestCase):
             self.assertIs(receipt["complete"], False)
             self.assertEqual(receipt["failure"], "bad output oracle")
             self.assertEqual(receipt["dataset_sha256"], sha(data.read_bytes()))
-            for ext in ("drmgr", "drreg", "drutil"):
-                self.assertEqual(receipt["tools_sha256"][ext], sha(f"ext/lib64/release/lib{ext}.so".encode()))
+            self.assertEqual(receipt["tools_sha256"]["drmgr"], sha(b"ext/lib64/release/libdrmgr.so"))
             self.assertEqual(receipt["controls"]["0"]["observations"], [])
             self.assertNotIn("comparisons", receipt)
             with self.assertRaises(FileExistsError):

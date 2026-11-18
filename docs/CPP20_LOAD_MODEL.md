@@ -133,3 +133,7 @@ python3 experiments/collect_load_model.py collect --fixtures "$RUN/fixtures" \
 python3 experiments/load_model.py --input "$RUN/results/collection.json" \
     --output "$RUN/evaluation.json"
 ```
+
+The same six search/window cases were subsequently replayed with the production
+CPU profile to examine simulated branch mispredictions and scalar-address
+locality. [Branch and locality replay](CPP20_PATTERN_REPLAY.md)
