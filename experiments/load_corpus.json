@@ -1,0 +1,160 @@
+{
+  "schema": 1,
+  "compiler_image": "sha256:5f1fee5fb589c9494f2155478bab0e01af620f73e99ebf2ff9177a09626d5bf3",
+  "aonohako_commit": "4e1d45b6cd007b694fe6467d5bba96e816436008",
+  "historical_dataset_sha256": "d1fd7c1f03e541a75ff45fef104a9e3af9de16956995c514634ec187ccde11d7",
+  "families": {
+    "integer": {
+      "historical_source": "internal/durante/reference/fixtures/integer.cpp",
+      "source_sha256": "2bb33dfeec1d2f82fad2075a45e5a1a8c72362e8d61438f6eb147fe9f4c1025d",
+      "binary_sha256": "13b1e1ba33375676c1c6071b2d0bb41c0148e2ee7d90f1c4085d3eb95124f29d",
+      "cases": [
+        {
+          "scale": 1,
+          "stdin": "33554432 81985529216486895\n",
+          "stdout": "7648774604356046319\n"
+        },
+        {
+          "scale": 2,
+          "stdin": "67108864 81985529216486895\n",
+          "stdout": "5095975316794101231\n"
+        },
+        {
+          "scale": 4,
+          "stdin": "134217728 81985529216486895\n",
+          "stdout": "6525099800984800751\n"
+        }
+      ]
+    },
+    "rep_copy": {
+      "historical_source": "internal/durante/reference/fixtures/rep_copy.cpp",
+      "source_sha256": "bbe56822498df565555d46c9352af2e5d521e052771e2e1ac89998ef50564691",
+      "binary_sha256": "255445d9e1311d5872c4da62e12df42c199012cfbc9b8c5dc6e8a8646cab2100",
+      "cases": [
+        {
+          "scale": 1,
+          "stdin": "4194304 512\n",
+          "stdout": "1121503238200285\n"
+        },
+        {
+          "scale": 2,
+          "stdin": "4194304 1024\n",
+          "stdout": "1121503280051933\n"
+        },
+        {
+          "scale": 4,
+          "stdin": "4194304 2048\n",
+          "stdout": "1121503497579741\n"
+        }
+      ]
+    },
+    "sort": {
+      "historical_source": "internal/durante/reference/fixtures/sort.cpp",
+      "source_sha256": "ba6464e65deeb8bde261b12d324b91a0bf6f4d456979090e41fa877c28dd3da5",
+      "binary_sha256": "d96565357cdd163ea7de5eb145aaf915b0b0ba9e238a46718e9e1352e51c4b75",
+      "cases": [
+        {
+          "scale": 1,
+          "stdin": "524288\n",
+          "stdout": "48038533464326144\n"
+        },
+        {
+          "scale": 2,
+          "stdin": "1048576\n",
+          "stdout": "384307717958270976\n"
+        },
+        {
+          "scale": 4,
+          "stdin": "2097152\n",
+          "stdout": "3074459544641863680\n"
+        }
+      ]
+    },
+    "branch": {
+      "historical_source": "internal/durante/reference/fixtures/branch.cpp",
+      "source_sha256": "200fa292952892480907001cf1a795984c46a3e53f402d906dadef412b0b16dc",
+      "binary_sha256": "d383e4da2a1953bc72d54fccac0fe98fe575fef2474e469edcf2567d18ece37c",
+      "cases": [
+        {
+          "scale": 1,
+          "stdin": "16777216 44257\n",
+          "stdout": "15692098880723300352\n"
+        },
+        {
+          "scale": 2,
+          "stdin": "33554432 44257\n",
+          "stdout": "12937453687737049088\n"
+        },
+        {
+          "scale": 4,
+          "stdin": "67108864 44257\n",
+          "stdout": "7428163301764546560\n"
+        }
+      ]
+    },
+    "rep_fill": {
+      "historical_source": "internal/durante/reference/fixtures/rep_fill.cpp",
+      "source_sha256": "2c6a019d195860141be505862f39c081b860130b649a257c0c0a17708d2e5513",
+      "binary_sha256": "316549bd773f5dba0b5978f423ba8fc93f9fb881339478e030f22b1b2f9d1bc7",
+      "cases": [
+        {
+          "scale": 1,
+          "stdin": "4194304 512\n",
+          "stdout": "1776811231089408\n"
+        },
+        {
+          "scale": 2,
+          "stdin": "4194304 1024\n",
+          "stdout": "1776811281491456\n"
+        },
+        {
+          "scale": 4,
+          "stdin": "4194304 2048\n",
+          "stdout": "1776811482565632\n"
+        }
+      ]
+    },
+    "lower_bound": {
+      "source_sha256": "d7aa01e944917fda2135554ccbbf3da452642e522750713ef583151d4d84a3fc",
+      "binary_sha256": "a850357af0cfa40c4b1ad6bb64a79f0c2a37140efd3071a962d95f0ff8506815",
+      "cases": [
+        {
+          "scale": 1,
+          "stdin": "196608\n",
+          "stdout": "2533137832223807\n"
+        },
+        {
+          "scale": 2,
+          "stdin": "393216\n",
+          "stdout": "10133175259229984\n"
+        },
+        {
+          "scale": 4,
+          "stdin": "786432\n",
+          "stdout": "40532096028917760\n"
+        }
+      ]
+    },
+    "window_sum": {
+      "source_sha256": "e3b37182c5d93650b12b957515e83900646bdbd9db4a4ca25b20abef00168635",
+      "binary_sha256": "3c930fe86485cfdf0dd01a23807409c22721be1766cc1ab2493f340998512439",
+      "cases": [
+        {
+          "scale": 1,
+          "stdin": "16777216\n",
+          "stdout": "13817628634304741376\n"
+        },
+        {
+          "scale": 2,
+          "stdin": "33554432\n",
+          "stdout": "18376560122177519616\n"
+        },
+        {
+          "scale": 4,
+          "stdin": "67108864\n",
+          "stdout": "18165075732336738304\n"
+        }
+      ]
+    }
+  }
+}
