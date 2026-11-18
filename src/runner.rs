@@ -31,6 +31,8 @@ pub struct Options {
     pub disallowed_cpu_features: Vec<String>,
     /// Fixed virtual processor identity; `None` exposes host CPUID.
     pub cpuid_profile: Option<String>,
+    /// Also charge the static per-block latency bound (version 1).
+    pub latency_bound: bool,
     pub command: Vec<OsString>,
 }
 
@@ -377,6 +379,9 @@ pub fn run(options: Options) -> Result<i32, String> {
     if let Some(profile) = &options.cpuid_profile {
         result["cpuid_profile"] = json!(profile);
     }
+    if options.latency_bound {
+        result["latency_bound_version"] = json!(1);
+    }
     let outcome = execute(&options, drrun, client, &mut result);
     result["execution"]["wall_time_ms"] =
         json!(started.elapsed().as_millis().min(u64::MAX as u128) as u64);
@@ -446,6 +451,20 @@ pub(crate) fn cpuid_profile_matches(report: &Value, expected: Option<&str>) -> b
     }
 }
 
+/// A requested latency bound must be reported as version 1 with a counter;
+/// an unrequested one must be absent.
+pub(crate) fn latency_bound_matches(report: &Value, requested: bool) -> bool {
+    match report.get("latency_bound") {
+        None => !requested,
+        Some(value) => {
+            requested
+                && value.as_object().is_some_and(|fields| fields.len() == 2)
+                && value["version"] == 1
+                && value["cycles_x16"].is_u64()
+        }
+    }
+}
+
 fn execute(
     options: &Options,
     drrun: PathBuf,
@@ -482,6 +501,9 @@ fn execute(
     }
     if let Some(profile) = &options.cpuid_profile {
         command.args(["-cpuid_profile", profile]);
+    }
+    if options.latency_bound {
+        command.arg("-latency_bound");
     }
     command
         .arg("--")
@@ -608,6 +630,15 @@ fn execute(
             measurement = invalid_measurement(
                 Some(root_pid),
                 "client CPUID profile does not match the request",
+            );
+        }
+        if measurement["valid"] == true
+            && measurement["complete"] == true
+            && !latency_bound_matches(&measurement, options.latency_bound)
+        {
+            measurement = invalid_measurement(
+                Some(root_pid),
+                "client latency bound does not match the request",
             );
         }
         if measurement["valid"] == true && measurement["complete"] == true {

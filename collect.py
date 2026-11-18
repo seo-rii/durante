@@ -76,7 +76,7 @@ def parse_integer(raw):
 UINT_FIELDS = ('schema', 'client_version', 'pid', 'seq', 'parent_pid', 'child_pid',
                'syscall', *FIELDS, 'threads_started', 'threads_finished', 'app_exit_code',
                'rep_breakdown_version', 'cpu_policy_version', 'cpuid_profile_version',
-               *REP_BREAKDOWN_RAW_FIELDS)
+               'latency_bound_version', 'latency_bound_x16', *REP_BREAKDOWN_RAW_FIELDS)
 TEXT_FIELDS = ('authority', 'metric', 'segment', 'event', 'origin', 'parent_segment',
                'sdk_version', 'quality', 'cpu_policy', 'cpuid_profile', 'feature')
 BOOL_FIELDS = ('rep_bytes_enabled', 'supported', 'valid', 'accounting_error',
@@ -97,6 +97,8 @@ def validate_field_types(record):
             uint(value, key)
             if key == 'rep_breakdown_version':
                 require(value == 1, 'unsupported REP breakdown capability')
+            elif key == 'latency_bound_version':
+                require(value == 1, 'unsupported latency bound capability')
         elif key in TEXT_FIELDS:
             require(type(value) is str, 'invalid string field')
         elif key in BOOL_FIELDS:
@@ -112,6 +114,10 @@ def validate_field_types(record):
         cpuid_profile(record)
     if 'feature' in record:
         require(record.get('event') == 'cpu_feature_violation', 'CPU feature outside violation')
+    if 'latency_bound_version' in record:
+        require(record.get('event') == 'start', 'latency bound capability outside start')
+    if 'latency_bound_x16' in record:
+        require(record.get('event') in ('end', 'exec_attempt'), 'latency bound outside terminal')
 
 
 def cpu_policy(record):
@@ -210,7 +216,7 @@ def load_records(directory):
         os.close(root)
 
 
-def terminal(record, is_exec, rep_enabled, rep_breakdown_version):
+def terminal(record, is_exec, rep_enabled, rep_breakdown_version, latency_bound_version=None):
     values = {key: uint(record.get(key), key) for key in FIELDS}
     require(record.get('valid') is True and record.get('accounting_error') is False,
             'invalid terminal accounting')
@@ -244,7 +250,21 @@ def terminal(record, is_exec, rep_enabled, rep_breakdown_version):
             require(movs <= U64_MAX - stos, 'REP breakdown partition overflow')
             require(movs + stos == values['rep_' + unit], 'REP breakdown partition mismatch')
         result['rep_breakdown'] = breakdown
+    require(('latency_bound_x16' in record) == (latency_bound_version is not None),
+            'latency bound capability mismatch')
+    if latency_bound_version is not None:
+        bound = uint(record['latency_bound_x16'], 'latency_bound_x16')
+        # Every charged block keeps at least its 4-wide issue cost (4/16 cycle
+        # per instruction), including after a proportional replay rollback.
+        require(values['instructions'] <= U64_MAX // 4 and bound >= 4 * values['instructions'],
+                'latency bound below issue cost')
+        result['latency_bound'] = {'version': latency_bound_version, 'cycles_x16': bound}
     return result
+
+
+def add_latency_bound(total, values):
+    require(total['cycles_x16'] <= U64_MAX - values['cycles_x16'], 'latency bound aggregate overflow')
+    total['cycles_x16'] += values['cycles_x16']
 
 
 def empty_rep_breakdown():
@@ -278,7 +298,9 @@ def aggregate(streams, root_pid):
     cpuid = cpuid or ''
     segments = set(); processes = {}; spawn_edges = {}; rep_mode = None
     rep_breakdown_version = None; breakdown_mode_set = False
+    latency_bound_version = None; latency_mode_set = False
     total_breakdown = empty_rep_breakdown()
+    total_latency = {'version': 1, 'cycles_x16': 0}
     total = {field: 0 for field in FIELDS}; images = 0; all_segments = []
     for process, records in streams.items():
         require(pid(process) and 0 < len(records) <= MAX_EVENTS, 'invalid process stream')
@@ -304,6 +326,10 @@ def aggregate(streams, root_pid):
                 if not breakdown_mode_set:
                     rep_breakdown_version = version; breakdown_mode_set = True
                 require(rep_breakdown_version == version, 'mixed REP breakdown capabilities')
+                version = record.get('latency_bound_version')
+                if not latency_mode_set:
+                    latency_bound_version = version; latency_mode_set = True
+                require(latency_bound_version == version, 'mixed latency bound capabilities')
                 origin = record.get('origin'); parent = record.get('parent_pid'); parent_segment = record.get('parent_segment')
                 if state is None:
                     first = record
@@ -314,7 +340,8 @@ def aggregate(streams, root_pid):
                 else:
                     require(pending_exec is not None, 'exec image without checkpoint')
                     require(origin == 'initial' and type(parent) is int and parent == 0 and parent_segment == '', 'invalid exec origin')
-                    summaries.append((state, terminal(pending_exec, True, rep_mode, rep_breakdown_version)))
+                    summaries.append((state, terminal(pending_exec, True, rep_mode, rep_breakdown_version,
+                                                      latency_bound_version)))
                 state = segment; segments.add(segment); sequence = 1; pending_exec = None
                 continue
             require(state is not None and not ended and segment == state, 'event outside live segment')
@@ -341,13 +368,15 @@ def aggregate(streams, root_pid):
                 pending_exec = None
             elif event == 'end':
                 require(pending_exec is None, 'exec outcome missing')
-                summaries.append((state, terminal(record, False, rep_mode, rep_breakdown_version)))
+                summaries.append((state, terminal(record, False, rep_mode, rep_breakdown_version,
+                                                  latency_bound_version)))
                 ended = True
             else:
                 raise Invalid('unsupported or interrupted lifecycle event')
         require(ended and first is not None, 'process has no completed final image')
         process_totals = {field: 0 for field in FIELDS}
         process_breakdown = empty_rep_breakdown()
+        process_latency = {'version': 1, 'cycles_x16': 0}
         for segment, values in summaries:
             images += 1
             for field in FIELDS:
@@ -356,12 +385,17 @@ def aggregate(streams, root_pid):
             if rep_breakdown_version is not None:
                 add_rep_breakdown(total_breakdown, values['rep_breakdown'])
                 add_rep_breakdown(process_breakdown, values['rep_breakdown'])
+            if latency_bound_version is not None:
+                add_latency_bound(total_latency, values['latency_bound'])
+                add_latency_bound(process_latency, values['latency_bound'])
             all_segments.append({'pid': process, 'segment': segment, **values})
         processes[process] = {'pid': process, 'parent_pid': first['parent_pid'],
             'parent_segment': first['parent_segment'], 'images': len(summaries),
             'exit_code': summaries[-1][1]['exit_code'], **process_totals}
         if rep_breakdown_version is not None:
             processes[process]['rep_breakdown'] = process_breakdown
+        if latency_bound_version is not None:
+            processes[process]['latency_bound'] = process_latency
     require(set(spawn_edges) == set(processes) - {root_pid}, 'missing or unannounced child process')
     for child, (parent, parent_segment) in spawn_edges.items():
         require(parent in processes and processes[child]['parent_pid'] == parent and
@@ -383,6 +417,8 @@ def aggregate(streams, root_pid):
                        'max_total_bytes': MAX_TOTAL_BYTES, 'max_events_per_process': MAX_EVENTS}}
     if rep_breakdown_version is not None:
         result['rep_breakdown'] = total_breakdown
+    if latency_bound_version is not None:
+        result['latency_bound'] = total_latency
     if policy:
         result['disallowed_cpu_features'] = policy.split(',')
     if cpuid:

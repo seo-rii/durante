@@ -41,6 +41,11 @@ runtime dispatch, and therefore counts, no longer follow the host processor.
 See [CPUID profiles](docs/CPUID_PROFILE.md) for the table, host checks and
 remaining host-visible inputs.
 
+`--latency-bound` on `run` and `isolate` also charges a static per-block
+latency bound (sixteenths of a cycle) at block entry, beside the instruction
+count, as an additional diagnostic input for time models. See
+[Static latency bound](docs/LATENCY_BOUND.md) for the model and its limits.
+
 New clients also report versioned `rep_breakdown` counters for MOVS and STOS
 requested bytes and entries separately, at image/process/tree level. This lets
 reference-model experiments distinguish copying from filling without changing
