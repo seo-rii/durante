@@ -62,16 +62,17 @@ def quoted(path):
     return f'"{text}"'
 
 
-def metered(tools, program, stdin, expected, folder, enabled, timeout):
+def run_with_meter(tools, program, stdin, expected, folder, probe_options, timeout, *, disable_aslr=False):
     folder.mkdir(mode=0o700)
     records = folder / "records"
     records.mkdir(mode=0o700)
     opts = f"-outdir {quoted(records)} -rep_bytes -cpuid_profile x86-64-v2 -latency_bound"
     cmd = [tools["drrun"], "-quiet", "-client", tools["meter"], "00000000", opts]
-    probe_file = folder / "loads.json"
-    if enabled:
-        cmd += ["-client", tools["probe"], "00000001", "-out " + quoted(probe_file)]
+    if probe_options is not None:
+        cmd += ["-client", tools["probe"], "00000001", probe_options]
     cmd += ["-follow_children", "-disable_traces", "-vm_size", "32M", "-vmheap_size", "32M", "--", program]
+    if disable_aslr:
+        cmd = ["setarch", "-R", *cmd]
     pid, cpu_ns = checked_run(cmd, stdin, expected, timeout)
     receipt = aggregate_records(records, pid)
     require(receipt.get("complete") is True and receipt["valid"] is True and
@@ -81,6 +82,13 @@ def metered(tools, program, stdin, expected, folder, enabled, timeout):
             receipt["rep_bytes_enabled"] is True and
             receipt["unsupported_rep_entries"] == 0 and receipt["latency_bound"]["version"] == 1,
             f"{program}: invalid production receipt: {receipt.get('reason', 'profile or accounting')}")
+    return pid, cpu_ns, receipt
+
+
+def metered(tools, program, stdin, expected, folder, enabled, timeout):
+    probe_file = folder / "loads.json"
+    opts = "-out " + quoted(probe_file) if enabled else None
+    pid, cpu_ns, receipt = run_with_meter(tools, program, stdin, expected, folder, opts, timeout)
     counters = {k: receipt[k] for k in ("instructions", "rep_bytes")}
     if enabled:
         loads = json.loads(probe_file.read_bytes())
