@@ -49,7 +49,7 @@ def child_limits(timeout):
     resource.setrlimit(resource.RLIMIT_CPU, (math.ceil(timeout) + 1, math.ceil(timeout) + 1))
 
 
-def run_timed(command, timeout=5):
+def run_timed(command, timeout=5, *, stdin=subprocess.DEVNULL):
     """Consume wait4 exactly once for this child; never use cumulative rusage."""
     row = {"pid": None, "exit_code": None, "timed_out": False, "output_limit": False,
            "reaped": False, "error": None, "metrics": None}
@@ -59,7 +59,7 @@ def run_timed(command, timeout=5):
     started = time.monotonic_ns()
     deadline = time.monotonic() + timeout
     try:
-        process = subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+        process = subprocess.Popen(command, stdin=stdin, stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE, start_new_session=True, env=CHILD_ENV,
                                    umask=0o077, preexec_fn=lambda: child_limits(timeout))
         row["pid"] = process.pid
@@ -106,11 +106,14 @@ def run_timed(command, timeout=5):
         row["error"] = str(error)[:500]
     finally:
         if process is not None:
-            if not row["reaped"]:
+            # A descendant can hold open the capture pipes after the direct
+            # child exits, so a capture failure still owns the process group.
+            if not row["reaped"] or row["timed_out"] or row["output_limit"] or row["error"]:
                 try:
                     os.killpg(process.pid, signal.SIGKILL)
                 except ProcessLookupError:
                     pass
+            if not row["reaped"]:
                 until = time.monotonic() + 1
                 while time.monotonic() < until:
                     pid, status, _ = os.wait4(process.pid, os.WNOHANG)

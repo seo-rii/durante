@@ -84,7 +84,8 @@ which the client already computes at basic-block entry. Compare its prediction
 error and instrumentation overhead with gshare and per-load locality, using
 the judge’s CPUID profile on a dedicated reference machine. Reserve previously
 unseen algorithms, including cases that vary branch predictability independently
-of locality.
+of locality. The follow-up evaluates the load-count candidate on two new
+CPP20 algorithms. [Held-out model evaluation](CPP20_LOAD_MODEL.md)
 
 ## Reproduce
 

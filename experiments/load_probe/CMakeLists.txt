@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.16)
+project(durante_load_probe C)
+find_package(DynamoRIO 11.3 EXACT REQUIRED)
+add_library(load_probe SHARED probe.c)
+configure_DynamoRIO_client(load_probe)
+use_DynamoRIO_extension(load_probe drmgr)
+set_target_properties(load_probe PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS YES)
+target_compile_options(load_probe PRIVATE -Wall -Wextra -Werror)
