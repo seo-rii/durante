@@ -93,7 +93,7 @@ def collect(args):
             raw = folder / "patterns.json"
             opts = f"-out {quoted(raw)} -bpred -load_pattern"
             _, _, meter = run_with_meter(tools, program, stdin, expected_bytes, folder, opts, args.timeout,
-                                         disable_aslr=True)
+                                         prefix=("setarch", "-R"))
             row["observations"].append(read_pattern(json.loads(raw.read_bytes()), meter))
             checkpoint()
 

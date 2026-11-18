@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "base_corpus_sha256": "7148495309ec653e642aac86e1ed64ea44ee0218bf25f5a7e7f491846b734cf1",
+  "families": {
+    "merge_streams": {
+      "cases": [
+        {
+          "scale": 1,
+          "stdin": "16\n",
+          "stdout": "1176942361268620048\n"
+        },
+        {
+          "scale": 2,
+          "stdin": "32\n",
+          "stdout": "4659729952249026080\n"
+        },
+        {
+          "scale": 4,
+          "stdin": "64\n",
+          "stdout": "96096749635644480\n"
+        }
+      ],
+      "binary_sha256": "2b284ad50111fc5c1e68c37fa5400102d4da0afb62aef916d2a344e41d715194",
+      "source_sha256": "6388c8d87b8f2e595940d4ecdabcceab6aba54fae61cc96bc9c33ee336224adc"
+    },
+    "hash_probe": {
+      "cases": [
+        {
+          "scale": 1,
+          "stdin": "1048576\n",
+          "stdout": "650970345625391104\n"
+        },
+        {
+          "scale": 2,
+          "stdin": "2097152\n",
+          "stdout": "2603888311816757248\n"
+        },
+        {
+          "scale": 4,
+          "stdin": "4194304\n",
+          "stdout": "10415567105897414656\n"
+        }
+      ],
+      "binary_sha256": "01076a214d2729de6bea1604c85baeb361c6a202e81d387d31cc53a0af0b3230",
+      "source_sha256": "52abaaf092a0e98174e7df0abd434bbad3635f5dab78944360968af68606ed55"
+    }
+  }
+}

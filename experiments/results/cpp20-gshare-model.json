@@ -1,0 +1,1624 @@
+{
+  "schema": 1,
+  "complete": true,
+  "cpuid_profile": "x86-64-v2",
+  "corpus_sha256": "c407ea1a00df20af2311cfba11a8eaa9963dbe06e4d7dcb2d00a0876fc1fc90f",
+  "compiler_image": "sha256:5f1fee5fb589c9494f2155478bab0e01af620f73e99ebf2ff9177a09626d5bf3",
+  "tools_sha256": {
+    "drrun": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "runtime": "e2fdae59daa295d1c752876647937ecac80649cbba85d6e98b17e6a7cc4a1859",
+    "drmgr": "372cc1f1f95ffa29a1f11de4be14f99de5938bbcae11294a38d0a7932069429a",
+    "meter": "a495207e4cd227ccbaec467d8662b04dbfc208246b4ede712b36b8489a02c1ff",
+    "probe": "c41c1f138a58f6a66d4d489940e1773d521e985dee61abd7baeca41d59c63a59"
+  },
+  "cpu": 2,
+  "kernel": "6.1.0-56-cloud-amd64",
+  "cpu_model": "AMD EPYC 7B12",
+  "order_seed": 20261118,
+  "native_clock": "direct-child wait4 user+system",
+  "repetitions": 3,
+  "cases": [
+    {
+      "family": "integer",
+      "scale": 1,
+      "input_sha256": "58102257e583a6dd723fbceb404fc82fc66f15117d61e6b80dece1b24e3aa2fd",
+      "binary_sha256": "13b1e1ba33375676c1c6071b2d0bb41c0148e2ee7d90f1c4085d3eb95124f29d",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 45249000,
+          "probe_first": false,
+          "meter_cpu_ns": 927391000,
+          "meter_only": {
+            "instructions": 167922240,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 1568309000,
+          "instructions": 167922240,
+          "rep_bytes": 3624,
+          "load_instructions": 22484,
+          "conditional_branches": 33580722,
+          "gshare_mispredicts": 1089,
+          "native_after_ns": 44984000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 44702000,
+          "probe_first": true,
+          "probe_cpu_ns": 1538474000,
+          "instructions": 167922240,
+          "rep_bytes": 3624,
+          "load_instructions": 22484,
+          "conditional_branches": 33580722,
+          "gshare_mispredicts": 1089,
+          "meter_cpu_ns": 937849000,
+          "meter_only": {
+            "instructions": 167922240,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 45408000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 63764000,
+          "probe_first": false,
+          "meter_cpu_ns": 1284448000,
+          "meter_only": {
+            "instructions": 167922240,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 2251855000,
+          "instructions": 167922240,
+          "rep_bytes": 3624,
+          "load_instructions": 22484,
+          "conditional_branches": 33580722,
+          "gshare_mispredicts": 1089,
+          "native_after_ns": 59092000
+        }
+      ]
+    },
+    {
+      "family": "integer",
+      "scale": 2,
+      "input_sha256": "9902ec78038acf436285ea163ff7b72ec7d4674a2510e8c881a63abe151a4f49",
+      "binary_sha256": "13b1e1ba33375676c1c6071b2d0bb41c0148e2ee7d90f1c4085d3eb95124f29d",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 87271000,
+          "probe_first": true,
+          "probe_cpu_ns": 3019044000,
+          "instructions": 335694400,
+          "rep_bytes": 3624,
+          "load_instructions": 22484,
+          "conditional_branches": 67135154,
+          "gshare_mispredicts": 1089,
+          "meter_cpu_ns": 1767765000,
+          "meter_only": {
+            "instructions": 335694400,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 87095000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 88155000,
+          "probe_first": false,
+          "meter_cpu_ns": 1838271000,
+          "meter_only": {
+            "instructions": 335694400,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 3052796000,
+          "instructions": 335694400,
+          "rep_bytes": 3624,
+          "load_instructions": 22484,
+          "conditional_branches": 67135154,
+          "gshare_mispredicts": 1089,
+          "native_after_ns": 87254000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 87789000,
+          "probe_first": true,
+          "probe_cpu_ns": 3567452000,
+          "instructions": 335694400,
+          "rep_bytes": 3624,
+          "load_instructions": 22484,
+          "conditional_branches": 67135154,
+          "gshare_mispredicts": 1089,
+          "meter_cpu_ns": 2474908000,
+          "meter_only": {
+            "instructions": 335694400,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 87039000
+        }
+      ]
+    },
+    {
+      "family": "integer",
+      "scale": 4,
+      "input_sha256": "09294a6f2c1c6a3a71c766b169af994547992af1099ead8ad61253f648dc08bf",
+      "binary_sha256": "13b1e1ba33375676c1c6071b2d0bb41c0148e2ee7d90f1c4085d3eb95124f29d",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 170713000,
+          "probe_first": false,
+          "meter_cpu_ns": 3486510000,
+          "meter_only": {
+            "instructions": 671238769,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 5969588000,
+          "instructions": 671238769,
+          "rep_bytes": 3624,
+          "load_instructions": 22490,
+          "conditional_branches": 134244030,
+          "gshare_mispredicts": 1089,
+          "native_after_ns": 171451000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 170607000,
+          "probe_first": true,
+          "probe_cpu_ns": 6002044000,
+          "instructions": 671238769,
+          "rep_bytes": 3624,
+          "load_instructions": 22490,
+          "conditional_branches": 134244030,
+          "gshare_mispredicts": 1089,
+          "meter_cpu_ns": 3558568000,
+          "meter_only": {
+            "instructions": 671238769,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 171145000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 170924000,
+          "probe_first": false,
+          "meter_cpu_ns": 3651267000,
+          "meter_only": {
+            "instructions": 671238769,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 5994149000,
+          "instructions": 671238769,
+          "rep_bytes": 3624,
+          "load_instructions": 22490,
+          "conditional_branches": 134244030,
+          "gshare_mispredicts": 1089,
+          "native_after_ns": 173787000
+        }
+      ]
+    },
+    {
+      "family": "rep_copy",
+      "scale": 1,
+      "input_sha256": "b61d14fabac7a8c4a193c44ce1394bbc7399ff3de0c728f96d280c832632a60b",
+      "binary_sha256": "255445d9e1311d5872c4da62e12df42c199012cfbc9b8c5dc6e8a8646cab2100",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 79066000,
+          "probe_first": true,
+          "probe_cpu_ns": 666425000,
+          "instructions": 47309104,
+          "rep_bytes": 2147487272,
+          "load_instructions": 8427699,
+          "conditional_branches": 8562879,
+          "gshare_mispredicts": 1376,
+          "meter_cpu_ns": 475566000,
+          "meter_only": {
+            "instructions": 47309104,
+            "rep_bytes": 2147487272
+          },
+          "native_after_ns": 74106000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 78397000,
+          "probe_first": false,
+          "meter_cpu_ns": 485133000,
+          "meter_only": {
+            "instructions": 47309104,
+            "rep_bytes": 2147487272
+          },
+          "probe_cpu_ns": 665036000,
+          "instructions": 47309104,
+          "rep_bytes": 2147487272,
+          "load_instructions": 8427699,
+          "conditional_branches": 8562879,
+          "gshare_mispredicts": 1376,
+          "native_after_ns": 76768000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 76981000,
+          "probe_first": true,
+          "probe_cpu_ns": 677831000,
+          "instructions": 47309104,
+          "rep_bytes": 2147487272,
+          "load_instructions": 8427699,
+          "conditional_branches": 8562879,
+          "gshare_mispredicts": 1376,
+          "meter_cpu_ns": 481680000,
+          "meter_only": {
+            "instructions": 47309104,
+            "rep_bytes": 2147487272
+          },
+          "native_after_ns": 75613000
+        }
+      ]
+    },
+    {
+      "family": "rep_copy",
+      "scale": 2,
+      "input_sha256": "034ae8e96eee99a30067d2f7c7b8055992ffb028e1a8309df36a17183c72b95e",
+      "binary_sha256": "255445d9e1311d5872c4da62e12df42c199012cfbc9b8c5dc6e8a8646cab2100",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 178060000,
+          "probe_first": false,
+          "meter_cpu_ns": 544401000,
+          "meter_only": {
+            "instructions": 47320417,
+            "rep_bytes": 4294970920
+          },
+          "probe_cpu_ns": 727587000,
+          "instructions": 47320417,
+          "rep_bytes": 4294970920,
+          "load_instructions": 8430777,
+          "conditional_branches": 8563403,
+          "gshare_mispredicts": 1376,
+          "native_after_ns": 147675000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 218935000,
+          "probe_first": true,
+          "probe_cpu_ns": 1009238000,
+          "instructions": 47320417,
+          "rep_bytes": 4294970920,
+          "load_instructions": 8430777,
+          "conditional_branches": 8563403,
+          "gshare_mispredicts": 1376,
+          "meter_cpu_ns": 750128000,
+          "meter_only": {
+            "instructions": 47320417,
+            "rep_bytes": 4294970920
+          },
+          "native_after_ns": 209315000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 151969000,
+          "probe_first": false,
+          "meter_cpu_ns": 572730000,
+          "meter_only": {
+            "instructions": 47320417,
+            "rep_bytes": 4294970920
+          },
+          "probe_cpu_ns": 724287000,
+          "instructions": 47320417,
+          "rep_bytes": 4294970920,
+          "load_instructions": 8430777,
+          "conditional_branches": 8563403,
+          "gshare_mispredicts": 1376,
+          "native_after_ns": 176202000
+        }
+      ]
+    },
+    {
+      "family": "rep_copy",
+      "scale": 4,
+      "input_sha256": "0fe76953bddd45fec27d8d55ede03f2eab50c90d933c2432900985db384855bd",
+      "binary_sha256": "255445d9e1311d5872c4da62e12df42c199012cfbc9b8c5dc6e8a8646cab2100",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 276973000,
+          "probe_first": true,
+          "probe_cpu_ns": 870840000,
+          "instructions": 47342945,
+          "rep_bytes": 8589938216,
+          "load_instructions": 8436921,
+          "conditional_branches": 8564427,
+          "gshare_mispredicts": 1376,
+          "meter_cpu_ns": 680783000,
+          "meter_only": {
+            "instructions": 47342945,
+            "rep_bytes": 8589938216
+          },
+          "native_after_ns": 294000000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 292948000,
+          "probe_first": false,
+          "meter_cpu_ns": 723173000,
+          "meter_only": {
+            "instructions": 47342945,
+            "rep_bytes": 8589938216
+          },
+          "probe_cpu_ns": 894616000,
+          "instructions": 47342945,
+          "rep_bytes": 8589938216,
+          "load_instructions": 8436921,
+          "conditional_branches": 8564427,
+          "gshare_mispredicts": 1376,
+          "native_after_ns": 282929000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 411593000,
+          "probe_first": true,
+          "probe_cpu_ns": 1189647000,
+          "instructions": 47342945,
+          "rep_bytes": 8589938216,
+          "load_instructions": 8436921,
+          "conditional_branches": 8564427,
+          "gshare_mispredicts": 1376,
+          "meter_cpu_ns": 987259000,
+          "meter_only": {
+            "instructions": 47342945,
+            "rep_bytes": 8589938216
+          },
+          "native_after_ns": 473970000
+        }
+      ]
+    },
+    {
+      "family": "sort",
+      "scale": 1,
+      "input_sha256": "4f6635fab154104736e0968c922ca1ecddf0a43758e4bbf89005b1208689251e",
+      "binary_sha256": "d96565357cdd163ea7de5eb145aaf915b0b0ba9e238a46718e9e1352e51c4b75",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 35602000,
+          "probe_first": false,
+          "meter_cpu_ns": 681062000,
+          "meter_only": {
+            "instructions": 86522872,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 1061347000,
+          "instructions": 86522872,
+          "rep_bytes": 3624,
+          "load_instructions": 15606404,
+          "conditional_branches": 15963720,
+          "gshare_mispredicts": 4432852,
+          "native_after_ns": 36021000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 35923000,
+          "probe_first": true,
+          "probe_cpu_ns": 1249827000,
+          "instructions": 86522872,
+          "rep_bytes": 3624,
+          "load_instructions": 15606404,
+          "conditional_branches": 15963720,
+          "gshare_mispredicts": 4432852,
+          "meter_cpu_ns": 1055052000,
+          "meter_only": {
+            "instructions": 86522872,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 50580000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 36101000,
+          "probe_first": false,
+          "meter_cpu_ns": 681922000,
+          "meter_only": {
+            "instructions": 86522872,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 1058013000,
+          "instructions": 86522872,
+          "rep_bytes": 3624,
+          "load_instructions": 15606404,
+          "conditional_branches": 15963720,
+          "gshare_mispredicts": 4432852,
+          "native_after_ns": 36344000
+        }
+      ]
+    },
+    {
+      "family": "sort",
+      "scale": 2,
+      "input_sha256": "be3b3a973edc5f34763d5808c7d0866e068ff309898e83e80bb37674405ce7a7",
+      "binary_sha256": "d96565357cdd163ea7de5eb145aaf915b0b0ba9e238a46718e9e1352e51c4b75",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 71929000,
+          "probe_first": true,
+          "probe_cpu_ns": 2057546000,
+          "instructions": 177112467,
+          "rep_bytes": 3624,
+          "load_instructions": 31872526,
+          "conditional_branches": 32583356,
+          "gshare_mispredicts": 9485530,
+          "meter_cpu_ns": 1335492000,
+          "meter_only": {
+            "instructions": 177112467,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 72137000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 73294000,
+          "probe_first": false,
+          "meter_cpu_ns": 1331539000,
+          "meter_only": {
+            "instructions": 177112467,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 2056964000,
+          "instructions": 177112467,
+          "rep_bytes": 3624,
+          "load_instructions": 31872526,
+          "conditional_branches": 32583356,
+          "gshare_mispredicts": 9485530,
+          "native_after_ns": 71847000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 101272000,
+          "probe_first": true,
+          "probe_cpu_ns": 3009026000,
+          "instructions": 177112467,
+          "rep_bytes": 3624,
+          "load_instructions": 31872526,
+          "conditional_branches": 32583356,
+          "gshare_mispredicts": 9485530,
+          "meter_cpu_ns": 1890524000,
+          "meter_only": {
+            "instructions": 177112467,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 106538000
+        }
+      ]
+    },
+    {
+      "family": "sort",
+      "scale": 4,
+      "input_sha256": "ef801656107acf2762ce10512091bba7ae297ce0f4bc9be76b789f7ba54a4136",
+      "binary_sha256": "d96565357cdd163ea7de5eb145aaf915b0b0ba9e238a46718e9e1352e51c4b75",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 142830000,
+          "probe_first": false,
+          "meter_cpu_ns": 2738494000,
+          "meter_only": {
+            "instructions": 373668023,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 4249204000,
+          "instructions": 373668023,
+          "rep_bytes": 3624,
+          "load_instructions": 67622014,
+          "conditional_branches": 69040031,
+          "gshare_mispredicts": 19557115,
+          "native_after_ns": 143623000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 144779000,
+          "probe_first": true,
+          "probe_cpu_ns": 4220124000,
+          "instructions": 373668023,
+          "rep_bytes": 3624,
+          "load_instructions": 67622014,
+          "conditional_branches": 69040031,
+          "gshare_mispredicts": 19557115,
+          "meter_cpu_ns": 2719767000,
+          "meter_only": {
+            "instructions": 373668023,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 143872000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 145977000,
+          "probe_first": false,
+          "meter_cpu_ns": 2799989000,
+          "meter_only": {
+            "instructions": 373668023,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 4304962000,
+          "instructions": 373668023,
+          "rep_bytes": 3624,
+          "load_instructions": 67622014,
+          "conditional_branches": 69040031,
+          "gshare_mispredicts": 19557115,
+          "native_after_ns": 143231000
+        }
+      ]
+    },
+    {
+      "family": "branch",
+      "scale": 1,
+      "input_sha256": "54e11706f19c1b6db05caecff1822a1481b450adfd659b2a93dcd33929d53b7f",
+      "binary_sha256": "d383e4da2a1953bc72d54fccac0fe98fe575fef2474e469edcf2567d18ece37c",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 35227000,
+          "probe_first": true,
+          "probe_cpu_ns": 3734690000,
+          "instructions": 229438461,
+          "rep_bytes": 3624,
+          "load_instructions": 16799661,
+          "conditional_branches": 44765517,
+          "gshare_mispredicts": 2449206,
+          "meter_cpu_ns": 2753742000,
+          "meter_only": {
+            "instructions": 229438461,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 35327000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 35870000,
+          "probe_first": false,
+          "meter_cpu_ns": 2822840000,
+          "meter_only": {
+            "instructions": 229438461,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 3821209000,
+          "instructions": 229438461,
+          "rep_bytes": 3624,
+          "load_instructions": 16799661,
+          "conditional_branches": 44765517,
+          "gshare_mispredicts": 2449206,
+          "native_after_ns": 35989000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 47172000,
+          "probe_first": true,
+          "probe_cpu_ns": 5260017000,
+          "instructions": 229438461,
+          "rep_bytes": 3624,
+          "load_instructions": 16799661,
+          "conditional_branches": 44765517,
+          "gshare_mispredicts": 2449206,
+          "meter_cpu_ns": 3925092000,
+          "meter_only": {
+            "instructions": 229438461,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 51180000
+        }
+      ]
+    },
+    {
+      "family": "branch",
+      "scale": 2,
+      "input_sha256": "ae7a13222abd483670b1f3b55d2f9f42790bfcbfdad8356a1c717f37feb59661",
+      "binary_sha256": "d383e4da2a1953bc72d54fccac0fe98fe575fef2474e469edcf2567d18ece37c",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 68845000,
+          "probe_first": false,
+          "meter_cpu_ns": 5517075000,
+          "meter_only": {
+            "instructions": 458727165,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 7306326000,
+          "instructions": 458727165,
+          "rep_bytes": 3624,
+          "load_instructions": 33576877,
+          "conditional_branches": 89504845,
+          "gshare_mispredicts": 4897334,
+          "native_after_ns": 67534000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 67856000,
+          "probe_first": true,
+          "probe_cpu_ns": 7582113000,
+          "instructions": 458727165,
+          "rep_bytes": 3624,
+          "load_instructions": 33576877,
+          "conditional_branches": 89504845,
+          "gshare_mispredicts": 4897334,
+          "meter_cpu_ns": 5856822000,
+          "meter_only": {
+            "instructions": 458727165,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 67227000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 67824000,
+          "probe_first": false,
+          "meter_cpu_ns": 5607981000,
+          "meter_only": {
+            "instructions": 458727165,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 7323459000,
+          "instructions": 458727165,
+          "rep_bytes": 3624,
+          "load_instructions": 33576877,
+          "conditional_branches": 89504845,
+          "gshare_mispredicts": 4897334,
+          "native_after_ns": 67680000
+        }
+      ]
+    },
+    {
+      "family": "branch",
+      "scale": 4,
+      "input_sha256": "16c3402cf255887d19eed335f65b177e4c9f57e5111da11ad7fca6806199710e",
+      "binary_sha256": "d383e4da2a1953bc72d54fccac0fe98fe575fef2474e469edcf2567d18ece37c",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 132806000,
+          "probe_first": true,
+          "probe_cpu_ns": 14498713000,
+          "instructions": 917304648,
+          "rep_bytes": 3624,
+          "load_instructions": 67131324,
+          "conditional_branches": 178983519,
+          "gshare_mispredicts": 9793608,
+          "meter_cpu_ns": 10972530000,
+          "meter_only": {
+            "instructions": 917304648,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 140570000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 132486000,
+          "probe_first": false,
+          "meter_cpu_ns": 10842766000,
+          "meter_only": {
+            "instructions": 917304648,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 15066588000,
+          "instructions": 917304648,
+          "rep_bytes": 3624,
+          "load_instructions": 67131324,
+          "conditional_branches": 178983519,
+          "gshare_mispredicts": 9793608,
+          "native_after_ns": 132685000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 180001000,
+          "probe_first": true,
+          "probe_cpu_ns": 27867118000,
+          "instructions": 917304648,
+          "rep_bytes": 3624,
+          "load_instructions": 67131324,
+          "conditional_branches": 178983519,
+          "gshare_mispredicts": 9793608,
+          "meter_cpu_ns": 17507980000,
+          "meter_only": {
+            "instructions": 917304648,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 181872000
+        }
+      ]
+    },
+    {
+      "family": "rep_fill",
+      "scale": 1,
+      "input_sha256": "b61d14fabac7a8c4a193c44ce1394bbc7399ff3de0c728f96d280c832632a60b",
+      "binary_sha256": "316549bd773f5dba0b5978f423ba8fc93f9fb881339478e030f22b1b2f9d1bc7",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 49905000,
+          "probe_first": false,
+          "meter_cpu_ns": 225271000,
+          "meter_only": {
+            "instructions": 25800223,
+            "rep_bytes": 2147487272
+          },
+          "probe_cpu_ns": 332079000,
+          "instructions": 25800223,
+          "rep_bytes": 2147487272,
+          "load_instructions": 4221117,
+          "conditional_branches": 4289933,
+          "gshare_mispredicts": 1196,
+          "native_after_ns": 48034000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 64868000,
+          "probe_first": true,
+          "probe_cpu_ns": 440321000,
+          "instructions": 25800223,
+          "rep_bytes": 2147487272,
+          "load_instructions": 4221117,
+          "conditional_branches": 4289933,
+          "gshare_mispredicts": 1196,
+          "meter_cpu_ns": 308998000,
+          "meter_only": {
+            "instructions": 25800223,
+            "rep_bytes": 2147487272
+          },
+          "native_after_ns": 69489000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 39404000,
+          "probe_first": false,
+          "meter_cpu_ns": 223729000,
+          "meter_only": {
+            "instructions": 25800223,
+            "rep_bytes": 2147487272
+          },
+          "probe_cpu_ns": 336755000,
+          "instructions": 25800223,
+          "rep_bytes": 2147487272,
+          "load_instructions": 4221117,
+          "conditional_branches": 4289933,
+          "gshare_mispredicts": 1196,
+          "native_after_ns": 41699000
+        }
+      ]
+    },
+    {
+      "family": "rep_fill",
+      "scale": 2,
+      "input_sha256": "034ae8e96eee99a30067d2f7c7b8055992ffb028e1a8309df36a17183c72b95e",
+      "binary_sha256": "316549bd773f5dba0b5978f423ba8fc93f9fb881339478e030f22b1b2f9d1bc7",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 77135000,
+          "probe_first": true,
+          "probe_cpu_ns": 367719000,
+          "instructions": 25806928,
+          "rep_bytes": 4294970920,
+          "load_instructions": 4222659,
+          "conditional_branches": 4290457,
+          "gshare_mispredicts": 1196,
+          "meter_cpu_ns": 271141000,
+          "meter_only": {
+            "instructions": 25806928,
+            "rep_bytes": 4294970920
+          },
+          "native_after_ns": 93290000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 77383000,
+          "probe_first": false,
+          "meter_cpu_ns": 259975000,
+          "meter_only": {
+            "instructions": 25806928,
+            "rep_bytes": 4294970920
+          },
+          "probe_cpu_ns": 384392000,
+          "instructions": 25806928,
+          "rep_bytes": 4294970920,
+          "load_instructions": 4222659,
+          "conditional_branches": 4290457,
+          "gshare_mispredicts": 1196,
+          "native_after_ns": 80190000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 72926000,
+          "probe_first": true,
+          "probe_cpu_ns": 356271000,
+          "instructions": 25806928,
+          "rep_bytes": 4294970920,
+          "load_instructions": 4222659,
+          "conditional_branches": 4290457,
+          "gshare_mispredicts": 1196,
+          "meter_cpu_ns": 249742000,
+          "meter_only": {
+            "instructions": 25806928,
+            "rep_bytes": 4294970920
+          },
+          "native_after_ns": 69355000
+        }
+      ]
+    },
+    {
+      "family": "rep_fill",
+      "scale": 4,
+      "input_sha256": "0fe76953bddd45fec27d8d55ede03f2eab50c90d933c2432900985db384855bd",
+      "binary_sha256": "316549bd773f5dba0b5978f423ba8fc93f9fb881339478e030f22b1b2f9d1bc7",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 151454000,
+          "probe_first": false,
+          "meter_cpu_ns": 326028000,
+          "meter_only": {
+            "instructions": 25820240,
+            "rep_bytes": 8589938216
+          },
+          "probe_cpu_ns": 442726000,
+          "instructions": 25820240,
+          "rep_bytes": 8589938216,
+          "load_instructions": 4225731,
+          "conditional_branches": 4291481,
+          "gshare_mispredicts": 1196,
+          "native_after_ns": 149254000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 148421000,
+          "probe_first": true,
+          "probe_cpu_ns": 439530000,
+          "instructions": 25820240,
+          "rep_bytes": 8589938216,
+          "load_instructions": 4225731,
+          "conditional_branches": 4291481,
+          "gshare_mispredicts": 1196,
+          "meter_cpu_ns": 332116000,
+          "meter_only": {
+            "instructions": 25820240,
+            "rep_bytes": 8589938216
+          },
+          "native_after_ns": 159864000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 174713000,
+          "probe_first": false,
+          "meter_cpu_ns": 359689000,
+          "meter_only": {
+            "instructions": 25820240,
+            "rep_bytes": 8589938216
+          },
+          "probe_cpu_ns": 447149000,
+          "instructions": 25820240,
+          "rep_bytes": 8589938216,
+          "load_instructions": 4225731,
+          "conditional_branches": 4291481,
+          "gshare_mispredicts": 1196,
+          "native_after_ns": 146460000
+        }
+      ]
+    },
+    {
+      "family": "lower_bound",
+      "scale": 1,
+      "input_sha256": "d5ae8a2d6ba4522d6c06ecc3384ec50e575e3b82758bbcab3c829b0709a76120",
+      "binary_sha256": "a850357af0cfa40c4b1ad6bb64a79f0c2a37140efd3071a962d95f0ff8506815",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 28897000,
+          "probe_first": true,
+          "probe_cpu_ns": 546940000,
+          "instructions": 39732401,
+          "rep_bytes": 3624,
+          "load_instructions": 3561212,
+          "conditional_branches": 7562630,
+          "gshare_mispredicts": 2103692,
+          "meter_cpu_ns": 353946000,
+          "meter_only": {
+            "instructions": 39732401,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 29509000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 29929000,
+          "probe_first": false,
+          "meter_cpu_ns": 364092000,
+          "meter_only": {
+            "instructions": 39732401,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 557021000,
+          "instructions": 39732401,
+          "rep_bytes": 3624,
+          "load_instructions": 3561212,
+          "conditional_branches": 7562630,
+          "gshare_mispredicts": 2103692,
+          "native_after_ns": 29588000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 30629000,
+          "probe_first": true,
+          "probe_cpu_ns": 548348000,
+          "instructions": 39732401,
+          "rep_bytes": 3624,
+          "load_instructions": 3561212,
+          "conditional_branches": 7562630,
+          "gshare_mispredicts": 2103692,
+          "meter_cpu_ns": 361117000,
+          "meter_only": {
+            "instructions": 39732401,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 29361000
+        }
+      ]
+    },
+    {
+      "family": "lower_bound",
+      "scale": 2,
+      "input_sha256": "5938272eeb342e72e894bf690c5b9f5e301172dcdc1a4f422e19ce76dce1c731",
+      "binary_sha256": "a850357af0cfa40c4b1ad6bb64a79f0c2a37140efd3071a962d95f0ff8506815",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 55626000,
+          "probe_first": false,
+          "meter_cpu_ns": 651405000,
+          "meter_only": {
+            "instructions": 77481165,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 982516000,
+          "instructions": 77481165,
+          "rep_bytes": 3624,
+          "load_instructions": 7100159,
+          "conditional_branches": 15033738,
+          "gshare_mispredicts": 4205375,
+          "native_after_ns": 53710000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 54317000,
+          "probe_first": true,
+          "probe_cpu_ns": 979322000,
+          "instructions": 77481165,
+          "rep_bytes": 3624,
+          "load_instructions": 7100159,
+          "conditional_branches": 15033738,
+          "gshare_mispredicts": 4205375,
+          "meter_cpu_ns": 629709000,
+          "meter_only": {
+            "instructions": 77481165,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 54219000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 78367000,
+          "probe_first": false,
+          "meter_cpu_ns": 961935000,
+          "meter_only": {
+            "instructions": 77481165,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 1479672000,
+          "instructions": 77481165,
+          "rep_bytes": 3624,
+          "load_instructions": 7100159,
+          "conditional_branches": 15033738,
+          "gshare_mispredicts": 4205375,
+          "native_after_ns": 86599000
+        }
+      ]
+    },
+    {
+      "family": "lower_bound",
+      "scale": 4,
+      "input_sha256": "c7b53aeb48798d5d2af6dbc959272b74a5782c64990c5de94862262fb75b3ff3",
+      "binary_sha256": "a850357af0cfa40c4b1ad6bb64a79f0c2a37140efd3071a962d95f0ff8506815",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 108551000,
+          "probe_first": true,
+          "probe_cpu_ns": 1925770000,
+          "instructions": 152978668,
+          "rep_bytes": 3624,
+          "load_instructions": 14178048,
+          "conditional_branches": 29975948,
+          "gshare_mispredicts": 8408317,
+          "meter_cpu_ns": 1192814000,
+          "meter_only": {
+            "instructions": 152978668,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 104990000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 105548000,
+          "probe_first": false,
+          "meter_cpu_ns": 1194559000,
+          "meter_only": {
+            "instructions": 152978668,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 1849768000,
+          "instructions": 152978668,
+          "rep_bytes": 3624,
+          "load_instructions": 14178048,
+          "conditional_branches": 29975948,
+          "gshare_mispredicts": 8408317,
+          "native_after_ns": 106097000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 108339000,
+          "probe_first": true,
+          "probe_cpu_ns": 1862523000,
+          "instructions": 152978668,
+          "rep_bytes": 3624,
+          "load_instructions": 14178048,
+          "conditional_branches": 29975948,
+          "gshare_mispredicts": 8408317,
+          "meter_cpu_ns": 1258788000,
+          "meter_only": {
+            "instructions": 152978668,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 105209000
+        }
+      ]
+    },
+    {
+      "family": "window_sum",
+      "scale": 1,
+      "input_sha256": "1c717f8a059be27832853ed4d506f3c7ab305023703aefda2b2272606e13ee01",
+      "binary_sha256": "3c930fe86485cfdf0dd01a23807409c22721be1766cc1ab2493f340998512439",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 22113000,
+          "probe_first": false,
+          "meter_cpu_ns": 508576000,
+          "meter_only": {
+            "instructions": 218597563,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 845150000,
+          "instructions": 218597563,
+          "rep_bytes": 3624,
+          "load_instructions": 33576940,
+          "conditional_branches": 16819841,
+          "gshare_mispredicts": 1059,
+          "native_after_ns": 22413000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 21884000,
+          "probe_first": true,
+          "probe_cpu_ns": 834849000,
+          "instructions": 218597563,
+          "rep_bytes": 3624,
+          "load_instructions": 33576940,
+          "conditional_branches": 16819841,
+          "gshare_mispredicts": 1059,
+          "meter_cpu_ns": 501228000,
+          "meter_only": {
+            "instructions": 218597563,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 22041000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 27260000,
+          "probe_first": false,
+          "meter_cpu_ns": 594485000,
+          "meter_only": {
+            "instructions": 218597563,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 982137000,
+          "instructions": 218597563,
+          "rep_bytes": 3624,
+          "load_instructions": 33576940,
+          "conditional_branches": 16819841,
+          "gshare_mispredicts": 1059,
+          "native_after_ns": 23685000
+        }
+      ]
+    },
+    {
+      "family": "window_sum",
+      "scale": 2,
+      "input_sha256": "58a256fb0325d6a3a3c006fc9f2a504ae85cefeeb8f7cf622948f5833df0ac49",
+      "binary_sha256": "3c930fe86485cfdf0dd01a23807409c22721be1766cc1ab2493f340998512439",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 40511000,
+          "probe_first": true,
+          "probe_cpu_ns": 1586147000,
+          "instructions": 436701371,
+          "rep_bytes": 3624,
+          "load_instructions": 67131372,
+          "conditional_branches": 33597057,
+          "gshare_mispredicts": 1059,
+          "meter_cpu_ns": 950007000,
+          "meter_only": {
+            "instructions": 436701371,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 40638000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 40072000,
+          "probe_first": false,
+          "meter_cpu_ns": 927259000,
+          "meter_only": {
+            "instructions": 436701371,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 1593311000,
+          "instructions": 436701371,
+          "rep_bytes": 3624,
+          "load_instructions": 67131372,
+          "conditional_branches": 33597057,
+          "gshare_mispredicts": 1059,
+          "native_after_ns": 41437000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 46675000,
+          "probe_first": true,
+          "probe_cpu_ns": 1771216000,
+          "instructions": 436701371,
+          "rep_bytes": 3624,
+          "load_instructions": 67131372,
+          "conditional_branches": 33597057,
+          "gshare_mispredicts": 1059,
+          "meter_cpu_ns": 960796000,
+          "meter_only": {
+            "instructions": 436701371,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 41957000
+        }
+      ]
+    },
+    {
+      "family": "window_sum",
+      "scale": 4,
+      "input_sha256": "dbf49ee47089a80aa52cdee996311cf2aa9e70c5725925da0f83a35d14e2efb1",
+      "binary_sha256": "3c930fe86485cfdf0dd01a23807409c22721be1766cc1ab2493f340998512439",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 78594000,
+          "probe_first": false,
+          "meter_cpu_ns": 1829799000,
+          "meter_only": {
+            "instructions": 872908987,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 3032107000,
+          "instructions": 872908987,
+          "rep_bytes": 3624,
+          "load_instructions": 134240236,
+          "conditional_branches": 67151489,
+          "gshare_mispredicts": 1059,
+          "native_after_ns": 78433000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 78418000,
+          "probe_first": true,
+          "probe_cpu_ns": 3040693000,
+          "instructions": 872908987,
+          "rep_bytes": 3624,
+          "load_instructions": 134240236,
+          "conditional_branches": 67151489,
+          "gshare_mispredicts": 1059,
+          "meter_cpu_ns": 1770501000,
+          "meter_only": {
+            "instructions": 872908987,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 78206000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 78712000,
+          "probe_first": false,
+          "meter_cpu_ns": 1792502000,
+          "meter_only": {
+            "instructions": 872908987,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 3154758000,
+          "instructions": 872908987,
+          "rep_bytes": 3624,
+          "load_instructions": 134240236,
+          "conditional_branches": 67151489,
+          "gshare_mispredicts": 1059,
+          "native_after_ns": 105126000
+        }
+      ]
+    },
+    {
+      "family": "merge_streams",
+      "scale": 1,
+      "input_sha256": "e6c21e8d260fe71882debdb339d2402a2ca7648529bc2303f48649bce0380017",
+      "binary_sha256": "2b284ad50111fc5c1e68c37fa5400102d4da0afb62aef916d2a344e41d715194",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 8909000,
+          "probe_first": true,
+          "probe_cpu_ns": 512837000,
+          "instructions": 37766251,
+          "rep_bytes": 3624,
+          "load_instructions": 4216532,
+          "conditional_branches": 8430933,
+          "gshare_mispredicts": 550574,
+          "meter_cpu_ns": 318167000,
+          "meter_only": {
+            "instructions": 37766251,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 9234000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 8988000,
+          "probe_first": false,
+          "meter_cpu_ns": 314052000,
+          "meter_only": {
+            "instructions": 37766251,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 506890000,
+          "instructions": 37766251,
+          "rep_bytes": 3624,
+          "load_instructions": 4216532,
+          "conditional_branches": 8430933,
+          "gshare_mispredicts": 550574,
+          "native_after_ns": 9156000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 8822000,
+          "probe_first": true,
+          "probe_cpu_ns": 518084000,
+          "instructions": 37766251,
+          "rep_bytes": 3624,
+          "load_instructions": 4216532,
+          "conditional_branches": 8430933,
+          "gshare_mispredicts": 550574,
+          "meter_cpu_ns": 316414000,
+          "meter_only": {
+            "instructions": 37766251,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 9451000
+        }
+      ]
+    },
+    {
+      "family": "merge_streams",
+      "scale": 2,
+      "input_sha256": "2115cdb6bfcfb008eb2bab2bb79347cb064a48e4e7c4115ccbe4469c787bb6c4",
+      "binary_sha256": "2b284ad50111fc5c1e68c37fa5400102d4da0afb62aef916d2a344e41d715194",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 14544000,
+          "probe_first": false,
+          "meter_cpu_ns": 558794000,
+          "meter_only": {
+            "instructions": 74466475,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 902350000,
+          "instructions": 74466475,
+          "rep_bytes": 3624,
+          "load_instructions": 8410820,
+          "conditional_branches": 16819541,
+          "gshare_mispredicts": 1100078,
+          "native_after_ns": 14885000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 14745000,
+          "probe_first": true,
+          "probe_cpu_ns": 902530000,
+          "instructions": 74466475,
+          "rep_bytes": 3624,
+          "load_instructions": 8410820,
+          "conditional_branches": 16819541,
+          "gshare_mispredicts": 1100078,
+          "meter_cpu_ns": 554410000,
+          "meter_only": {
+            "instructions": 74466475,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 14430000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 14810000,
+          "probe_first": false,
+          "meter_cpu_ns": 558982000,
+          "meter_only": {
+            "instructions": 74466475,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 932149000,
+          "instructions": 74466475,
+          "rep_bytes": 3624,
+          "load_instructions": 8410820,
+          "conditional_branches": 16819541,
+          "gshare_mispredicts": 1100078,
+          "native_after_ns": 15714000
+        }
+      ]
+    },
+    {
+      "family": "merge_streams",
+      "scale": 4,
+      "input_sha256": "913f5d1da2feaf4deeccc9e55cbb350a20f12b3f507e87be85dbb77fdd3cb9bc",
+      "binary_sha256": "2b284ad50111fc5c1e68c37fa5400102d4da0afb62aef916d2a344e41d715194",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 26214000,
+          "probe_first": true,
+          "probe_cpu_ns": 1708834000,
+          "instructions": 147866885,
+          "rep_bytes": 3624,
+          "load_instructions": 16799392,
+          "conditional_branches": 33596753,
+          "gshare_mispredicts": 2199086,
+          "meter_cpu_ns": 1039944000,
+          "meter_only": {
+            "instructions": 147866885,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 25908000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 25901000,
+          "probe_first": false,
+          "meter_cpu_ns": 1040403000,
+          "meter_only": {
+            "instructions": 147866885,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 1714257000,
+          "instructions": 147866885,
+          "rep_bytes": 3624,
+          "load_instructions": 16799392,
+          "conditional_branches": 33596753,
+          "gshare_mispredicts": 2199086,
+          "native_after_ns": 25819000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 26176000,
+          "probe_first": true,
+          "probe_cpu_ns": 1698159000,
+          "instructions": 147866885,
+          "rep_bytes": 3624,
+          "load_instructions": 16799392,
+          "conditional_branches": 33596753,
+          "gshare_mispredicts": 2199086,
+          "meter_cpu_ns": 1044154000,
+          "meter_only": {
+            "instructions": 147866885,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 25911000
+        }
+      ]
+    },
+    {
+      "family": "hash_probe",
+      "scale": 1,
+      "input_sha256": "be3b3a973edc5f34763d5808c7d0866e068ff309898e83e80bb37674405ce7a7",
+      "binary_sha256": "01076a214d2729de6bea1604c85baeb361c6a202e81d387d31cc53a0af0b3230",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 16184000,
+          "probe_first": false,
+          "meter_cpu_ns": 277110000,
+          "meter_only": {
+            "instructions": 40001471,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 443714000,
+          "instructions": 40001471,
+          "rep_bytes": 3624,
+          "load_instructions": 3379794,
+          "conditional_branches": 6070389,
+          "gshare_mispredicts": 934742,
+          "native_after_ns": 16417000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 16700000,
+          "probe_first": true,
+          "probe_cpu_ns": 447597000,
+          "instructions": 40001471,
+          "rep_bytes": 3624,
+          "load_instructions": 3379794,
+          "conditional_branches": 6070389,
+          "gshare_mispredicts": 934742,
+          "meter_cpu_ns": 281866000,
+          "meter_only": {
+            "instructions": 40001471,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 16932000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 28708000,
+          "probe_first": false,
+          "meter_cpu_ns": 485188000,
+          "meter_only": {
+            "instructions": 40001471,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 783659000,
+          "instructions": 40001471,
+          "rep_bytes": 3624,
+          "load_instructions": 3379794,
+          "conditional_branches": 6070389,
+          "gshare_mispredicts": 934742,
+          "native_after_ns": 27132000
+        }
+      ]
+    },
+    {
+      "family": "hash_probe",
+      "scale": 2,
+      "input_sha256": "ef801656107acf2762ce10512091bba7ae297ce0f4bc9be76b789f7ba54a4136",
+      "binary_sha256": "01076a214d2729de6bea1604c85baeb361c6a202e81d387d31cc53a0af0b3230",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 29498000,
+          "probe_first": true,
+          "probe_cpu_ns": 759739000,
+          "instructions": 78738098,
+          "rep_bytes": 3624,
+          "load_instructions": 6666660,
+          "conditional_branches": 12004119,
+          "gshare_mispredicts": 1839174,
+          "meter_cpu_ns": 480430000,
+          "meter_only": {
+            "instructions": 78738098,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 28354000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 30953000,
+          "probe_first": false,
+          "meter_cpu_ns": 490512000,
+          "meter_only": {
+            "instructions": 78738098,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 787723000,
+          "instructions": 78738098,
+          "rep_bytes": 3624,
+          "load_instructions": 6666660,
+          "conditional_branches": 12004119,
+          "gshare_mispredicts": 1839174,
+          "native_after_ns": 30291000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 29169000,
+          "probe_first": true,
+          "probe_cpu_ns": 777967000,
+          "instructions": 78738098,
+          "rep_bytes": 3624,
+          "load_instructions": 6666660,
+          "conditional_branches": 12004119,
+          "gshare_mispredicts": 1839174,
+          "meter_cpu_ns": 492508000,
+          "meter_only": {
+            "instructions": 78738098,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 33360000
+        }
+      ]
+    },
+    {
+      "family": "hash_probe",
+      "scale": 4,
+      "input_sha256": "3ea66b35931dd842ef0fd34c124f898dc005c6776ff7ccb143da1f8fd8dec3d0",
+      "binary_sha256": "01076a214d2729de6bea1604c85baeb361c6a202e81d387d31cc53a0af0b3230",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "native_before_ns": 53458000,
+          "probe_first": false,
+          "meter_cpu_ns": 918731000,
+          "meter_only": {
+            "instructions": 156211239,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 1455600000,
+          "instructions": 156211239,
+          "rep_bytes": 3624,
+          "load_instructions": 13240373,
+          "conditional_branches": 23871557,
+          "gshare_mispredicts": 3648023,
+          "native_after_ns": 56498000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 54119000,
+          "probe_first": true,
+          "probe_cpu_ns": 1428644000,
+          "instructions": 156211239,
+          "rep_bytes": 3624,
+          "load_instructions": 13240373,
+          "conditional_branches": 23871557,
+          "gshare_mispredicts": 3648023,
+          "meter_cpu_ns": 910430000,
+          "meter_only": {
+            "instructions": 156211239,
+            "rep_bytes": 3624
+          },
+          "native_after_ns": 55142000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 54757000,
+          "probe_first": false,
+          "meter_cpu_ns": 933523000,
+          "meter_only": {
+            "instructions": 156211239,
+            "rep_bytes": 3624
+          },
+          "probe_cpu_ns": 1462447000,
+          "instructions": 156211239,
+          "rep_bytes": 3624,
+          "load_instructions": 13240373,
+          "conditional_branches": 23871557,
+          "gshare_mispredicts": 3648023,
+          "native_after_ns": 57086000
+        }
+      ]
+    }
+  ],
+  "personality_hex": "00040000",
+  "gshare_profile": "gshare-14bit-pcshift1-v1",
+  "base_corpus_sha256": "7148495309ec653e642aac86e1ed64ea44ee0218bf25f5a7e7f491846b734cf1",
+  "reference_sha256": "dd62734d0690c2b0fbfd8df09fb483f9834fc50b0bf5ee16e5f22b8a3a29d2d8",
+  "host_randomize_va_space": "2",
+  "probe_options": [
+    "-bpred"
+  ],
+  "counter_integrity": "application_mutable"
+}
