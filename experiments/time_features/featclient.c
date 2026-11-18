@@ -3,6 +3,9 @@
  * workloads only; not a production meter. */
 #include "dr_api.h"
 #include "drmgr.h"
+#include "drreg.h"
+#include "drutil.h"
+#include "hashtable.h"
 #include <stdint.h>
 #include <string.h>
 
@@ -31,6 +34,74 @@ static void on_cbr(app_pc inst, app_pc target, int taken) {
   cbr_executed++;
 }
 static void executed(block_t *b) { b->executions++; }
+
+/* v1 counts the starting 64-byte line of attempted near integer MOV loads into
+ * a GPR. Exclude RSP/RBP-based addressing, implicit operands, RMW, LEA, SIMD
+ * and string instructions. Static, single-threaded x86-64 fixtures only. */
+static bool load_pattern;
+static hashtable_t load_sites;
+static volatile int threads_started;
+static uint64_t first, same_line, adjacent_line, nonadjacent_line;
+
+static void pattern_error(const char *reason) {
+  dr_fprintf(STDERR, "load_pattern: %s\n", reason);
+  dr_abort_with_code(1);
+}
+
+static void thread_started(void *dc) {
+  (void)dc;
+  if (dr_atomic_add32_return_sum(&threads_started, 1) != 1)
+    pattern_error("requires a single application thread");
+}
+
+static void free_site(void *previous_line) {
+  dr_global_free(previous_line, sizeof(uintptr_t));
+}
+
+static void record_load(uintptr_t *previous_line, uintptr_t address) {
+  uintptr_t line = address >> 6, previous = *previous_line;
+  uint64_t *counter;
+  if (previous == UINTPTR_MAX) counter = &first;
+  else if (line == previous) counter = &same_line;
+  else if (line == previous + 1 || previous == line + 1) counter = &adjacent_line;
+  else counter = &nonadjacent_line;
+  if (*counter == UINT64_MAX) pattern_error("counter overflow");
+  ++*counter;
+  *previous_line = line;
+}
+
+static void instrument_load(void *dc, instrlist_t *bb, instr_t *where) {
+  int op = instr_get_opcode(where);
+  if (op != OP_mov_ld && op != OP_movsx && op != OP_movsxd && op != OP_movzx) return;
+  if (instr_num_srcs(where) != 1 || instr_num_dsts(where) != 1) return;
+  opnd_t mem = instr_get_src(where, 0), dst = instr_get_dst(where, 0);
+  if (!opnd_is_near_memory_reference(mem) || !opnd_is_reg(dst) ||
+      !reg_is_gpr(opnd_get_reg(dst)) || opnd_uses_reg(mem, DR_REG_XSP) ||
+      opnd_uses_reg(mem, DR_REG_XBP)) return;
+
+  /* Different translations of one instruction share the same previous line. */
+  app_pc pc = instr_get_app_pc(where);
+  if (pc == NULL) pattern_error("missing application PC");
+  dr_mutex_lock(lock);
+  uintptr_t *previous = hashtable_lookup(&load_sites, pc);
+  if (!previous) {
+    previous = dr_global_alloc(sizeof(*previous));
+    *previous = UINTPTR_MAX;
+    hashtable_add(&load_sites, pc, previous);
+  }
+  dr_mutex_unlock(lock);
+
+  reg_id_t addr;
+  /* drutil needs no second scratch register for these near x86 operands. */
+  if (drreg_reserve_register(dc, bb, where, NULL, &addr) != DRREG_SUCCESS ||
+      drreg_restore_app_values(dc, bb, where, mem, NULL) != DRREG_SUCCESS ||
+      !drutil_insert_get_mem_addr(dc, bb, where, mem, addr, addr))
+    pattern_error("cannot compute application load address");
+  dr_insert_clean_call(dc, bb, where, (void *)record_load, false, 2,
+                       OPND_CREATE_INTPTR(previous), opnd_create_reg(addr));
+  if (drreg_unreserve_register(dc, bb, where, addr) != DRREG_SUCCESS)
+    pattern_error("cannot restore application register");
+}
 
 /* Crude static latency model (cycles), deliberately generic rather than tuned
  * to one processor: ALU 1, integer multiply 3, divide 20, FP add/multiply 4,
@@ -144,6 +215,7 @@ static dr_emit_flags_t insert(void *dc, void *tag, instrlist_t *bb, instr_t *whe
   (void)tag; (void)for_trace; (void)translating;
   if (drmgr_is_first_instr(dc, where))
     dr_insert_clean_call(dc, bb, where, (void *)executed, false, 1, OPND_CREATE_INTPTR(user_data));
+  if (load_pattern && instr_is_app(where)) instrument_load(dc, bb, where);
   if (bpred && instr_is_app(where) && instr_is_cbr(where))
     dr_insert_cbr_instrumentation(dc, bb, where, (void *)on_cbr);
   return DR_EMIT_DEFAULT;
@@ -155,6 +227,15 @@ static void finish(void) {
   file_t f = dr_open_file(output, DR_FILE_WRITE_REQUIRE_NEW);
   dr_fprintf(f, "{");
   for (int i = 0; i < F_COUNT; i++) dr_fprintf(f, "\"%s\":%llu,", names[i], (unsigned long long)totals[i]);
+  if (load_pattern) {
+    dr_fprintf(f, "\"load_pattern\":{\"version\":1,\"first\":%llu,\"same_line\":%llu,"
+               "\"adjacent_line\":%llu,\"nonadjacent_line\":%llu},",
+               (unsigned long long)first, (unsigned long long)same_line,
+               (unsigned long long)adjacent_line, (unsigned long long)nonadjacent_line);
+    hashtable_delete(&load_sites);
+    drreg_exit();
+    drutil_exit();
+  }
   dr_fprintf(f, "\"bpred\":%s,\"cbr_executed\":%llu,\"mispredicts\":%llu}\n", bpred ? "true" : "false",
              (unsigned long long)cbr_executed, (unsigned long long)mispredicts);
   dr_close_file(f);
@@ -163,10 +244,19 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
   (void)id;
   for (int i = 1; i < argc; i++) {
     if (!strcmp(argv[i], "-out") && i + 1 < argc) { strncpy(output, argv[++i], sizeof(output) - 1); }
+    else if (!strcmp(argv[i], "-load_pattern")) load_pattern = true;
     else if (!strcmp(argv[i], "-bpred")) bpred = true;
   }
   drmgr_init();
   lock = dr_mutex_create();
+  if (load_pattern) {
+    drreg_options_t opts = { .struct_size = sizeof(opts), .num_spill_slots = 2,
+                             .conservative = true };
+    if (!drutil_init() || drreg_init(&opts) != DRREG_SUCCESS ||
+        !drmgr_register_thread_init_event(thread_started))
+      pattern_error("cannot initialize instrumentation");
+    hashtable_init_ex(&load_sites, 8, HASH_INTPTR, false, false, free_site, NULL, NULL);
+  }
   drmgr_register_bb_instrumentation_event(analyze, insert, NULL);
   dr_register_exit_event(finish);
 }
