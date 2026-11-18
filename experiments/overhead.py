@@ -106,11 +106,14 @@ def run_timed(command, timeout=5, *, stdin=subprocess.DEVNULL):
         row["error"] = str(error)[:500]
     finally:
         if process is not None:
-            if not row["reaped"]:
+            # A descendant can hold open the capture pipes after the direct
+            # child exits, so a capture failure still owns the process group.
+            if not row["reaped"] or row["timed_out"] or row["output_limit"] or row["error"]:
                 try:
                     os.killpg(process.pid, signal.SIGKILL)
                 except ProcessLookupError:
                     pass
+            if not row["reaped"]:
                 until = time.monotonic() + 1
                 while time.monotonic() < until:
                     pid, status, _ = os.wait4(process.pid, os.WNOHANG)

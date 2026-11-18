@@ -186,6 +186,25 @@ class OverheadPolicyTests(unittest.TestCase):
                 self.assertFalse(changed["passed"])
                 self.assertEqual(changed["statistics"], {})
 
+    def test_capture_timeout_kills_descendant_after_leader_exit(self):
+        # The child retains both pipes after the group leader exits. Its own
+        # short deadline and our subreaper keep the regression test bounded.
+        self.addCleanup(bench.cleanup_orphans)
+        command = """import os, time
+child = os.fork()
+if child:
+    print(child, flush=True)
+    os._exit(0)
+time.sleep(2)
+os._exit(17)
+"""
+        row = bench.run_timed([sys.executable, "-I", "-c", command], timeout=0.4)
+        self.assertTrue(row["timed_out"])
+        self.assertTrue(row["reaped"])
+        self.assertEqual(row["exit_code"], 0)
+        _, status = os.waitpid(int(row["stdout"]), 0)
+        self.assertEqual(os.waitstatus_to_exitcode(status), -signal.SIGKILL)
+
     def test_timeout_and_flood_are_bounded_and_reaped(self):
         sleeping = bench.run_timed([sys.executable, "-I", "-c", "import time; time.sleep(60)"], timeout=0.1)
         self.assertTrue(sleeping["timed_out"])
