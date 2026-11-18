@@ -1,0 +1,704 @@
+{
+  "schema": 1,
+  "complete": true,
+  "dataset_sha256": "d1fd7c1f03e541a75ff45fef104a9e3af9de16956995c514634ec187ccde11d7",
+  "reference_runtime_image": "sha256:5f1fee5fb589c9494f2155478bab0e01af620f73e99ebf2ff9177a09626d5bf3",
+  "reference_cpuid_profile": "x86-64-v2",
+  "replay_cpu": 2,
+  "kernel": "6.1.0-56-cloud-amd64",
+  "repeats": 3,
+  "tools_sha256": {
+    "client": "30ea721eb0f7e1bbeafd954c0f30f90588cb5fb63938ed6835a835ba6b78e07b",
+    "drrun": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "core": "9181f594aeeed921f44d572aebf429069f5f1e33a01f95b4ae32a100bf48788c",
+    "control": "a97773d1a8a7375ba0d05ec7c48b5b14c3778f0108e3b3ccd2b1c2d778cb843b",
+    "drmgr": "372cc1f1f95ffa29a1f11de4be14f99de5938bbcae11294a38d0a7932069429a",
+    "drreg": "838ef2dd5d54704a2dcc12625e25fb573d569114786d57a42735665872366329",
+    "drutil": "80c8557c6fca604676260b17751febc150ce42151e8cc76107dd8d5cde880578",
+    "cache_drrun": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "cache_core": "9181f594aeeed921f44d572aebf429069f5f1e33a01f95b4ae32a100bf48788c",
+    "cache_launcher": "7fdf3eb058b9af8488d1ed5cf9c928a0c47ae389621fd8c6ae0cf7d230398af1",
+    "cache_tracer": "ace9ca10776bf0f90fa0139b5fa3c3bce2f26865dac182b5dabab86ef7ffecaa",
+    "cache_config": "82b2018c86387165a059dd5e9c537c78d3cb0ea26a00dad2867eecf867516faa"
+  },
+  "controls": {
+    "0": {
+      "input_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "expected_sha256": "e03f53c3161d60940b8577075699a1fa8cc6241590a8ed6de0ba9cfb7d95266f",
+      "observations": [
+        {
+          "gshare_mispredicts": 43,
+          "conditional_branches": 65556,
+          "load_instructions": 32770,
+          "first": 2,
+          "same_line": 30720,
+          "adjacent_line": 2047,
+          "nonadjacent_line": 0
+        },
+        {
+          "gshare_mispredicts": 43,
+          "conditional_branches": 65556,
+          "load_instructions": 32770,
+          "first": 2,
+          "same_line": 30720,
+          "adjacent_line": 2047,
+          "nonadjacent_line": 0
+        },
+        {
+          "gshare_mispredicts": 43,
+          "conditional_branches": 65556,
+          "load_instructions": 32770,
+          "first": 2,
+          "same_line": 30720,
+          "adjacent_line": 2047,
+          "nonadjacent_line": 0
+        }
+      ]
+    },
+    "1": {
+      "input_sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "expected_sha256": "9a97db780f9e9b54afeeb21ca55dbcd7d9f05e5d41f77a668e478892772d1b0e",
+      "observations": [
+        {
+          "gshare_mispredicts": 43,
+          "conditional_branches": 65556,
+          "load_instructions": 32770,
+          "first": 2,
+          "same_line": 0,
+          "adjacent_line": 0,
+          "nonadjacent_line": 32767
+        },
+        {
+          "gshare_mispredicts": 43,
+          "conditional_branches": 65556,
+          "load_instructions": 32770,
+          "first": 2,
+          "same_line": 0,
+          "adjacent_line": 0,
+          "nonadjacent_line": 32767
+        },
+        {
+          "gshare_mispredicts": 43,
+          "conditional_branches": 65556,
+          "load_instructions": 32770,
+          "first": 2,
+          "same_line": 0,
+          "adjacent_line": 0,
+          "nonadjacent_line": 32767
+        }
+      ]
+    },
+    "2": {
+      "input_sha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+      "expected_sha256": "466a4fd5be7be29f20f1e00c76b619f6259aef9431ffdcda57ba6895d2b489f5",
+      "observations": [
+        {
+          "gshare_mispredicts": 16663,
+          "conditional_branches": 65556,
+          "load_instructions": 32770,
+          "first": 2,
+          "same_line": 30720,
+          "adjacent_line": 2047,
+          "nonadjacent_line": 0
+        },
+        {
+          "gshare_mispredicts": 16663,
+          "conditional_branches": 65556,
+          "load_instructions": 32770,
+          "first": 2,
+          "same_line": 30720,
+          "adjacent_line": 2047,
+          "nonadjacent_line": 0
+        },
+        {
+          "gshare_mispredicts": 16663,
+          "conditional_branches": 65556,
+          "load_instructions": 32770,
+          "first": 2,
+          "same_line": 30720,
+          "adjacent_line": 2047,
+          "nonadjacent_line": 0
+        }
+      ]
+    },
+    "3": {
+      "input_sha256": "1121cfccd5913f0a63fec40a6ffd44ea64f9dc135c66634ba001d10bcf4302a2",
+      "expected_sha256": "710fe8b6ac1cf7e9adca4adfdc38a22315b0973ec0eb5efc1856220671c77034",
+      "observations": [
+        {
+          "gshare_mispredicts": 16663,
+          "conditional_branches": 65556,
+          "load_instructions": 32770,
+          "first": 2,
+          "same_line": 0,
+          "adjacent_line": 0,
+          "nonadjacent_line": 32767
+        },
+        {
+          "gshare_mispredicts": 16663,
+          "conditional_branches": 65556,
+          "load_instructions": 32770,
+          "first": 2,
+          "same_line": 0,
+          "adjacent_line": 0,
+          "nonadjacent_line": 32767
+        },
+        {
+          "gshare_mispredicts": 16663,
+          "conditional_branches": 65556,
+          "load_instructions": 32770,
+          "first": 2,
+          "same_line": 0,
+          "adjacent_line": 0,
+          "nonadjacent_line": 32767
+        }
+      ]
+    }
+  },
+  "cases": {
+    "branch-1": {
+      "binary_sha256": "d383e4da2a1953bc72d54fccac0fe98fe575fef2474e469edcf2567d18ece37c",
+      "source_sha256": "200fa292952892480907001cf1a795984c46a3e53f402d906dadef412b0b16dc",
+      "input_sha256": "54e11706f19c1b6db05caecff1822a1481b450adfd659b2a93dcd33929d53b7f",
+      "expected_sha256": "99760e423569984bd0ca4a2e2262681cb542e5c0fec8cadee71b971bbfa560be",
+      "native_cpu_ns": [
+        33819000,
+        33874000,
+        34088000,
+        34117000,
+        34212000,
+        35884000
+      ],
+      "native_median_ns": 34102500,
+      "baseline": [
+        {
+          "instructions": 229460596,
+          "rep_bytes": 3624,
+          "latency_x16": 917843604
+        },
+        {
+          "instructions": 229460611,
+          "rep_bytes": 3624,
+          "latency_x16": 917843664
+        },
+        {
+          "instructions": 229460611,
+          "rep_bytes": 3624,
+          "latency_x16": 917843664
+        }
+      ],
+      "observations": [
+        {
+          "gshare_mispredicts": 2449834,
+          "conditional_branches": 44777339,
+          "load_instructions": 16808535,
+          "first": 524,
+          "same_line": 12907,
+          "adjacent_line": 2484,
+          "nonadjacent_line": 1687
+        },
+        {
+          "gshare_mispredicts": 2449834,
+          "conditional_branches": 44777339,
+          "load_instructions": 16808535,
+          "first": 524,
+          "same_line": 12907,
+          "adjacent_line": 2484,
+          "nonadjacent_line": 1687
+        },
+        {
+          "gshare_mispredicts": 2449834,
+          "conditional_branches": 44777339,
+          "load_instructions": 16808535,
+          "first": 524,
+          "same_line": 12907,
+          "adjacent_line": 2484,
+          "nonadjacent_line": 1687
+        }
+      ],
+      "cache": [
+        {
+          "l1d_demand_misses": 726,
+          "ll_demand_misses": 1454
+        }
+      ]
+    },
+    "sort-2": {
+      "binary_sha256": "d96565357cdd163ea7de5eb145aaf915b0b0ba9e238a46718e9e1352e51c4b75",
+      "source_sha256": "ba6464e65deeb8bde261b12d324b91a0bf6f4d456979090e41fa877c28dd3da5",
+      "input_sha256": "be3b3a973edc5f34763d5808c7d0866e068ff309898e83e80bb37674405ce7a7",
+      "expected_sha256": "ac3bae82b8b8660ab74bd85aa2d0685aaea14b95148def632987ef659f44842e",
+      "native_cpu_ns": [
+        70573000,
+        70797000,
+        70956000,
+        71352000,
+        71452000,
+        72120000
+      ],
+      "native_median_ns": 71154000,
+      "baseline": [
+        {
+          "instructions": 177135248,
+          "rep_bytes": 3624,
+          "latency_x16": 708542180
+        },
+        {
+          "instructions": 177135248,
+          "rep_bytes": 3624,
+          "latency_x16": 708542180
+        },
+        {
+          "instructions": 177135248,
+          "rep_bytes": 3624,
+          "latency_x16": 708542180
+        }
+      ],
+      "observations": [
+        {
+          "gshare_mispredicts": 9486185,
+          "conditional_branches": 32562680,
+          "load_instructions": 31881760,
+          "first": 555,
+          "same_line": 23467992,
+          "adjacent_line": 2980681,
+          "nonadjacent_line": 438125
+        },
+        {
+          "gshare_mispredicts": 9486185,
+          "conditional_branches": 32562680,
+          "load_instructions": 31881760,
+          "first": 555,
+          "same_line": 23467992,
+          "adjacent_line": 2980681,
+          "nonadjacent_line": 438125
+        },
+        {
+          "gshare_mispredicts": 9486185,
+          "conditional_branches": 32562680,
+          "load_instructions": 31881760,
+          "first": 555,
+          "same_line": 23467992,
+          "adjacent_line": 2980681,
+          "nonadjacent_line": 438125
+        }
+      ],
+      "cache": [
+        {
+          "l1d_demand_misses": 575116,
+          "ll_demand_misses": 34335
+        }
+      ]
+    },
+    "branch-2": {
+      "binary_sha256": "d383e4da2a1953bc72d54fccac0fe98fe575fef2474e469edcf2567d18ece37c",
+      "source_sha256": "200fa292952892480907001cf1a795984c46a3e53f402d906dadef412b0b16dc",
+      "input_sha256": "ae7a13222abd483670b1f3b55d2f9f42790bfcbfdad8356a1c717f37feb59661",
+      "expected_sha256": "875dae9442036ac9f7d91f17b8007467cda85c61daa09872b262292cb15c6a71",
+      "native_cpu_ns": [
+        66148000,
+        66227000,
+        66236000,
+        66543000,
+        66748000,
+        69630000
+      ],
+      "native_median_ns": 66389500,
+      "baseline": [
+        {
+          "instructions": 458749315,
+          "rep_bytes": 3624,
+          "latency_x16": 1834998480
+        },
+        {
+          "instructions": 458749300,
+          "rep_bytes": 3624,
+          "latency_x16": 1834998420
+        },
+        {
+          "instructions": 458749315,
+          "rep_bytes": 3624,
+          "latency_x16": 1834998480
+        }
+      ],
+      "observations": [
+        {
+          "gshare_mispredicts": 4897962,
+          "conditional_branches": 89516667,
+          "load_instructions": 33585751,
+          "first": 524,
+          "same_line": 12907,
+          "adjacent_line": 2484,
+          "nonadjacent_line": 1687
+        },
+        {
+          "gshare_mispredicts": 4897962,
+          "conditional_branches": 89516667,
+          "load_instructions": 33585751,
+          "first": 524,
+          "same_line": 12907,
+          "adjacent_line": 2484,
+          "nonadjacent_line": 1687
+        },
+        {
+          "gshare_mispredicts": 4897962,
+          "conditional_branches": 89516667,
+          "load_instructions": 33585751,
+          "first": 524,
+          "same_line": 12907,
+          "adjacent_line": 2484,
+          "nonadjacent_line": 1687
+        }
+      ],
+      "cache": [
+        {
+          "l1d_demand_misses": 726,
+          "ll_demand_misses": 1454
+        }
+      ]
+    },
+    "sort-4": {
+      "binary_sha256": "d96565357cdd163ea7de5eb145aaf915b0b0ba9e238a46718e9e1352e51c4b75",
+      "source_sha256": "ba6464e65deeb8bde261b12d324b91a0bf6f4d456979090e41fa877c28dd3da5",
+      "input_sha256": "ef801656107acf2762ce10512091bba7ae297ce0f4bc9be76b789f7ba54a4136",
+      "expected_sha256": "ae623b09f4edbec8846d384b18c43c9978e4275da018ef20dd7a5efdf61de461",
+      "native_cpu_ns": [
+        144332000,
+        144395000,
+        145261000,
+        145531000,
+        148807000,
+        149544000
+      ],
+      "native_median_ns": 145396000,
+      "baseline": [
+        {
+          "instructions": 373690804,
+          "rep_bytes": 3624,
+          "latency_x16": 1494764444
+        },
+        {
+          "instructions": 373690955,
+          "rep_bytes": 3624,
+          "latency_x16": 1494765048
+        },
+        {
+          "instructions": 373690955,
+          "rep_bytes": 3624,
+          "latency_x16": 1494765048
+        }
+      ],
+      "observations": [
+        {
+          "gshare_mispredicts": 19557754,
+          "conditional_branches": 68986587,
+          "load_instructions": 67631248,
+          "first": 553,
+          "same_line": 50089392,
+          "adjacent_line": 6221515,
+          "nonadjacent_line": 911056
+        },
+        {
+          "gshare_mispredicts": 19557754,
+          "conditional_branches": 68986587,
+          "load_instructions": 67631248,
+          "first": 553,
+          "same_line": 50089392,
+          "adjacent_line": 6221515,
+          "nonadjacent_line": 911056
+        },
+        {
+          "gshare_mispredicts": 19557754,
+          "conditional_branches": 68986587,
+          "load_instructions": 67631248,
+          "first": 553,
+          "same_line": 50089392,
+          "adjacent_line": 6221515,
+          "nonadjacent_line": 911056
+        }
+      ],
+      "cache": [
+        {
+          "l1d_demand_misses": 1300671,
+          "ll_demand_misses": 67440
+        }
+      ]
+    }
+  },
+  "comparisons": {
+    "branch-1-sort-2": {
+      "required_sort_to_branch_ratio": "31624/22735",
+      "features": {
+        "instructions": {
+          "branch_range": [
+            229460596,
+            229460611
+          ],
+          "sort_range": [
+            177135248,
+            177135248
+          ],
+          "result": "insufficient"
+        },
+        "rep_bytes": {
+          "branch_range": [
+            3624,
+            3624
+          ],
+          "sort_range": [
+            3624,
+            3624
+          ],
+          "result": "insufficient"
+        },
+        "latency_x16": {
+          "branch_range": [
+            917843604,
+            917843664
+          ],
+          "sort_range": [
+            708542180,
+            708542180
+          ],
+          "result": "insufficient"
+        },
+        "gshare_mispredicts": {
+          "branch_range": [
+            2449834,
+            2449834
+          ],
+          "sort_range": [
+            9486185,
+            9486185
+          ],
+          "result": "spans"
+        },
+        "conditional_branches": {
+          "branch_range": [
+            44777339,
+            44777339
+          ],
+          "sort_range": [
+            32562680,
+            32562680
+          ],
+          "result": "insufficient"
+        },
+        "load_instructions": {
+          "branch_range": [
+            16808535,
+            16808535
+          ],
+          "sort_range": [
+            31881760,
+            31881760
+          ],
+          "result": "spans"
+        },
+        "first": {
+          "branch_range": [
+            524,
+            524
+          ],
+          "sort_range": [
+            555,
+            555
+          ],
+          "result": "insufficient"
+        },
+        "same_line": {
+          "branch_range": [
+            12907,
+            12907
+          ],
+          "sort_range": [
+            23467992,
+            23467992
+          ],
+          "result": "spans"
+        },
+        "adjacent_line": {
+          "branch_range": [
+            2484,
+            2484
+          ],
+          "sort_range": [
+            2980681,
+            2980681
+          ],
+          "result": "spans"
+        },
+        "nonadjacent_line": {
+          "branch_range": [
+            1687,
+            1687
+          ],
+          "sort_range": [
+            438125,
+            438125
+          ],
+          "result": "spans"
+        },
+        "l1d_demand_misses": {
+          "branch_range": [
+            726,
+            726
+          ],
+          "sort_range": [
+            575116,
+            575116
+          ],
+          "result": "spans"
+        },
+        "ll_demand_misses": {
+          "branch_range": [
+            1454,
+            1454
+          ],
+          "sort_range": [
+            34335,
+            34335
+          ],
+          "result": "spans"
+        }
+      }
+    },
+    "branch-2-sort-4": {
+      "required_sort_to_branch_ratio": "581584/398337",
+      "features": {
+        "instructions": {
+          "branch_range": [
+            458749300,
+            458749315
+          ],
+          "sort_range": [
+            373690804,
+            373690955
+          ],
+          "result": "insufficient"
+        },
+        "rep_bytes": {
+          "branch_range": [
+            3624,
+            3624
+          ],
+          "sort_range": [
+            3624,
+            3624
+          ],
+          "result": "insufficient"
+        },
+        "latency_x16": {
+          "branch_range": [
+            1834998420,
+            1834998480
+          ],
+          "sort_range": [
+            1494764444,
+            1494765048
+          ],
+          "result": "insufficient"
+        },
+        "gshare_mispredicts": {
+          "branch_range": [
+            4897962,
+            4897962
+          ],
+          "sort_range": [
+            19557754,
+            19557754
+          ],
+          "result": "spans"
+        },
+        "conditional_branches": {
+          "branch_range": [
+            89516667,
+            89516667
+          ],
+          "sort_range": [
+            68986587,
+            68986587
+          ],
+          "result": "insufficient"
+        },
+        "load_instructions": {
+          "branch_range": [
+            33585751,
+            33585751
+          ],
+          "sort_range": [
+            67631248,
+            67631248
+          ],
+          "result": "spans"
+        },
+        "first": {
+          "branch_range": [
+            524,
+            524
+          ],
+          "sort_range": [
+            553,
+            553
+          ],
+          "result": "insufficient"
+        },
+        "same_line": {
+          "branch_range": [
+            12907,
+            12907
+          ],
+          "sort_range": [
+            50089392,
+            50089392
+          ],
+          "result": "spans"
+        },
+        "adjacent_line": {
+          "branch_range": [
+            2484,
+            2484
+          ],
+          "sort_range": [
+            6221515,
+            6221515
+          ],
+          "result": "spans"
+        },
+        "nonadjacent_line": {
+          "branch_range": [
+            1687,
+            1687
+          ],
+          "sort_range": [
+            911056,
+            911056
+          ],
+          "result": "spans"
+        },
+        "l1d_demand_misses": {
+          "branch_range": [
+            726,
+            726
+          ],
+          "sort_range": [
+            1300671,
+            1300671
+          ],
+          "result": "spans"
+        },
+        "ll_demand_misses": {
+          "branch_range": [
+            1454,
+            1454
+          ],
+          "sort_range": [
+            67440,
+            67440
+          ],
+          "result": "spans"
+        }
+      }
+    }
+  }
+}

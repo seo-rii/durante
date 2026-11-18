@@ -11,6 +11,10 @@ on any host.
 This is diagnostic evidence for model design. It qualifies no model, adds no
 counter to the production client and does not make counts trustworthy.
 
+The CPP20 branch and sort replay uses Aonohako’s original executables and inputs
+to test which counters distinguish two observed native time differences.
+[Replay method and results](REFERENCE_FEATURES.md)
+
 ## Method
 
 The fixed corpus in `experiments/time_features/work.c` has 18 kernels, each
