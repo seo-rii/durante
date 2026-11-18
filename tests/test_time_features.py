@@ -183,6 +183,12 @@ class TimeFeatureTests(unittest.TestCase):
         self.assertEqual(stats["l1d"], {"hits": 1917302, "misses": 13300119})
         self.assertEqual(stats["ll"], {"hits": 13297482, "misses": 3365})
 
+    def test_cache_counts_must_come_from_the_named_section(self):
+        truncated = SAMPLE.replace("    Hits:                          1917302\n", "").replace(
+            "    Misses:                       13300119\n", "")
+        with self.assertRaisesRegex(ValueError, "incomplete L1D0"):
+            time_features.cache_stats(truncated)
+
     @unittest.skipUnless(importlib.util.find_spec("numpy"), "numpy is required")
     def test_nnls_recovers_nonnegative_weights_and_clamps_negative_ones(self):
         import numpy as np

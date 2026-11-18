@@ -67,10 +67,17 @@ def native_once(argv, cpu):
 
 def cache_stats(text):
     def section(label):
-        block = text.split(label, 1)[1]
-        pairs = re.findall(r"^\s+(Hits|Misses):\s+(\d+)", block, re.M)[:2]
-        return {key.lower(): int(value) for key, value in pairs}
-    return {"l1i": section("L1I0"), "l1d": section("L1D0"), "ll": section("LL (")}
+        # Stop at the next section so a truncated cache report cannot borrow
+        # another cache's misses.
+        block = re.search(r"^ *" + label + r" \(.*?\) stats:\n((?:[ \t]{4}[^\n]*\n?)+)",
+                          text, re.M)
+        if block is None:
+            raise ValueError(f"missing {label} cache section")
+        counts = re.findall(r"^\s+(Hits|Misses):[ \t]+(\d+)[ \t]*$", block[1], re.M)
+        if len(counts) != 2 or {key for key, _ in counts} != {"Hits", "Misses"}:
+            raise ValueError(f"incomplete {label} cache counts")
+        return {key.lower(): int(value) for key, value in counts}
+    return {"l1i": section("L1I0"), "l1d": section("L1D0"), "ll": section("LL")}
 
 
 def collect(args):
