@@ -3,6 +3,9 @@
  * workloads only; not a production meter. */
 #include "dr_api.h"
 #include "drmgr.h"
+#include "../../client/durante_runtime.h"
+/* Full feature mode can still run on the unpatched research SDK. */
+#pragma weak dr_durante_runtime_abi_version
 #include "hashtable.h"
 #include <stdint.h>
 #include <string.h>
@@ -15,7 +18,8 @@ typedef struct block { struct block *next; uint64_t executions; uint32_t f[F_COU
 static block_t *blocks;
 static void *lock;
 static char output[1024];
-static bool bpred;
+static bool bpred, recurrence_only;
+static uint64_t recurrence_total;
 #define BP_BITS 14
 static uint8_t table[1 << BP_BITS];
 static uint32_t history;
@@ -41,15 +45,15 @@ static hashtable_t load_sites;
 static volatile int threads_started;
 static uint64_t first, same_line, adjacent_line, nonadjacent_line;
 
-static void pattern_error(const char *reason) {
-  dr_fprintf(STDERR, "load_pattern: %s\n", reason);
+static void feature_error(const char *reason) {
+  dr_fprintf(STDERR, "%s: %s\n", recurrence_only ? "loop_recurrence_only" : "load_pattern", reason);
   dr_abort_with_code(1);
 }
 
 static void thread_started(void *dc) {
   (void)dc;
   if (dr_atomic_add32_return_sum(&threads_started, 1) != 1)
-    pattern_error("requires a single application thread");
+    feature_error("requires a single application thread");
 }
 
 typedef struct {
@@ -66,7 +70,7 @@ static void record_load(load_site_t *site) {
   mc.size = sizeof(mc);
   mc.flags = DR_MC_INTEGER | DR_MC_CONTROL;
   if (!dr_get_mcontext(dr_get_current_drcontext(), &mc))
-    pattern_error("application address context unavailable");
+    feature_error("application address context unavailable");
   uintptr_t line = (uintptr_t)opnd_compute_address(site->operand, &mc) >> 6;
   uintptr_t previous = site->previous_line;
   uint64_t *counter;
@@ -74,7 +78,7 @@ static void record_load(load_site_t *site) {
   else if (line == previous) counter = &same_line;
   else if (line == previous + 1 || previous == line + 1) counter = &adjacent_line;
   else counter = &nonadjacent_line;
-  if (*counter == UINT64_MAX) pattern_error("counter overflow");
+  if (*counter == UINT64_MAX) feature_error("counter overflow");
   ++*counter;
   site->previous_line = line;
 }
@@ -90,7 +94,7 @@ static void instrument_load(void *dc, instrlist_t *bb, instr_t *where) {
 
   /* Different translations of one instruction share the same previous line. */
   app_pc pc = instr_get_app_pc(where);
-  if (pc == NULL) pattern_error("missing application PC");
+  if (pc == NULL) feature_error("missing application PC");
   dr_mutex_lock(lock);
   load_site_t *site = hashtable_lookup(&load_sites, pc);
   if (!site) {
@@ -174,19 +178,40 @@ static int pass(instrlist_t *bb, int *ready, int finish) {
   }
   return finish;
 }
-static void latency_features(void *tag, instrlist_t *bb, block_t *b) {
-  static int ready[REG_SLOTS];
-  memset(ready, 0, sizeof(ready));
-  b->f[F_CRITICAL_X16] = (uint32_t)pass(bb, ready, 0) * 16;
+static bool self_loop(void *tag, instrlist_t *bb) {
   instr_t *last = instrlist_last_app(bb);
-  if (last && instr_is_cbr(last) && opnd_is_pc(instr_get_target(last)) &&
-      opnd_get_pc(instr_get_target(last)) == dr_fragment_app_pc(tag)) {
-    /* Self-loop: steady-state growth of the critical path per iteration. */
-    memset(ready, 0, sizeof(ready));
-    int t4 = 0, t8 = 0;
-    for (int i = 0; i < 8; i++) { int t = pass(bb, ready, 0); if (i == 3) t4 = t; if (i == 7) t8 = t; }
-    b->f[F_RECURRENCE_X16] = (uint32_t)((t8 - t4) * 16 / 4);
+  return last && instr_is_cbr(last) && opnd_is_pc(instr_get_target(last)) &&
+         opnd_get_pc(instr_get_target(last)) == dr_fragment_app_pc(tag);
+}
+
+/* The caller has already completed the first pass in ready. Measure the
+ * growth from four to eight passes using the full model's dependency rules. */
+static uint32_t recurrence(instrlist_t *bb, int *ready) {
+  int t4 = 0, t8 = 0;
+  for (int i = 2; i <= 8; ++i) {
+    int finish = pass(bb, ready, 0);
+    if (i == 4) t4 = finish;
+    if (i == 8) t8 = finish;
   }
+  return (uint32_t)((t8 - t4) * 16 / 4);
+}
+
+static void charge_recurrence(ptr_uint_t weight) {
+  if (UINT64_MAX - recurrence_total < weight)
+    feature_error("counter overflow");
+  recurrence_total += weight;
+}
+
+static void reject_fork(void *dc) {
+  (void)dc;
+  feature_error("requires a single process");
+}
+
+static void latency_features(void *tag, instrlist_t *bb, block_t *b) {
+  int ready[REG_SLOTS] = {0};
+  b->f[F_CRITICAL_X16] = (uint32_t)pass(bb, ready, 0) * 16;
+  if (self_loop(tag, bb))
+    b->f[F_RECURRENCE_X16] = recurrence(bb, ready);
   /* Base cost: a 4-wide machine's issue bound, or a loop's recurrence if longer. */
   uint32_t issue = b->f[F_INSTR] * 16 / 4;
   b->f[F_BOUND_X16] = b->f[F_RECURRENCE_X16] > issue ? b->f[F_RECURRENCE_X16] : issue;
@@ -194,6 +219,15 @@ static void latency_features(void *tag, instrlist_t *bb, block_t *b) {
 
 static dr_emit_flags_t analyze(void *dc, void *tag, instrlist_t *bb, bool for_trace, bool translating, void **user_data) {
   (void)for_trace; (void)translating;
+  if (recurrence_only) {
+    *user_data = NULL;
+    if (self_loop(tag, bb)) {
+      int ready[REG_SLOTS] = {0};
+      pass(bb, ready, 0);
+      *user_data = (void *)(ptr_uint_t)recurrence(bb, ready);
+    }
+    return DR_EMIT_DEFAULT;
+  }
   block_t *b = dr_global_alloc(sizeof(*b));
   memset(b, 0, sizeof(*b));
   for (instr_t *ins = instrlist_first_app(bb); ins; ins = instr_get_next_app(ins)) {
@@ -209,15 +243,19 @@ static dr_emit_flags_t analyze(void *dc, void *tag, instrlist_t *bb, bool for_tr
     if (instr_is_floating(ins)) b->f[F_FP]++;
   }
   (void)dc;
-  dr_mutex_lock(lock);
   latency_features(tag, bb, b);
-  dr_mutex_unlock(lock);
   dr_mutex_lock(lock); b->next = blocks; blocks = b; dr_mutex_unlock(lock);
   *user_data = b;
   return DR_EMIT_DEFAULT;
 }
 static dr_emit_flags_t insert(void *dc, void *tag, instrlist_t *bb, instr_t *where, bool for_trace, bool translating, void *user_data) {
   (void)tag; (void)for_trace; (void)translating;
+  if (recurrence_only) {
+    if (user_data && drmgr_is_first_instr(dc, where))
+      dr_insert_clean_call(dc, bb, where, (void *)charge_recurrence, false, 1,
+                           OPND_CREATE_INTPTR(user_data));
+    return DR_EMIT_DEFAULT;
+  }
   if (drmgr_is_first_instr(dc, where))
     dr_insert_clean_call(dc, bb, where, (void *)executed, false, 1, OPND_CREATE_INTPTR(user_data));
   if (load_pattern && instr_is_app(where)) instrument_load(dc, bb, where);
@@ -226,6 +264,15 @@ static dr_emit_flags_t insert(void *dc, void *tag, instrlist_t *bb, instr_t *whe
   return DR_EMIT_DEFAULT;
 }
 static void finish(void) {
+  if (recurrence_only) {
+    file_t f = dr_open_file(output, DR_FILE_WRITE_REQUIRE_NEW);
+    if (f == INVALID_FILE)
+      feature_error("unable to create output file");
+    dr_fprintf(f, "{\"version\":1,\"loop_recurrence_cycles_x16\":%llu}\n",
+               (unsigned long long)recurrence_total);
+    dr_close_file(f);
+    return;
+  }
   uint64_t totals[F_COUNT] = {0};
   for (block_t *b = blocks; b; b = b->next)
     for (int i = 0; i < F_COUNT; i++) totals[i] += b->executions * b->f[i];
@@ -247,16 +294,30 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
   (void)id;
   for (int i = 1; i < argc; i++) {
     if (!strcmp(argv[i], "-out") && i + 1 < argc) { strncpy(output, argv[++i], sizeof(output) - 1); }
+    else if (!strcmp(argv[i], "-loop_recurrence_only")) recurrence_only = true;
     else if (!strcmp(argv[i], "-load_pattern")) load_pattern = true;
     else if (!strcmp(argv[i], "-bpred")) bpred = true;
   }
-  drmgr_init();
-  lock = dr_mutex_create();
-  if (load_pattern) {
-    if (!drmgr_register_thread_init_event(thread_started))
-      pattern_error("cannot initialize instrumentation");
-    hashtable_init_ex(&load_sites, 8, HASH_INTPTR, false, false, free_site, NULL, NULL);
+  if (recurrence_only) {
+    if (load_pattern || bpred || !output[0])
+      feature_error("requires -out and excludes -bpred and -load_pattern");
+    if (dr_durante_runtime_abi_version == NULL ||
+        dr_durante_runtime_abi_version() != DR_DURANTE_RUNTIME_ABI_VERSION)
+      feature_error("requires the prepared Durante runtime");
+    uint64 ignore_eflags;
+    if (!dr_get_integer_option("cleancall_ignore_eflags", &ignore_eflags) || ignore_eflags)
+      feature_error("requires full clean-call flag preservation");
   }
-  drmgr_register_bb_instrumentation_event(analyze, insert, NULL);
+  if (!drmgr_init())
+    feature_error("cannot initialize instrumentation");
+  if (!recurrence_only) lock = dr_mutex_create();
+  if ((load_pattern || recurrence_only) && !drmgr_register_thread_init_event(thread_started))
+    feature_error("cannot initialize thread check");
+  if (recurrence_only)
+    dr_register_fork_init_event(reject_fork);
+  if (load_pattern)
+    hashtable_init_ex(&load_sites, 8, HASH_INTPTR, false, false, free_site, NULL, NULL);
+  if (!drmgr_register_bb_instrumentation_event(analyze, insert, NULL))
+    feature_error("cannot initialize instrumentation");
   dr_register_exit_event(finish);
 }
