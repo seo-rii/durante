@@ -428,19 +428,37 @@ static void snapshot_event(const char *kind, void *ctx, bool is_exec) {
   route_event(d, kind, fields);
 }
 
+/* The ordinary callback and the optional fused probe record the same replay
+ * checkpoint. Its integer-only target matches the fused callback. */
+#ifdef DURANTE_L1D_PROBE
+__attribute__((target("general-regs-only")))
+#endif
+static inline void record_write_checkpoint(thread_data_t *data, app_pc pc,
+                                           app_pc next_pc, int suffix) {
+  data->write_pc = pc;
+  data->write_next_pc = next_pc;
+  data->write_suffix = suffix > 0 ? (uint64_t)suffix : 0;
+  data->write_rep = false;
+  /* The write belongs to the block most recently charged in this thread. */
+  data->write_block_instructions = data->block_instructions;
+  data->write_block_bound_x16 = data->block_bound_x16;
+}
+
 #ifdef DURANTE_L1D_PROBE
 #include "../experiments/l1d_probe/probe.h"
+static bool probe_l1d;
+static bool probe_partial_block;
 #endif
 
 static void thread_init(void *ctx) {
-#ifdef DURANTE_L1D_PROBE
-  if (probe_l1d && dr_atomic_add32_return_sum(&probe_threads, 1) != 1)
-    fail("cache probe requires a single application thread");
-#endif
   thread_data_t *d = dr_thread_alloc(ctx, sizeof(*d));
   if (!d)
     fail("thread allocation failed");
   memset(d, 0, sizeof(*d));
+#ifdef DURANTE_L1D_PROBE
+  if (probe_l1d)
+    probe_thread_init(d);
+#endif
   d->child_file = -1;
   if (!drmgr_set_tls_field(ctx, tls_index, d))
     fail("TLS init failed");
@@ -641,8 +659,16 @@ static bool x32_syscall(int number) {
   return number >= 0 && (((unsigned int)number & X32_SYSCALL_BIT) != 0);
 }
 
+static inline thread_data_t *accounting_thread_data(void) {
+#ifdef DURANTE_L1D_PROBE
+  if (probe_l1d)
+    return probe_thread_data;
+#endif
+  return drmgr_get_tls_field(dr_get_current_drcontext(), tls_index);
+}
+
 static thread_data_t *charge_block(int instructions, app_pc first_pc) {
-  thread_data_t *data = drmgr_get_tls_field(dr_get_current_drcontext(), tls_index);
+  thread_data_t *data = accounting_thread_data();
   if (data == NULL || instructions <= 0)
     fail("instruction count without valid thread state");
   if (data->restart_pc) {
@@ -696,20 +722,18 @@ static void count_block_latency(int instructions, app_pc first_pc, int bound_x16
  * already executed prefixes and intervening signal work must remain charged.
  */
 static void before_write(app_pc pc, app_pc next_pc, int suffix) {
-  thread_data_t *data = drmgr_get_tls_field(dr_get_current_drcontext(), tls_index);
+  thread_data_t *data = accounting_thread_data();
   if (data == NULL)
     fail("write checkpoint without thread state");
-  data->write_pc = pc;
-  data->write_next_pc = next_pc;
-  data->write_suffix = suffix > 0 ? (uint64_t)suffix : 0;
-  data->write_rep = false;
-  /* The write belongs to the block most recently charged in this thread. */
-  data->write_block_instructions = data->block_instructions;
-  data->write_block_bound_x16 = data->block_bound_x16;
+  record_write_checkpoint(data, pc, next_pc, suffix);
 }
 
 static void code_replay(void *ctx, int reason, app_pc source_pc,
                         app_pc target_pc) {
+#ifdef DURANTE_L1D_PROBE
+  if (probe_l1d && reason != DR_DURANTE_REPLAY_ENTRY)
+    probe_partial_block = true;
+#endif
   thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
   if (!d) {
     invalidate_live_work();
@@ -874,17 +898,18 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
                                DR_CLEANCALL_WRITES_APP_CONTEXT,
                            1, OPND_CREATE_INT32(decision));
   }
-  if (instr_is_app(where) && instr_writes_memory(where)) {
+  bool checkpoint = instr_is_app(where) && instr_writes_memory(where);
+#ifdef DURANTE_L1D_PROBE
+  if (probe_l1d && probe_instrument(drcontext, bb, where, checkpoint))
+    checkpoint = false;
+#endif
+  if (checkpoint) {
     app_pc pc = instr_get_app_pc(where);
     app_pc next_pc = pc ? pc + instr_length(drcontext, where) : NULL;
     dr_insert_clean_call(drcontext, bb, where, (void *)before_write, false, 3,
                          OPND_CREATE_INTPTR(pc), OPND_CREATE_INTPTR(next_pc),
                          OPND_CREATE_INT32((int)write_suffix(bb, where)));
   }
-#ifdef DURANTE_L1D_PROBE
-  if (probe_l1d)
-    probe_instrument(drcontext, bb, where);
-#endif
   if (rep_bytes_enabled && instr_is_app(where)) {
     const int op = instr_get_opcode(where);
     if (op == OP_rep_movs || op == OP_rep_stos) {
@@ -998,6 +1023,10 @@ static bool pre_syscall(void *ctx, int number) {
   }
   if (d->child_pid && spawn)
     unsupported = true;
+#ifdef DURANTE_L1D_PROBE
+  if (probe_l1d && (spawn || exec))
+    fail("cache probe requires a single process and image");
+#endif
   if (spawn && (flags & CLONE_FILES_FLAG))
     unsupported = true;
   if ((deny_avx || deny_simd) && unsupported) {
@@ -1112,10 +1141,6 @@ static void pre_detach(void) {
   dr_mutex_unlock(state_lock);
 }
 static void process_exit(void) {
-#ifdef DURANTE_L1D_PROBE
-  if (probe_l1d)
-    probe_report();
-#endif
   if (dr_get_process_id() != owner_pid)
     return;
   dr_mutex_lock(state_lock);
@@ -1143,6 +1168,14 @@ static void process_exit(void) {
   drmgr_unregister_kernel_xfer_event(kernel_xfer);
   dr_unregister_durante_code_replay_event(code_replay);
   drmgr_unregister_tls_field(tls_index);
+#ifdef DURANTE_L1D_PROBE
+  if (probe_l1d) {
+    if (probe_partial_block || total_signals || !app_exit_seen || accounting_error)
+      dr_fprintf(STDERR, "durante: incomplete cache probe measurement\n");
+    else
+      probe_exit();
+  }
+#endif
   drmgr_exit();
   dr_mutex_destroy(state_lock);
   if (live_work)
