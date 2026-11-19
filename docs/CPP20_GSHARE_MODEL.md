@@ -5,6 +5,8 @@ observed ordering. This experiment tests whether that counter improves time
 estimates on two programs that were held out from model selection.
 [Search/window comparison](CPP20_PATTERN_REPLAY.md)
 
+The v8 Cloud Run study tests a load/branch interaction against an additive control on three new programs. [V8 prediction and live boundary results](CPP20_V8_CLOCK.md)
+
 ## Protocol
 
 Both models fit the same 15 family/scale medians from integer, REP copy, sort,

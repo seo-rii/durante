@@ -1,0 +1,445 @@
+{
+  "schema": 1,
+  "worker": {
+    "engine": "dynamorio-11.3-durante-v8-vm32m",
+    "client_sha256": "d708864bc7d3ea0f4d4f8093b30bd5424436bf417e7bf420abd849eaba33d4c0",
+    "source": "614761c18d4735f00e93667c74c099cfdb2800c7",
+    "image": "sha256:5a3704ef3f0ece934b24f3a06f59df661a43e819f8be02c47e14d9a61d61049b",
+    "model": "v7-weights-transferred-diagnostic-only",
+    "region": "asia-northeast3",
+    "environment": "Cloud Run Gen2",
+    "vcpu": 1,
+    "memory_gib": 2,
+    "request_concurrency": 1,
+    "requests": 214,
+    "instances": 1,
+    "aonohako_commit": "0caf601d0f67a6fdc0e7f353a73e8773317cae81"
+  },
+  "profile": {
+    "method": "weighted-rep-operations-nanoseconds-v2",
+    "model_id": "cloud-v8-diagnostic-transfer",
+    "model_version": 1,
+    "reference_id": "integration",
+    "runtime_id": "CPP20@sha256:5a3704ef3f0ece934b24f3a06f59df661a43e819f8be02c47e14d9a61d61049b",
+    "family": "cpp",
+    "engine_profile": "dynamorio-11.3-durante-v8-vm32m",
+    "dispatch_profile": "default",
+    "cpuid_profile": "x86-64-v2",
+    "instruction_ns_numerator": 233273561,
+    "movs_byte_ns_numerator": 38663059,
+    "stos_byte_ns_numerator": 71296759,
+    "ns_denominator": 1000000000
+  },
+  "runtime_options_id": "runtime-options-v1:sha256:b88c02807007e4cddc0ea7c3fea34b5e0e11fd5a4dd861162b14341c620de901",
+  "diagnostic_replay": {
+    "tools_sha256": {
+      "drrun": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+      "runtime": "e2fdae59daa295d1c752876647937ecac80649cbba85d6e98b17e6a7cc4a1859",
+      "drmgr": "372cc1f1f95ffa29a1f11de4be14f99de5938bbcae11294a38d0a7932069429a",
+      "probe": "c41c1f138a58f6a66d4d489940e1773d521e985dee61abd7baeca41d59c63a59",
+      "meter": "a495207e4cd227ccbaec467d8662b04dbfc208246b4ede712b36b8489a02c1ff"
+    },
+    "sdk_root_source": "238193f90f5896b300563180e7939088ac8c346c",
+    "archive_sha256": "75a9845f72a122d79af3a88f81c00f8f18359a26cd5e12524296d7d11b0ab4e2",
+    "kernel": "6.1.0-56-cloud-amd64"
+  },
+  "fit_manifest_sha256": "80f5bce9bfde037e0836cb00b5d71d1c13f1fe0eddc8995f9be27bd3ed2e90b4",
+  "external_manifest_sha256": "e0b20ee202310e154ecb3aaab9bac711721050c322eb25b25f6e00993f814dd4",
+  "protocol_sha256": "eaf7dfc0850ac4d150fb2d347b93be47351b9ff8931b8ff9cead73b8222b19e5",
+  "frozen_predictions_sha256": "ab88d6578d6b355a1e8caa0400350c3172622e143002e155455fe6c5bc7e66ff",
+  "coefficients_frozen_utc": "2026-11-19T23:12:52+00:00",
+  "holdout_opened_utc": "2026-11-19T23:13:15.997539+00:00",
+  "clock_fields": [
+    "instructions",
+    "movs_bytes",
+    "stos_bytes"
+  ],
+  "live_clock": {
+    "integer-1": [
+      [
+        167944593,
+        0,
+        3624
+      ],
+      [
+        167944593,
+        0,
+        3624
+      ],
+      [
+        167944593,
+        0,
+        3624
+      ]
+    ],
+    "integer-2": [
+      [
+        335716753,
+        0,
+        3624
+      ],
+      [
+        335716753,
+        0,
+        3624
+      ],
+      [
+        335716753,
+        0,
+        3624
+      ]
+    ],
+    "integer-4": [
+      [
+        671261122,
+        0,
+        3624
+      ],
+      [
+        671261122,
+        0,
+        3624
+      ],
+      [
+        671261122,
+        0,
+        3624
+      ]
+    ],
+    "rep_copy-1": [
+      [
+        47332147,
+        2147483648,
+        3624
+      ],
+      [
+        47332147,
+        2147483648,
+        3624
+      ],
+      [
+        47332147,
+        2147483648,
+        3624
+      ]
+    ],
+    "rep_copy-2": [
+      [
+        47343611,
+        4294967296,
+        3624
+      ],
+      [
+        47343611,
+        4294967296,
+        3624
+      ],
+      [
+        47343611,
+        4294967296,
+        3624
+      ]
+    ],
+    "rep_copy-4": [
+      [
+        47366139,
+        8589934592,
+        3624
+      ],
+      [
+        47366139,
+        8589934592,
+        3624
+      ],
+      [
+        47366139,
+        8589934592,
+        3624
+      ]
+    ],
+    "branch-1": [
+      [
+        229460748,
+        0,
+        3624
+      ],
+      [
+        229460814,
+        0,
+        3624
+      ],
+      [
+        229460814,
+        0,
+        3624
+      ]
+    ],
+    "branch-2": [
+      [
+        458749452,
+        0,
+        3624
+      ],
+      [
+        458749518,
+        0,
+        3624
+      ],
+      [
+        458749452,
+        0,
+        3624
+      ]
+    ],
+    "branch-4": [
+      [
+        917327001,
+        0,
+        3624
+      ],
+      [
+        917327001,
+        0,
+        3624
+      ],
+      [
+        917326986,
+        0,
+        3624
+      ]
+    ],
+    "sort-1": [
+      [
+        86546035,
+        0,
+        3624
+      ],
+      [
+        86545884,
+        0,
+        3624
+      ],
+      [
+        86546035,
+        0,
+        3624
+      ]
+    ],
+    "sort-2": [
+      [
+        177135630,
+        0,
+        3624
+      ],
+      [
+        177135630,
+        0,
+        3624
+      ],
+      [
+        177135479,
+        0,
+        3624
+      ]
+    ],
+    "sort-4": [
+      [
+        373691186,
+        0,
+        3624
+      ],
+      [
+        373691186,
+        0,
+        3624
+      ],
+      [
+        373691186,
+        0,
+        3624
+      ]
+    ],
+    "rep_fill-1": [
+      [
+        25823257,
+        0,
+        2147487272
+      ],
+      [
+        25823257,
+        0,
+        2147487272
+      ],
+      [
+        25823257,
+        0,
+        2147487272
+      ]
+    ],
+    "rep_fill-2": [
+      [
+        25830113,
+        0,
+        4294970920
+      ],
+      [
+        25830113,
+        0,
+        4294970920
+      ],
+      [
+        25830113,
+        0,
+        4294970920
+      ]
+    ],
+    "rep_fill-4": [
+      [
+        25843425,
+        0,
+        8589938216
+      ],
+      [
+        25843425,
+        0,
+        8589938216
+      ],
+      [
+        25843425,
+        0,
+        8589938216
+      ]
+    ],
+    "binary-gcd": [
+      [
+        137322261,
+        0,
+        632
+      ],
+      [
+        137322261,
+        0,
+        632
+      ],
+      [
+        137322261,
+        0,
+        632
+      ]
+    ],
+    "stream-polynomial": [
+      [
+        303114782,
+        0,
+        632
+      ],
+      [
+        303114782,
+        0,
+        632
+      ],
+      [
+        303114788,
+        0,
+        632
+      ]
+    ],
+    "linked-rank": [
+      [
+        79425496,
+        0,
+        632
+      ],
+      [
+        79425490,
+        0,
+        632
+      ],
+      [
+        79425496,
+        0,
+        632
+      ]
+    ]
+  },
+  "limits": [
+    {
+      "name": "binary-gcd",
+      "bound": "low",
+      "limit_ms": 69,
+      "native": [
+        "Time Limit Exceeded",
+        "Time Limit Exceeded",
+        "Time Limit Exceeded"
+      ],
+      "v8": "Accepted",
+      "comparison": "unanimous_opposition",
+      "termination": "stdout"
+    },
+    {
+      "name": "binary-gcd",
+      "bound": "high",
+      "limit_ms": 105,
+      "native": [
+        "Accepted",
+        "Accepted",
+        "Accepted"
+      ],
+      "v8": "Accepted",
+      "comparison": "unanimous_agreement",
+      "termination": "stdout"
+    },
+    {
+      "name": "stream-polynomial",
+      "bound": "low",
+      "limit_ms": 107,
+      "native": [
+        "Time Limit Exceeded",
+        "Time Limit Exceeded",
+        "Time Limit Exceeded"
+      ],
+      "v8": "Accepted",
+      "comparison": "unanimous_opposition",
+      "termination": "stdout"
+    },
+    {
+      "name": "stream-polynomial",
+      "bound": "high",
+      "limit_ms": 162,
+      "native": [
+        "Accepted",
+        "Accepted",
+        "Accepted"
+      ],
+      "v8": "Accepted",
+      "comparison": "unanimous_agreement",
+      "termination": "stdout"
+    },
+    {
+      "name": "linked-rank",
+      "bound": "low",
+      "limit_ms": 156,
+      "native": [
+        "Time Limit Exceeded",
+        "Time Limit Exceeded",
+        "Time Limit Exceeded"
+      ],
+      "v8": "Accepted",
+      "comparison": "unanimous_opposition",
+      "termination": "stdout"
+    },
+    {
+      "name": "linked-rank",
+      "bound": "high",
+      "limit_ms": 235,
+      "native": [
+        "Accepted",
+        "Accepted",
+        "Accepted"
+      ],
+      "v8": "Accepted",
+      "comparison": "unanimous_agreement",
+      "termination": "stdout"
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "description": "Predeclared, independently generated new CPP20 holdouts",
+  "predeclared_utc": "2026-11-19T23:07:36+0000",
+  "frozen_utc": "2026-11-19T23:07:40+0000",
+  "compiler": "g++ (Debian 12.2.0-14+deb12u1) 12.2.0",
+  "flags": [
+    "-std=c++20",
+    "-O2",
+    "-static",
+    "-no-pie",
+    "-march=x86-64",
+    "-mtune=generic",
+    "-Wl,--build-id=none",
+    "-s"
+  ],
+  "spec_sha256": "7d06175461fbec09244c7194394a61cd29db8dbfd12f786b9432e6a85b12a571",
+  "oracle_generator_sha256": "d992620ee1f60721fc98d04c0f13676e4a1c1863ed9ec51740ce9734bdc411a0",
+  "cases": {
+    "binary-gcd": {
+      "source_sha256": "1d7050707d23992fee025d93751bc1631d964673b435198efe60f3457ee62a14",
+      "elf_sha256": "2a44e63847de166d5bea191692e2bc1faf2341025e24082abd6eb5a8f77dae08",
+      "stdin_sha256": "651350bacd0996fee097b60b61ce03e578986474fe2cbf3e2193370c5c70424d",
+      "stdout_sha256": "825ed91dda9f353a7ee44919fb50c4974221372edd1dbaaf7aafae94e2c9c798",
+      "description": "Stein binary GCD",
+      "stdin": "650000 178613745\n",
+      "stdout": "5002192\n",
+      "bytes": 805520
+    },
+    "stream-polynomial": {
+      "source_sha256": "711326c158386cfd721f7e83a49aa637c07c42c202655726edf5ea75f1070547",
+      "elf_sha256": "120a3b98249d7def49cc3e58847be32c131190ec0216805d44a43811a0cefb74",
+      "stdin_sha256": "f2fafba2407ea9bcf70268aa4aa04e69a9276dc7c42eb3bce84e99698c976cc7",
+      "stdout_sha256": "78098c244dbc042ca888c262a76f3b6621cc9c41ac68243d67eb16d63b2e2e6c",
+      "description": "Finite-field polynomial evaluations",
+      "stdin": "196608 128\n",
+      "stdout": "61891333514\n",
+      "bytes": 863480
+    },
+    "linked-rank": {
+      "source_sha256": "c350e028678c4c468075c23632dd69c0cc2ffb081c0edbfd25edb8ff9178538a",
+      "elf_sha256": "f58d418750169e99a33f14c1092c7ed13862e9987f4e43fc60b2966e24086b54",
+      "stdin_sha256": "7871ac13a3a60a7f89bcbf472662b4c105812cbd33c48cc69af6db6f2b6c645e",
+      "stdout_sha256": "6424dfb42062ce6a14644e433952f1403eab2b8a6e0d19f2855da7732e77e392",
+      "description": "Successor queries in a pseudorandom cycle",
+      "stdin": "262144 11317 104729\n",
+      "stdout": "1480633645\n",
+      "bytes": 863480
+    }
+  }
+}
