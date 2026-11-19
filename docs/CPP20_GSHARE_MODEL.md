@@ -140,6 +140,47 @@ It also accepts the original archived collection via `--archive`.
 python3 experiments/joint_latency_screen.py
 ```
 
+## Nineteen counters from the same executions
+
+The paired probe and production receipts contain 19 distinct counter fields
+for each of the 81 repetitions. The verifier reads all 27 family/scale cases
+and computes a second comparison under `full_counter_screen`. Its inputs come
+from the following fields.
+
+| Source | Fields |
+|---|---|
+| Paired probe | Instructions, loads, stores, conditional branches, direct jumps/calls, indirect branches, multiplies, divides, floating-point operations and simulated gshare misses |
+| Paired probe, in sixteenths of a modeled cycle | Critical path, loop recurrence and the static latency bound |
+| Production meter | Total REP bytes and entries, MOVS bytes and entries, STOS bytes and entries |
+
+The simultaneous production totals independently check the probe's instruction
+count and static latency bound. The verifier also checks the original published
+load and branch counts, and uses the production collector to validate each REP
+partition. Total and per-operation REP counters are related. The comparison
+allows each of them its own nonnegative weight. [Probe implementation](../experiments/time_features/featclient.c) · [Production record validation](../collect.py)
+
+For every one of the 19 fields, the largest search count across repetitions
+satisfies the following inequality with the smallest recorded count for each
+program on the right.
+
+```text
+60 × search(scale 4) ≤ 23 × sort(scale 4) + 8 × branch(scale 2) + 29 × merge(scale 1)
+```
+
+A weighted sum with nonnegative counter weights preserves the inequality.
+Any common intercept cancels because 23 + 8 + 29 = 60. The most favorable
+native controls for a ±20% fit are the fastest search (104.990 ms) and the
+slowest sort, branch and merge (145.977, 68.845 and 9.451 ms). The smallest
+acceptable search prediction is 83.992 ms. The largest acceptable weighted
+prediction on the right is
+`1.2 × (23 × 145.977 + 8 × 68.845 + 29 × 9.451) / 60 = 83.6462 ms`.
+The intervals miss by 0.3458 ms. The verifier compares both bounds in integer
+nanoseconds scaled by 300 and reports the slack for every counter.
+
+This retrospective comparison rules out a common affine model with nonnegative
+counter weights on these archived observations. The underlying timings remain
+those of the original shared reference host. [Executable comparison](../experiments/joint_latency_screen.py)
+
 ## Reproduce
 
 Use the Linux x86-64 worker, pinned CPP20 compiler image, Aonohako checkout,

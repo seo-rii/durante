@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test a five-counter timing inequality against the archived CPP20 gshare runs."""
+"""Check five- and nineteen-counter timing inequalities on the archived CPP20 gshare runs."""
 import argparse
 import hashlib
 import io
@@ -23,9 +23,17 @@ ARCHIVES = {
     "74ea30e878b6ea6769adce061a7090f4f4838b0a8421872e2ddacfcdb3b19709",  # original collection
 }
 FEATURES = (*MODELS["with_gshare"], "latency_bound_x16")
+# The published rows already identify instructions, REP bytes, loads,
+# conditional branches and gshare misses. The paired probe supplies eight
+# additional counters and independently reports the production latency bound.
+EXTRA_PROBE_COUNTERS = ("stores", "direct_jumps_calls", "indirect_branches", "muls", "divs", "fp_ops",
+                        "critical_path_cycles_x16", "loop_recurrence_cycles_x16")
+REP_PARTS = ("movs_bytes", "stos_bytes", "movs_entries", "stos_entries")
+FULL_COUNTERS = (*FEATURES, "conditional_branches", *EXTRA_PROBE_COUNTERS, "rep_entries",
+                 *("rep_" + name for name in REP_PARTS))
 
 
-def recover_bound(row, features, pid, raw):
+def recover_counters(row, features, pid, raw):
     meter = aggregate({pid: parse_records(pid, raw)}, pid)
     require(meter["complete"] and meter["valid"] and meter["quality"] == "uninterrupted"
             and meter["cpuid_profile"] == "x86-64-v2" and meter["rep_bytes_enabled"]
@@ -39,7 +47,17 @@ def recover_bound(row, features, pid, raw):
     bound = meter["latency_bound"]["cycles_x16"]
     require(integer(features["bound_cycles_x16"]) and features["bound_cycles_x16"] == bound,
             "production and exploratory latency bounds disagree")
-    return bound
+    require(all(integer(features[k]) for k in EXTRA_PROBE_COUNTERS), "invalid additional probe counter")
+    partition = meter.get("rep_breakdown")
+    require(partition is not None and partition["version"] == 1, "missing version 1 REP breakdown")
+    return {
+        "latency_bound_x16": bound, **{k: features[k] for k in EXTRA_PROBE_COUNTERS},
+        "rep_entries": meter["rep_entries"], **{"rep_" + k: partition[k] for k in REP_PARTS},
+    }
+
+
+def recover_bound(row, features, pid, raw):
+    return recover_counters(row, features, pid, raw)["latency_bound_x16"]
 
 
 def recover(archive_path):
@@ -70,13 +88,38 @@ def recover(archive_path):
                 prefix = f"results/{case['family']}-{case['scale']}-{row['repetition']}-probe"
                 pid, member = streams.pop(prefix)
                 features = json.load(archive.extractfile(prefix + "/features.json"))
-                row["latency_bound_x16"] = recover_bound(row, features, pid, archive.extractfile(member).read())
+                row.update(recover_counters(row, features, pid, archive.extractfile(member).read()))
         require(not streams, "unexpected dual-client process record")
     return data
 
 
+def full_counter_screen(cases):
+    search = cases["lower_bound-4"]
+    weights = {"sort-4": 23, "branch-2": 8, "merge_streams-1": 29}
+    denominator = sum(weights.values())
+    # Maximize every search counter and minimize every mixture component.
+    # If the relation survives these extremes it holds at every repetition.
+    slacks = {
+        k: sum(weight * cases[name]["counters"][k]["min"] for name, weight in weights.items())
+           - denominator * search["counters"][k]["max"]
+        for k in FULL_COUNTERS
+    }
+    fastest = search["native_ns"]["min"]
+    slowest = {name: cases[name]["native_ns"]["max"] for name in weights}
+    # Scale both acceptable prediction bounds by 5 * 60 to retain exact ns.
+    lower = 4 * denominator * fastest
+    upper = 6 * sum(weight * slowest[name] for name, weight in weights.items())
+    return {
+        "target": "lower_bound-4", "mixture_weights": weights, "mixture_denominator": denominator,
+        "feature_slacks": slacks, "target_fastest_ns": fastest, "mixture_slowest_ns": slowest,
+        "time_bound_denominator": 5 * denominator, "minimum_target_time_numerator_ns": lower,
+        "maximum_mixture_time_numerator_ns": upper,
+        "joint_accuracy_impossible": all(s >= 0 for s in slacks.values()) and lower > upper,
+    }
+
+
 def screen(data):
-    cases, _ = read_cases(data, FAMILIES, FEATURES)
+    cases, samples = read_cases(data, FAMILIES, FULL_COUNTERS)
     search, sort, merge = (cases[k] for k in ("lower_bound-4", "sort-4", "merge_streams-2"))
     # Under nonnegative weights, componentwise domination implies domination
     # of the prediction. The coefficients on both sides sum to five.
@@ -96,6 +139,7 @@ def screen(data):
         "feature_slack_2sort_plus_3merge_minus_5search": slacks,
         "minimum_search_time_ns_x25": lower, "maximum_mixture_time_ns_x25": upper,
         "joint_accuracy_impossible": all(s >= 0 for s in slacks.values()) and lower > upper,
+        "full_counter_screen": {"verified_repetitions": sum(map(len, samples.values())), **full_counter_screen(cases)},
     }
 
 
