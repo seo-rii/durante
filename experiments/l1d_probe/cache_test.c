@@ -82,7 +82,48 @@ static uint32_t random_u32(uint32_t *state) {
   return *state;
 }
 
+static void test_large_stos(void) {
+  l1d_cache_t cache = {0};
+  struct reference ref = {0};
+  const unsigned capacity = L1D_SETS * L1D_WAYS * L1D_LINE_BYTES;
+  for (unsigned bytes = 1; bytes <= 8; bytes *= 2) {
+    for (unsigned mode = 0; mode < 8; ++mode) {
+      bool backwards = mode & 1, addr32 = mode & 2;
+      uintptr_t base = 0x200000 + ((mode & 4) ? 63 : 0);
+      unsigned edge = capacity / bytes;
+      const unsigned counts[] = {edge - 1, edge, edge + 1, edge + 3, 4 * edge};
+      /* Warm both the start of the stream and distant sites that alias its
+       * sets. Simulations retain the full cache between cases. */
+      for (unsigned i = 0; i < L1D_SETS * L1D_WAYS; ++i) {
+        uintptr_t addr = base + (backwards ? capacity - 1 - i * L1D_LINE_BYTES
+                                           : i * L1D_LINE_BYTES);
+        if (i % 3 == 0)
+          addr += 2 * capacity;
+        l1d_access(&cache, addr, 1);
+        ref_access(&ref, addr, 1);
+      }
+      for (unsigned i = 0; i < sizeof(counts) / sizeof(counts[0]); ++i) {
+        uintptr_t dst = backwards ? base + (counts[i] - 1) * bytes : base;
+        if (addr32)
+          dst += UINT64_C(1) << 40;
+        compare_repeat(&cache, &ref, false, 0, dst, counts[i], bytes,
+                       backwards, addr32);
+      }
+    }
+  }
+  /* Equal-to-limit and wrapping spans in both address modes and directions. */
+  for (unsigned addr32 = 0; addr32 < 2; ++addr32) {
+    uintptr_t max = addr32 ? UINT32_MAX : UINTPTR_MAX;
+    unsigned count = capacity / 8 + 1;
+    compare_repeat(&cache, &ref, false, 0, max - count * 8 + 1, count, 8, false, addr32);
+    compare_repeat(&cache, &ref, false, 0, max - 3, count, 8, false, addr32);
+    compare_repeat(&cache, &ref, false, 0, (count - 1) * 8, count, 8, true, addr32);
+    compare_repeat(&cache, &ref, false, 0, 3, count, 8, true, addr32);
+  }
+}
+
 int main(void) {
+  test_large_stos();
   l1d_cache_t cache = {0};
   struct reference ref = {0};
   uint32_t rng = 8425613;

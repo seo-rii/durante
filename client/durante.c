@@ -126,7 +126,16 @@ static size_t file_bytes;
 #include "../tests/count_locations/profile.h"
 #endif
 
+#ifdef DURANTE_L1D_PROBE
+static bool probe_l1d;
+static uint64_t probe_fast_until;
+#endif
+
 static inline void invalidate_live_work(void) {
+#ifdef DURANTE_L1D_PROBE
+  if (probe_l1d)
+    probe_fast_until = 0;
+#endif
   if (live_work)
     __atomic_store_n(&live_work->invalid, 1, __ATOMIC_RELEASE);
 }
@@ -178,6 +187,8 @@ static void add_live_delta(uint64_t *counter, uint64_t delta, uint64_t overflow_
   }
 }
 
+enum { LIVE_WORK_BATCH = 4096 };
+
 static void publish_live_work(thread_data_t *d, bool flush) {
   if (d->signals || d->rep_error || d->replay_error || d->cpuid_error ||
       d->counter_overflows || d->unsupported_rep_entries ||
@@ -197,7 +208,7 @@ static void publish_live_work(thread_data_t *d, bool flush) {
   /* Omit the current BB's speculative entry charge. Prior BBs have passed
    * the runtime's replay correction boundary. Flush small deltas at each
    * application syscall, including those that may block or replace the image. */
-  if (!flush && (instructions | movs | stos) < 4096)
+  if (!flush && (instructions | movs | stos) < LIVE_WORK_BATCH)
     return;
   add_live_delta(&live_work->instructions, instructions, 1);
   add_live_delta(&live_work->movs, movs, 2);
@@ -446,7 +457,6 @@ static inline void record_write_checkpoint(thread_data_t *data, app_pc pc,
 
 #ifdef DURANTE_L1D_PROBE
 #include "../experiments/l1d_probe/probe.h"
-static bool probe_l1d;
 static bool probe_partial_block;
 #endif
 
@@ -542,6 +552,10 @@ static dr_emit_flags_t analyze_block(void *drcontext, void *tag,
  * are counted as unsupported entries instead of charging their initial RCX.
  */
 static void observe_rep(app_pc pc, int opcode, int bytes, int count_reg) {
+#ifdef DURANTE_L1D_PROBE
+  if (probe_l1d)
+    probe_fast_until = 0;
+#endif
   void *drcontext = dr_get_current_drcontext();
   thread_data_t *data = drmgr_get_tls_field(drcontext, tls_index);
   if (data == NULL)
@@ -701,6 +715,56 @@ static void count_block(int instructions, app_pc first_pc) {
   charge_block(instructions, first_pc);
 }
 
+#if defined(DURANTE_L1D_PROBE) && !defined(DURANTE_TEST_COUNT_LOCATIONS)
+/* Up to the next publication, an ordinary BB only clears the write checkpoint
+ * and charges its count. REP can introduce a publishable byte delta, and replay
+ * can roll back instructions or require a restart. Both callbacks disarm the
+ * window. A syscall flush publishes early and can only move the boundary later. */
+static void probe_charge_boundary(int count, app_pc first_pc) {
+  thread_data_t *d = charge_block(count, first_pc);
+  probe_fast_until = 0;
+  if (!d || d->restart_pc || d->instructions > UINT64_MAX - INT32_MAX - LIVE_WORK_BATCH ||
+      (live_work && __atomic_load_n(&live_work->invalid, __ATOMIC_ACQUIRE)))
+    return;
+  /* At this point publish_live_work checked any REP delta and every validity
+   * invariant. The headroom covers the largest next BB and the addition here. */
+  probe_fast_until = live_work ? d->published_instructions + LIVE_WORK_BATCH :
+                                 UINT64_MAX - INT32_MAX;
+}
+
+static void probe_insert_charge(void *ctx, instrlist_t *bb, instr_t *where, int count,
+                                app_pc first_pc) {
+  instr_t *slow = INSTR_CREATE_label(ctx), *done = INSTR_CREATE_label(ctx);
+  opnd_t tmp = opnd_create_reg(DR_REG_R10), data = opnd_create_reg(DR_REG_R11);
+  opnd_t instructions = opnd_create_base_disp(DR_REG_R11, DR_REG_NULL, 0,
+                                               offsetof(thread_data_t, instructions), OPSZ_8);
+  opnd_t checkpoint = opnd_create_base_disp(DR_REG_R11, DR_REG_NULL, 0,
+                                            offsetof(thread_data_t, write_pc), OPSZ_8);
+  /* The spills and both branches are confined to this instruction's meta IR.
+   * Preserve the application's six arithmetic flags, including on the slow path. */
+  dr_save_arith_flags(ctx, bb, where, SPILL_SLOT_3);
+  dr_save_reg(ctx, bb, where, DR_REG_R10, SPILL_SLOT_1);
+  dr_save_reg(ctx, bb, where, DR_REG_R11, SPILL_SLOT_2);
+#define INSERT(i) instrlist_meta_preinsert(bb, where, (i))
+  INSERT(INSTR_CREATE_mov_ld(ctx, data, opnd_create_rel_addr(&probe_thread_data, OPSZ_PTR)));
+  INSERT(INSTR_CREATE_mov_ld(ctx, tmp, instructions));
+  INSERT(INSTR_CREATE_cmp(ctx, tmp, opnd_create_rel_addr(&probe_fast_until, OPSZ_8)));
+  INSERT(INSTR_CREATE_jcc(ctx, OP_jae, opnd_create_instr(slow)));
+  INSERT(INSTR_CREATE_add(ctx, tmp, OPND_CREATE_INT32(count)));
+  INSERT(INSTR_CREATE_mov_st(ctx, instructions, tmp));
+  INSERT(INSTR_CREATE_mov_st(ctx, checkpoint, OPND_CREATE_INT32(0)));
+  INSERT(INSTR_CREATE_jmp(ctx, opnd_create_instr(done)));
+  INSERT(slow);
+  dr_insert_clean_call(ctx, bb, where, (void *)probe_charge_boundary, false, 2,
+                       OPND_CREATE_INT32(count), OPND_CREATE_INTPTR(first_pc));
+  INSERT(done);
+#undef INSERT
+  dr_restore_reg(ctx, bb, where, DR_REG_R11, SPILL_SLOT_2);
+  dr_restore_reg(ctx, bb, where, DR_REG_R10, SPILL_SLOT_1);
+  dr_restore_arith_flags(ctx, bb, where, SPILL_SLOT_3);
+}
+#endif
+
 /* The bound is charged at the same point as the count, so a block's bound is
  * counted exactly when its instructions are. */
 static void count_block_latency(int instructions, app_pc first_pc, int bound_x16) {
@@ -731,8 +795,11 @@ static void before_write(app_pc pc, app_pc next_pc, int suffix) {
 static void code_replay(void *ctx, int reason, app_pc source_pc,
                         app_pc target_pc) {
 #ifdef DURANTE_L1D_PROBE
-  if (probe_l1d && reason != DR_DURANTE_REPLAY_ENTRY)
-    probe_partial_block = true;
+  if (probe_l1d) {
+    probe_fast_until = 0;
+    if (reason != DR_DURANTE_REPLAY_ENTRY)
+      probe_partial_block = true;
+  }
 #endif
   thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
   if (!d) {
@@ -865,6 +932,10 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
   (void)tag;
   (void)for_trace;
   (void)translating;
+#ifdef DURANTE_L1D_PROBE
+  if (probe_l1d && drmgr_is_first_instr(drcontext, where))
+    probe_select_block(bb, translating);
+#endif
   if (instr_is_app(where) && instr_is_syscall(where) &&
       (instr_get_opcode(where) != OP_syscall ||
        instr_get_isa_mode(where) != DR_ISA_AMD64)) {
@@ -885,6 +956,10 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
                            OPND_CREATE_INT32(count),
                            OPND_CREATE_INTPTR(first ? instr_get_app_pc(first) : NULL),
                            OPND_CREATE_INT32((int)(uint32_t)(packed >> 32)));
+#if defined(DURANTE_L1D_PROBE) && !defined(DURANTE_TEST_COUNT_LOCATIONS)
+    else if (probe_l1d && probe_inline_block)
+      probe_insert_charge(drcontext, bb, where, count, first ? instr_get_app_pc(first) : NULL);
+#endif
     else
       dr_insert_clean_call(drcontext, bb, where, (void *)count_block, false, 2,
                            OPND_CREATE_INT32(count),
@@ -945,6 +1020,10 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
                               OPND_CREATE_INT32(DR_REG_NULL));
     }
   }
+#ifdef DURANTE_L1D_PROBE
+  if (probe_l1d && probe_store_translation)
+    return DR_EMIT_STORE_TRANSLATIONS;
+#endif
   return DR_EMIT_DEFAULT;
 }
 

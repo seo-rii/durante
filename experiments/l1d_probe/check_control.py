@@ -10,6 +10,7 @@ from compare import clocks
 
 
 # Columns: references, cache lines touched, misses (32 KiB, 8-way LRU).
+# read argc from the aligned stack       1    1  1
 # 128 identical loads                  128  128  1
 # same-set LRU sequence                 12   12  9
 # cross-line store, RMW, indexed read    4    8  1
@@ -17,21 +18,18 @@ from compare import clocks
 # 66 descending MOVSB iterations       132  132  0
 # 3 forward STOSW iterations             3    4  2
 # verify four stored values              4    5  0
+# scratch register and flag checks       4    4  1
 # XLAT with two address sizes            2    2  0
-EXPECTED_CACHE = b"PROBE_L1D refs=286 lines=292 misses=14 skipped=0 rep=2 threads=1"
+EXPECTED_CACHE = b"PROBE_L1D refs=291 lines=297 misses=16 skipped=0 rep=2 threads=1"
 EXPECTED_WORK = {
-    "instructions": 128 + 8 * 4 + 47 + 10,
+    "instructions": 2 + 128 + 8 * 4 + 47 + 20 + 10,
     "rep_bytes": 72, "rep_entries": 2, "unsupported_rep_entries": 0,
     "rep_movs_bytes": 66, "rep_movs_entries": 1,
     "rep_stos_bytes": 6, "rep_stos_entries": 1,
 }
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    for name in ("drrun", "client", "program"):
-        parser.add_argument("--" + name, type=Path, required=True)
-    args = parser.parse_args()
+def check(args, warm):
     with tempfile.TemporaryDirectory() as temporary:
         output = Path(temporary).resolve()
         live = output / "live"
@@ -41,7 +39,7 @@ def main():
             "-follow_children", "-disable_traces", "-vm_size", "32M", "-vmheap_size", "32M",
             "-c", args.client.resolve(strict=True), "-outdir", output, "-rep_bytes",
             "-cpuid_profile", "x86-64-v2", "-probe_l1d", "-live_work_v1", live,
-            "--", args.program.resolve(strict=True),
+            "--", args.program.resolve(strict=True), *(["warm"] if warm else []),
         ]
         result = subprocess.run(command, cwd=output, stdin=subprocess.DEVNULL, capture_output=True,
                                 env={"LC_ALL": "C", "PATH": os.defpath, "DYNAMORIO_CONFIGDIR": str(output)},
@@ -55,8 +53,20 @@ def main():
             raise SystemExit(f"expected {EXPECTED_CACHE!r}, got {cache!r}")
         work = clocks(output)
         actual = {key: work[key] for key in EXPECTED_WORK}
-        if actual != EXPECTED_WORK:
-            raise SystemExit(f"expected {EXPECTED_WORK}, got {actual}")
+        expected = EXPECTED_WORK.copy()
+        if warm:
+            expected["instructions"] += 1 + 262144
+        if actual != expected:
+            raise SystemExit(f"expected {expected}, got {actual}")
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    for name in ("drrun", "client", "program"):
+        parser.add_argument("--" + name, type=Path, required=True)
+    args = parser.parse_args()
+    for warm in (False, True):
+        check(args, warm)
 
 
 if __name__ == "__main__":

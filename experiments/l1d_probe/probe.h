@@ -14,7 +14,12 @@
 static l1d_cache_t probe_cache;
 static uint64_t probe_skipped, probe_rep;
 static int probe_threads;
+static uint64_t probe_read_refs;
+static unsigned probe_block_reads;
+static instr_t *probe_block_last;
 static thread_data_t *probe_thread_data;
+static bool probe_inline_block, probe_store_translation;
+
 static uint write_suffix(instrlist_t *bb, instr_t *where);
 
 /* Low byte holds index scale and flags, followed by width, then signed disp32. */
@@ -37,8 +42,14 @@ static void probe_access_data(uintptr_t base, uintptr_t index, uint64_t spec) {
     l1d_access(&probe_cache, addr, bytes);
 }
 
-static void probe_displaced_read(uintptr_t base, ptr_int_t disp, unsigned bytes) {
-  l1d_access(&probe_cache, base + disp, bytes);
+/* Scalar reads charge their first line and reference together, once per
+ * basic block. Only a cross-line operand adds a second lookup here. */
+static void probe_read_slow(uintptr_t addr, unsigned bytes) {
+  probe_cache.lines += l1d_touch_operand(&probe_cache, addr, bytes);
+}
+
+static void probe_displaced_read(uintptr_t base, intptr_t displacement, unsigned bytes) {
+  l1d_access(&probe_cache, base + displacement, bytes);
 }
 
 static void probe_xlat(uintptr_t base, uintptr_t ax, bool addr32) {
@@ -57,13 +68,95 @@ static void probe_scalar_write(uintptr_t base, uintptr_t index, uint64_t spec,
 #pragma GCC pop_options
 #endif
 
+/* A block that branches to its own entry can amortize inline instrumentation
+ * immediately. Other startup blocks use compact callbacks. Keep the address
+ * translations for blocks inlined based on the live count: on a later
+ * translating=true callback DR is recreating a block with a static layout. */
+static void probe_select_block(instrlist_t *bb, bool translating) {
+  instr_t *tail = instrlist_last_app(bb);
+  bool self_loop = false;
+  if (tail && (instr_is_cbr(tail) || instr_is_ubr(tail))) {
+    opnd_t target = instr_get_target(tail);
+    self_loop = opnd_is_pc(target) &&
+                opnd_get_pc(target) == instr_get_app_pc(instrlist_first_app(bb));
+  }
+  probe_store_translation = !self_loop && !translating && probe_thread_data &&
+                            probe_thread_data->instructions >= 32 * LIVE_WORK_BATCH;
+  probe_inline_block = self_loop || probe_store_translation;
+}
+
+/* The byte offset of a set in the tag table is the set-index bits of
+ * the original address. The first tag is one past the MRU line number. */
+_Static_assert(L1D_LINE_BYTES == 64 && sizeof(probe_cache.tags[0]) == L1D_LINE_BYTES,
+               "inline MRU lookup requires a 64-byte tag row per cache line index");
+_Static_assert((L1D_SETS & (L1D_SETS - 1)) == 0, "set mask requires a power of two");
+
+static void probe_read(void *ctx, instrlist_t *bb, instr_t *where, opnd_t mem,
+                       unsigned bytes, bool addr32) {
+  const reg_id_t addr = DR_REG_R10, scratch = DR_REG_R11;
+  opnd_t address = opnd_create_reg(addr), temp = opnd_create_reg(scratch);
+  instr_t *slow = INSTR_CREATE_label(ctx), *done = INSTR_CREATE_label(ctx);
+  ++probe_block_reads;
+  dr_save_reg(ctx, bb, where, addr, SPILL_SLOT_1);
+  dr_save_reg(ctx, bb, where, scratch, SPILL_SLOT_2);
+
+#define PROBE_INSERT(ins) instrlist_meta_preinsert(bb, where, (ins))
+  if (opnd_is_base_disp(mem) &&
+      (opnd_get_base(mem) != DR_REG_NULL || opnd_get_index(mem) != DR_REG_NULL)) {
+    opnd_set_size(&mem, OPSZ_lea);
+    PROBE_INSERT(INSTR_CREATE_lea(ctx, addr32 ? opnd_create_reg(DR_REG_R10D) : address, mem));
+  } else {
+    ptr_int_t value = opnd_is_base_disp(mem) ? (ptr_int_t)opnd_get_disp(mem)
+                                             : (ptr_int_t)opnd_get_addr(mem);
+    instrlist_insert_mov_immed_ptrsz(ctx, addr32 ? (ptr_int_t)(uint32_t)value : value,
+                                    address, bb, where, NULL, NULL);
+  }
+
+  /* Save flags even for instructions with conditional flag writes. */
+  dr_save_arith_flags(ctx, bb, where, SPILL_SLOT_4);
+  opnd_t low_temp = opnd_create_reg(DR_REG_R11D);
+  PROBE_INSERT(INSTR_CREATE_mov_ld(ctx, low_temp, opnd_create_reg(DR_REG_R10D)));
+  PROBE_INSERT(INSTR_CREATE_and(ctx, low_temp,
+                                OPND_CREATE_INT32((L1D_SETS - 1) * L1D_LINE_BYTES)));
+  ptr_int_t tags = (ptr_int_t)&probe_cache.tags;
+  if (tags == (ptr_int_t)(int32_t)tags) {
+    opnd_t set = opnd_create_base_disp(scratch, DR_REG_NULL, 0, (int)tags, OPSZ_PTR);
+    PROBE_INSERT(INSTR_CREATE_mov_ld(ctx, temp, set));
+  } else {
+    /* x86-64 indexed addressing accepts a signed 32-bit displacement. */
+    dr_save_reg(ctx, bb, where, DR_REG_R12, SPILL_SLOT_3);
+    instrlist_insert_mov_immed_ptrsz(ctx, tags, opnd_create_reg(DR_REG_R12),
+                                    bb, where, NULL, NULL);
+    opnd_t set = opnd_create_base_disp(DR_REG_R12, scratch, 1, 0, OPSZ_PTR);
+    PROBE_INSERT(INSTR_CREATE_mov_ld(ctx, temp, set));
+    dr_restore_reg(ctx, bb, where, DR_REG_R12, SPILL_SLOT_3);
+  }
+
+  /* A nonempty MRU line contains the entire operand iff its exclusive
+   * end minus the operand address lies in [bytes, L1D_LINE_BYTES]. */
+  PROBE_INSERT(INSTR_CREATE_test(ctx, temp, temp));
+  PROBE_INSERT(INSTR_CREATE_jcc(ctx, OP_jz, opnd_create_instr(slow)));
+  PROBE_INSERT(INSTR_CREATE_shl(ctx, temp, OPND_CREATE_INT8(6)));
+  PROBE_INSERT(INSTR_CREATE_sub(ctx, temp, address));
+  PROBE_INSERT(INSTR_CREATE_sub(ctx, temp, OPND_CREATE_INT8(bytes)));
+  PROBE_INSERT(INSTR_CREATE_cmp(ctx, temp, OPND_CREATE_INT8(L1D_LINE_BYTES - bytes)));
+  PROBE_INSERT(INSTR_CREATE_jcc(ctx, OP_jbe, opnd_create_instr(done)));
+  PROBE_INSERT(slow);
+  dr_insert_clean_call_ex(ctx, bb, where, (void *)probe_read_slow, DR_CLEANCALL_NOSAVE_XMM,
+                          2, address, OPND_CREATE_INT32(bytes));
+  PROBE_INSERT(done);
+#undef PROBE_INSERT
+
+  dr_restore_arith_flags(ctx, bb, where, SPILL_SLOT_4);
+  dr_restore_reg(ctx, bb, where, scratch, SPILL_SLOT_2);
+  dr_restore_reg(ctx, bb, where, addr, SPILL_SLOT_1);
+}
+
 static void probe_operand(void *ctx, instrlist_t *bb, instr_t *where, opnd_t mem,
                           bool twice, bool fused) {
   unsigned bytes = opnd_size_in_bytes(opnd_get_size(mem));
   opnd_t base_arg = OPND_CREATE_INTPTR(0), index_arg = OPND_CREATE_INTPTR(0);
   uint64_t spec = twice ? PROBE_TWICE : 0;
-  bool simple_read = !twice && !fused;
-  ptr_int_t disp = 0;
   bool supported = bytes && bytes <= 64 && !opnd_is_vsib(mem) &&
                    opnd_get_segment(mem) != DR_SEG_FS && opnd_get_segment(mem) != DR_SEG_GS;
   if (supported && opnd_is_base_disp(mem)) {
@@ -86,9 +179,7 @@ static void probe_operand(void *ctx, instrlist_t *bb, instr_t *where, opnd_t mem
                                 OPND_CREATE_INT32((spec & PROBE_ADDR32) != 0));
         return;
       }
-      disp = opnd_get_disp(mem);
-      simple_read = simple_read && idx == DR_REG_NULL && !(spec & PROBE_ADDR32);
-      spec |= ((uint64_t)(uint32_t)disp << 32) | (opnd_get_scale(mem) & 15);
+      spec |= ((uint64_t)(uint32_t)opnd_get_disp(mem) << 32) | (opnd_get_scale(mem) & 15);
     }
   } else if (supported && (opnd_is_rel_addr(mem) || opnd_is_abs_addr(mem))) {
     base_arg = OPND_CREATE_INTPTR(opnd_get_addr(mem));
@@ -104,10 +195,13 @@ static void probe_operand(void *ctx, instrlist_t *bb, instr_t *where, opnd_t mem
                             DR_CLEANCALL_NOSAVE_XMM, 6, base_arg, index_arg,
                             OPND_CREATE_INTPTR(spec), OPND_CREATE_INTPTR(pc),
                             OPND_CREATE_INTPTR(next), OPND_CREATE_INT32(write_suffix(bb, where)));
-  } else if (supported && simple_read) {
+  } else if (supported && !twice && probe_inline_block) {
+    probe_read(ctx, bb, where, mem, bytes, (spec & PROBE_ADDR32) != 0);
+  } else if (supported && !twice && !(spec & PROBE_ADDR32) && !opnd_is_reg(index_arg)) {
     dr_insert_clean_call_ex(ctx, bb, where, (void *)probe_displaced_read,
                             DR_CLEANCALL_NOSAVE_XMM, 3, base_arg,
-                            OPND_CREATE_INTPTR(disp), OPND_CREATE_INT32(bytes));
+                            OPND_CREATE_INTPTR((ptr_int_t)(int32_t)(spec >> 32)),
+                            OPND_CREATE_INT32(bytes));
   } else {
     dr_insert_clean_call_ex(ctx, bb, where, (void *)probe_access_data,
                             DR_CLEANCALL_NOSAVE_XMM, 3, base_arg, index_arg,
@@ -164,8 +258,8 @@ static void probe_instrument_string(void *ctx, instrlist_t *bb, instr_t *where,
 
 /* Return whether this instruction's store callback supplies before_write's
  * checkpoint. The last read may coincide with the first write (RMW). */
-static bool probe_instrument(void *ctx, instrlist_t *bb, instr_t *where,
-                             bool writes_memory) {
+static bool probe_instrument_operands(void *ctx, instrlist_t *bb, instr_t *where,
+                                      bool writes_memory) {
   if (!instr_is_app(where))
     return false;
   int op = instr_get_opcode(where);
@@ -217,9 +311,31 @@ static bool probe_instrument(void *ctx, instrlist_t *bb, instr_t *where,
   return fused;
 }
 
+static bool probe_instrument(void *ctx, instrlist_t *bb, instr_t *where, bool writes_memory) {
+  if (drmgr_is_first_instr(ctx, where)) {
+    probe_block_reads = 0;
+    probe_block_last = instrlist_last_app(bb);
+  }
+  bool fused = probe_instrument_operands(ctx, bb, where, writes_memory);
+  /* Signals and partial-block replays suppress the diagnostic report.
+   * Every reported block reached all of its instrumented operands. */
+  if (where == probe_block_last && probe_block_reads) {
+    opnd_t dst = opnd_create_rel_addr(&probe_read_refs, OPSZ_PTR);
+    opnd_t reg = opnd_create_reg(DR_REG_R11);
+    dr_save_reg(ctx, bb, where, DR_REG_R11, SPILL_SLOT_1);
+    instrlist_meta_preinsert(bb, where, INSTR_CREATE_mov_ld(ctx, reg, dst));
+    instrlist_meta_preinsert(bb, where, INSTR_CREATE_lea(ctx, reg,
+        opnd_create_base_disp(DR_REG_R11, DR_REG_NULL, 0, probe_block_reads, OPSZ_lea)));
+    instrlist_meta_preinsert(bb, where, INSTR_CREATE_mov_st(ctx, dst, reg));
+    dr_restore_reg(ctx, bb, where, DR_REG_R11, SPILL_SLOT_1);
+  }
+  return fused;
+}
+
 static void probe_exit(void) {
   dr_fprintf(STDERR, "PROBE_L1D refs=%llu lines=%llu misses=%llu skipped=%llu rep=%llu threads=%d\n",
-             (unsigned long long)probe_cache.refs, (unsigned long long)probe_cache.lines,
+             (unsigned long long)(probe_cache.refs + probe_read_refs),
+             (unsigned long long)(probe_cache.lines + probe_read_refs),
              (unsigned long long)probe_cache.misses, (unsigned long long)probe_skipped,
              (unsigned long long)probe_rep, probe_threads);
 }
