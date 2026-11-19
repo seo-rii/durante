@@ -1,0 +1,263 @@
+{
+  "schema": 1,
+  "worker": {
+    "engine": "dynamorio-11.3-durante-v8-vm32m",
+    "client_sha256": "d708864bc7d3ea0f4d4f8093b30bd5424436bf417e7bf420abd849eaba33d4c0",
+    "source": "614761c18d4735f00e93667c74c099cfdb2800c7",
+    "image": "sha256:5a3704ef3f0ece934b24f3a06f59df661a43e819f8be02c47e14d9a61d61049b",
+    "model": "v7-weights-transferred-diagnostic-only",
+    "region": "asia-northeast3",
+    "environment": "Cloud Run Gen2",
+    "vcpu": 1,
+    "memory_gib": 2,
+    "request_concurrency": 1,
+    "requests": 214,
+    "instances": 1,
+    "aonohako_commit": "0caf601d0f67a6fdc0e7f353a73e8773317cae81"
+  },
+  "program_sha256": "e038d505b47ae168a1c6b9a7a629968ffc7b65c2d434cf706c9fd518b1bf71ac",
+  "source_sha256": "f9ba3f536d2d067ff3b2241fcc2580edd4de60808a42aae6fa39ba85318e3166",
+  "inputs": {
+    "aligned": "0",
+    "partial": "1"
+  },
+  "rounds": {
+    "aligned": [
+      {
+        "native_before_ns": 200774000,
+        "instructions": 480000027,
+        "movs_bytes": 0,
+        "stos_bytes": 0,
+        "native_after_ns": 212387000
+      },
+      {
+        "native_before_ns": 210528000,
+        "instructions": 480000027,
+        "movs_bytes": 0,
+        "stos_bytes": 0,
+        "native_after_ns": 204467000
+      },
+      {
+        "native_before_ns": 210648000,
+        "instructions": 480000027,
+        "movs_bytes": 0,
+        "stos_bytes": 0,
+        "native_after_ns": 212861000
+      }
+    ],
+    "partial": [
+      {
+        "native_before_ns": 620010000,
+        "instructions": 480000027,
+        "movs_bytes": 0,
+        "stos_bytes": 0,
+        "native_after_ns": 599751000
+      },
+      {
+        "native_before_ns": 589807000,
+        "instructions": 480000027,
+        "movs_bytes": 0,
+        "stos_bytes": 0,
+        "native_after_ns": 602102000
+      },
+      {
+        "native_before_ns": 649848000,
+        "instructions": 480000027,
+        "movs_bytes": 0,
+        "stos_bytes": 0,
+        "native_after_ns": 601038000
+      }
+    ]
+  },
+  "common_limit_ms": 406,
+  "verdicts": [
+    {
+      "mode": "aligned",
+      "native": [
+        "Accepted",
+        "Accepted",
+        "Accepted"
+      ],
+      "limit_ms": 406,
+      "live": "Accepted",
+      "agreement": "unanimous_agreement"
+    },
+    {
+      "mode": "partial",
+      "native": [
+        "Time Limit Exceeded",
+        "Time Limit Exceeded",
+        "Time Limit Exceeded"
+      ],
+      "limit_ms": 406,
+      "live": "Accepted",
+      "agreement": "unanimous_opposition"
+    }
+  ],
+  "probe_sha256": "50ff7a3d595219b6b37c5195dca584e46441bde0dbceba30d16e15c168cf06b1",
+  "adjacent_pair_counts": {
+    "integer-1": {
+      "covered": 0,
+      "partial": 0,
+      "disjoint": 106
+    },
+    "integer-2": {
+      "covered": 0,
+      "partial": 0,
+      "disjoint": 106
+    },
+    "integer-4": {
+      "covered": 0,
+      "partial": 0,
+      "disjoint": 106
+    },
+    "rep_copy-1": {
+      "covered": 0,
+      "partial": 0,
+      "disjoint": 182
+    },
+    "rep_copy-2": {
+      "covered": 0,
+      "partial": 0,
+      "disjoint": 182
+    },
+    "rep_copy-4": {
+      "covered": 0,
+      "partial": 0,
+      "disjoint": 182
+    },
+    "branch-1": {
+      "covered": 0,
+      "partial": 0,
+      "disjoint": 106
+    },
+    "branch-2": {
+      "covered": 0,
+      "partial": 0,
+      "disjoint": 106
+    },
+    "branch-4": {
+      "covered": 0,
+      "partial": 0,
+      "disjoint": 106
+    },
+    "sort-1": {
+      "covered": 10535,
+      "partial": 0,
+      "disjoint": 1937057
+    },
+    "sort-2": {
+      "covered": 20935,
+      "partial": 0,
+      "disjoint": 4153498
+    },
+    "sort-4": {
+      "covered": 42007,
+      "partial": 0,
+      "disjoint": 8744875
+    },
+    "rep_fill-1": {
+      "covered": 0,
+      "partial": 0,
+      "disjoint": 117
+    },
+    "rep_fill-2": {
+      "covered": 0,
+      "partial": 0,
+      "disjoint": 117
+    },
+    "rep_fill-4": {
+      "covered": 0,
+      "partial": 0,
+      "disjoint": 117
+    },
+    "binary-gcd": {
+      "covered": 2,
+      "partial": 0,
+      "disjoint": 70
+    },
+    "stream-polynomial": {
+      "covered": 2,
+      "partial": 0,
+      "disjoint": 71
+    },
+    "linked-rank": {
+      "covered": 2,
+      "partial": 0,
+      "disjoint": 72
+    }
+  },
+  "local_replay": {
+    "sha256": {
+      "program": "e038d505b47ae168a1c6b9a7a629968ffc7b65c2d434cf706c9fd518b1bf71ac",
+      "core": "fd1c5645b9fc70a7dcb71459b4b94782d2e016a2aa4ceffcfcab2ade962cdf5b",
+      "drrun": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+      "meter": "d708864bc7d3ea0f4d4f8093b30bd5424436bf417e7bf420abd849eaba33d4c0",
+      "l1d": "b8042afde4697b1a1161125258f03c2e37a8d1fdfaae4e2a96b88ecd64e5b012",
+      "store_load": "50ff7a3d595219b6b37c5195dca584e46441bde0dbceba30d16e15c168cf06b1",
+      "probe": "c41c1f138a58f6a66d4d489940e1773d521e985dee61abd7baeca41d59c63a59"
+    },
+    "fixed_cpu": 4,
+    "repetitions_per_input": 3,
+    "common_counters": {
+      "instructions": 480000027,
+      "rep_bytes": 0,
+      "load_instructions": 96000001,
+      "conditional_branches": 96000003,
+      "gshare_mispredicts": 17,
+      "latency_bound_x16": 1920000108,
+      "stores": 96000000,
+      "direct_jumps_calls": 0,
+      "indirect_branches": 0,
+      "muls": 1,
+      "divs": 0,
+      "fp_ops": 0,
+      "critical_path_cycles_x16": 9216000320,
+      "loop_recurrence_cycles_x16": 767999992,
+      "rep_entries": 0,
+      "rep_movs_bytes": 0,
+      "rep_stos_bytes": 0,
+      "rep_movs_entries": 0,
+      "rep_stos_entries": 0
+    },
+    "common_l1d": {
+      "refs": 192000001,
+      "lines": 192000001,
+      "misses": 2,
+      "skipped": 0,
+      "rep": 0
+    },
+    "modes": {
+      "covered": {
+        "store_load": {
+          "covered": 96000000,
+          "partial": 0,
+          "disjoint": 0
+        },
+        "native_ns": [
+          137360000,
+          66726000,
+          134738000,
+          68280000,
+          64412000,
+          106999000
+        ]
+      },
+      "partial": {
+        "store_load": {
+          "covered": 0,
+          "partial": 96000000,
+          "disjoint": 0
+        },
+        "native_ns": [
+          577458000,
+          575118000,
+          572295000,
+          589567000,
+          576245000,
+          584987000
+        ]
+      }
+    }
+  }
+}
