@@ -428,7 +428,15 @@ static void snapshot_event(const char *kind, void *ctx, bool is_exec) {
   route_event(d, kind, fields);
 }
 
+#ifdef DURANTE_L1D_PROBE
+#include "../experiments/l1d_probe/probe.h"
+#endif
+
 static void thread_init(void *ctx) {
+#ifdef DURANTE_L1D_PROBE
+  if (probe_l1d && dr_atomic_add32_return_sum(&probe_threads, 1) != 1)
+    fail("cache probe requires a single application thread");
+#endif
   thread_data_t *d = dr_thread_alloc(ctx, sizeof(*d));
   if (!d)
     fail("thread allocation failed");
@@ -873,6 +881,10 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
                          OPND_CREATE_INTPTR(pc), OPND_CREATE_INTPTR(next_pc),
                          OPND_CREATE_INT32((int)write_suffix(bb, where)));
   }
+#ifdef DURANTE_L1D_PROBE
+  if (probe_l1d)
+    probe_instrument(drcontext, bb, where);
+#endif
   if (rep_bytes_enabled && instr_is_app(where)) {
     const int op = instr_get_opcode(where);
     if (op == OP_rep_movs || op == OP_rep_stos) {
@@ -1100,6 +1112,10 @@ static void pre_detach(void) {
   dr_mutex_unlock(state_lock);
 }
 static void process_exit(void) {
+#ifdef DURANTE_L1D_PROBE
+  if (probe_l1d)
+    probe_report();
+#endif
   if (dr_get_process_id() != owner_pid)
     return;
   dr_mutex_lock(state_lock);
@@ -1155,6 +1171,10 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
   for (int i = 3; i < argc; ++i) {
     if (strcmp(argv[i], "-rep_bytes") == 0 && !rep_bytes_enabled) {
       rep_bytes_enabled = true;
+#ifdef DURANTE_L1D_PROBE
+    } else if (strcmp(argv[i], "-probe_l1d") == 0 && !probe_l1d) {
+      probe_l1d = true;
+#endif
     } else if (strcmp(argv[i], "-live_work_v1") == 0 && !live_path && i + 1 < argc) {
       live_path = argv[++i];
     } else if (strcmp(argv[i], "-latency_bound") == 0 && !latency_bound_enabled) {
