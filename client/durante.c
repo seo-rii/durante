@@ -195,8 +195,8 @@ static void publish_live_work(thread_data_t *d, bool flush) {
   uint64_t movs = d->rep_movs_bytes - d->published_movs;
   uint64_t stos = d->rep_stos_bytes - d->published_stos;
   /* Omit the current BB's speculative entry charge. Prior BBs have passed
-   * the runtime's replay correction boundary. Flush small deltas at syscalls
-   * which may retire the thread or replace the image. */
+   * the runtime's replay correction boundary. Flush small deltas at each
+   * application syscall, including those that may block or replace the image. */
   if (!flush && (instructions | movs | stos) < 4096)
     return;
   add_live_delta(&live_work->instructions, instructions, 1);
@@ -911,8 +911,7 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
   return DR_EMIT_DEFAULT;
 }
 
-static bool filter_syscall(void *ctx, int number) {
-  (void)ctx;
+static bool lifecycle_syscall(int number) {
   return x32_syscall(number) ||
          number == SYS_fork || number == SYS_vfork || number == SYS_clone ||
          number == SYS_execve || number == SYS_exit || number == SYS_exit_group
@@ -924,10 +923,22 @@ static bool filter_syscall(void *ctx, int number) {
 #endif
       ;
 }
+static bool filter_syscall(void *ctx, int number) {
+  (void)ctx;
+  return live_work || lifecycle_syscall(number);
+}
 static bool pre_syscall(void *ctx, int number) {
   thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
   if (!d)
     fail("syscall without TLS");
+  if (live_work && !lifecycle_syscall(number)) {
+    /* An intercepted syscall terminates its basic block. All prior charges
+     * have passed replay correction and the syscall itself has been reached.
+     * Flush before it can block indefinitely, even below the usual batch size.
+     * Ordinary syscalls have no process lifecycle state to update. */
+    publish_live_work(d, true);
+    return true;
+  }
   /* These transitions can escape the native x86-64 client. Reject them before
    * kernel entry or lifecycle bookkeeping; no process/image was created. */
   if ((deny_avx || deny_simd) && (x32_syscall(number) || number == SYS_execve
@@ -989,7 +1000,7 @@ static bool pre_syscall(void *ctx, int number) {
   d->pending_spawn = spawn;
   d->pending_exec = exec;
   dr_mutex_lock(state_lock);
-  if (live_work && (exec || number == SYS_exit_group || number == SYS_exit)) {
+  if (live_work) {
     if ((exec || number == SYS_exit_group) && !d->child_pid &&
         threads_started != threads_ended + 1)
       invalidate_live_work();
@@ -1018,6 +1029,8 @@ static bool pre_syscall(void *ctx, int number) {
   return true;
 }
 static void post_syscall(void *ctx, int number) {
+  if (live_work && !lifecycle_syscall(number))
+    return;
   thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
   if (!d)
     fail("post syscall without TLS");

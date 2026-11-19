@@ -54,8 +54,8 @@ use atomic additions. A child starts fresh, and an exec checkpoint publishes
 only the outstanding delta. A failed exec therefore continues against the
 same baseline. Publication at the next block entry leaves the current block
 available for replay correction. The client batches each component up to a
-4096-unit publication threshold and flushes eligible pending work at exit and
-exec syscalls. Signals, unsupported REP entries and accounting errors invalidate
+4096-unit publication threshold. Before each application syscall it flushes
+eligible pending work, including when a thread is about to wait, exit or exec. Signals, unsupported REP entries and accounting errors invalidate
 live eligibility. Missing or inconsistent progress leaves the external deadline
 active. A budgeted natural completion requires a matching eligible terminal
 report.
@@ -75,7 +75,8 @@ python3 tests/online_work_clock.py --runner "$DURANTE" --drrun "$DRRUN" --client
 ```
 
 The harness checks an independently counted three-instruction boundary, an
-infinite loop, a child consuming the budget while its parent waits, process
+short above-budget work followed by a blocking syscall, an infinite loop,
+a child consuming the budget while its parent waits, process
 reaping and an idle tree reaching the raw wall deadline. Additional client
 tests exercise lifecycle aggregation and replay corrections. The isolation
 smoke suite exercises the same option under its bounded namespace profile.
