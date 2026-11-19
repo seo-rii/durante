@@ -1,5 +1,5 @@
 //! Opt-in kernel namespace execution. Counters remain application-mutable.
-use crate::{output, runner};
+use crate::{output, runner, work_budget};
 use serde::Deserialize;
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
@@ -18,7 +18,7 @@ use std::time::{Duration, Instant};
 const SOURCE_SHA: &str = "9760d007363e3abba7c747489910f9f82d9fca53ba3bd3282e396fa3c97a3314";
 const PATCH_SHA: &str = "617e143716b533c36535fea64be9192bc46b3c2d52d140c3dbbded90487b1b54";
 const SDK_REPLAY_PATCH_SHA: &str =
-    "aad9b561fb89e09d52d7a765124226659b8dbd8b886da61bc73d15fde28b5b72";
+    "391cd6f5e35dcbda372cab5dd98fa40a5b2a41effda52ecfce9afa945acb249b";
 const SOURCE_URL: &str =
     "https://github.com/containers/bubblewrap/releases/download/v0.12.0/bubblewrap-0.12.0.tar.xz";
 const MAX_FILES: usize = 256;
@@ -38,6 +38,7 @@ pub struct Options {
     pub disallowed_cpu_features: Vec<String>,
     pub cpuid_profile: Option<String>,
     pub latency_bound: bool,
+    pub work_budget: Option<u64>,
     pub command: Vec<OsString>,
 }
 
@@ -554,6 +555,7 @@ fn failure_execution(inner: &Value) -> Option<Value> {
             | "incomplete"
             | "cancelled"
             | "timed_out"
+            | "work_budget_exceeded"
             | "wait_failed"
             | "cleanup_failed"
     ) {
@@ -583,15 +585,57 @@ fn failure_execution(inner: &Value) -> Option<Value> {
     Some(diagnostic)
 }
 
-fn valid_inner(value: &Value) -> bool {
-    let base = value["schema"] == 1
+fn inner_envelope(value: &Value, state: &str) -> bool {
+    value["schema"] == 1
         && value["authority"] == "diagnostic_only"
         && value["integrity_verified"] == false
         && value["measurement_contract"] == durante::report::measurement_contract()
         && value["security"]["counter_integrity"] == "application_mutable"
-        && value["execution"]["state"] == "complete"
+        && value["execution"]["state"] == state
         && value["execution"]["cleanup_complete"] == true
         && value["execution"]["records_cleanup_complete"] == true
+}
+
+fn valid_budget_stop(inner: &Value, limit: u64) -> bool {
+    let Some(execution) = failure_execution(inner) else {
+        return false;
+    };
+    if !inner_envelope(inner, "work_budget_exceeded")
+        || !execution["root_pid"].is_u64()
+        || !inner["execution"]["cancel_signal"].is_null()
+        || (execution["exit_code"].is_null() && execution["signal"] != libc::SIGKILL)
+    {
+        return false;
+    }
+    let Some(progress) = work_budget::validate_receipt(&inner["work_budget"], limit, true) else {
+        return false;
+    };
+    let measurement = &inner["measurement"];
+    if inner["work_budget"]["observation"] == "terminal" {
+        valid_completed_measurement(inner, "work_budget_exceeded")
+            && progress.matches_terminal(measurement)
+    } else {
+        inner["execution"]["work_budget_killed_processes"]
+            .as_u64()
+            .is_some_and(|n| {
+                n > 0
+                    && inner["execution"]["supervisor_reaped_processes"]
+                        .as_u64()
+                        .is_some_and(|total| n <= total)
+            })
+            && inner["execution"].get("independent_child_signal").is_none()
+            && measurement["valid"] == false
+            && measurement["complete"] == false
+            && measurement.get("instructions").is_none()
+    }
+}
+
+fn valid_inner(value: &Value) -> bool {
+    valid_completed_measurement(value, "complete")
+}
+
+fn valid_completed_measurement(value: &Value, state: &str) -> bool {
+    let base = inner_envelope(value, state)
         && value["measurement"]["valid"] == true
         && value["measurement"]["complete"] == true
         && value["measurement"]["authority"] == "diagnostic_only"
@@ -842,6 +886,9 @@ pub fn run(options: Options) -> Result<i32, String> {
     if options.latency_bound {
         result["latency_bound_version"] = json!(1);
     }
+    if let Some(limit) = options.work_budget {
+        result["work_budget"] = work_budget::unavailable(limit);
+    }
     result["output"] = match &options.output_dir {
         Some(path) => json!({"mode":"capture_requested", "directory":path,
             "limit_bytes":options.output_limit_bytes, "published":false, "complete":false}),
@@ -877,6 +924,9 @@ pub fn run(options: Options) -> Result<i32, String> {
         result["execution"]["scratch_cleanup_complete"] = json!(false);
         result["execution"]["state"] = json!("cleanup_failed");
         result["execution"]["retained_scratch"] = json!(scratch.path);
+        if let Some(limit) = options.work_budget {
+            result["work_budget"] = work_budget::unavailable(limit);
+        }
         result
             .as_object_mut()
             .unwrap()
@@ -1047,6 +1097,9 @@ fn execute(
     if let Some(profile) = &options.cpuid_profile {
         command.args(["--cpuid-profile", profile]);
     }
+    if let Some(limit) = options.work_budget {
+        command.arg("--work-budget").arg(limit.to_string());
+    }
     if options.latency_bound {
         command.arg("--latency-bound");
     }
@@ -1184,6 +1237,16 @@ fn execute(
     if forced {
         return Ok(code);
     }
+    let requested_options_match = |inner: &Value| {
+        runner::policy_matches(inner, &options.disallowed_cpu_features)
+            && runner::cpuid_profile_matches(inner, options.cpuid_profile.as_deref())
+            && inner.get("latency_bound_version") == options.latency_bound.then_some(&json!(1))
+    };
+    let measurement_options_match = |measurement: &Value| {
+        runner::policy_matches(measurement, &options.disallowed_cpu_features)
+            && runner::cpuid_profile_matches(measurement, options.cpuid_profile.as_deref())
+            && runner::latency_bound_matches(measurement, options.latency_bound)
+    };
     if !success {
         result["execution"]["state"] = json!("isolation_failed");
         // Retain bounded diagnostics separately from an accepted inner report.
@@ -1197,6 +1260,18 @@ fn execute(
                 if let Some(execution) = failure_execution(&inner) {
                     result["untrusted_failure_execution"] = execution;
                 }
+                if let Some(limit) = options.work_budget {
+                    if result["execution"]["wrapper_exit_code"] == work_budget::EXIT_EXCEEDED
+                        && requested_options_match(&inner)
+                        && valid_budget_stop(&inner, limit)
+                        && (inner["work_budget"]["observation"] == "live"
+                            || measurement_options_match(&inner["measurement"]))
+                    {
+                        result["execution"]["state"] = json!("work_budget_exceeded");
+                        result["work_budget"] = inner["work_budget"].clone();
+                        return Ok(work_budget::EXIT_EXCEEDED);
+                    }
+                }
             }
         }
         return Ok(1);
@@ -1205,18 +1280,19 @@ fn execute(
         .map_err(|_| "inner report missing, unsafe or oversized")?;
     let inner: Value =
         serde_json::from_slice(&data).map_err(|_| "invalid untrusted inner report")?;
+    let budget_matches = match options.work_budget {
+        None => inner.get("work_budget").is_none(),
+        Some(limit) => work_budget::validate_receipt(&inner["work_budget"], limit, false)
+            .is_some_and(|p| p.matches_terminal(&inner["measurement"])),
+    };
     if valid_inner(&inner)
-        && runner::policy_matches(&inner, &options.disallowed_cpu_features)
-        && runner::policy_matches(&inner["measurement"], &options.disallowed_cpu_features)
-        && runner::cpuid_profile_matches(&inner, options.cpuid_profile.as_deref())
-        && (inner.get("latency_bound_version") == options.latency_bound.then_some(&json!(1)))
-        && (inner["measurement"]["valid"] != true
-            || inner["measurement"]["complete"] != true
-            || (runner::cpuid_profile_matches(
-                &inner["measurement"],
-                options.cpuid_profile.as_deref(),
-            ) && runner::latency_bound_matches(&inner["measurement"], options.latency_bound)))
+        && requested_options_match(&inner)
+        && measurement_options_match(&inner["measurement"])
+        && budget_matches
     {
+        if options.work_budget.is_some() {
+            result["work_budget"] = inner["work_budget"].clone();
+        }
         result["untrusted_inner_report"] = inner;
     } else {
         result["execution"]["state"] = json!("incomplete");

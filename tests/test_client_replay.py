@@ -634,6 +634,33 @@ int main(int argc, char **argv) {
         kernel_xfer(CTX, &info);
         assert(state.replay_error && !state.restart_pc && !state.write_pc);
         snapshot(false);
+    } else if (!strcmp(test, "live-replay")) {
+        live_work_t page = {0};
+        live_work = &page;
+        count_block(4096, START);
+        assert(page.instructions == 0);
+        before_write(WRITE, NEXT, 6);
+        code_replay(CTX, DR_DURANTE_REPLAY_RETRY, WRITE, WRITE);
+        count_block(6, WRITE);
+        assert(page.instructions == 0);
+        count_block(3, NEXT);
+        assert(page.instructions == 4096);
+        publish_live_work(&state, true);
+        publish_live_work(&state, true);
+        assert(page.instructions == 4099 && page.invalid == 0);
+        live_work = NULL;
+    } else if (!strcmp(test, "live-saturation")) {
+        live_work_t page = {.instructions = UINT64_MAX - 1, .movs = UINT64_MAX};
+        live_work = &page;
+        state.instructions = state.rep_movs_bytes = 1;
+        state.rep_stos_bytes = UINT64_MAX;
+        publish_live_work(&state, true);
+        assert(page.instructions == UINT64_MAX && page.movs == UINT64_MAX &&
+               page.stos == UINT64_MAX && page.overflow == 2 && !page.invalid);
+        state.instructions = 2;
+        publish_live_work(&state, true);
+        assert(page.instructions == UINT64_MAX && page.overflow == 3);
+        live_work = NULL;
     } else if (!strcmp(test, "overflow")) {
         state.instructions = UINT64_MAX - 1;
         count_block(2, START);
@@ -818,6 +845,12 @@ class ClientReplayStateTests(unittest.TestCase):
 
     def test_signal_return_clears_same_pc_handler_checkpoint(self):
         self.run_case("signals")
+
+    def test_live_progress_publishes_prior_corrected_block_once(self):
+        self.run_case("live-replay")
+
+    def test_live_components_saturate_independently_without_wrapping(self):
+        self.run_case("live-saturation")
 
     def test_instruction_and_rep_overflow_remain_sticky(self):
         self.run_case("overflow")

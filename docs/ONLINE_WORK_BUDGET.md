@@ -1,161 +1,82 @@
-# Proposal: online work budgets
+# Online work budgets
 
-Status: **design draft; not implemented or enabled**. This specifies the remaining
-work between a completed diagnostic count and stopping a running job at a work
-budget. It adds no CLI option or protocol capability and does not make current
-reports eligible for judge verdicts.
+`durante run` and `durante isolate` accept an optional `--work-budget N` alongside
+the wall deadline. The v1 unit is one basic-block-entry application instruction
+or one requested byte of REP MOVS/STOS. A budget of zero is valid. The owner
+stops the measured tree when the sum of the published components is strictly
+greater than N. Equality continues. Use a separate, generous wall deadline to
+bound idle time and periods without eligible progress.
 
-## Current and intended behavior
-
-`durante run` waits for the process tree, or stops it on wall timeout/cancellation,
-then collects terminal lifecycle records. These records are not a live progress
-interface. Aonohako's `work_measurement_time` converts a complete eligible report
-after execution. Its `nominal_time_exceeded` cannot stop an infinite loop; raw
-CPU/wall/memory limits remain independently active.
-
-The proposed feature gives the owner a work-budget stop condition alongside raw
-limits. Work score and estimated native CPU time remain distinct: score has a
-named unit; only a separately qualified time model can label values nanoseconds.
-There is no language-specific default multiplier. Shared coefficients can apply
-to several explicitly qualified execution profiles.
-
-The first implementation should remain an opt-in diagnostic budget experiment.
-Changing Aonohako's credited time or AC/TLE behavior requires a separate consumer
-contract and evidence. The current diagnostic designation remains part of the
-existing protocol until such a contract is implemented and qualified.
-
-## Exact arithmetic
-
-An operator selects a versioned model and source/runtime/engine/dispatch binding
-before launch. Requests select a budget, without changing coefficients at runtime.
-
-```text
-N = instructions * instruction_weight
-  + movs_requested_bytes * movs_weight
-  + stos_requested_bytes * stos_weight
-score = ceil(N / denominator)
-exceeded = N > budget * denominator
+```sh
+durante run --drrun "$DRRUN" --client "$CLIENT" --report run.json \
+  --work-budget 2000000 --timeout-ms 15000 -- ./program
 ```
 
-All weights and the denominator are positive; equality is allowed. Use exact
-wide integers and round once. Do not charge aggregate REP bytes again. Missing
-operation detail is unavailable even if aggregate REP is zero. Intermediate
-products can exceed uint64; overflow must never wrap into a small accepted score.
+## Reading a result
 
-Boundary vectors for the future implementation:
+| Observation | Execution result | Work evidence |
+| --- | --- | --- |
+| The tree exited within budget | Normal completion | Terminal instruction, MOVS and STOS counts must match the live file after reaping. |
+| A prefix exceeded the budget while the tree was running | `work_budget_exceeded`, exit 123 | `work_budget.observation = "live"` and the prefix that triggered the stop. The forced stop has no accepted terminal measurement. |
+| A short program exited over budget between polls | `work_budget_exceeded`, exit 123 | `observation = "terminal"` after reconciling all three complete counts. |
+| Wall deadline | `timed_out`, exit 124 for `run` | `work_budget.status = "unavailable"`. Cancellation and raw isolation limits also retain their own causes. |
 
-| I / MOVS / STOS | Weights / denominator | Budget | Expected |
-| --- | --- | ---: | --- |
-| 3 / 8 / 4 | 1, 2, 5 / 1 | 39 | equal, continue |
-| 3 / 8 / 4 | 1, 2, 5 / 1 | 38 | exceeded |
-| 1 / 1 / 1 | 1, 1, 1 / 3 | 1 | equal, continue |
-| 1 / 1 / 1 | 1, 1, 1 / 2 | 1 | exceeded |
-| 9,007,199,254,740,993 / 1 / 1 | 1, 2, 5 / 1 | 9,007,199,254,741,000 | equal; no floats |
+Check both process-tree cleanup and record cleanup in the execution envelope.
+An accounting or cleanup failure can invalidate an apparent crossing.
+The isolated owner validates the requested capability, receipt shape, cleanup
+and inner exit state before relaying a budget result.
 
-These vectors describe arithmetic, not proof of live enforcement.
+The CLI's sum uses a wider integer than the budget. Individual counters
+saturate at `UINT64_MAX` with an overflow bit for that component. The three
+counters are also available separately to consumers with a bound time model.
+A work unit alone has no millisecond conversion. This capability retains
+Durante's application-mutable, diagnostic-only counter contract.
 
-## Live accounting is a separate protocol
+## Live client contract
 
-Do not poll the existing collector on a live directory. The [schema-1 protocol](PROTOCOL.md)
-requires a stopped and reaped tree. Exec checkpoints are provisional until the
-exec succeeds or fails, and replay corrections can roll back BB-entry charges.
-An arbitrary snapshot is therefore not a monotonic committed-work count.
+The owner creates a fresh zero-filled 48-byte regular file outside the terminal
+records directory and passes `-rep_bytes -live_work_v1 /absolute/path` to the
+client. It retains a descriptor for that run. The Linux x86-64 layout is six
+aligned little-endian uint64 words in this order.
 
-A new advertised capability must identify run, process lifetime, image, thread
-and update sequence, and specify:
+| Offset | Meaning |
+| ---: | --- |
+| 0 | Ready, published after client initialization |
+| 8 | Sticky invalidity |
+| 16 | Instructions published |
+| 24 | Requested MOVS bytes published |
+| 32 | Requested STOS bytes published |
+| 40 | Sticky overflow bits for instructions (1), MOVS (2), STOS (4) |
 
-- Cumulative or delta updates, duplicate delivery, loss and rollback handling.
-- Child registration when the child runs before its parent's callback; parent
-  totals must not be inherited and charged again.
-- Vfork/shared-address-space behavior and exec success/failure ownership.
-  Failed exec must not add both the checkpoint and later cumulative totals.
-- All live threads, thread exit, final publication and parent-first exit.
-- Committed versus provisional charges during internal code replay.
-- Signal interruption and unsupported REP eligibility, without hiding either.
+All instrumented images, processes and threads in the role contribute to that
+one file. Each thread advances its private published baseline; shared counters
+use atomic additions. A child starts fresh, and an exec checkpoint publishes
+only the outstanding delta. A failed exec therefore continues against the
+same baseline. Publication at the next block entry leaves the current block
+available for replay correction. The client batches each component up to a
+4096-unit publication threshold. Before each application syscall it flushes
+eligible pending work, including when a thread is about to wait, exit or exec. Signals, unsupported REP entries and accounting errors invalidate
+live eligibility. Missing or inconsistent progress leaves the external deadline
+active. A budgeted natural completion requires a matching eligible terminal
+report.
 
-The implementation must choose between stopping after validated progress exceeds
-the limit and reserving work before execution. These have different semantics:
-a rejected reservation is proposed work, not executed work, and cannot become a
-completed count. Pre-execution reservations also need replay reconciliation and
-release of unused reservations.
+Components may be read at slightly different instants. Their sum provides a
+lower bound at the last sampled instant. Publication batching, the owner poll
+interval, concurrent tasks, scheduling and a single large REP operation can
+all increase overshoot. The protocol gives no fixed bound on the instructions
+executed between crossing and the entire role stopping.
 
-Polling alone does not prove a fixed overshoot bound. Account for publication
-intervals, all active threads/processes, scheduling delay and a single large REP
-request. Until these rules and tests exist, do not promise exact stopping at the
-limit. Raw CPU/wall/memory/task limits remain active if progress is unavailable.
+## Runtime verification
 
-## Execution and cleanup
+Run the owner checks with a prepared core and the client built from this tree.
 
-```mermaid
-stateDiagram-v2
-    [*] --> admitted: model/profile/capability accepted
-    admitted --> running: owner starts tree
-    running --> stopping: budget / raw limit / cancel / accounting failure
-    running --> collecting: all processes exit normally
-    stopping --> reaping: owner stops entire tree
-    reaping --> unavailable: cleanup succeeds
-    reaping --> cleanup_failed: cleanup fails
-    collecting --> complete: terminal accounting validates
-    collecting --> unavailable: terminal accounting fails
+```sh
+python3 tests/online_work_clock.py --runner "$DURANTE" --drrun "$DRRUN" --client "$CLIENT"
 ```
 
-The owner records the stop trigger and terminates/reaps the entire owned tree.
-A budget event does not imply cleanup success; an exit-0 root does not imply
-that descendants completed. Controller death and raw stops retain existing owner
-behavior.
-
-Preserve every observed terminal cause separately. Diagnostic presentation gives
-precedence to cleanup failure, owner/accounting failure, explicit cancellation,
-raw resource exhaustion and then a validated budget stop. Do not invent timing
-order where it cannot be established; retain the ambiguity and deny completion.
-
-Any forced stop leaves accepted counter totals unavailable. A separate partial
-stop observation can retain model, budget, last validated progress, cause and
-overshoot information. It must not reuse `measurement.complete: true` or fill
-missing work with zero. The exit status and wire version for a budget stop remain
-to be allocated with implementation. Consumers reject unknown requested
-capabilities before target execution.
-
-## Aonohako integration
-
-Frontend and executor must agree on the exact budget capability, model, profile
-and accepted budget before execution. A runner that ignores the option cannot
-return an ordinary successful result for that request.
-
-The profile must identify effective runtime options as well as the runtime image:
-JIT/GC settings, library mode, operator defaults and heap settings derived from
-raw memory limits. A request's profile name alone is insufficient. Current
-Aonohako time-policy bindings match source/image/engine/dispatch; they do not
-yet bind these effective options. A future live-budget admission must close that
-gap rather than treating an image match as qualification of every configuration.
-
-Keep raw CPU/RSS/wall observations, work score and optional time estimate in
-separate fields. An unavailable estimate does not imply TLE. A small partial
-score cannot turn an existing resource, output or execution failure into AC.
-Interactive/communication budgets require role-specific stop attribution:
-manager/interactor work is not contestant work. Peer aggregation/cancellation
-rules are a dependency of any peer-budget rollout.
-
-## Implementation and acceptance evidence
-
-1. Select live-accounting semantics, capability/version, message identities,
-   provisional/committed state and an attainable overshoot bound.
-2. Implement client publication and owner accounting together, with lifecycle
-   vectors for threads, fork, vfork, exec success/failure and replay.
-3. Add bounded stop/cleanup to `run` and `isolate`, retaining raw limits and
-   testing the absence of progress.
-4. Add Aonohako admission, resource envelopes, local/remote reconstruction and
-   role policies. Keep initial output diagnostic and opt-in.
-5. Qualify intended runtime profiles and separately review any verdict mode.
-
-Required actual-runtime cases: an infinite loop stopped by work before a generous
-wall limit; equality/one-unit exceedance; large MOVS/STOS; parallel threads and
-children; parent-first exit; detached descendants; exec success/failure; JIT
-replay; handled signals; stale/missing progress; raw CPU/wall/memory stops;
-cancellation concurrent with threshold crossing; owner/cleanup failure. Each
-must show the trigger, full-tree reaping and no accepted totals after forced stop.
-
-Measure overhead and overshoot with fixed inputs/identities, bounded campaigns
-and every failure retained. A post-exit comparison, synthetic ledger or unchanged
-wall-timeout test cannot replace live-stop tests. Merging this proposal supplies
-none of that runtime evidence.
+The harness checks an independently counted three-instruction boundary, an
+short above-budget work followed by a blocking syscall, an infinite loop,
+a child consuming the budget while its parent waits, process
+reaping and an idle tree reaching the raw wall deadline. Additional client
+tests exercise lifecycle aggregation and replay corrections. The isolation
+smoke suite exercises the same option under its bounded namespace profile.
