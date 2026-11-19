@@ -3,6 +3,7 @@
 //! CPU/RSS limits. The caller still supplies isolation and resource protection.
 use crate::work_budget::{self, Clock};
 use serde_json::{json, Value};
+use std::collections::BTreeSet;
 use std::ffi::OsString;
 use std::fs::{self, DirBuilder, File, OpenOptions};
 use std::io::{self, Read, Seek, Write};
@@ -234,6 +235,27 @@ impl Drop for Records {
 pub(crate) struct WaitState {
     pub(crate) root_status: Option<i32>,
     pub(crate) reaped: usize,
+    pending_owner_kills: BTreeSet<i32>,
+    killed_during_cleanup: usize,
+    other_child_signal: Option<i32>,
+}
+
+impl WaitState {
+    fn record_exit(&mut self, root_pid: u32, pid: i32, status: i32) {
+        self.reaped += 1;
+        if pid as u32 == root_pid {
+            self.root_status = Some(status);
+        }
+        let sent_kill = self.pending_owner_kills.remove(&pid);
+        if libc::WIFSIGNALED(status) {
+            let signal = libc::WTERMSIG(status);
+            if signal == libc::SIGKILL && sent_kill {
+                self.killed_during_cleanup += 1;
+            } else {
+                self.other_child_signal.get_or_insert(signal);
+            }
+        }
+    }
 }
 
 // Returns true while at least one direct/reparented child is still live. The
@@ -244,10 +266,7 @@ pub(crate) fn reap(root_pid: u32, state: &mut WaitState) -> io::Result<bool> {
         // SAFETY: valid status pointer; no signal handler or other thread waits.
         let pid = unsafe { libc::waitpid(-1, &mut status, libc::WNOHANG) };
         if pid > 0 {
-            state.reaped += 1;
-            if pid as u32 == root_pid {
-                state.root_status = Some(status);
-            }
+            state.record_exit(root_pid, pid, status);
         } else if pid == 0 {
             return Ok(true);
         } else {
@@ -264,7 +283,7 @@ pub(crate) fn reap(root_pid: u32, state: &mut WaitState) -> io::Result<bool> {
     Ok(true)
 }
 
-fn kill_owned_children() -> io::Result<()> {
+fn kill_owned_children(root_pid: u32, state: &mut WaitState) -> io::Result<()> {
     let pid = std::process::id();
     let file = File::open(format!("/proc/self/task/{pid}/children"))?;
     let mut bytes = Vec::new();
@@ -291,6 +310,24 @@ fn kill_owned_children() -> io::Result<()> {
             .ok_or_else(|| {
                 io::Error::new(io::ErrorKind::InvalidData, "invalid owned child list")
             })?;
+        // Recheck immediately before sending a signal. kill() can report success
+        // for an already waitable zombie, which supplies no live-stop evidence.
+        let mut status = 0;
+        // SAFETY: positive direct child, valid status pointer, sole reaper.
+        match unsafe { libc::waitpid(child, &mut status, libc::WNOHANG) } {
+            pid if pid > 0 => {
+                state.record_exit(root_pid, pid, status);
+                continue;
+            }
+            0 => {}
+            _ => {
+                let error = io::Error::last_os_error();
+                if error.raw_os_error() == Some(libc::EINTR) {
+                    continue;
+                }
+                return Err(error);
+            }
+        }
         // Every listed PID is our unreaped direct child. With SIGCHLD default
         // and this sole wait thread, it cannot be reused until a later reap.
         // Killing parents adopts even setsid/double-fork descendants; repeat.
@@ -300,6 +337,8 @@ fn kill_owned_children() -> io::Result<()> {
             if error.raw_os_error() != Some(libc::ESRCH) {
                 return Err(error);
             }
+        } else {
+            state.pending_owner_kills.insert(child);
         }
     }
     Ok(())
@@ -316,7 +355,7 @@ pub(crate) fn cleanup_tree(root_pid: u32, state: &mut WaitState) -> bool {
         if started.elapsed() >= CLEANUP_TIMEOUT {
             return false;
         }
-        if kill_owned_children().is_err() {
+        if kill_owned_children(root_pid, state).is_err() {
             return false;
         }
         std::thread::sleep(POLL_INTERVAL);
@@ -576,7 +615,7 @@ fn execute(
     let deadline = Instant::now() + Duration::from_millis(options.timeout_ms);
     let mut waited = WaitState::default();
     let mut crossing = None;
-    let (state, mut code, forced) = loop {
+    let (state, mut code, mut forced) = loop {
         let signal = CANCEL_SIGNAL.load(Ordering::Relaxed);
         if signal != 0 {
             result["execution"]["cancel_signal"] = json!(signal);
@@ -599,10 +638,23 @@ fn execute(
         std::thread::sleep(POLL_INTERVAL);
     };
     result["execution"]["state"] = json!(state);
-    // Remember a raw signal already observed before cleanup sends SIGKILL.
-    let root_was_signalled = waited.root_status.is_some_and(libc::WIFSIGNALED);
     let cleanup_start = Instant::now();
     let cleanup_complete = !forced || cleanup_tree(root_pid, &mut waited);
+    if crossing.is_some() {
+        result["execution"]["work_budget_killed_processes"] = json!(waited.killed_during_cleanup);
+        if let Some(signal) = waited.other_child_signal {
+            result["execution"]["independent_child_signal"] = json!(signal);
+        } else if cleanup_complete
+            && waited.killed_during_cleanup == 0
+            && cancellation_signal() == 0
+        {
+            // The tree finished between the crossing and the first effective
+            // kill. Validate its terminal records to classify the natural exit.
+            forced = false;
+            code = 0;
+            result["execution"]["state"] = json!("complete");
+        }
+    }
     result["execution"]["cleanup_time_ms"] = json!(cleanup_start.elapsed().as_millis() as u64);
     result["execution"]["cleanup_complete"] = json!(cleanup_complete);
     result["execution"]["supervisor_reaped_processes"] = json!(waited.reaped);
@@ -642,11 +694,9 @@ fn execute(
                 result["execution"]["cancel_signal"] = json!(after_stop_signal);
                 code = 128 + after_stop_signal;
             } else if final_progress.is_some()
-                && !root_was_signalled
-                && waited.root_status.is_some_and(|status| {
-                    libc::WIFEXITED(status)
-                        || (libc::WIFSIGNALED(status) && libc::WTERMSIG(status) == libc::SIGKILL)
-                })
+                && waited.killed_during_cleanup > 0
+                && waited.other_child_signal.is_none()
+                && waited.root_status.is_some()
             {
                 result["work_budget"] = observed.receipt(limit, "live");
             } else {
@@ -750,4 +800,43 @@ fn execute(
         code = 1;
     }
     Ok(code)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn cleanup_requires_a_matching_signal_for_each_effective_kill() {
+        let mut waited = WaitState::default();
+        // A completed root can race the cleanup pass even after kill() succeeds.
+        waited.pending_owner_kills.insert(42);
+        waited.record_exit(42, 42, 0);
+        assert_eq!(waited.root_status, Some(0));
+        assert_eq!(waited.killed_during_cleanup, 0);
+        assert!(waited.pending_owner_kills.is_empty());
+        assert!(waited.other_child_signal.is_none());
+
+        // An owned descendant stopped during cleanup still counts for the tree.
+        waited.pending_owner_kills.insert(43);
+        waited.record_exit(42, 43, libc::SIGKILL);
+        assert_eq!(waited.killed_during_cleanup, 1);
+        assert!(waited.other_child_signal.is_none());
+
+        // The same numeric PID can later be reused by another descendant. A
+        // SIGKILL the owner never sent is an independent cause in either role.
+        waited.record_exit(42, 43, libc::SIGKILL);
+        assert_eq!(waited.killed_during_cleanup, 1);
+        assert_eq!(waited.other_child_signal, Some(libc::SIGKILL));
+    }
+
+    #[test]
+    fn raw_signal_wins_even_after_sending_an_owner_kill() {
+        let mut waited = WaitState::default();
+        waited.pending_owner_kills.insert(42);
+        waited.record_exit(42, 42, libc::SIGXCPU);
+        assert_eq!(waited.killed_during_cleanup, 0);
+        assert_eq!(waited.other_child_signal, Some(libc::SIGXCPU));
+        assert!(waited.pending_owner_kills.is_empty());
+    }
 }

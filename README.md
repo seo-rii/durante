@@ -166,6 +166,7 @@ measurement, even if application-writable records claim to be complete.
 | Complete diagnostic measurement | 0 |
 | Launch, collection or cleanup failure | 1 |
 | Invalid command-line arguments | 2 |
+| Measured work budget exceeded | 123 |
 | Wall timeout | 124 |
 | Interrupted by SIGINT / SIGTERM | 130 / 143 |
 

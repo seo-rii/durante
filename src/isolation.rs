@@ -615,7 +615,16 @@ fn valid_budget_stop(inner: &Value, limit: u64) -> bool {
         valid_completed_measurement(inner, "work_budget_exceeded")
             && progress.matches_terminal(measurement)
     } else {
-        measurement["valid"] == false
+        inner["execution"]["work_budget_killed_processes"]
+            .as_u64()
+            .is_some_and(|n| {
+                n > 0
+                    && inner["execution"]["supervisor_reaped_processes"]
+                        .as_u64()
+                        .is_some_and(|total| n <= total)
+            })
+            && inner["execution"].get("independent_child_signal").is_none()
+            && measurement["valid"] == false
             && measurement["complete"] == false
             && measurement.get("instructions").is_none()
     }
