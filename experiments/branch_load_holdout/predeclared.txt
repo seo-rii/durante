@@ -1,0 +1,5 @@
+New, previously unmeasured held-out CPP20 corpus, defined before execution or evaluation. Seeds and sizes will not be retuned after observing native CPU, work counts, model fits, or accuracy. Three independent algorithms, one instance per algorithm.
+binary-gcd: 650000 unsigned 32-bit Euclidean GCD pairs from LCG seed 178613745. Use Stein's binary GCD; oracle math.gcd.
+stream-polynomial: 196608 coefficients (17*i+22) over F_1000000007, Horner evaluation at 128 points x=3+37*j. Oracle uses the finite series and derivative closed forms.
+linked-rank: 262144 nodes, 11317 successor queries of 1024+(query_index mod 512) hops, seed 104729. One directed cycle in a permutation of the array indices, oracle advances the rank mathematically.
+One size per algorithm. Repetitions reuse the exact static ELF, stdin and output. Results previously exposed for sorts, CSES algorithms, lower_bound, hash_probe, merge_streams and window_sum remain external to these programs. This machine uses g++ 12.2 -std=c++20 -O2 -static -no-pie -march=x86-64 -mtune=generic -Wl,--build-id=none -s.

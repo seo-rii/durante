@@ -1,0 +1,44 @@
+{
+  "cases": {
+    "binary-gcd": {
+      "elf_sha256": "2a44e63847de166d5bea191692e2bc1faf2341025e24082abd6eb5a8f77dae08",
+      "input_sha256": "651350bacd0996fee097b60b61ce03e578986474fe2cbf3e2193370c5c70424d",
+      "native_ns": [
+        88040000,
+        85195000,
+        84992000,
+        88409000,
+        86821000,
+        100270000
+      ],
+      "output_sha256": "825ed91dda9f353a7ee44919fb50c4974221372edd1dbaaf7aafae94e2c9c798"
+    },
+    "linked-rank": {
+      "elf_sha256": "f58d418750169e99a33f14c1092c7ed13862e9987f4e43fc60b2966e24086b54",
+      "input_sha256": "7871ac13a3a60a7f89bcbf472662b4c105812cbd33c48cc69af6db6f2b6c645e",
+      "native_ns": [
+        179811000,
+        192756000,
+        204202000,
+        177544000,
+        198143000,
+        200454000
+      ],
+      "output_sha256": "6424dfb42062ce6a14644e433952f1403eab2b8a6e0d19f2855da7732e77e392"
+    },
+    "stream-polynomial": {
+      "elf_sha256": "120a3b98249d7def49cc3e58847be32c131190ec0216805d44a43811a0cefb74",
+      "input_sha256": "f2fafba2407ea9bcf70268aa4aa04e69a9276dc7c42eb3bce84e99698c976cc7",
+      "native_ns": [
+        128868000,
+        129128000,
+        136143000,
+        132430000,
+        151147000,
+        140425000
+      ],
+      "output_sha256": "78098c244dbc042ca888c262a76f3b6621cc9c41ac68243d67eb16d63b2e2e6c"
+    }
+  },
+  "schema": 1
+}
