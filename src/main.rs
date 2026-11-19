@@ -11,6 +11,8 @@ mod isolation;
 mod output;
 #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
 mod runner;
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+mod work_budget;
 
 /// Diagnostic software-work measurement; not a sandbox or trusted judge.
 #[derive(Parser)]
@@ -73,6 +75,9 @@ enum Command {
         /// Also count the static per-block latency bound (diagnostic, version 1).
         #[arg(long = "latency-bound")]
         latency_bound: bool,
+        /// Stop after more than this many software-work units (instructions + MOVS/STOS bytes).
+        #[arg(long)]
+        work_budget: Option<u64>,
         /// Target executable and arguments, passed directly without a shell.
         #[arg(required = true, last = true, num_args = 1..)]
         command: Vec<OsString>,
@@ -106,6 +111,9 @@ enum Command {
         /// Forward the fixed virtual processor identity into the isolated run.
         #[arg(long = "cpuid-profile", value_parser = ["x86-64-v1", "x86-64-v2"])]
         cpuid_profile: Option<String>,
+        /// Forward the diagnostic software-work budget into the isolated run.
+        #[arg(long)]
+        work_budget: Option<u64>,
         /// Forward the latency-bound counter request into the isolated run.
         #[arg(long = "latency-bound")]
         latency_bound: bool,
@@ -241,6 +249,7 @@ fn main() {
             disallowed_cpu_features,
             cpuid_profile,
             latency_bound,
+            work_budget,
             command,
         } => {
             #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
@@ -256,6 +265,7 @@ fn main() {
                     disallowed_cpu_features,
                     cpuid_profile,
                     latency_bound,
+                    work_budget,
                     command,
                 })
             }
@@ -272,6 +282,7 @@ fn main() {
                     disallowed_cpu_features,
                     cpuid_profile,
                     latency_bound,
+                    work_budget,
                     command,
                 );
                 Err("durante run requires Linux x86-64".to_owned())
@@ -289,6 +300,7 @@ fn main() {
             disallowed_cpu_features,
             cpuid_profile,
             latency_bound,
+            work_budget,
             command,
         } => {
             #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
@@ -305,6 +317,7 @@ fn main() {
                     disallowed_cpu_features,
                     cpuid_profile,
                     latency_bound,
+                    work_budget,
                     command,
                 })
             }
@@ -323,6 +336,7 @@ fn main() {
                     disallowed_cpu_features,
                     cpuid_profile,
                     latency_bound,
+                    work_budget,
                 );
                 Err("durante isolate requires Linux x86-64".to_owned())
             }

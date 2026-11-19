@@ -74,7 +74,8 @@ def main():
     libc, previous = own_subreaper()
     rows = []
     try:
-        for mode in ('probe', 'python', 'exit-139', 'signal-term', 'kill-inner', 'sleep'):
+        for mode in ('probe', 'python', 'exit-139', 'signal-term', 'kill-inner', 'sleep',
+                     'budget-loop', 'budget-complete'):
             case = output / mode
             report = case / 'report.json'
             timeout = 500 if mode == 'sleep' else 10000
@@ -84,6 +85,13 @@ def main():
                        '--', '/work/Main', mode, str(secret), pidns, netns]
             if mode == 'python':
                 command[command.index('--') + 1:] = ['/usr/bin/python3', '-I', '-S', '/work/Main.py']
+            if mode.startswith('budget-') or mode == 'sleep':
+                separator = command.index('--')
+                command[separator:separator] = ['--work-budget', '5000000']
+                if mode == 'budget-loop':
+                    command[separator + 3:] = ['/bin/sh', '-c', 'echo running; while :; do :; done']
+                elif mode == 'budget-complete':
+                    command[separator + 3:] = ['/usr/bin/true']
             started = time.monotonic()
             row = run_bounded(command, case, timeout + 5000)
             row.update(case=mode, passed=False, elapsed_seconds=time.monotonic() - started)
@@ -104,6 +112,25 @@ def main():
                     row['passed'] = (safe and row['exit_code'] == 0 and row['stdout'] == expected
                                      and result['execution']['state'] == 'complete'
                                      and result.get('untrusted_inner_report', {}).get('measurement', {}).get('valid') is True)
+                elif mode == 'budget-loop':
+                    budget = result.get('work_budget', {})
+                    row['passed'] = (safe and row['exit_code'] == 123 and row['stdout'] == 'running\n'
+                                     and result['execution']['state'] == 'work_budget_exceeded'
+                                     and result['execution']['wrapper_exit_code'] == 123
+                                     and budget.get('observation') == 'live'
+                                     and budget.get('status') == 'exceeded'
+                                     and budget.get('limit') == 5000000 and budget.get('overflow_mask') == 0
+                                     and sum(budget[k] for k in ('instructions', 'movs_bytes', 'stos_bytes')) > 5000000
+                                     and 'untrusted_inner_report' not in result)
+                elif mode == 'budget-complete':
+                    budget = result.get('work_budget', {})
+                    inner = result.get('untrusted_inner_report', {})
+                    row['passed'] = (safe and row['exit_code'] == 0 and row['stdout'] == ''
+                                     and result['execution']['state'] == 'complete'
+                                     and budget.get('observation') == 'terminal'
+                                     and budget.get('status') == 'within_budget'
+                                     and budget.get('instructions') == inner.get('measurement', {}).get('instructions')
+                                     and budget == inner.get('work_budget'))
                 elif mode == 'exit-139':
                     inner = result.get('untrusted_inner_report', {})
                     execution = inner.get('execution', {})
@@ -137,6 +164,7 @@ def main():
                 else:
                     row['passed'] = (safe and row['exit_code'] == 124
                                      and result['execution']['state'] == 'timed_out'
+                                     and result.get('work_budget', {}).get('status') == 'unavailable'
                                      and 'untrusted_inner_report' not in result)
             rows.append(row)
         # Reject an unsafe snapshot without ever opening a FIFO or following a

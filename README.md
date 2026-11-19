@@ -54,9 +54,10 @@ inventing zeros. See the [protocol](docs/PROTOCOL.md) for the optional capabilit
 checked sums and actual lifecycle/replay qualification tests. No time weights
 are selected by these counters.
 
-The [online work-budget proposal](docs/ONLINE_WORK_BUDGET.md) describes the
-remaining live-accounting, stop/cleanup and consumer contracts. It is a design
-draft; current Durante does not enforce a work-score limit during execution.
+Use `durante run --work-budget N` or `durante isolate --work-budget N` to stop a
+running tree on a measured instruction-and-REP-byte budget. The independent
+wall deadline also bounds sleeping and blocked programs. See the
+[online work clock](docs/ONLINE_WORK_BUDGET.md) for the unit and stop receipts.
 
 ## Build and test
 

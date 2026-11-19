@@ -1,6 +1,7 @@
 //! A dedicated CLI supervisor, not an execution sandbox. It owns its direct and
 //! reparented descendants, but it does not change target credentials or impose
 //! CPU/RSS limits. The caller still supplies isolation and resource protection.
+use crate::work_budget::{self, Clock};
 use serde_json::{json, Value};
 use std::ffi::OsString;
 use std::fs::{self, DirBuilder, File, OpenOptions};
@@ -33,6 +34,7 @@ pub struct Options {
     pub cpuid_profile: Option<String>,
     /// Also charge the static per-block latency bound (version 1).
     pub latency_bound: bool,
+    pub work_budget: Option<u64>,
     pub command: Vec<OsString>,
 }
 
@@ -382,6 +384,9 @@ pub fn run(options: Options) -> Result<i32, String> {
     if options.latency_bound {
         result["latency_bound_version"] = json!(1);
     }
+    if let Some(limit) = options.work_budget {
+        result["work_budget"] = work_budget::unavailable(limit);
+    }
     let outcome = execute(&options, drrun, client, &mut result);
     result["execution"]["wall_time_ms"] =
         json!(started.elapsed().as_millis().min(u64::MAX as u128) as u64);
@@ -476,6 +481,11 @@ fn execute(
     if records.keep {
         result["execution"]["records_dir"] = json!(records.path);
     }
+    let mut clock = options
+        .work_budget
+        .map(|_| Clock::create())
+        .transpose()
+        .map_err(|_| "cannot create the live progress file")?;
     let _owner = ProcessOwner::new().map_err(|_| "cannot establish process-tree ownership")?;
     let parent_pid = std::process::id() as libc::pid_t;
     let mut command = Command::new(drrun);
@@ -496,6 +506,9 @@ fn execute(
         .arg("-outdir")
         .arg(&records.path)
         .arg("-rep_bytes");
+    if let Some(clock) = &clock {
+        command.arg("-live_work_v1").arg(&clock.path);
+    }
     for feature in &options.disallowed_cpu_features {
         command.args(["-disallow_cpu_feature", feature]);
     }
@@ -562,6 +575,7 @@ fn execute(
     result["execution"]["root_pid"] = json!(root_pid);
     let deadline = Instant::now() + Duration::from_millis(options.timeout_ms);
     let mut waited = WaitState::default();
+    let mut crossing = None;
     let (state, mut code, forced) = loop {
         let signal = CANCEL_SIGNAL.load(Ordering::Relaxed);
         if signal != 0 {
@@ -576,9 +590,17 @@ fn execute(
         if Instant::now() >= deadline {
             break ("timed_out", 124, true);
         }
+        if let (Some(clock), Some(limit)) = (&mut clock, options.work_budget) {
+            if let Some(observed) = clock.poll().filter(|p| p.exceeds(limit)) {
+                crossing = Some(observed);
+                break ("work_budget_exceeded", work_budget::EXIT_EXCEEDED, true);
+            }
+        }
         std::thread::sleep(POLL_INTERVAL);
     };
     result["execution"]["state"] = json!(state);
+    // Remember a raw signal already observed before cleanup sends SIGKILL.
+    let root_was_signalled = waited.root_status.is_some_and(libc::WIFSIGNALED);
     let cleanup_start = Instant::now();
     let cleanup_complete = !forced || cleanup_tree(root_pid, &mut waited);
     result["execution"]["cleanup_time_ms"] = json!(cleanup_start.elapsed().as_millis() as u64);
@@ -597,6 +619,11 @@ fn execute(
     } else {
         false
     };
+    // Re-read after reaping. Concurrent invalidation or an unavailable final
+    // publication cannot turn a forced stop into usable budget evidence.
+    let final_progress = cleanup_complete
+        .then(|| clock.as_mut().and_then(Clock::poll))
+        .flatten();
     if !cleanup_complete {
         result["execution"]["state"] = json!("cleanup_failed");
         result["measurement"] = invalid_measurement(
@@ -608,6 +635,25 @@ fn execute(
         // Do not trust a syntactically complete application-writable report
         // after cancellation or a forced resource stop.
         result["measurement"] = invalid_measurement(Some(root_pid), "measurement forcibly stopped");
+        if let (Some(observed), Some(limit)) = (crossing, options.work_budget) {
+            let after_stop_signal = cancellation_signal();
+            if after_stop_signal != 0 {
+                result["execution"]["state"] = json!("cancelled");
+                result["execution"]["cancel_signal"] = json!(after_stop_signal);
+                code = 128 + after_stop_signal;
+            } else if final_progress.is_some()
+                && !root_was_signalled
+                && waited.root_status.is_some_and(|status| {
+                    libc::WIFEXITED(status)
+                        || (libc::WIFSIGNALED(status) && libc::WTERMSIG(status) == libc::SIGKILL)
+                })
+            {
+                result["work_budget"] = observed.receipt(limit, "live");
+            } else {
+                result["execution"]["state"] = json!("incomplete");
+                code = 1;
+            }
+        }
     } else if !normal_exit {
         result["execution"]["state"] = json!("incomplete");
         result["measurement"] = invalid_measurement(Some(root_pid), "root did not exit normally");
@@ -651,6 +697,25 @@ fn execute(
                     invalid_measurement(Some(root_pid), "root exit status disagrees with records");
             }
         }
+        if let Some(limit) = options.work_budget {
+            if measurement["valid"] == true && measurement["complete"] == true {
+                match final_progress.filter(|p| p.matches_terminal(&measurement)) {
+                    Some(observed) => {
+                        result["work_budget"] = observed.receipt(limit, "terminal");
+                        if observed.exceeds(limit) {
+                            result["execution"]["state"] = json!("work_budget_exceeded");
+                            code = work_budget::EXIT_EXCEEDED;
+                        }
+                    }
+                    None => {
+                        measurement = invalid_measurement(
+                            Some(root_pid),
+                            "live work progress is unavailable or disagrees with terminal records",
+                        )
+                    }
+                }
+            }
+        }
         if measurement["valid"] != true || measurement["complete"] != true {
             result["execution"]["state"] = json!("incomplete");
             code = 1;
@@ -663,9 +728,22 @@ fn execute(
         records.keep = true;
         result["execution"]["records_dir"] = json!(records.path);
     }
-    if records.cleanup().is_err() {
+    let clock_cleaned = clock.as_mut().is_none_or(|clock| {
+        if !cleanup_complete {
+            clock.directory.keep = true;
+        }
+        let ok = clock.directory.cleanup().is_ok();
+        if !ok || !cleanup_complete {
+            result["execution"]["progress_dir"] = json!(clock.directory.path);
+        }
+        ok
+    });
+    if records.cleanup().is_err() || !clock_cleaned {
         result["execution"]["state"] = json!("cleanup_failed");
         result["execution"]["records_cleanup_complete"] = json!(false);
+        if let Some(limit) = options.work_budget {
+            result["work_budget"] = work_budget::unavailable(limit);
+        }
         result["execution"]["records_dir"] = json!(records.path);
         result["measurement"] =
             invalid_measurement(Some(root_pid), "record-directory cleanup failed");
