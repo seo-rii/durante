@@ -1140,6 +1140,9 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
                      "https://dynamorio.org/");
   if (dr_durante_runtime_abi_version() != DR_DURANTE_RUNTIME_ABI_VERSION)
     fail("prepared runtime with code replay ABI 1 required");
+  uint64 ignore_eflags;
+  if (!dr_get_integer_option("cleancall_ignore_eflags", &ignore_eflags) || ignore_eflags)
+    fail("prepared runtime with full clean-call flag preservation required");
   if (argc < 3 || strcmp(argv[1], "-outdir"))
     fail("usage: -c libdurante.so -outdir NEW_PRIVATE_DIRECTORY [-rep_bytes] "
          "[-disallow_cpu_feature avx|simd] [-cpuid_profile x86-64-v1|x86-64-v2] "

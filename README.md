@@ -276,6 +276,9 @@ frames when the kernel includes extra XSAVE state. The original runtime could
 overwrite the saved precision flag after clearing live FPU exceptions.
 [Signal-state qualification](docs/SIGNAL_STATE.md) checks the saved frame,
 restored registers and arithmetic with native, engine-only and client controls.
+The prepared x86-64 runtime saves, clears and restores guest flags around
+client clean calls. This lets HotSpot enable alignment checking during CPU
+detection while the client writes its thread-local counters and checkpoints.
 Updating this patch requires rebuilding the prepared SDK, client and CLI together;
 `isolate` checks the reviewed patch digest.
 
