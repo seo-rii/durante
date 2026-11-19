@@ -18,7 +18,7 @@ static uint64_t probe_read_refs;
 static unsigned probe_block_reads;
 static instr_t *probe_block_last;
 static thread_data_t *probe_thread_data;
-static bool probe_inline_block, probe_store_translation;
+static bool probe_inline_block;
 
 static uint write_suffix(instrlist_t *bb, instr_t *where);
 
@@ -67,23 +67,6 @@ static void probe_scalar_write(uintptr_t base, uintptr_t index, uint64_t spec,
 #else
 #pragma GCC pop_options
 #endif
-
-/* A block that branches to its own entry can amortize inline instrumentation
- * immediately. Other startup blocks use compact callbacks. Keep the address
- * translations for blocks inlined based on the live count: on a later
- * translating=true callback DR is recreating a block with a static layout. */
-static void probe_select_block(instrlist_t *bb, bool translating) {
-  instr_t *tail = instrlist_last_app(bb);
-  bool self_loop = false;
-  if (tail && (instr_is_cbr(tail) || instr_is_ubr(tail))) {
-    opnd_t target = instr_get_target(tail);
-    self_loop = opnd_is_pc(target) &&
-                opnd_get_pc(target) == instr_get_app_pc(instrlist_first_app(bb));
-  }
-  probe_store_translation = !self_loop && !translating && probe_thread_data &&
-                            probe_thread_data->instructions >= 32 * LIVE_WORK_BATCH;
-  probe_inline_block = self_loop || probe_store_translation;
-}
 
 /* The byte offset of a set in the tag table is the set-index bits of
  * the original address. The first tag is one past the MRU line number. */

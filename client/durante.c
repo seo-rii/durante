@@ -67,6 +67,7 @@ typedef struct {
       unsupported_rep_entries;
   uint64_t rep_movs_bytes, rep_stos_bytes, rep_movs_entries, rep_stos_entries;
   uint64_t published_instructions, published_movs, published_stos;
+  uint64_t fast_until; /* Exclusive pre-charge threshold; zero forces the callback. */
   bool rep_error;
   bool replay_error;
   /* A CPUID-profile request outside the fixed table (sticky invalidity). */
@@ -128,14 +129,9 @@ static size_t file_bytes;
 
 #ifdef DURANTE_L1D_PROBE
 static bool probe_l1d;
-static uint64_t probe_fast_until;
 #endif
 
 static inline void invalidate_live_work(void) {
-#ifdef DURANTE_L1D_PROBE
-  if (probe_l1d)
-    probe_fast_until = 0;
-#endif
   if (live_work)
     __atomic_store_n(&live_work->invalid, 1, __ATOMIC_RELEASE);
 }
@@ -189,10 +185,13 @@ static void add_live_delta(uint64_t *counter, uint64_t delta, uint64_t overflow_
 
 enum { LIVE_WORK_BATCH = 4096 };
 
+static bool invalid_thread_work(const thread_data_t *d) {
+  return d->signals || d->rep_error || d->replay_error || d->cpuid_error ||
+         d->counter_overflows || d->unsupported_rep_entries;
+}
+
 static void publish_live_work(thread_data_t *d, bool flush) {
-  if (d->signals || d->rep_error || d->replay_error || d->cpuid_error ||
-      d->counter_overflows || d->unsupported_rep_entries ||
-      d->instructions < d->published_instructions ||
+  if (invalid_thread_work(d) || d->instructions < d->published_instructions ||
       d->rep_movs_bytes < d->published_movs || d->rep_stos_bytes < d->published_stos) {
     invalidate_live_work();
     return;
@@ -552,14 +551,11 @@ static dr_emit_flags_t analyze_block(void *drcontext, void *tag,
  * are counted as unsupported entries instead of charging their initial RCX.
  */
 static void observe_rep(app_pc pc, int opcode, int bytes, int count_reg) {
-#ifdef DURANTE_L1D_PROBE
-  if (probe_l1d)
-    probe_fast_until = 0;
-#endif
   void *drcontext = dr_get_current_drcontext();
   thread_data_t *data = drmgr_get_tls_field(drcontext, tls_index);
   if (data == NULL)
     fail("REP observation without thread state");
+  data->fast_until = 0;
   uint64_t repeats = 0;
   if (bytes != 0) {
     dr_mcontext_t mc = {0};
@@ -715,29 +711,33 @@ static void count_block(int instructions, app_pc first_pc) {
   charge_block(instructions, first_pc);
 }
 
-#if defined(DURANTE_L1D_PROBE) && !defined(DURANTE_TEST_COUNT_LOCATIONS)
 /* Up to the next publication, an ordinary BB only clears the write checkpoint
  * and charges its count. REP can introduce a publishable byte delta, and replay
  * can roll back instructions or require a restart. Both callbacks disarm the
  * window. A syscall flush publishes early and can only move the boundary later. */
-static void probe_charge_boundary(int count, app_pc first_pc) {
+static void charge_boundary(int count, app_pc first_pc) {
   thread_data_t *d = charge_block(count, first_pc);
-  probe_fast_until = 0;
-  if (!d || d->restart_pc || d->instructions > UINT64_MAX - INT32_MAX - LIVE_WORK_BATCH ||
-      (live_work && __atomic_load_n(&live_work->invalid, __ATOMIC_ACQUIRE)))
+  if (!d)
     return;
-  /* At this point publish_live_work checked any REP delta and every validity
-   * invariant. The headroom covers the largest next BB and the addition here. */
-  probe_fast_until = live_work ? d->published_instructions + LIVE_WORK_BATCH :
-                                 UINT64_MAX - INT32_MAX;
+  d->fast_until = 0;
+  if (d->restart_pc || d->instructions > UINT64_MAX - INT32_MAX - LIVE_WORK_BATCH)
+    return;
+  /* A permanently invalid thread can no longer publish. Other threads sharing
+   * its page still publish their own deltas. Reserve room for the largest BB. */
+  if (!live_work || invalid_thread_work(d))
+    d->fast_until = UINT64_MAX - INT32_MAX;
+  else if (d->published_instructions <= d->instructions)
+    d->fast_until = d->published_instructions + LIVE_WORK_BATCH;
 }
 
-static void probe_insert_charge(void *ctx, instrlist_t *bb, instr_t *where, int count,
-                                app_pc first_pc) {
+static void insert_charge(void *ctx, instrlist_t *bb, instr_t *where, int count,
+                          app_pc first_pc) {
   instr_t *slow = INSTR_CREATE_label(ctx), *done = INSTR_CREATE_label(ctx);
-  opnd_t tmp = opnd_create_reg(DR_REG_R10), data = opnd_create_reg(DR_REG_R11);
+  opnd_t tmp = opnd_create_reg(DR_REG_R10);
+  opnd_t boundary = opnd_create_base_disp(DR_REG_R11, DR_REG_NULL, 0,
+                                          offsetof(thread_data_t, fast_until), OPSZ_8);
   opnd_t instructions = opnd_create_base_disp(DR_REG_R11, DR_REG_NULL, 0,
-                                               offsetof(thread_data_t, instructions), OPSZ_8);
+                                              offsetof(thread_data_t, instructions), OPSZ_8);
   opnd_t checkpoint = opnd_create_base_disp(DR_REG_R11, DR_REG_NULL, 0,
                                             offsetof(thread_data_t, write_pc), OPSZ_8);
   /* The spills and both branches are confined to this instruction's meta IR.
@@ -746,16 +746,17 @@ static void probe_insert_charge(void *ctx, instrlist_t *bb, instr_t *where, int 
   dr_save_reg(ctx, bb, where, DR_REG_R10, SPILL_SLOT_1);
   dr_save_reg(ctx, bb, where, DR_REG_R11, SPILL_SLOT_2);
 #define INSERT(i) instrlist_meta_preinsert(bb, where, (i))
-  INSERT(INSTR_CREATE_mov_ld(ctx, data, opnd_create_rel_addr(&probe_thread_data, OPSZ_PTR)));
+  if (!drmgr_insert_read_tls_field(ctx, tls_index, bb, where, DR_REG_R11))
+    fail("cannot load instruction count TLS");
   INSERT(INSTR_CREATE_mov_ld(ctx, tmp, instructions));
-  INSERT(INSTR_CREATE_cmp(ctx, tmp, opnd_create_rel_addr(&probe_fast_until, OPSZ_8)));
+  INSERT(INSTR_CREATE_cmp(ctx, tmp, boundary));
   INSERT(INSTR_CREATE_jcc(ctx, OP_jae, opnd_create_instr(slow)));
   INSERT(INSTR_CREATE_add(ctx, tmp, OPND_CREATE_INT32(count)));
   INSERT(INSTR_CREATE_mov_st(ctx, instructions, tmp));
   INSERT(INSTR_CREATE_mov_st(ctx, checkpoint, OPND_CREATE_INT32(0)));
   INSERT(INSTR_CREATE_jmp(ctx, opnd_create_instr(done)));
   INSERT(slow);
-  dr_insert_clean_call(ctx, bb, where, (void *)probe_charge_boundary, false, 2,
+  dr_insert_clean_call(ctx, bb, where, (void *)charge_boundary, false, 2,
                        OPND_CREATE_INT32(count), OPND_CREATE_INTPTR(first_pc));
   INSERT(done);
 #undef INSERT
@@ -763,7 +764,6 @@ static void probe_insert_charge(void *ctx, instrlist_t *bb, instr_t *where, int 
   dr_restore_reg(ctx, bb, where, DR_REG_R10, SPILL_SLOT_1);
   dr_restore_arith_flags(ctx, bb, where, SPILL_SLOT_3);
 }
-#endif
 
 /* The bound is charged at the same point as the count, so a block's bound is
  * counted exactly when its instructions are. */
@@ -792,14 +792,35 @@ static void before_write(app_pc pc, app_pc next_pc, int suffix) {
   record_write_checkpoint(data, pc, next_pc, suffix);
 }
 
+/* The ordinary clock has no latency share at replay. Save its checkpoint
+ * directly with flag-neutral moves. The scratch register is always restored
+ * before the application instruction, even when normal liveness treats it
+ * as dead: a synchronous signal handler may read every saved register. */
+static void insert_write_checkpoint(void *ctx, instrlist_t *bb, instr_t *where,
+                                    app_pc pc, app_pc next_pc, int suffix) {
+  const reg_id_t data = DR_REG_R11;
+  dr_save_reg(ctx, bb, where, data, SPILL_SLOT_1);
+  if (!drmgr_insert_read_tls_field(ctx, tls_index, bb, where, data))
+    fail("cannot load write checkpoint TLS");
+  opnd_t address = opnd_create_base_disp(data, DR_REG_NULL, 0,
+                                         offsetof(thread_data_t, write_pc), OPSZ_PTR);
+  instrlist_insert_mov_immed_ptrsz(ctx, (ptr_int_t)pc, address, bb, where, NULL, NULL);
+  opnd_set_disp(&address, offsetof(thread_data_t, write_next_pc));
+  instrlist_insert_mov_immed_ptrsz(ctx, (ptr_int_t)next_pc, address, bb, where, NULL, NULL);
+  opnd_set_disp(&address, offsetof(thread_data_t, write_suffix));
+  instrlist_meta_preinsert(bb, where,
+                          INSTR_CREATE_mov_st(ctx, address, OPND_CREATE_INT32(suffix)));
+  opnd_set_disp(&address, offsetof(thread_data_t, write_rep));
+  opnd_set_size(&address, OPSZ_1);
+  instrlist_meta_preinsert(bb, where, INSTR_CREATE_mov_st(ctx, address, OPND_CREATE_INT8(0)));
+  dr_restore_reg(ctx, bb, where, data, SPILL_SLOT_1);
+}
+
 static void code_replay(void *ctx, int reason, app_pc source_pc,
                         app_pc target_pc) {
 #ifdef DURANTE_L1D_PROBE
-  if (probe_l1d) {
-    probe_fast_until = 0;
-    if (reason != DR_DURANTE_REPLAY_ENTRY)
-      probe_partial_block = true;
-  }
+  if (probe_l1d && reason != DR_DURANTE_REPLAY_ENTRY)
+    probe_partial_block = true;
 #endif
   thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
   if (!d) {
@@ -807,6 +828,7 @@ static void code_replay(void *ctx, int reason, app_pc source_pc,
     __atomic_store_n(&replay_without_tls, 1, __ATOMIC_RELAXED);
     return;
   }
+  d->fast_until = 0;
   if (reason == DR_DURANTE_REPLAY_ENTRY) {
     /* Cache validation ran before client entry instrumentation. Nothing was
      * charged; a pending retry still belongs to the same logical instruction. */
@@ -925,16 +947,55 @@ static void cpuid_request_invalid(void *ctx) {
   counter_error(&d->cpuid_error);
 }
 
+#ifndef DURANTE_TEST_COUNT_LOCATIONS
+/* A block that branches to its own entry can amortize inline instrumentation
+ * immediately. Other startup blocks use compact callbacks. Keep the address
+ * translations for blocks inlined based on the live count: on a later
+ * translating=true callback DR is recreating a block with a static layout. */
+static bool select_inline_block(void *ctx, instrlist_t *bb, bool translating,
+                                dr_emit_flags_t *flags) {
+  instr_t *tail = instrlist_last_app(bb);
+  bool self_loop = false;
+  if (tail && (instr_is_cbr(tail) || instr_is_ubr(tail))) {
+    opnd_t target = instr_get_target(tail);
+    self_loop = opnd_is_pc(target) &&
+                opnd_get_pc(target) == instr_get_app_pc(instrlist_first_app(bb));
+  }
+  if (self_loop)
+    return true;
+  if (translating)
+    return false;
+  thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
+  if (!d || d->instructions < 32 * LIVE_WORK_BATCH)
+    return false;
+  *flags = DR_EMIT_STORE_TRANSLATIONS;
+  return true;
+}
+
+#endif
+
 static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
                                         instrlist_t *bb, instr_t *where,
                                         bool for_trace, bool translating,
                                         void *user_data) {
   (void)tag;
   (void)for_trace;
+  bool first_in_block = drmgr_is_first_instr(drcontext, where);
+  dr_emit_flags_t flags = DR_EMIT_DEFAULT;
+#ifdef DURANTE_TEST_COUNT_LOCATIONS
   (void)translating;
+  bool inline_block = false;
+#else
+  bool use_inline_layout = !latency_bound_enabled;
 #ifdef DURANTE_L1D_PROBE
-  if (probe_l1d && drmgr_is_first_instr(drcontext, where))
-    probe_select_block(bb, translating);
+  use_inline_layout = use_inline_layout || probe_l1d;
+#endif
+  bool inline_block = first_in_block && use_inline_layout &&
+                      select_inline_block(drcontext, bb, translating, &flags);
+#endif
+#ifdef DURANTE_L1D_PROBE
+  if (probe_l1d && first_in_block)
+    probe_inline_block = inline_block;
 #endif
   if (instr_is_app(where) && instr_is_syscall(where) &&
       (instr_get_opcode(where) != OP_syscall ||
@@ -945,7 +1006,7 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
                            DR_CLEANCALL_READS_APP_CONTEXT |
                                DR_CLEANCALL_WRITES_APP_CONTEXT, 0);
   }
-  if (drmgr_is_first_instr(drcontext, where) && user_data != NULL) {
+  if (first_in_block && user_data != NULL) {
     /* Preserve complete application state even when a signal handler reads
      * registers/flags that linear liveness analysis considers dead. */
     instr_t *first = instrlist_first_app(bb);
@@ -956,10 +1017,8 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
                            OPND_CREATE_INT32(count),
                            OPND_CREATE_INTPTR(first ? instr_get_app_pc(first) : NULL),
                            OPND_CREATE_INT32((int)(uint32_t)(packed >> 32)));
-#if defined(DURANTE_L1D_PROBE) && !defined(DURANTE_TEST_COUNT_LOCATIONS)
-    else if (probe_l1d && probe_inline_block)
-      probe_insert_charge(drcontext, bb, where, count, first ? instr_get_app_pc(first) : NULL);
-#endif
+    else if (inline_block)
+      insert_charge(drcontext, bb, where, count, first ? instr_get_app_pc(first) : NULL);
     else
       dr_insert_clean_call(drcontext, bb, where, (void *)count_block, false, 2,
                            OPND_CREATE_INT32(count),
@@ -981,9 +1040,13 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
   if (checkpoint) {
     app_pc pc = instr_get_app_pc(where);
     app_pc next_pc = pc ? pc + instr_length(drcontext, where) : NULL;
-    dr_insert_clean_call(drcontext, bb, where, (void *)before_write, false, 3,
-                         OPND_CREATE_INTPTR(pc), OPND_CREATE_INTPTR(next_pc),
-                         OPND_CREATE_INT32((int)write_suffix(bb, where)));
+    int suffix = (int)write_suffix(bb, where);
+    if (latency_bound_enabled)
+      dr_insert_clean_call(drcontext, bb, where, (void *)before_write, false, 3,
+                           OPND_CREATE_INTPTR(pc), OPND_CREATE_INTPTR(next_pc),
+                           OPND_CREATE_INT32(suffix));
+    else
+      insert_write_checkpoint(drcontext, bb, where, pc, next_pc, suffix);
   }
   if (rep_bytes_enabled && instr_is_app(where)) {
     const int op = instr_get_opcode(where);
@@ -1020,11 +1083,7 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
                               OPND_CREATE_INT32(DR_REG_NULL));
     }
   }
-#ifdef DURANTE_L1D_PROBE
-  if (probe_l1d && probe_store_translation)
-    return DR_EMIT_STORE_TRANSLATIONS;
-#endif
-  return DR_EMIT_DEFAULT;
+  return flags;
 }
 
 static bool lifecycle_syscall(int number) {

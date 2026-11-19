@@ -10,12 +10,13 @@ Values are exact lowercase spellings and duplicates are rejected. The earlier
 single-file `drmeter -o REPORT` interface is not used.
 
 Each application basic block adds its instruction count to thread-local state.
-A DynamoRIO clean call preserves application registers and arithmetic flags,
-including values observed by a signal handler even when linear analysis considers
-them dead. A checked addition marks per-thread instruction overflow permanently
-invalid; aggregation checks all additional sums. This state preservation costs
-more than the earlier inline counter and must be included in future overhead
-benchmarks.
+The ordinary counter can add a block's instructions directly to the executing
+thread's counter. It saves and restores its scratch registers and arithmetic
+flags even when a signal handler is the only code that reads them.
+Between live work publications this avoids a callback on each block.
+The callback still handles publication boundaries, replay and checked additions
+near overflow. The latency model uses the callback to charge its block bound.
+
 REP MOVS/STOS byte demand is read at the REP instruction after earlier register
 updates, with one clean call per REP entry. Conditional REP forms are separately
 reported as unsupported byte demand, without inventing a byte charge.
