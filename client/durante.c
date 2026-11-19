@@ -42,11 +42,14 @@ static uint32_t DURANTE_TEST_BLOCK_LATENCY_BOUND(void *drcontext, void *tag, ins
 #else
 #define durante_block_latency_bound durante_latency_bound_x16
 #endif
+#include <elf.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <linux/mman.h>
+#include <sys/shm.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <unistd.h>
@@ -130,6 +133,95 @@ static size_t file_bytes;
 #ifdef DURANTE_L1D_PROBE
 static bool probe_l1d;
 #endif
+
+/* Only the original file-backed text of a static main executable is qualified
+ * for the ordinary inline client. Unknown ELF layouts take the checked calls. */
+static uintptr_t static_text_start, static_text_end, static_text_page_start;
+static bool static_text_revoked;
+
+static void find_static_text(const module_data_t *main) {
+  Elf64_Ehdr elf;
+  if (!main || !main->num_segments || main->segments[0].start != main->start ||
+      main->segments[0].offset || !(main->segments[0].prot & DR_MEMPROT_READ) ||
+      !dr_safe_read(main->start, sizeof(elf), &elf, NULL) ||
+      memcmp(elf.e_ident, ELFMAG, SELFMAG) || elf.e_ident[EI_CLASS] != ELFCLASS64 ||
+      elf.e_ident[EI_DATA] != ELFDATA2LSB || elf.e_machine != EM_X86_64 ||
+      elf.e_type != ET_EXEC || elf.e_entry != (uintptr_t)main->entry_point ||
+      elf.e_phentsize != sizeof(Elf64_Phdr) || !elf.e_phnum || elf.e_phnum > 128)
+    return;
+  size_t mapped = (uintptr_t)main->segments[0].end - (uintptr_t)main->start;
+  if (elf.e_phoff > mapped || elf.e_phnum * sizeof(Elf64_Phdr) > mapped - elf.e_phoff)
+    return;
+  uintptr_t start = 0, end = 0;
+  for (uint i = 0; i < elf.e_phnum; ++i) {
+    Elf64_Phdr ph;
+    if (!dr_safe_read(main->start + elf.e_phoff + i * sizeof(ph), sizeof(ph), &ph, NULL) ||
+        ph.p_type == PT_INTERP || ph.p_type == PT_DYNAMIC)
+      return;
+    if (ph.p_type == PT_LOAD && ph.p_flags == (PF_R | PF_X) && ph.p_filesz <= ph.p_memsz &&
+        ph.p_filesz <= UINTPTR_MAX - ph.p_vaddr && elf.e_entry >= ph.p_vaddr &&
+        elf.e_entry - ph.p_vaddr < ph.p_filesz) {
+      start = ph.p_vaddr;
+      end = start + ph.p_filesz;
+    }
+  }
+  for (uint i = 0; start && i < main->num_segments; ++i) {
+    const module_segment_data_t *seg = &main->segments[i];
+    if (seg->prot == (DR_MEMPROT_READ | DR_MEMPROT_EXEC) &&
+        start >= (uintptr_t)seg->start && end <= (uintptr_t)seg->end) {
+      static_text_start = start;
+      static_text_end = end;
+      static_text_page_start = (uintptr_t)seg->start;
+      return;
+    }
+  }
+}
+
+static bool static_text_site(app_pc pc) {
+  uintptr_t addr = (uintptr_t)pc;
+  return addr >= static_text_start && addr < static_text_end &&
+         !__atomic_load_n(&static_text_revoked, __ATOMIC_ACQUIRE);
+}
+
+static bool overlaps_static_text(uintptr_t addr, size_t size) {
+  return size && addr < static_text_end &&
+         (addr >= static_text_page_start || size > static_text_page_start - addr);
+}
+
+/* Live mode already intercepts every syscall. Revoke before any attempted
+ * replacement, including failed attempts: addresses can subsequently name
+ * another mapping. The kernel rounds mapping changes to page boundaries. */
+static bool changes_static_text(void *ctx, int number) {
+  switch (number) {
+    case SYS_mmap:
+      if (!(dr_syscall_get_param(ctx, 3) & MAP_FIXED))
+        return false;
+      break;
+    case SYS_mremap:
+      if ((dr_syscall_get_param(ctx, 3) & MREMAP_FIXED) &&
+          overlaps_static_text(dr_syscall_get_param(ctx, 4), dr_syscall_get_param(ctx, 2)))
+        return true;
+      break;
+    case SYS_shmat:
+      return (dr_syscall_get_param(ctx, 2) & SHM_REMAP) != 0;
+    case SYS_munmap:
+    case SYS_mprotect:
+    case SYS_pkey_mprotect:
+    case SYS_remap_file_pages:
+      break;
+    default:
+      return false;
+  }
+  return overlaps_static_text(dr_syscall_get_param(ctx, 0), dr_syscall_get_param(ctx, 1));
+}
+
+static bool cache_probe_enabled(void) {
+#ifdef DURANTE_L1D_PROBE
+  return probe_l1d;
+#else
+  return false;
+#endif
+}
 
 static inline void invalidate_live_work(void) {
   if (live_work)
@@ -655,6 +747,7 @@ static void cpu_policy_exit(void) {
  * the child's client running. Measurement-only mode preserves the instruction
  * but invalidates the partial tree. CPU policy mode stops before execution. */
 static void unsupported_syscall_abi(void) {
+  __atomic_store_n(&static_text_revoked, true, __ATOMIC_RELEASE);
   invalidate_live_work();
   if (deny_avx || deny_simd) {
     dr_fprintf(STDERR, "durante: syscall ABI unsupported with CPU policy\n");
@@ -730,6 +823,12 @@ static void charge_boundary(int count, app_pc first_pc) {
     d->fast_until = d->published_instructions + LIVE_WORK_BATCH;
 }
 
+static void restore_charge_state(void *ctx, instrlist_t *bb, instr_t *where) {
+  dr_restore_reg(ctx, bb, where, DR_REG_R11, SPILL_SLOT_2);
+  dr_restore_reg(ctx, bb, where, DR_REG_R10, SPILL_SLOT_1);
+  dr_restore_arith_flags(ctx, bb, where, SPILL_SLOT_3);
+}
+
 static void insert_charge(void *ctx, instrlist_t *bb, instr_t *where, int count,
                           app_pc first_pc) {
   instr_t *slow = INSTR_CREATE_label(ctx), *done = INSTR_CREATE_label(ctx);
@@ -754,15 +853,14 @@ static void insert_charge(void *ctx, instrlist_t *bb, instr_t *where, int count,
   INSERT(INSTR_CREATE_add(ctx, tmp, OPND_CREATE_INT32(count)));
   INSERT(INSTR_CREATE_mov_st(ctx, instructions, tmp));
   INSERT(INSTR_CREATE_mov_st(ctx, checkpoint, OPND_CREATE_INT32(0)));
+  restore_charge_state(ctx, bb, where);
   INSERT(INSTR_CREATE_jmp(ctx, opnd_create_instr(done)));
   INSERT(slow);
+  restore_charge_state(ctx, bb, where);
   dr_insert_clean_call(ctx, bb, where, (void *)charge_boundary, false, 2,
                        OPND_CREATE_INT32(count), OPND_CREATE_INTPTR(first_pc));
   INSERT(done);
 #undef INSERT
-  dr_restore_reg(ctx, bb, where, DR_REG_R11, SPILL_SLOT_2);
-  dr_restore_reg(ctx, bb, where, DR_REG_R10, SPILL_SLOT_1);
-  dr_restore_arith_flags(ctx, bb, where, SPILL_SLOT_3);
 }
 
 /* The bound is charged at the same point as the count, so a block's bound is
@@ -986,11 +1084,7 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
   (void)translating;
   bool inline_block = false;
 #else
-  bool use_inline_layout = !latency_bound_enabled;
-#ifdef DURANTE_L1D_PROBE
-  use_inline_layout = use_inline_layout || probe_l1d;
-#endif
-  bool inline_block = first_in_block && use_inline_layout &&
+  bool inline_block = first_in_block && (cache_probe_enabled() || static_text_site(tag)) &&
                       select_inline_block(drcontext, bb, translating, &flags);
 #endif
 #ifdef DURANTE_L1D_PROBE
@@ -1017,9 +1111,11 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
                            OPND_CREATE_INT32(count),
                            OPND_CREATE_INTPTR(first ? instr_get_app_pc(first) : NULL),
                            OPND_CREATE_INT32((int)(uint32_t)(packed >> 32)));
-    else if (inline_block)
+    else if (inline_block) {
       insert_charge(drcontext, bb, where, count, first ? instr_get_app_pc(first) : NULL);
-    else
+      if (!cache_probe_enabled())
+        flags = DR_EMIT_STORE_TRANSLATIONS;
+    } else
       dr_insert_clean_call(drcontext, bb, where, (void *)count_block, false, 2,
                            OPND_CREATE_INT32(count),
                            OPND_CREATE_INTPTR(first ? instr_get_app_pc(first) : NULL));
@@ -1041,12 +1137,19 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
     app_pc pc = instr_get_app_pc(where);
     app_pc next_pc = pc ? pc + instr_length(drcontext, where) : NULL;
     int suffix = (int)write_suffix(bb, where);
-    if (latency_bound_enabled)
+    bool inline_write = cache_probe_enabled();
+#ifndef DURANTE_TEST_COUNT_LOCATIONS
+    if (!inline_write && !latency_bound_enabled && static_text_site(pc))
+      inline_write = select_inline_block(drcontext, bb, translating, &flags);
+#endif
+    if (!latency_bound_enabled && inline_write) {
+      insert_write_checkpoint(drcontext, bb, where, pc, next_pc, suffix);
+      if (!cache_probe_enabled())
+        flags = DR_EMIT_STORE_TRANSLATIONS;
+    } else
       dr_insert_clean_call(drcontext, bb, where, (void *)before_write, false, 3,
                            OPND_CREATE_INTPTR(pc), OPND_CREATE_INTPTR(next_pc),
                            OPND_CREATE_INT32(suffix));
-    else
-      insert_write_checkpoint(drcontext, bb, where, pc, next_pc, suffix);
   }
   if (rep_bytes_enabled && instr_is_app(where)) {
     const int op = instr_get_opcode(where);
@@ -1103,6 +1206,9 @@ static bool filter_syscall(void *ctx, int number) {
   return live_work || lifecycle_syscall(number);
 }
 static bool pre_syscall(void *ctx, int number) {
+  if (static_text_end && !__atomic_load_n(&static_text_revoked, __ATOMIC_ACQUIRE) &&
+      (x32_syscall(number) || changes_static_text(ctx, number)))
+    __atomic_store_n(&static_text_revoked, true, __ATOMIC_RELEASE);
   thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
   if (!d)
     fail("syscall without TLS");
@@ -1393,6 +1499,13 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
   }
   if (!drmgr_init())
     fail("extension initialization failed");
+  if (live_work && !latency_bound_enabled && !cache_probe_enabled()) {
+    module_data_t *main = dr_get_main_module();
+    if (main) {
+      find_static_text(main);
+      dr_free_module_data(main);
+    }
+  }
 #ifdef DURANTE_TEST_COUNT_LOCATIONS
   if (!drmgr_register_module_unload_event(profile_module_unload))
     fail("test module lifetime registration failed");
