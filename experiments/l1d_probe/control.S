@@ -1,5 +1,5 @@
-/* Linux x86-64, no libc. All data accesses are relative to one page-aligned
-   buffer, so the expected counters do not depend on the loader or stack. */
+/* Linux x86-64, no libc. After reading argc the program accesses a single
+   page-aligned data buffer. It never revisits the initial stack line. */
 .bss
 .balign 4096
 data: .skip 9 * 4096
@@ -7,6 +7,12 @@ data: .skip 9 * 4096
 .text
 .globl _start
 _start:
+    cmpl $1, (%rsp)
+    je .Lcontrol
+    mov $262144, %ecx
+.Lwarm:
+    loop .Lwarm
+.Lcontrol:
     lea data(%rip), %rbx
     movabs $0x123456789abcdef0, %r10
     movabs $0xfedcba9876543210, %r11

@@ -25,7 +25,7 @@ For ordinary reads, the generated code checks whether the whole operand fits in 
 
 An ordinary store shares its callback with Durante's write checkpoint. A read followed immediately by a write to the same operand shares one LRU update and counts both references. XLAT uses the low byte of RAX for its index, including with a 32-bit address override. For long contiguous REP STOS operations the model checks the initial cache contents for hits and reconstructs the final LRU order from the range. Its work stays bounded by the number of lines in the simulated cache.
 
-With the single-thread cache probe enabled, ordinary basic blocks can also charge instructions inline between live clock publications. REP or a replay returns the following block to the regular clock routine. The `--include-off` benchmark arm uses Durante's ordinary block accounting with the probe disabled. Its timings therefore compare the two complete measurement configurations.
+With the single-thread cache probe enabled, ordinary basic blocks can also charge instructions inline between live clock publications. REP or a replay returns the following block to the regular clock routine. To keep setup cheap for short programs, most blocks first translated during the first 131,072 instructions use compact callbacks. A block that branches to its own entry uses inline instrumentation immediately. Both layouts share the same cache and live clock state. The `--include-off` benchmark arm uses Durante's ordinary block accounting with the probe disabled. Its timings therefore compare the two complete measurement configurations.
 
 ## Compare clients
 

@@ -932,6 +932,10 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
   (void)tag;
   (void)for_trace;
   (void)translating;
+#ifdef DURANTE_L1D_PROBE
+  if (probe_l1d && drmgr_is_first_instr(drcontext, where))
+    probe_select_block(bb, translating);
+#endif
   if (instr_is_app(where) && instr_is_syscall(where) &&
       (instr_get_opcode(where) != OP_syscall ||
        instr_get_isa_mode(where) != DR_ISA_AMD64)) {
@@ -953,7 +957,7 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
                            OPND_CREATE_INTPTR(first ? instr_get_app_pc(first) : NULL),
                            OPND_CREATE_INT32((int)(uint32_t)(packed >> 32)));
 #if defined(DURANTE_L1D_PROBE) && !defined(DURANTE_TEST_COUNT_LOCATIONS)
-    else if (probe_l1d)
+    else if (probe_l1d && probe_inline_block)
       probe_insert_charge(drcontext, bb, where, count, first ? instr_get_app_pc(first) : NULL);
 #endif
     else
@@ -1016,6 +1020,10 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
                               OPND_CREATE_INT32(DR_REG_NULL));
     }
   }
+#ifdef DURANTE_L1D_PROBE
+  if (probe_l1d && probe_store_translation)
+    return DR_EMIT_STORE_TRANSLATIONS;
+#endif
   return DR_EMIT_DEFAULT;
 }
 

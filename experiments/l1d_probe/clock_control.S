@@ -8,6 +8,12 @@ buffer: .skip 8192
 .text
 .globl _start
 _start:
+    cmpl $1, (%rsp)
+    je .Lcontrol
+    mov $262144, %ecx
+.Lwarm:
+    loop .Lwarm
+.Lcontrol:
     mov $2, %eax                 /* open("live", O_RDONLY) */
     lea live_name(%rip), %rdi
     xor %esi, %esi
