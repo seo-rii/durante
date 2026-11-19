@@ -66,6 +66,7 @@ typedef struct {
   uint64_t instructions, counter_overflows, signals, rep_bytes, rep_entries,
       unsupported_rep_entries;
   uint64_t rep_movs_bytes, rep_stos_bytes, rep_movs_entries, rep_stos_entries;
+  uint64_t published_instructions, published_movs, published_stos;
   bool rep_error;
   bool replay_error;
   /* A CPUID-profile request outside the fixed table (sticky invalidity). */
@@ -110,15 +111,100 @@ static app_pc cpu_policy_exit_pc;
 /* A replay callback must never do I/O or take a lock, even on a broken TLS
  * invariant.  This sticky process/shared-VM flag invalidates every snapshot. */
 static int replay_without_tls;
+/* Linux x86-64 little-endian ABI for -live_work_v1. The owner exclusively
+ * creates a fresh, zero-filled file for one role before launch. All mappings of
+ * a followed tree contribute to this one file, including across exec. */
+typedef struct {
+  uint64_t ready, invalid, instructions, movs, stos, overflow;
+} live_work_t;
+_Static_assert(sizeof(live_work_t) == 48 && __atomic_always_lock_free(8, 0),
+               "live work requires lock-free aligned 64-bit counters");
+static live_work_t *live_work;
 static int app_exit_code;
 static size_t file_bytes;
 #ifdef DURANTE_TEST_COUNT_LOCATIONS
 #include "../tests/count_locations/profile.h"
 #endif
 
+static inline void invalidate_live_work(void) {
+  if (live_work)
+    __atomic_store_n(&live_work->invalid, 1, __ATOMIC_RELEASE);
+}
+
+static inline void counter_error(bool *flag) {
+  *flag = true;
+  invalidate_live_work();
+}
+
 static void fail(const char *m) {
+  invalidate_live_work();
   dr_fprintf(STDERR, "durante: %s\n", m);
   dr_abort();
+}
+
+static void open_live_work(const char *path) {
+  if (path[0] != '/')
+    fail("live work path must be absolute");
+  /* Use openat: the runtime redirects libc open() for writable files. */
+  int fd = openat(AT_FDCWD, path, O_RDWR | O_NOFOLLOW | O_NONBLOCK | O_CLOEXEC);
+  struct stat st;
+  if (fd < 0 || fstat(fd, &st) != 0 || !S_ISREG(st.st_mode) ||
+      st.st_nlink != 1 || st.st_size != (off_t)sizeof(*live_work))
+    fail("invalid live work file");
+  size_t size = sizeof(*live_work);
+  void *mapping = dr_map_file(fd, &size, 0, NULL, DR_MEMPROT_READ | DR_MEMPROT_WRITE, 0);
+  close(fd);
+  if (!mapping || size < sizeof(*live_work))
+    fail("cannot map live work file");
+  live_work = mapping;
+}
+
+/* Use process-shared atomics rather than inherited process totals. Only the
+ * thread owning a TLS baseline adds a delta. There is no snapshot merging at
+ * fork/exec and a failed exec can publish the same baseline again for free. */
+static void add_live_delta(uint64_t *counter, uint64_t delta, uint64_t overflow_bit) {
+  if (!delta)
+    return;
+  uint64_t old = __atomic_load_n(counter, __ATOMIC_RELAXED);
+  for (;;) {
+    bool overflow = delta > UINT64_MAX - old;
+    uint64_t next = overflow ? UINT64_MAX : old + delta;
+    if (__atomic_compare_exchange_n(counter, &old, next, false,
+                                    __ATOMIC_RELEASE, __ATOMIC_RELAXED)) {
+      if (overflow)
+        __atomic_fetch_or(&live_work->overflow, overflow_bit, __ATOMIC_RELEASE);
+      return;
+    }
+  }
+}
+
+static void publish_live_work(thread_data_t *d, bool flush) {
+  if (d->signals || d->rep_error || d->replay_error || d->cpuid_error ||
+      d->counter_overflows || d->unsupported_rep_entries ||
+      d->instructions < d->published_instructions ||
+      d->rep_movs_bytes < d->published_movs || d->rep_stos_bytes < d->published_stos) {
+    invalidate_live_work();
+    return;
+  }
+  if (d->restart_pc) {
+    if (flush)
+      invalidate_live_work();
+    return;
+  }
+  uint64_t instructions = d->instructions - d->published_instructions;
+  uint64_t movs = d->rep_movs_bytes - d->published_movs;
+  uint64_t stos = d->rep_stos_bytes - d->published_stos;
+  /* Omit the current BB's speculative entry charge. Prior BBs have passed
+   * the runtime's replay correction boundary. Flush small deltas at syscalls
+   * which may retire the thread or replace the image. */
+  if (!flush && (instructions | movs | stos) < 4096)
+    return;
+  add_live_delta(&live_work->instructions, instructions, 1);
+  add_live_delta(&live_work->movs, movs, 2);
+  add_live_delta(&live_work->stos, stos, 4);
+  d->published_instructions = d->instructions;
+  d->published_movs = d->rep_movs_bytes;
+  d->published_stos = d->rep_stos_bytes;
 }
 
 /* Caller holds state_lock, except before application execution/fork resume. */
@@ -367,6 +453,12 @@ static void thread_init(void *ctx) {
 }
 static void thread_exit(void *ctx) {
   thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
+  /* Asynchronous thread termination can interrupt an arbitrary charged BB.
+   * Only an explicit exit/exec checkpoint can attest to that final prefix. */
+  if (live_work && d &&
+      (d->instructions != d->published_instructions ||
+       d->rep_movs_bytes != d->published_movs || d->rep_stos_bytes != d->published_stos))
+    invalidate_live_work();
   if (d && d->child_pid) {
     /* This callback can run in the parent after child exec. Its fd number
      * refers to the child's descriptor table, so NEVER close that number in the
@@ -377,8 +469,10 @@ static void thread_exit(void *ctx) {
     return;
   }
   dr_mutex_lock(state_lock);
-  if (!add_thread(d))
+  if (!add_thread(d)) {
+    invalidate_live_work();
     accounting_error = true;
+  }
   ++threads_ended;
   dr_mutex_unlock(state_lock);
   if (d) {
@@ -432,7 +526,7 @@ static void observe_rep(app_pc pc, int opcode, int bytes, int count_reg) {
     mc.size = sizeof(mc);
     mc.flags = DR_MC_INTEGER;
     if (count_reg == DR_REG_NULL || !dr_get_mcontext(drcontext, &mc)) {
-      data->rep_error = true;
+      counter_error(&data->rep_error);
       return;
     }
     repeats = reg_get_value((reg_id_t)count_reg, &mc);
@@ -445,7 +539,7 @@ static void observe_rep(app_pc pc, int opcode, int bytes, int count_reg) {
         data->restart_rep_bytes != bytes ||
         data->restart_rep_count_reg != count_reg ||
         repeats > data->restart_rep_request) {
-      data->replay_error = true;
+      counter_error(&data->replay_error);
       data->restart_pc = NULL;
       return;
     }
@@ -464,8 +558,9 @@ static void observe_rep(app_pc pc, int opcode, int bytes, int count_reg) {
   if (resumed)
     return;
   if (bytes == 0) {
+    invalidate_live_work();
     if (data->unsupported_rep_entries == UINT64_MAX)
-      data->rep_error = true;
+      counter_error(&data->rep_error);
     else
       ++data->unsupported_rep_entries;
     return;
@@ -473,7 +568,7 @@ static void observe_rep(app_pc pc, int opcode, int bytes, int count_reg) {
   if ((opcode != OP_rep_movs && opcode != OP_rep_stos) ||
       (bytes != 1 && bytes != 2 && bytes != 4 && bytes != 8) ||
       repeats > UINT64_MAX / (unsigned)bytes) {
-    data->rep_error = true;
+    counter_error(&data->rep_error);
     return;
   }
   uint64_t requested_bytes = repeats * (unsigned)bytes;
@@ -487,7 +582,7 @@ static void observe_rep(app_pc pc, int opcode, int bytes, int count_reg) {
       data->rep_entries == UINT64_MAX ||
       UINT64_MAX - *kind_bytes < requested_bytes ||
       *kind_entries == UINT64_MAX) {
-    data->rep_error = true;
+    counter_error(&data->rep_error);
     return;
   }
   data->rep_bytes += requested_bytes;
@@ -500,6 +595,7 @@ static void observe_rep(app_pc pc, int opcode, int bytes, int count_reg) {
  * parent keeps the correct runtime state. Only our exit syscall may run after
  * this decision, never application handlers or the rejected instruction. */
 static void cpu_policy_exit(void) {
+  invalidate_live_work();
   void *ctx = dr_get_current_drcontext();
   thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
   if (!d)
@@ -523,6 +619,7 @@ static void cpu_policy_exit(void) {
  * the child's client running. Measurement-only mode preserves the instruction
  * but invalidates the partial tree. CPU policy mode stops before execution. */
 static void unsupported_syscall_abi(void) {
+  invalidate_live_work();
   if (deny_avx || deny_simd) {
     dr_fprintf(STDERR, "durante: syscall ABI unsupported with CPU policy\n");
     cpu_policy_exit();
@@ -542,7 +639,7 @@ static thread_data_t *charge_block(int instructions, app_pc first_pc) {
     fail("instruction count without valid thread state");
   if (data->restart_pc) {
     if (data->restart_entered || data->restart_pc != first_pc) {
-      data->replay_error = true;
+      counter_error(&data->replay_error);
       data->restart_pc = NULL;
     } else if (data->restart_rep) {
       data->restart_entered = true;
@@ -551,9 +648,12 @@ static thread_data_t *charge_block(int instructions, app_pc first_pc) {
     }
   }
   data->write_pc = NULL;
+  if (live_work)
+    publish_live_work(data, false);
   if (UINT64_MAX - data->instructions < (uint64_t)instructions) {
     /* Sticky invalidity: subsequent blocks cannot make an overflow usable. */
     data->counter_overflows = 1;
+    invalidate_live_work();
     return NULL;
   }
   data->instructions += (uint64_t)instructions;
@@ -576,7 +676,7 @@ static void count_block_latency(int instructions, app_pc first_pc, int bound_x16
   data->block_instructions = (uint32_t)instructions;
   data->block_bound_x16 = (uint32_t)bound_x16;
   if (bound_x16 < 0)
-    data->latency_error = true;
+    counter_error(&data->latency_error);
   else if (UINT64_MAX - data->latency_bound_x16 < (uint64_t)bound_x16)
     data->counter_overflows = 1;
   else
@@ -604,6 +704,7 @@ static void code_replay(void *ctx, int reason, app_pc source_pc,
                         app_pc target_pc) {
   thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
   if (!d) {
+    invalidate_live_work();
     __atomic_store_n(&replay_without_tls, 1, __ATOMIC_RELAXED);
     return;
   }
@@ -611,7 +712,7 @@ static void code_replay(void *ctx, int reason, app_pc source_pc,
     /* Cache validation ran before client entry instrumentation. Nothing was
      * charged; a pending retry still belongs to the same logical instruction. */
     if (d->restart_pc && d->restart_pc != target_pc) {
-      d->replay_error = true;
+      counter_error(&d->replay_error);
       d->restart_pc = NULL;
     }
     d->write_pc = NULL;
@@ -623,13 +724,13 @@ static void code_replay(void *ctx, int reason, app_pc source_pc,
       d->restart_pc || d->counter_overflows ||
       (retry && (source_pc != d->write_pc || target_pc != source_pc)) ||
       (completed && target_pc != d->write_next_pc)) {
-    d->replay_error = true;
+    counter_error(&d->replay_error);
     d->restart_pc = d->write_pc = NULL;
     return;
   }
   uint64_t rollback = d->write_suffix - (completed ? 1 : 0);
   if (d->instructions < rollback) {
-    d->replay_error = true;
+    counter_error(&d->replay_error);
     d->write_pc = NULL;
     return;
   }
@@ -638,11 +739,11 @@ static void code_replay(void *ctx, int reason, app_pc source_pc,
      * bound, rounded down, so every block keeps at least issue cost. */
     uint64_t share = 0;
     if (d->write_block_instructions == 0 || rollback > d->write_block_instructions)
-      d->latency_error = true;
+      counter_error(&d->latency_error);
     else
       share = (uint64_t)d->write_block_bound_x16 * rollback / d->write_block_instructions;
     if (d->latency_bound_x16 < share)
-      d->latency_error = true;
+      counter_error(&d->latency_error);
     else
       d->latency_bound_x16 -= share;
   }
@@ -672,7 +773,7 @@ static void kernel_xfer(void *ctx, const dr_kernel_xfer_info_t *info) {
    * An unrelated earlier signal does not make later JIT work invalid. */
   d->write_pc = NULL;
   if (d->restart_pc) {
-    d->replay_error = true;
+    counter_error(&d->replay_error);
     d->restart_pc = NULL;
   }
 }
@@ -722,7 +823,7 @@ static void cpuid_request_invalid(void *ctx) {
   thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
   if (!d)
     fail("CPUID profile observation without valid thread state");
-  d->cpuid_error = true;
+  counter_error(&d->cpuid_error);
 }
 
 static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
@@ -880,12 +981,20 @@ static bool pre_syscall(void *ctx, int number) {
     dr_syscall_set_result(ctx, (reg_t)-EPERM);
     return false;
   }
+  if (unsupported)
+    invalidate_live_work();
   d->pending_unsupported = unsupported;
   d->pending_syscall = number;
   d->pending_clone_flags = flags;
   d->pending_spawn = spawn;
   d->pending_exec = exec;
   dr_mutex_lock(state_lock);
+  if (live_work && (exec || number == SYS_exit_group || number == SYS_exit)) {
+    if ((exec || number == SYS_exit_group) && !d->child_pid &&
+        threads_started != threads_ended + 1)
+      invalidate_live_work();
+    publish_live_work(d, true);
+  }
   if (number == SYS_exit_group ||
       (number == SYS_exit &&
        (d->child_pid || threads_started == threads_ended + 1))) {
@@ -937,6 +1046,7 @@ static dr_signal_action_t signal_event(void *ctx, dr_siginfo_t *info) {
   thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
   if (!d || d->signals == UINT64_MAX)
     fail("signal accounting overflow");
+  invalidate_live_work();
   ++d->signals;
   return DR_SIGNAL_DELIVER;
 }
@@ -971,6 +1081,7 @@ static void fork_init(void *ctx) {
   open_stream("fork", parent, previous);
 }
 static void pre_detach(void) {
+  invalidate_live_work();
   dr_mutex_lock(state_lock);
   event("detached", "");
   dr_mutex_unlock(state_lock);
@@ -1005,6 +1116,8 @@ static void process_exit(void) {
   drmgr_unregister_tls_field(tls_index);
   drmgr_exit();
   dr_mutex_destroy(state_lock);
+  if (live_work)
+    dr_unmap_file(live_work, sizeof(*live_work));
   if (cpu_policy_exit_pc)
     dr_raw_mem_free(cpu_policy_exit_pc, dr_page_size());
 }
@@ -1017,14 +1130,17 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
   if (argc < 3 || strcmp(argv[1], "-outdir"))
     fail("usage: -c libdurante.so -outdir NEW_PRIVATE_DIRECTORY [-rep_bytes] "
          "[-disallow_cpu_feature avx|simd] [-cpuid_profile x86-64-v1|x86-64-v2] "
-         "[-latency_bound] -- program");
+         "[-latency_bound] [-live_work_v1 OWNER_FILE] -- program");
   if (strlen(argv[2]) >= sizeof(outdir) || argv[2][0] != '/')
     fail("report directory must be absolute");
   memcpy(outdir, argv[2], strlen(argv[2]) + 1);
+  const char *live_path = NULL;
   enum durante_cpuid_profile cpuid_profile = DURANTE_CPUID_NONE;
   for (int i = 3; i < argc; ++i) {
     if (strcmp(argv[i], "-rep_bytes") == 0 && !rep_bytes_enabled) {
       rep_bytes_enabled = true;
+    } else if (strcmp(argv[i], "-live_work_v1") == 0 && !live_path && i + 1 < argc) {
+      live_path = argv[++i];
     } else if (strcmp(argv[i], "-latency_bound") == 0 && !latency_bound_enabled) {
       latency_bound_enabled = true;
     } else if (strcmp(argv[i], "-disallow_cpu_feature") == 0 && i + 1 < argc) {
@@ -1043,6 +1159,11 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
     } else {
       fail("unknown or duplicate client option");
     }
+  }
+  if (live_path) {
+    if (!rep_bytes_enabled)
+      fail("live work requires -rep_bytes");
+    open_live_work(live_path);
   }
   owner_pid = dr_get_process_id();
   if (cpuid_profile != DURANTE_CPUID_NONE) {
@@ -1089,4 +1210,6 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
   dr_register_fork_init_event(fork_init);
   dr_register_pre_detach_event(pre_detach);
   dr_register_exit_event(process_exit);
+  if (live_work)
+    __atomic_store_n(&live_work->ready, 1, __ATOMIC_RELEASE);
 }
