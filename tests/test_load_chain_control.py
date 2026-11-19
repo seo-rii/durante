@@ -114,6 +114,56 @@ class LoadChainControlTests(unittest.TestCase):
         self.assertEqual(reversed_fields, set(archive["fields_with_linked_rank_greater"]))
         self.assertTrue(reversed_fields.isdisjoint(archive["frozen_model_fields"]))
 
+    def test_recurrence_benchmark_covers_the_frozen_inputs_and_paired_timings(self):
+        cost = json.loads((EXPERIMENTS / "results/loop-recurrence-cost.json").read_bytes())
+        self.assertEqual(cost["schema"], 1)
+        self.assertEqual(cost["environment"]["pairs"], 6)
+        tools = cost["sha256"]
+        reference_tools = self.data["diagnostic_probe"]["tools"]
+        for name in ("drrun", "meter", "drmgr", "release_core"):
+            self.assertEqual(tools[name], reference_tools["runtime" if name == "release_core" else name])
+        for name in ("probe", "probe_source", "harness"):
+            self.assertRegex(tools[name], r"^[0-9a-f]{64}$")
+
+        fixture = self.data["fixture"]
+        identities = {mode: (fixture["elf_sha256"], fixture["stdin_sha256"][mode], fixture["stdout_sha256"])
+                      for mode in ("serial", "parallel")}
+        manifest = (EXPERIMENTS / "branch_load_holdout/manifest.json").read_bytes()
+        protocol = json.loads((EXPERIMENTS / "results/cpp20-v8-protocol.json").read_bytes())
+        self.assertEqual(hashlib.sha256(manifest).hexdigest(), protocol["external"]["manifest_sha256"])
+        for name, case in json.loads(manifest)["cases"].items():
+            identities[name] = (case["elf_sha256"], case["stdin_sha256"], case["stdout_sha256"])
+        families = json.loads((EXPERIMENTS / "load_corpus.json").read_bytes())["families"]
+        for name in ("integer", "branch", "sort", "rep_copy", "rep_fill"):
+            self.assertEqual(cost["cases"][name]["scale"], 2)
+            family = families[name]
+            case = next(case for case in family["cases"] if case["scale"] == 2)
+            identities[name] = (family["binary_sha256"], hashlib.sha256(case["stdin"].encode()).hexdigest(),
+                                hashlib.sha256(case["stdout"].encode()).hexdigest())
+
+        self.assertEqual(set(cost["cases"]), set(identities))
+        for name, case in cost["cases"].items():
+            with self.subTest(case=name):
+                self.assertEqual((case["program_sha256"], case["stdin_sha256"], case["stdout_sha256"]),
+                                 identities[name])
+                self.assertEqual(set(case["counters"]), {"instructions", "rep_bytes", "latency_bound_x16",
+                                                         "loop_recurrence_cycles_x16"})
+                self.assertTrue(all(type(n) is int and 0 <= n < 2**64 for n in case["counters"].values()))
+                self.assertEqual(set(case["child_cpu_ns"]), {"full", "recurrence_only"})
+                for samples in case["child_cpu_ns"].values():
+                    self.assertEqual(len(samples), cost["environment"]["pairs"])
+                    self.assertTrue(all(type(ns) is int and ns > 0 for ns in samples))
+
+        vectors = dict(self.data["diagnostic_probe"]["counters"])
+        archived = self.data["archived_comparison"]["cases"]
+        for name, archived_name in (("linked-rank", "linked-rank"), ("branch", "branch-2")):
+            row = archived[archived_name]
+            self.assertEqual((row["elf_sha256"], row["input_sha256"], row["output_sha256"]), identities[name])
+            vectors[name] = row["counters"]
+        for name, vector in vectors.items():
+            self.assertEqual(cost["cases"][name]["counters"]["loop_recurrence_cycles_x16"],
+                             vector["loop_recurrence_cycles_x16"], name)
+
 
 if __name__ == "__main__":
     unittest.main()

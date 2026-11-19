@@ -47,6 +47,26 @@ printf 0 | ./load-chain
 printf 1 | ./load-chain
 ```
 
+### Measuring just loop recurrence
+
+The research client accepts `-out FILE -loop_recurrence_only` on the patched runtime. It computes the same per-block weight as the full probe and inserts a runtime callback only when a direct conditional self-loop has positive recurrence. It writes a versioned JSON object with `loop_recurrence_cycles_x16`. This mode is for single-threaded, single-process fixtures. The normal live grading page still contains the three ordinary counters.
+
+To compare collection costs, set `sdk` to the prepared DynamoRIO SDK, `meter` to its matching production client and `cpu` to an available logical CPU. Use a fresh output directory for each input. The harness pins the child to that CPU, disables ASLR, checks stdout, and alternates the order of the two collectors. Both configurations enable the production meter's static latency bound. The full research client uses its default set of counters with branch-prediction simulation disabled. The timings include the application and both clients.
+
+```sh
+cmake -S "$repo/experiments/time_features" -B probe-build -DCMAKE_BUILD_TYPE=Release \
+  -DDynamoRIO_DIR="$sdk/cmake" -DDURANTE_TEST_DRRUN="$sdk/bin64/drrun"
+cmake --build probe-build
+ctest --test-dir probe-build --output-on-failure
+printf 0 > serial.in
+printf 'ok\n' > expected
+python3 "$repo/experiments/benchmark_loop_recurrence.py" \
+  --drrun "$sdk/bin64/drrun" --meter "$meter" --probe probe-build/libtime_features_client.so \
+  --program ./load-chain --stdin serial.in --oracle expected --cpu "$cpu" --output serial-report
+```
+
+Six pairs per input (120 child executions) reproduced the full probe's recurrence exactly. On a pinned local AMD EPYC 7B12 CPU, median child CPU fell on nine of ten inputs. Binary GCD fell from 1,606 to 977 ms (39.2%), the branching case from 9,879 to 6,085 ms (38.4%) and sorting from 2,174 to 1,734 ms (20.2%). Integer arithmetic increased from 3,303.5 to 3,316.4 ms (0.4%). The median of the ten per-input reductions was 3.84%. These figures measure the diagnostic replay outside Cloud Run. [All paired timings and input hashes](../experiments/results/loop-recurrence-cost.json)
+
 ## Reproduce the prediction and scoring
 
 From the repository root, use Python with NumPy and SciPy for fitting. The frozen run used NumPy 1.26.4 and SciPy 1.10.1. Scoring uses the Python standard library. Run both commands with new output filenames.

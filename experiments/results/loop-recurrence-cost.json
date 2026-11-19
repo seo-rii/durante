@@ -1,0 +1,316 @@
+{
+  "schema": 1,
+  "method": "Alternating full / recurrence_only paired replays, reversing the execution order every round. Child wait4 user + system CPU includes the v8 production meter with its optional static latency bound and one diagnostic probe. The full baseline disables branch prediction and load-pattern tracking. Both collectors must give identical recurrence and matching production counters on every invocation.",
+  "environment": {
+    "cpu": 4,
+    "cpu_model": "AMD EPYC 7B12",
+    "kernel": "6.1.0-56-cloud-amd64",
+    "pairs": 6
+  },
+  "sha256": {
+    "drrun": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "meter": "d708864bc7d3ea0f4d4f8093b30bd5424436bf417e7bf420abd849eaba33d4c0",
+    "probe": "695416e64ded846bd10b8f6821dc2f2248877c82252662c08dbb46ba5b15c133",
+    "release_core": "fd1c5645b9fc70a7dcb71459b4b94782d2e016a2aa4ceffcfcab2ade962cdf5b",
+    "drmgr": "372cc1f1f95ffa29a1f11de4be14f99de5938bbcae11294a38d0a7932069429a",
+    "probe_source": "95d943e9bbdcc9743b812540778266838a3ac25e5f819131f622f20dabd6c5a3",
+    "harness": "eeaa822be0e7bc3b81db3d7c5019595e420dbedc8d0e5376265c03a7bae8edf6"
+  },
+  "cases": {
+    "serial": {
+      "program_sha256": "a44ee37ddab3e7bbebe0bd33d628e551745c897f7e893a2ba243b2efba142dea",
+      "stdin_sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+      "stdout_sha256": "dc51b8c96c2d745df3bd5590d990230a482fd247123599548e0632fdbf97fc22",
+      "counters": {
+        "instructions": 56361019,
+        "rep_bytes": 0,
+        "latency_bound_x16": 2708472044,
+        "loop_recurrence_cycles_x16": 2684354560
+      },
+      "child_cpu_ns": {
+        "full": [
+          730314000,
+          739263000,
+          744911000,
+          736573000,
+          739357000,
+          734664000
+        ],
+        "recurrence_only": [
+          711514000,
+          707008000,
+          719294000,
+          718489000,
+          725377000,
+          715543000
+        ]
+      }
+    },
+    "parallel": {
+      "program_sha256": "a44ee37ddab3e7bbebe0bd33d628e551745c897f7e893a2ba243b2efba142dea",
+      "stdin_sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+      "stdout_sha256": "dc51b8c96c2d745df3bd5590d990230a482fd247123599548e0632fdbf97fc22",
+      "counters": {
+        "instructions": 56361019,
+        "rep_bytes": 0,
+        "latency_bound_x16": 695206124,
+        "loop_recurrence_cycles_x16": 671088640
+      },
+      "child_cpu_ns": {
+        "full": [
+          500648000,
+          495794000,
+          492695000,
+          488325000,
+          494988000,
+          492757000
+        ],
+        "recurrence_only": [
+          480847000,
+          480396000,
+          473406000,
+          473756000,
+          474587000,
+          472576000
+        ]
+      }
+    },
+    "linked-rank": {
+      "program_sha256": "f58d418750169e99a33f14c1092c7ed13862e9987f4e43fc60b2966e24086b54",
+      "stdin_sha256": "7871ac13a3a60a7f89bcbf472662b4c105812cbd33c48cc69af6db6f2b6c645e",
+      "stdout_sha256": "6424dfb42062ce6a14644e433952f1403eab2b8a6e0d19f2855da7732e77e392",
+      "counters": {
+        "instructions": 79389258,
+        "rep_bytes": 632,
+        "latency_bound_x16": 1416260612,
+        "loop_recurrence_cycles_x16": 1388101548
+      },
+      "child_cpu_ns": {
+        "full": [
+          859361000,
+          861163000,
+          876026000,
+          849944000,
+          853770000,
+          850672000
+        ],
+        "recurrence_only": [
+          824908000,
+          818771000,
+          824880000,
+          819943000,
+          832757000,
+          826738000
+        ]
+      }
+    },
+    "binary-gcd": {
+      "program_sha256": "2a44e63847de166d5bea191692e2bc1faf2341025e24082abd6eb5a8f77dae08",
+      "stdin_sha256": "651350bacd0996fee097b60b61ce03e578986474fe2cbf3e2193370c5c70424d",
+      "stdout_sha256": "825ed91dda9f353a7ee44919fb50c4974221372edd1dbaaf7aafae94e2c9c798",
+      "counters": {
+        "instructions": 137286029,
+        "rep_bytes": 632,
+        "latency_bound_x16": 549144380,
+        "loop_recurrence_cycles_x16": 3500
+      },
+      "child_cpu_ns": {
+        "full": [
+          1596097000,
+          1613446000,
+          1601787000,
+          1605684000,
+          1606588000,
+          1606414000
+        ],
+        "recurrence_only": [
+          977083000,
+          977326000,
+          977994000,
+          978896000,
+          972168000,
+          975616000
+        ]
+      }
+    },
+    "stream-polynomial": {
+      "program_sha256": "120a3b98249d7def49cc3e58847be32c131190ec0216805d44a43811a0cefb74",
+      "stdin_sha256": "f2fafba2407ea9bcf70268aa4aa04e69a9276dc7c42eb3bce84e99698c976cc7",
+      "stdout_sha256": "78098c244dbc042ca888c262a76f3b6621cc9c41ac68243d67eb16d63b2e2e6c",
+      "counters": {
+        "instructions": 303078556,
+        "rep_bytes": 632,
+        "latency_bound_x16": 5641477144,
+        "loop_recurrence_cycles_x16": 5640462096
+      },
+      "child_cpu_ns": {
+        "full": [
+          1322519000,
+          1318574000,
+          1319087000,
+          1316828000,
+          1317646000,
+          1343899000
+        ],
+        "recurrence_only": [
+          1312580000,
+          1305098000,
+          1309065000,
+          1378842000,
+          1302476000,
+          1310421000
+        ]
+      }
+    },
+    "integer": {
+      "program_sha256": "13b1e1ba33375676c1c6071b2d0bb41c0148e2ee7d90f1c4085d3eb95124f29d",
+      "stdin_sha256": "9902ec78038acf436285ea163ff7b72ec7d4674a2510e8c881a63abe151a4f49",
+      "stdout_sha256": "e38d7255181f8787ee1acc901a9ed5f9364fa2bfa006853fbfd327f1d1b6198d",
+      "counters": {
+        "instructions": 335694430,
+        "rep_bytes": 3624,
+        "latency_bound_x16": 4295568616,
+        "loop_recurrence_cycles_x16": 4294972048
+      },
+      "child_cpu_ns": {
+        "full": [
+          3295898000,
+          3306753000,
+          3389863000,
+          3286661000,
+          3384221000,
+          3300209000
+        ],
+        "recurrence_only": [
+          3287104000,
+          3396049000,
+          3419711000,
+          3301897000,
+          3317643000,
+          3315203000
+        ]
+      },
+      "scale": 2
+    },
+    "branch": {
+      "program_sha256": "d383e4da2a1953bc72d54fccac0fe98fe575fef2474e469edcf2567d18ece37c",
+      "stdin_sha256": "ae7a13222abd483670b1f3b55d2f9f42790bfcbfdad8356a1c717f37feb59661",
+      "stdout_sha256": "875dae9442036ac9f7d91f17b8007467cda85c61daa09872b262292cb15c6a71",
+      "counters": {
+        "instructions": 458727182,
+        "rep_bytes": 3624,
+        "latency_bound_x16": 1834909692,
+        "loop_recurrence_cycles_x16": 4608
+      },
+      "child_cpu_ns": {
+        "full": [
+          9895449000,
+          9833953000,
+          9879953000,
+          9901544000,
+          9862419000,
+          9878044000
+        ],
+        "recurrence_only": [
+          6673897000,
+          6085884000,
+          6125686000,
+          6083733000,
+          6067584000,
+          6046154000
+        ]
+      },
+      "scale": 2
+    },
+    "sort": {
+      "program_sha256": "d96565357cdd163ea7de5eb145aaf915b0b0ba9e238a46718e9e1352e51c4b75",
+      "stdin_sha256": "be3b3a973edc5f34763d5808c7d0866e068ff309898e83e80bb37674405ce7a7",
+      "stdout_sha256": "ac3bae82b8b8660ab74bd85aa2d0685aaea14b95148def632987ef659f44842e",
+      "counters": {
+        "instructions": 177112448,
+        "rep_bytes": 3624,
+        "latency_bound_x16": 708450724,
+        "loop_recurrence_cycles_x16": 204515344
+      },
+      "child_cpu_ns": {
+        "full": [
+          2165020000,
+          2173017000,
+          2167195000,
+          2174848000,
+          2179690000,
+          2184656000
+        ],
+        "recurrence_only": [
+          1721873000,
+          1731257000,
+          1727025000,
+          1738145000,
+          1736400000,
+          1749425000
+        ]
+      },
+      "scale": 2
+    },
+    "rep_copy": {
+      "program_sha256": "255445d9e1311d5872c4da62e12df42c199012cfbc9b8c5dc6e8a8646cab2100",
+      "stdin_sha256": "034ae8e96eee99a30067d2f7c7b8055992ffb028e1a8309df36a17183c72b95e",
+      "stdout_sha256": "14b4ccf54a685e2b88965fc5f93815b5eb94b8946f65452c7f059ae8239959ac",
+      "counters": {
+        "instructions": 47320517,
+        "rep_bytes": 4294970920,
+        "latency_bound_x16": 189283176,
+        "loop_recurrence_cycles_x16": 136336816
+      },
+      "child_cpu_ns": {
+        "full": [
+          769065000,
+          797713000,
+          759161000,
+          796837000,
+          799456000,
+          806227000
+        ],
+        "recurrence_only": [
+          768133000,
+          748187000,
+          760829000,
+          745689000,
+          770467000,
+          752535000
+        ]
+      },
+      "scale": 2
+    },
+    "rep_fill": {
+      "program_sha256": "316549bd773f5dba0b5978f423ba8fc93f9fb881339478e030f22b1b2f9d1bc7",
+      "stdin_sha256": "034ae8e96eee99a30067d2f7c7b8055992ffb028e1a8309df36a17183c72b95e",
+      "stdout_sha256": "2eeb559b1920bcd118e23727ff5bf06499ed939972f79f592afcf0d7dd1945b0",
+      "counters": {
+        "instructions": 25807006,
+        "rep_bytes": 4294970920,
+        "latency_bound_x16": 103228872,
+        "loop_recurrence_cycles_x16": 68178400
+      },
+      "child_cpu_ns": {
+        "full": [
+          373052000,
+          380378000,
+          376152000,
+          373123000,
+          387355000,
+          386263000
+        ],
+        "recurrence_only": [
+          373345000,
+          369168000,
+          372544000,
+          358974000,
+          368594000,
+          358559000
+        ]
+      },
+      "scale": 2
+    }
+  }
+}
