@@ -39,29 +39,30 @@ static inline void l1d_touch_line(l1d_cache_t *cache, uintptr_t line) {
   ++cache->misses;
 }
 
-/* A decoded operand is 1..64 bytes, so it touches at most two lines. */
-static inline void l1d_access(l1d_cache_t *cache, uintptr_t addr,
-                              unsigned bytes) {
+/* A decoded operand is 1..64 bytes. Return whether a second line was used
+ * so callers may combine or separately batch their reference/lookup counts. */
+static inline bool l1d_touch_operand(l1d_cache_t *cache, uintptr_t addr,
+                                     unsigned bytes) {
   uintptr_t first = addr / L1D_LINE_BYTES;
   uintptr_t last = (addr + bytes - 1) / L1D_LINE_BYTES;
-  ++cache->refs;
-  ++cache->lines;
   l1d_touch_line(cache, first);
-  if (last > first) {
-    ++cache->lines;
+  if (last > first)
     l1d_touch_line(cache, last);
-  }
+  return last > first;
+}
+
+static inline void l1d_access(l1d_cache_t *cache, uintptr_t addr,
+                              unsigned bytes) {
+  ++cache->refs;
+  cache->lines += 1u + l1d_touch_operand(cache, addr, bytes);
 }
 
 /* A read immediately followed by a write to exactly the same operand
  * establishes the same LRU order on both passes. */
 static inline void l1d_access_twice(l1d_cache_t *cache, uintptr_t addr,
                                     unsigned bytes) {
-  l1d_access(cache, addr, bytes);
-  ++cache->refs;
-  ++cache->lines;
-  if ((addr + bytes - 1) / L1D_LINE_BYTES > addr / L1D_LINE_BYTES)
-    ++cache->lines;
+  cache->refs += 2;
+  cache->lines += 2u * (1u + l1d_touch_operand(cache, addr, bytes));
 }
 
 /* Number of consecutive whole elements contained in the current line.
@@ -73,6 +74,56 @@ static inline unsigned l1d_line_run(uintptr_t addr, unsigned bytes,
     return 0;
   return backwards ? (offset >> width_shift) + 1
                    : (L1D_LINE_BYTES - offset) >> width_shift;
+}
+
+/* Each set sees distinct lines of a contiguous STOS in address order. A
+ * straddling element interleaves adjacent lines, which map to different sets.
+ * Within a set only the first eight lines can hit preexisting data. */
+static inline bool l1d_contiguous_stos(l1d_cache_t *cache, uintptr_t dst,
+                                       uint64_t count, unsigned bytes,
+                                       unsigned width_shift, bool backwards,
+                                       bool addr32) {
+  uintptr_t limit = addr32 ? UINT32_MAX : UINTPTR_MAX;
+  if (addr32)
+    dst = (uint32_t)dst;
+  if (bytes - 1 > limit - dst)
+    return false;
+  uintptr_t available = backwards ? dst : limit - dst - (bytes - 1);
+  if (count - 1 > (available >> width_shift))
+    return false;
+  uintptr_t distance = (count - 1) << width_shift;
+  uintptr_t low = backwards ? dst - distance : dst;
+  uintptr_t high = (backwards ? dst : dst + distance) + (bytes - 1);
+  uintptr_t low_line = low / L1D_LINE_BYTES, high_line = high / L1D_LINE_BYTES;
+  uintptr_t line = backwards ? high_line : low_line;
+  uintptr_t step = backwards ? -(uintptr_t)1 : 1;
+  uintptr_t unique = high_line - low_line + 1;
+  const unsigned capacity = L1D_SETS * L1D_WAYS;
+  unsigned prefix = unique < capacity ? (unsigned)unique : capacity;
+  for (unsigned i = 0; i < prefix; ++i) {
+    l1d_touch_line(cache, line);
+    line += step;
+  }
+  cache->refs += count;
+  cache->lines += count;
+  if (dst & (bytes - 1))
+    cache->lines += high_line - low_line; /* Each boundary bisects one element. */
+
+  if (unique <= capacity)
+    return true;
+  /* The rest are misses. Each set retains precisely its last eight lines. */
+  cache->misses += unique - capacity;
+  line = backwards ? low_line : high_line;
+  for (unsigned i = 0; i < L1D_SETS; ++i) {
+    uint64_t *set = cache->tags[line % L1D_SETS];
+    uintptr_t tag = line + 1;
+    for (unsigned way = 0; way < L1D_WAYS; ++way) {
+      set[way] = tag;
+      tag -= step * L1D_SETS;
+    }
+    line -= step;
+  }
+  return true;
 }
 
 /* MOVS touches source then destination for each element. While neither line
@@ -87,6 +138,9 @@ static inline void l1d_repeat(l1d_cache_t *cache, bool movs, uintptr_t src,
     ++width_shift;
   if (addr32)
     count = (uint32_t)count;
+  if (!movs && count > ((unsigned)L1D_LINE_BYTES >> width_shift) &&
+      l1d_contiguous_stos(cache, dst, count, bytes, width_shift, backwards, addr32))
+    return;
   while (count) {
     if (addr32) {
       src = (uint32_t)src;
