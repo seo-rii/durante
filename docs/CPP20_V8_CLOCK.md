@@ -24,6 +24,29 @@ The linked search also establishes a limit on this set of features. All six prim
 
 The hosted worker used the previously published v7 three-counter weights rebound to the v8 image for this diagnostic. At 80% of each native median, every native repetition timed out (nine TLEs) and the v8 clock accepted each of the three programs. At 120% every native and live run accepted. The nominal boundaries were 69/105 ms for GCD, 156/235 ms for linked search and 107/162 ms for polynomial evaluation. CPU and wall watchdogs were 90 and 120 seconds. These trial weights are unsuitable for native-millisecond grading on this cohort. A second experiment with one ELF and two inputs shows why a change of weights alone cannot resolve some cases. [Store/load control](../experiments/store_load/README.md)
 
+## Load dependencies
+
+The linked successor holdout repeatedly uses the result of one load as the address of the next. A control built from its permutation follows either one chain or four independent chains on the same thread. Both inputs run the same ELF, read every four-byte index in the 1 MiB table 128 times, and execute four loads, a decrement and a conditional branch in each hot-loop iteration. The program checks the final indices. [Assembly](../experiments/load_chain_control.S)
+
+| Input | Native CPU range, six runs | Median | Ordinary v8 instructions | Native verdict at 300 ms, three runs | Live v8 verdict |
+| --- | ---: | ---: | ---: | --- | --- |
+| `0`, one chain | 446.196–505.436 ms | 491.736 ms | 56,361,019 | TLE ×3 | AC |
+| `1`, four chains | 102.400–113.064 ms | 107.275 ms | 56,361,019 | AC ×3 | AC |
+
+A second private Seoul Cloud Run revision served all 26 requests on one instance. Native CPU includes setup. At 12.05% and 9.94%, respectively, only the four-chain case passed the 10% spread gate. Both inputs produced zero REP MOVS/STOS bytes and the trial v7 weights predicted 13.148 ms for each. Any model making the same prediction for the two inputs incurs at least 64.18% relative error on one median. Even the closest observations, 113.064 and 446.196 ms, imply at least 59.57%. The access order changes between the loops, and these runs did not record hardware cache or stall counters. [Inputs, raw timings, tool hashes and verdicts](../experiments/results/cpp20-load-chain-control.json)
+
+A local replay with the v8 meter and research client agreed on 16 of 19 counters, including 33,816,578 loads and 34 simulated branch misses. The one-chain case had 4.00 times the loop recurrence, 3.62 times the critical path and 3.90 times the optional static latency bound. In the archived v6 diagnostic the linked successor program also had far greater loop recurrence than the scale-2 branching case (1,388,101,548 versus 4,608). The latter pair was misordered even by the combined latency bound. Raw loop recurrence therefore carries information lost when the meter combines recurrence with issue cost. Converting it to native milliseconds still needs a separately fitted model tested on new programs. [Static latency model](LATENCY_BOUND.md)
+
+To reproduce the measured ELF on Debian GCC 12.2.0 and GNU binutils 2.40, set `repo` to the source checkout and run the following in an empty directory. The original unstripped ELF includes its intermediate object's basename.
+
+```sh
+cc -c "$repo/experiments/load_chain_control.S" -o cc0JYjty.o
+cc -nostdlib -static -no-pie -Wl,--build-id=none cc0JYjty.o -o load-chain
+printf '%s  load-chain\n' a44ee37ddab3e7bbebe0bd33d628e551745c897f7e893a2ba243b2efba142dea | sha256sum -c -
+printf 0 | ./load-chain
+printf 1 | ./load-chain
+```
+
 ## Reproduce the prediction and scoring
 
 From the repository root, use Python with NumPy and SciPy for fitting. The frozen run used NumPy 1.26.4 and SciPy 1.10.1. Scoring uses the Python standard library. Run both commands with new output filenames.
