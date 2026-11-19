@@ -1,0 +1,486 @@
+{
+  "schema": 1,
+  "fixture": {
+    "source": "experiments/load_chain_control.S",
+    "source_sha256": "6107a8af7a81f69cc2ca61e41d8e65120dea23b54b92341b4d1e0cdb16dbd6e3",
+    "elf_sha256": "a44ee37ddab3e7bbebe0bd33d628e551745c897f7e893a2ba243b2efba142dea",
+    "frozen_utc": "2026-11-19T23:25:21.707194+00:00",
+    "nodes": 262144,
+    "loop_iterations": 8388608,
+    "loads_per_iteration": 4,
+    "end_labels": [
+      195886,
+      51502,
+      102850,
+      237074
+    ],
+    "stdin": {
+      "serial": "0",
+      "parallel": "1"
+    },
+    "stdout": "ok\n",
+    "stdin_sha256": {
+      "serial": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+      "parallel": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+    },
+    "stdout_sha256": "dc51b8c96c2d745df3bd5590d990230a482fd247123599548e0632fdbf97fc22",
+    "visits_per_node": 128,
+    "table_sha256_little_endian": "527e679964b2688bab28ab66407e9013ffcac569deca1807b6dca955fc39b69b",
+    "table_bytes": 1048576,
+    "total_hot_loads_per_mode": 33554432,
+    "chains": {
+      "serial": 1,
+      "parallel": 4
+    },
+    "architecture": "Linux x86-64 static ET_EXEC",
+    "compiler": "GCC 12.2.0",
+    "linker": "GNU ld 2.40",
+    "object_basename": "cc0JYjty.o",
+    "build_argv": [
+      [
+        "cc",
+        "-c",
+        "experiments/load_chain_control.S",
+        "-o",
+        "cc0JYjty.o"
+      ],
+      [
+        "cc",
+        "-nostdlib",
+        "-static",
+        "-no-pie",
+        "-Wl,--build-id=none",
+        "cc0JYjty.o",
+        "-o",
+        "load-chain"
+      ]
+    ]
+  },
+  "cloud_run": {
+    "platform": "Cloud Run Gen2",
+    "region": "asia-northeast3",
+    "cpu": 1,
+    "memory_gib": 2,
+    "request_concurrency": 1,
+    "instances": 1,
+    "http_execute_requests": 26,
+    "image": "sha256:5a3704ef3f0ece934b24f3a06f59df661a43e819f8be02c47e14d9a61d61049b",
+    "aonohako_commit": "0caf601d0f67a6fdc0e7f353a73e8773317cae81",
+    "installation": {
+      "source_commit": "614761c18d4735f00e93667c74c099cfdb2800c7",
+      "runtime_source_commit": "6847bb210bea0ca11d1bf47704383d6a075da490",
+      "runtime_patch_sha256": "59fc79b5055a0c42b463703768891f0a10199ef1135d43028826c8c3894bab7c",
+      "runtime_code_replay_patch_sha256": "391cd6f5e35dcbda372cab5dd98fa40a5b2a41effda52ecfce9afa945acb249b",
+      "launcher_sha256": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+      "client_sha256": "d708864bc7d3ea0f4d4f8093b30bd5424436bf417e7bf420abd849eaba33d4c0",
+      "release_core_sha256": "fd1c5645b9fc70a7dcb71459b4b94782d2e016a2aa4ceffcfcab2ade962cdf5b",
+      "unchanged_before_after": true
+    },
+    "model": {
+      "method": "weighted-rep-operations-nanoseconds-v2",
+      "model_id": "cloud-v8-diagnostic-transfer",
+      "model_version": 1,
+      "reference_id": "integration",
+      "runtime_id": "CPP20@sha256:5a3704ef3f0ece934b24f3a06f59df661a43e819f8be02c47e14d9a61d61049b",
+      "family": "cpp",
+      "engine_profile": "dynamorio-11.3-durante-v8-vm32m",
+      "dispatch_profile": "default",
+      "cpuid_profile": "x86-64-v2",
+      "instruction_ns_numerator": 233273561,
+      "movs_byte_ns_numerator": 38663059,
+      "stos_byte_ns_numerator": 71296759,
+      "ns_denominator": 1000000000
+    },
+    "model_origin": "Previously frozen v7 Cloud Run coefficients transferred to this v8 image for diagnosis.",
+    "runtime_options_id": "runtime-options-v1:sha256:b88c02807007e4cddc0ea7c3fea34b5e0e11fd5a4dd861162b14341c620de901",
+    "nominal_limits": {
+      "time_ms": 15000,
+      "wall_time_ms": 30000,
+      "memory_mb": 256
+    },
+    "raw_limits": {
+      "cpu_time_ms": 90000,
+      "wall_time_ms": 120000,
+      "memory_mb": 256
+    },
+    "rounds": {
+      "serial": [
+        {
+          "repetition": 1,
+          "native_before_ns": 446196000,
+          "instructions": 56361019,
+          "movs_bytes": 0,
+          "stos_bytes": 0,
+          "v8_cpu_ns": 581444000,
+          "predicted_ns": 13147536,
+          "native_after_ns": 497988000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 505436000,
+          "instructions": 56361019,
+          "movs_bytes": 0,
+          "stos_bytes": 0,
+          "v8_cpu_ns": 549853000,
+          "predicted_ns": 13147536,
+          "native_after_ns": 464715000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 485483000,
+          "instructions": 56361019,
+          "movs_bytes": 0,
+          "stos_bytes": 0,
+          "v8_cpu_ns": 559000000,
+          "predicted_ns": 13147536,
+          "native_after_ns": 499394000
+        }
+      ],
+      "parallel": [
+        {
+          "repetition": 1,
+          "native_before_ns": 112761000,
+          "instructions": 56361019,
+          "movs_bytes": 0,
+          "stos_bytes": 0,
+          "v8_cpu_ns": 214099000,
+          "predicted_ns": 13147536,
+          "native_after_ns": 110181000
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 102400000,
+          "instructions": 56361019,
+          "movs_bytes": 0,
+          "stos_bytes": 0,
+          "v8_cpu_ns": 215682000,
+          "predicted_ns": 13147536,
+          "native_after_ns": 104369000
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 103865000,
+          "instructions": 56361019,
+          "movs_bytes": 0,
+          "stos_bytes": 0,
+          "v8_cpu_ns": 208844000,
+          "predicted_ns": 13147536,
+          "native_after_ns": 113064000
+        }
+      ]
+    },
+    "order": [
+      [
+        "serial",
+        "parallel"
+      ],
+      [
+        "parallel",
+        "serial"
+      ],
+      [
+        "serial",
+        "parallel"
+      ]
+    ],
+    "round_sequence": [
+      "native_before",
+      "v8_live",
+      "native_after"
+    ],
+    "common_limit_ms": 300,
+    "boundaries": {
+      "serial": {
+        "native": [
+          "Time Limit Exceeded",
+          "Time Limit Exceeded",
+          "Time Limit Exceeded"
+        ],
+        "live": "Accepted",
+        "termination": "stdout",
+        "native_cpu_ns": [
+          302517000,
+          304079000,
+          301356000
+        ],
+        "native_verdict_source": [
+          "cpu_time",
+          "cpu_time",
+          "cpu_time"
+        ]
+      },
+      "parallel": {
+        "native": [
+          "Accepted",
+          "Accepted",
+          "Accepted"
+        ],
+        "live": "Accepted",
+        "termination": "stdout",
+        "native_cpu_ns": [
+          106573000,
+          98698000,
+          106828000
+        ],
+        "native_verdict_source": [
+          "stdout",
+          "stdout",
+          "stdout"
+        ]
+      }
+    },
+    "native_medians_ns": {
+      "serial": 491735500,
+      "parallel": 107275000
+    },
+    "same_clock_bound": {
+      "faster_case_max_ns": 113064000,
+      "slower_case_min_ns": 446196000,
+      "min_relative_error": {
+        "numerator": 27761,
+        "denominator": 46605
+      }
+    }
+  },
+  "local": {
+    "host_cpu": "AMD EPYC 7B12",
+    "cpu_clock": "direct-child wait4 user+system CPU",
+    "pinned_cpu": true,
+    "order": [
+      [
+        "serial",
+        "parallel"
+      ],
+      [
+        "parallel",
+        "serial"
+      ],
+      [
+        "serial",
+        "parallel"
+      ]
+    ],
+    "native_cpu_ns": {
+      "serial": [
+        399239000,
+        407689000,
+        395170000
+      ],
+      "parallel": [
+        109875000,
+        105624000,
+        101657000
+      ]
+    },
+    "v8_live_cpu_ns": {
+      "serial": [
+        447516000,
+        451270000,
+        460378000
+      ],
+      "parallel": [
+        172255000,
+        172279000,
+        173274000
+      ]
+    },
+    "live_repetitions_per_mode": 3,
+    "live_final_work": {
+      "serial": {
+        "instructions": 56361019,
+        "rep_movs_bytes": 0,
+        "rep_stos_bytes": 0
+      },
+      "parallel": {
+        "instructions": 56361019,
+        "rep_movs_bytes": 0,
+        "rep_stos_bytes": 0
+      }
+    }
+  },
+  "diagnostic_probe": {
+    "tools": {
+      "drmgr": "372cc1f1f95ffa29a1f11de4be14f99de5938bbcae11294a38d0a7932069429a",
+      "drrun": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+      "meter": "d708864bc7d3ea0f4d4f8093b30bd5424436bf417e7bf420abd849eaba33d4c0",
+      "probe": "c41c1f138a58f6a66d4d489940e1773d521e985dee61abd7baeca41d59c63a59",
+      "runtime": "fd1c5645b9fc70a7dcb71459b4b94782d2e016a2aa4ceffcfcab2ade962cdf5b"
+    },
+    "production_options": [
+      "-rep_bytes",
+      "-cpuid_profile",
+      "x86-64-v2",
+      "-latency_bound"
+    ],
+    "probe_options": [
+      "-bpred"
+    ],
+    "launcher_options": [
+      "-follow_children",
+      "-disable_traces",
+      "-vm_size",
+      "32M",
+      "-vmheap_size",
+      "32M"
+    ],
+    "commit": "614761c18d4735f00e93667c74c099cfdb2800c7",
+    "personality": "ADDR_NO_RANDOMIZE",
+    "repetitions_per_mode": 3,
+    "counter_units": "Counts except the three *_x16 fields, in sixteenths of a modeled cycle.",
+    "counters": {
+      "serial": {
+        "conditional_branches": 8650758,
+        "critical_path_cycles_x16": 2780824272,
+        "direct_jumps_calls": 262146,
+        "divs": 0,
+        "fp_ops": 0,
+        "gshare_mispredicts": 34,
+        "indirect_branches": 262146,
+        "instructions": 56361019,
+        "latency_bound_x16": 2708472044,
+        "load_instructions": 33816578,
+        "loop_recurrence_cycles_x16": 2684354560,
+        "muls": 524290,
+        "rep_bytes": 0,
+        "rep_entries": 0,
+        "rep_movs_bytes": 0,
+        "rep_movs_entries": 0,
+        "rep_stos_bytes": 0,
+        "rep_stos_entries": 0,
+        "stores": 524289
+      },
+      "parallel": {
+        "conditional_branches": 8650758,
+        "critical_path_cycles_x16": 767558352,
+        "direct_jumps_calls": 262146,
+        "divs": 0,
+        "fp_ops": 0,
+        "gshare_mispredicts": 34,
+        "indirect_branches": 262146,
+        "instructions": 56361019,
+        "latency_bound_x16": 695206124,
+        "load_instructions": 33816578,
+        "loop_recurrence_cycles_x16": 671088640,
+        "muls": 524290,
+        "rep_bytes": 0,
+        "rep_entries": 0,
+        "rep_movs_bytes": 0,
+        "rep_movs_entries": 0,
+        "rep_stos_bytes": 0,
+        "rep_stos_entries": 0,
+        "stores": 524289
+      }
+    },
+    "fields_differing": [
+      "critical_path_cycles_x16",
+      "latency_bound_x16",
+      "loop_recurrence_cycles_x16"
+    ],
+    "counter_integrity": "application_mutable",
+    "native_timing_observations_used": false
+  },
+  "archived_comparison": {
+    "qualifier": "Post hoc comparison of two previously collected case identities. Counters use v6 production plus the same diagnostic client; native CPU is from the earlier v8 Cloud Run study.",
+    "tools": {
+      "drmgr": "372cc1f1f95ffa29a1f11de4be14f99de5938bbcae11294a38d0a7932069429a",
+      "drrun": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+      "meter": "a495207e4cd227ccbaec467d8662b04dbfc208246b4ede712b36b8489a02c1ff",
+      "probe": "c41c1f138a58f6a66d4d489940e1773d521e985dee61abd7baeca41d59c63a59",
+      "runtime": "e2fdae59daa295d1c752876647937ecac80649cbba85d6e98b17e6a7cc4a1859"
+    },
+    "commit": "238193f90f5896b300563180e7939088ac8c346c",
+    "source_archive_sha256": "75a9845f72a122d79af3a88f81c00f8f18359a26cd5e12524296d7d11b0ab4e2",
+    "repetitions_per_case": 3,
+    "cases": {
+      "linked-rank": {
+        "elf_sha256": "f58d418750169e99a33f14c1092c7ed13862e9987f4e43fc60b2966e24086b54",
+        "input_sha256": "7871ac13a3a60a7f89bcbf472662b4c105812cbd33c48cc69af6db6f2b6c645e",
+        "output_sha256": "6424dfb42062ce6a14644e433952f1403eab2b8a6e0d19f2855da7732e77e392",
+        "native_ns": [
+          179811000,
+          192756000,
+          204202000,
+          177544000,
+          198143000,
+          200454000
+        ],
+        "counters": {
+          "conditional_branches": 14761270,
+          "critical_path_cycles_x16": 1491738720,
+          "direct_jumps_calls": 273953,
+          "divs": 9,
+          "fp_ops": 65882,
+          "gshare_mispredicts": 12363,
+          "indirect_branches": 273815,
+          "instructions": 79389258,
+          "latency_bound_x16": 1416260612,
+          "load_instructions": 14745325,
+          "loop_recurrence_cycles_x16": 1388101548,
+          "muls": 558320,
+          "rep_bytes": 632,
+          "rep_entries": 1,
+          "rep_movs_bytes": 0,
+          "rep_movs_entries": 0,
+          "rep_stos_bytes": 632,
+          "rep_stos_entries": 1,
+          "stores": 603508
+        }
+      },
+      "branch-2": {
+        "elf_sha256": "d383e4da2a1953bc72d54fccac0fe98fe575fef2474e469edcf2567d18ece37c",
+        "input_sha256": "ae7a13222abd483670b1f3b55d2f9f42790bfcbfdad8356a1c717f37feb59661",
+        "output_sha256": "875dae9442036ac9f7d91f17b8007467cda85c61daa09872b262292cb15c6a71",
+        "native_ns": [
+          88913000,
+          88489000,
+          94319000,
+          99647000,
+          89004000,
+          91017000
+        ],
+        "counters": {
+          "conditional_branches": 89504845,
+          "critical_path_cycles_x16": 7518894080,
+          "direct_jumps_calls": 55930527,
+          "divs": 12,
+          "fp_ops": 321,
+          "gshare_mispredicts": 4897334,
+          "indirect_branches": 33559475,
+          "instructions": 458727165,
+          "latency_bound_x16": 1834909624,
+          "load_instructions": 33576877,
+          "loop_recurrence_cycles_x16": 4608,
+          "muls": 33554014,
+          "rep_bytes": 3624,
+          "rep_entries": 4,
+          "rep_movs_bytes": 0,
+          "rep_movs_entries": 0,
+          "rep_stos_bytes": 3624,
+          "rep_stos_entries": 4,
+          "stores": 33566154
+        }
+      }
+    },
+    "fields_with_linked_rank_greater": [
+      "fp_ops",
+      "loop_recurrence_cycles_x16"
+    ],
+    "frozen_model_fields": [
+      "instructions",
+      "rep_movs_bytes",
+      "rep_stos_bytes",
+      "load_instructions",
+      "gshare_mispredicts",
+      "latency_bound_x16"
+    ],
+    "interaction": "isqrt(load_instructions * gshare_mispredicts)",
+    "monotone_model_bound": {
+      "faster_case_max_ns": 99647000,
+      "slower_case_min_ns": 177544000,
+      "min_relative_error": {
+        "numerator": 77897,
+        "denominator": 277191
+      }
+    }
+  }
+}
