@@ -15,7 +15,7 @@ _start:
     cmp %r10, %rdx
     stc
 
-    /* Keep CF, ZF, GPRs and XMM0 live across 128 scalar callbacks.
+    /* Keep CF, ZF, GPRs and XMM0 live across 128 scalar loads.
        All loads address the same cache line. */
     .rept 128
         mov (%rbx), %eax
@@ -71,6 +71,29 @@ _start:
     cmpq $12, 60(%rbx)
     jne .Lfail
     cmpb $0xcd, 255(%rbx)
+    jne .Lfail
+
+    /* The base and index can both be instrumentation scratch candidates.
+       CF and ZF survive a warm read, a cold read and a zero-count shift. */
+    mov %rbx, %r10
+    mov $1, %r11d
+    xor %ecx, %ecx
+    stc
+    movzbl 128(%r10,%r11), %r8d
+    jnc .Lfail
+    jne .Lfail
+    cmp $42, %r8d
+    jne .Lfail
+    stc
+    movzbl 319(%r10,%r11), %r8d
+    jnc .Lfail
+    jne .Lfail
+    shll %cl, 319(%r10,%r11)
+    jnc .Lfail
+    jne .Lfail
+    cmp %rbx, %r10
+    jne .Lfail
+    cmp $1, %r11
     jne .Lfail
 
     /* XLAT indexes with AL, even when higher RAX bits are set. Its 32-bit

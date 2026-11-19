@@ -17,10 +17,11 @@ from compare import clocks
 # 66 descending MOVSB iterations       132  132  0
 # 3 forward STOSW iterations             3    4  2
 # verify four stored values              4    5  0
+# scratch register and flag checks       4    4  1
 # XLAT with two address sizes            2    2  0
-EXPECTED_CACHE = b"PROBE_L1D refs=286 lines=292 misses=14 skipped=0 rep=2 threads=1"
+EXPECTED_CACHE = b"PROBE_L1D refs=290 lines=296 misses=15 skipped=0 rep=2 threads=1"
 EXPECTED_WORK = {
-    "instructions": 128 + 8 * 4 + 47 + 10,
+    "instructions": 128 + 8 * 4 + 47 + 20 + 10,
     "rep_bytes": 72, "rep_entries": 2, "unsupported_rep_entries": 0,
     "rep_movs_bytes": 66, "rep_movs_entries": 1,
     "rep_stos_bytes": 6, "rep_stos_entries": 1,
