@@ -105,6 +105,60 @@ file_t dr_open_file(const char *path, uint flags) {
     abort();
 }
 
+/* The scope fixture supplies its own ELF header and syscall arguments. */
+bool dr_safe_read(const void *src, size_t size, void *dst, size_t *read) {
+    memcpy(dst, src, size);
+    if (read) *read = size;
+    return true;
+}
+static reg_t syscall_args[6];
+reg_t dr_syscall_get_param(void *ctx, int index) {
+    assert(ctx == CTX && index >= 0 && index < 6);
+    return syscall_args[index];
+}
+
+static void check_static_text_scope(void) {
+    struct elf_fixture { Elf64_Ehdr header; Elf64_Phdr ph[2]; } image = {0};
+    app_pc page = PC(0x401000), entry = page + 16;
+    module_segment_data_t segments[] = {
+        { (app_pc)&image, (app_pc)&image + sizeof(image), DR_MEMPROT_READ, 0 },
+        { page, page + 4096, DR_MEMPROT_READ | DR_MEMPROT_EXEC, 4096 }
+    };
+    module_data_t main = { .start = segments[0].start, .entry_point = entry,
+                           .num_segments = 2, .segments = segments };
+    memcpy(image.header.e_ident, ELFMAG, SELFMAG);
+    image.header.e_ident[EI_CLASS] = ELFCLASS64;
+    image.header.e_ident[EI_DATA] = ELFDATA2LSB;
+    image.header.e_machine = EM_X86_64;
+    image.header.e_entry = (uintptr_t)entry;
+    image.header.e_phoff = offsetof(struct elf_fixture, ph);
+    image.header.e_phentsize = sizeof(Elf64_Phdr);
+    image.header.e_phnum = 2;
+    image.ph[0] = (Elf64_Phdr){ .p_type = PT_LOAD, .p_flags = PF_R | PF_X,
+                                .p_vaddr = (uintptr_t)entry, .p_filesz = 64, .p_memsz = 64 };
+    image.header.e_type = ET_DYN;
+    find_static_text(&main);
+    assert(!static_text_site(entry));
+    image.header.e_type = ET_EXEC;
+    unsigned dynamic_headers[] = { PT_INTERP, PT_DYNAMIC };
+    for (size_t i = 0; i < 2; i++) {
+        image.ph[1].p_type = dynamic_headers[i];
+        find_static_text(&main);
+        assert(!static_text_site(entry));
+    }
+    image.ph[1].p_type = PT_NULL;
+    find_static_text(&main);
+    assert(!static_text_site(page) && static_text_site(entry));
+    assert(static_text_site(entry + 63) && !static_text_site(entry + 64));
+    syscall_args[0] = (reg_t)page + 4096;
+    syscall_args[1] = 4096;
+    assert(!changes_static_text(CTX, SYS_mprotect));
+    syscall_args[0] = (reg_t)page;
+    assert(changes_static_text(CTX, SYS_mprotect));
+    static_text_revoked = true;
+    assert(!static_text_site(entry));
+}
+
 static void reset(void) {
     memset(&state, 0, sizeof(state));
     memset(&parent_state, 0, sizeof(parent_state));
@@ -194,7 +248,9 @@ int main(int argc, char **argv) {
     assert(argc == 2);
     reset();
     const char *test = argv[1];
-    if (!strcmp(test, "suffix")) {
+    if (!strcmp(test, "static-text-scope")) {
+        check_static_text_scope();
+    } else if (!strcmp(test, "suffix")) {
         test_ir nodes[6] = {{1, NULL}, {0, NULL}, {1, NULL},
                             {0, NULL}, {1, NULL}, {0, NULL}};
         for (unsigned i = 0; i + 1 < sizeof(nodes) / sizeof(nodes[0]); ++i)
@@ -786,6 +842,9 @@ class ClientReplayStateTests(unittest.TestCase):
 
     def test_executed_prefix_survives_retry(self):
         self.run_case("prefix")
+
+    def test_static_text_scope(self):
+        self.run_case("static-text-scope")
 
     def test_suffix_ignores_meta_and_rejects_ambiguous_emulation_write(self):
         self.run_case("suffix")

@@ -94,9 +94,12 @@ work than its native control.
 The independent native `signal_context.c` regression also checks registers and
 flags that linear analysis would consider dead: a SIGSEGV handler inspects the
 saved state and resumes past a future clobber. The old client changes that state.
-The counter therefore uses clean-call state preservation for every block.
-A restoration barrier alone fixes Java startup but does not preserve dead flags
-in this native regression; the pinned drreg implementation elides their save. Both direct REP modes and the supervisor must preserve exact
+Managed runtimes use clean calls for block entry and write checkpoints. The
+ordinary counter in eligible static executable text explicitly saves and
+restores its scratch registers and arithmetic flags at block entry. Its write
+checkpoints use flag-preserving moves.
+An earlier counter relied on drreg liveness analysis, which omitted a flag save
+needed by this regression. Both direct REP modes and the supervisor must preserve exact
 fixture output and record both handled signals. These tests do not establish all
 possible signal-context transitions as supported.
 

@@ -39,10 +39,10 @@ def check_run(prefix, work, name, command, *, valid=True):
     directory.mkdir()
     records = directory / "records"
     records.mkdir()
-    page = directory / "work"
+    page = directory / "live"
     page.write_bytes(bytes(PAGE.size))
     proc = subprocess.Popen([*prefix, "-outdir", str(records), "-rep_bytes", "-live_work_v1",
-                             str(page), "--", *command], start_new_session=True)
+                             str(page), "--", *command], start_new_session=True, cwd=directory)
     try:
         if proc.wait(timeout=10) != 0:
             raise RuntimeError(f"{name}: fixture exited {proc.returncode}")
@@ -62,6 +62,7 @@ def check_run(prefix, work, name, command, *, valid=True):
         expected = (measurement.get("instructions"), rep.get("movs_bytes"), rep.get("stos_bytes"))
         if not measurement.get("complete") or not measurement.get("valid") or actual != expected:
             raise ValueError(f"{name}: live {actual}, terminal {expected}, {measurement.get('reason')}")
+        return measurement
 
 
 def main():
@@ -78,6 +79,20 @@ def main():
         # observable just like SIGUSR1; exercise that invalidation separately.
         previous_mask = signal.pthread_sigmask(signal.SIG_BLOCK, {signal.SIGCHLD})
         try:
+            boundaries = work / "clock-boundaries"
+            subprocess.run(["cc", "-static", "-nostdlib", "-no-pie",
+                            ROOT / "experiments/l1d_probe/clock_control.S", "-o", boundaries], check=True)
+            for mode, argv in (("cold", []), ("warm", ["warm"])):
+                check_run(prefix, work, f"clock-boundaries-{mode}", [boundaries, *argv])
+            threaded = work / "clock-threads"
+            subprocess.run(["cc", "-static", "-nostdlib", "-no-pie", ROOT / "tests/clock_threads.S",
+                            "-o", threaded], check=True)
+            measurement = check_run(prefix, work, "thread-clock", [threaded])
+            # Each call to .Lwork takes 5*N+18 instructions. 32 are executed
+            # outside it: 7 up through clone, 3 on each return, 14 parent, 5 worker.
+            expected = 5 * (100003 + 70001) + 2 * 18 + 32
+            if measurement["instructions"] != expected or measurement["segments"][0]["threads"] != 2:
+                raise ValueError(f"unexpected threaded clock: {measurement}")
             for fixture, flag, modes in [
                 ("rep_breakdown", "MODE", {name: row[0] for name, row in CASES.items()}),
                 ("jit_replay", "CASE", {name: row["case"] for name, row in FIXTURES.items()}),
