@@ -177,11 +177,13 @@ static void find_static_text(const module_data_t *main) {
   }
 }
 
+#ifndef DURANTE_TEST_COUNT_LOCATIONS
 static bool static_text_site(app_pc pc) {
   uintptr_t addr = (uintptr_t)pc;
   return addr >= static_text_start && addr < static_text_end &&
          !__atomic_load_n(&static_text_revoked, __ATOMIC_ACQUIRE);
 }
+#endif
 
 static bool overlaps_static_text(uintptr_t addr, size_t size) {
   return size && addr < static_text_end &&
