@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "description": "Predeclared memory-cost holdouts with independent oracles",
+  "predeclared_utc": "2026-11-20T00:08:04Z",
+  "frozen_utc": "2026-11-20T00:09:32Z",
+  "compiler": "g++ (Debian 12.2.0-14+deb12u1) 12.2.0",
+  "compiler_sha256": "dd91977c184e327710578363ad93ebb175c3a457b6236b874fd3911b7c055c65",
+  "flags": [
+    "-std=c++20",
+    "-O2",
+    "-static",
+    "-no-pie",
+    "-march=x86-64",
+    "-mtune=generic",
+    "-Wl,--build-id=none",
+    "-s"
+  ],
+  "spec_sha256": "c4f0337a250a4ea3c2a6c749c5f6d13bad973c017688a48a3626009343e0a41f",
+  "oracle_generator_sha256": "cb424912bbe72044c51d30eabfab8c4438c1f8e47339cded276404f560f73653",
+  "cases": {
+    "fenwick-prefix": {
+      "source_sha256": "9f599613abda2ba189053a1954522611e9ac1ecf7ef3e45d704bb17bd0fcc8d1",
+      "elf_sha256": "30b0e943a91b8f58de665f9c3d0d5902893a3e71ccdc203583a8d2d2f6ce14e0",
+      "stdin_sha256": "d65b3050f54941e662535979ec9fc43bb53f0dc6fb8c9e2688f76e4f469a0e29",
+      "stdout_sha256": "8c0bd1b82196cef44359654cc8978dc7cec09a8f92a272024d3fa84f6030cd7a",
+      "description": "Fenwick point updates and inclusive prefix-sum queries",
+      "stdin": "262144 12 65536 229391\n",
+      "stdout": "2771940357277\n",
+      "bytes": 863480
+    },
+    "kmp-match": {
+      "source_sha256": "631ae6aa648d6ce30fafb0e482362ec378c8f8c27a8778c87c7c9ad1c0a06a75",
+      "elf_sha256": "65160491589c871ba359a616c5987adf461633dfd85433107b494147a4e83fdb",
+      "stdin_sha256": "5749469a7fa56bd40384a1f07fd322759082f203114e0bfc09036cb0c324fa47",
+      "stdout_sha256": "c3d73c4fea99450326ea305f658a18c5528552847e2774f33454350e620ab50c",
+      "description": "KMP substring search with frequent overlapping candidate prefixes",
+      "stdin": "2097152 1189571\n",
+      "stdout": "524836 4953965896989\n",
+      "bytes": 863480
+    },
+    "union-find": {
+      "source_sha256": "8a18fa26da4b3f7183467d23bce024d087fabb968c0800c6c2105b260a1031cc",
+      "elf_sha256": "d96d8c30ca7b4851407458b55960bc2a6ddb348b4800f02fc8b50ed2f5d2cd2a",
+      "stdin_sha256": "c60da46cbd8f6e51461de55e1fda4baf9a71a6bd273d7c26f3d8c794a0faf5f5",
+      "stdout_sha256": "33c67e18e7b08b8bd19c4640555765a15f8c8526a0eb648143a44c1f9a971896",
+      "description": "Disjoint-set connectivity with union by size and path halving",
+      "stdin": "65536 24 32768 65536 367283\n",
+      "stdout": "1374 1165170902\n",
+      "bytes": 863480
+    }
+  }
+}
