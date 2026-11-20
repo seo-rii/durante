@@ -112,3 +112,5 @@ python3 experiments/memory_cost_capacity.py "$data/features.json" --output /tmp/
 ```
 
 The cache-pass runner `experiments/collect_memory_cache.py --help` lists the inputs for replaying one case. Combine its cache report with the full time-features client (`-bpred`) and a v8 worker meter (`-latency_bound -rep_bytes -cpuid_profile x86-64-v2`) using the same executable path, environment, working directory and disabled ASLR. The full probe source used for this series is the version in commit `a08933762c4a85deb3866ceb7f294835314ce493`. The simulated-cache pass in the prediction file uses the pre-optimization client. [Subsequent REP MOVS optimization and its paired measurements](../experiments/l1d_probe/README.md#long-disjoint-copies)
+
+The next trial independently varied warm REP copy traffic and the ordinary read footprint in one executable. It tested the resulting weights on three new programs and recorded actual Cloud Run verdicts. [Crossed calibration and blind results](CPP20_CROSSED_MEMORY.md)
