@@ -71,6 +71,7 @@ typedef struct {
   uint64_t rep_movs_bytes, rep_stos_bytes, rep_movs_entries, rep_stos_entries;
   uint64_t published_instructions, published_movs, published_stos;
   uint64_t fast_until; /* Exclusive pre-charge threshold; zero forces the callback. */
+  bool pending_stdin_read, received_stdin;
   bool rep_error;
   bool replay_error;
   /* A CPUID-profile request outside the fixed table (sticky invalidity). */
@@ -1066,7 +1067,12 @@ static bool select_inline_block(void *ctx, instrlist_t *bb, bool translating,
   if (translating)
     return false;
   thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
-  if (!d || d->instructions < 32 * LIVE_WORK_BATCH)
+  if (!d)
+    return false;
+  /* Static programs commonly enter their main loop after parsing input. Keep
+   * the longer startup period for other programs and for the cache probe. */
+  unsigned batches = d->received_stdin ? 4 : 32;
+  if (d->instructions < batches * LIVE_WORK_BATCH)
     return false;
   *flags = DR_EMIT_STORE_TRANSLATIONS;
   return true;
@@ -1207,6 +1213,10 @@ static bool filter_syscall(void *ctx, int number) {
   (void)ctx;
   return live_work || lifecycle_syscall(number);
 }
+/* Only the ordinary static-image live clock initializes static_text_end. */
+static bool static_input_syscall(int number) {
+  return static_text_end && (number == SYS_read || number == SYS_readv);
+}
 static bool pre_syscall(void *ctx, int number) {
   if (static_text_end && !__atomic_load_n(&static_text_revoked, __ATOMIC_ACQUIRE) &&
       (x32_syscall(number) || changes_static_text(ctx, number)))
@@ -1215,6 +1225,8 @@ static bool pre_syscall(void *ctx, int number) {
   if (!d)
     fail("syscall without TLS");
   if (live_work && !lifecycle_syscall(number)) {
+    if (static_input_syscall(number))
+      d->pending_stdin_read = !d->child_pid && dr_syscall_get_param(ctx, 0) == STDIN_FILENO;
     /* An intercepted syscall terminates its basic block. All prior charges
      * have passed replay correction and the syscall itself has been reached.
      * Flush before it can block indefinitely, even below the usual batch size.
@@ -1316,12 +1328,19 @@ static bool pre_syscall(void *ctx, int number) {
   return true;
 }
 static void post_syscall(void *ctx, int number) {
-  if (live_work && !lifecycle_syscall(number))
+  bool ordinary = live_work && !lifecycle_syscall(number);
+  if (ordinary && !static_input_syscall(number))
     return;
   thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
   if (!d)
     fail("post syscall without TLS");
   ptr_int_t result = (ptr_int_t)dr_syscall_get_result(ctx);
+  if (ordinary) {
+    if (d->pending_stdin_read && result > 0)
+      d->received_stdin = true;
+    d->pending_stdin_read = false;
+    return;
+  }
   dr_mutex_lock(state_lock);
   if (d->pending_spawn && result > 0) {
     char fields[192];
