@@ -24,3 +24,32 @@ python3 -B experiments/l1d_probe/compare.py --ordinary-live --rounds 5 --cpu "$c
   --drrun "$sdk/bin64/drrun" --baseline "$old_client" --candidate "$new_client" \
   --output "$new_results_directory" --case histogram-stack "$program" "$input" "$expected_stdout"
 ```
+
+## Direct access to the static live accounting state
+
+The client at `191858a` retains the input and instruction thresholds above. When charging a block or saving a write checkpoint in generated code, it reads the accounting pointer directly from one DynamoRIO raw TLS slot. Each thread initializes the slot from its own accounting state, and a forked child restores its surviving thread's pointer. If the slot cannot be reserved, the generated code uses the existing lookup. Only the ordinary static live clock requests the slot.
+
+We compared the v9 client and this change in 16 alternating rounds on logical CPU 5 of an AMD EPYC 7B12 VM. The two arms in each round ran the same file from the same path. Each consecutive pair of opposite-order rounds contributed one block. The paired change is the median of the eight block log ratios converted back to a percentage. Marginal CPU medians and the paired estimate can therefore have different signs. CPU time covers the measured process and its instrumentation. [Frozen local protocol](../experiments/results/cpp20-static-tls/protocol.txt) · [All 448 executions, timings, orders, binary digests and work counters](../experiments/results/cpp20-static-tls/local.json)
+
+| Program | v9 median CPU | Direct TLS median CPU | Paired change | Faster blocks |
+|---|---:|---:|---:|---:|
+| Short C++ iostream | 175.21 ms | 169.40 ms | −3.24% | 6/8 |
+| New sorted intersection, empty | 183.40 ms | 173.02 ms | −3.49% | 6/8 |
+| New sorted intersection, 256 items per list | 180.93 ms | 173.69 ms | −3.05% | 5/8 |
+| New sorted intersection, 262,144 items per list | 195.36 ms | 182.03 ms | −4.38% | 8/8 |
+| Monotonic-stack histogram | 341.23 ms | 307.10 ms | −12.80% | 7/8 |
+| Sparse-table range minimum | 257.57 ms | 241.02 ms | −5.70% | 8/8 |
+| Integer control | 386.38 ms | 339.31 ms | −12.99% | 8/8 |
+| Branch control | 1,032.34 ms | 902.88 ms | −12.73% | 8/8 |
+| Short scanf | 93.29 ms | 93.33 ms | +0.81% | 4/8 |
+| Short REP | 96.27 ms | 95.20 ms | +0.80% | 4/8 |
+
+The host was shared. In a separate 96-execution control, two copies of v9 produced apparent paired changes of −4.85% for short iostream, +9.98% for short scanf and +5.00% for short REP. Small short-program changes on this machine do not establish a startup speedup. The integer, branch and histogram programs showed larger gains. All runs matched expected stdout, terminal work and the shared instruction, MOVS and STOS counters. These tests concern collection cost. The work-to-time coefficients and limits were held fixed. [Identical-client results](../experiments/results/cpp20-static-tls/identical.json)
+
+The three sorted-intersection cases share one static executable. Source, executable, input and expected output digests were fixed before evaluating the chosen client on that program. The output oracle summed the set intersection of two independently generated increasing lists. For the recorded executable, build with Debian g++ 12.2.0 (12.2.0-14+deb12u1) and the flags below. Use the paired runner above with `--rounds 16`, then run the summarizer on its output. [Source and fixed inputs](../experiments/static_input_transfer) · [Digest manifest](../experiments/static_input_transfer/manifest.json)
+
+```sh
+g++ -std=c++20 -O2 -static -no-pie -march=x86-64 -mtune=generic -Wl,--build-id=none -s \
+  experiments/static_input_transfer/main.cpp -o Main
+python3 -B experiments/summarize_live_pairs.py "$new_results_directory/summary.json"
+```

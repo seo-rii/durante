@@ -1,0 +1,670 @@
+{
+  "schema": 1,
+  "time_columns": [
+    "baseline",
+    "candidate"
+  ],
+  "clients": {
+    "baseline": "21673e2fcd5b268862f901fc2c439e9edc5fdc70d981472f1b67716cfa0156b9",
+    "candidate": "21673e2fcd5b268862f901fc2c439e9edc5fdc70d981472f1b67716cfa0156b9"
+  },
+  "launcher_sha256": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+  "cpu": 5,
+  "rounds_per_case": 16,
+  "cases": {
+    "short-stream": {
+      "elf_sha256": "3852323cec6294c734617d14a94994d8703ed8b7b491df27048a5b4d9e9c1469",
+      "stdin_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "work": {
+        "schema": 1,
+        "client_version": 1,
+        "authority": "diagnostic_only",
+        "metric": "bb_entry_app_instructions",
+        "seq": 2,
+        "event": "end",
+        "instructions": 63083,
+        "rep_bytes": 1984,
+        "rep_entries": 6,
+        "rep_movs_bytes": 0,
+        "rep_stos_bytes": 1984,
+        "rep_movs_entries": 0,
+        "rep_stos_entries": 6,
+        "unsupported_rep_entries": 0,
+        "signals_observed": 0,
+        "threads_started": 1,
+        "threads_finished": 1,
+        "threads_complete": true,
+        "accounting_error": false,
+        "app_exit_seen": true,
+        "app_exit_code": 0,
+        "valid": true,
+        "quality": "uninterrupted"
+      },
+      "rounds": [
+        {
+          "first_arm": "baseline",
+          "cpu_ns": [
+            252186000,
+            245675000
+          ],
+          "wall_ns": [
+            271295804,
+            276340924
+          ]
+        },
+        {
+          "first_arm": "candidate",
+          "cpu_ns": [
+            212452000,
+            214986000
+          ],
+          "wall_ns": [
+            213038214,
+            217194923
+          ]
+        },
+        {
+          "first_arm": "baseline",
+          "cpu_ns": [
+            255799000,
+            277289000
+          ],
+          "wall_ns": [
+            259897094,
+            306796094
+          ]
+        },
+        {
+          "first_arm": "candidate",
+          "cpu_ns": [
+            217385000,
+            266854000
+          ],
+          "wall_ns": [
+            220144693,
+            267562175
+          ]
+        },
+        {
+          "first_arm": "baseline",
+          "cpu_ns": [
+            276752000,
+            1750820000
+          ],
+          "wall_ns": [
+            423522447,
+            4152602449
+          ]
+        },
+        {
+          "first_arm": "candidate",
+          "cpu_ns": [
+            6354456000,
+            290240000
+          ],
+          "wall_ns": [
+            14670642794,
+            307014034
+          ]
+        },
+        {
+          "first_arm": "baseline",
+          "cpu_ns": [
+            257661000,
+            240322000
+          ],
+          "wall_ns": [
+            361907294,
+            256890513
+          ]
+        },
+        {
+          "first_arm": "candidate",
+          "cpu_ns": [
+            247813000,
+            222891000
+          ],
+          "wall_ns": [
+            251462314,
+            224195453
+          ]
+        },
+        {
+          "first_arm": "baseline",
+          "cpu_ns": [
+            243913000,
+            214469000
+          ],
+          "wall_ns": [
+            244490523,
+            216282243
+          ]
+        },
+        {
+          "first_arm": "candidate",
+          "cpu_ns": [
+            201760000,
+            273975000
+          ],
+          "wall_ns": [
+            241771963,
+            334410194
+          ]
+        },
+        {
+          "first_arm": "baseline",
+          "cpu_ns": [
+            269694000,
+            249779000
+          ],
+          "wall_ns": [
+            597333238,
+            321861335
+          ]
+        },
+        {
+          "first_arm": "candidate",
+          "cpu_ns": [
+            255358000,
+            245060000
+          ],
+          "wall_ns": [
+            318662124,
+            300096443
+          ]
+        },
+        {
+          "first_arm": "baseline",
+          "cpu_ns": [
+            275957000,
+            239553000
+          ],
+          "wall_ns": [
+            395992375,
+            316779134
+          ]
+        },
+        {
+          "first_arm": "candidate",
+          "cpu_ns": [
+            288858000,
+            306922000
+          ],
+          "wall_ns": [
+            415512566,
+            740119829
+          ]
+        },
+        {
+          "first_arm": "baseline",
+          "cpu_ns": [
+            277426000,
+            245956000
+          ],
+          "wall_ns": [
+            352945915,
+            279859173
+          ]
+        },
+        {
+          "first_arm": "candidate",
+          "cpu_ns": [
+            299250000,
+            286724000
+          ],
+          "wall_ns": [
+            394222855,
+            401067106
+          ]
+        }
+      ],
+      "cpu": {
+        "median_change_percent": -4.8458236483027095,
+        "faster_blocks": 6,
+        "blocks": 8
+      },
+      "wall": {
+        "median_change_percent": -4.330119967875173,
+        "faster_blocks": 4,
+        "blocks": 8
+      }
+    },
+    "short-io": {
+      "elf_sha256": "be2bc75d56e72df4f311b39dac0dd7788e12276fa87d9eaf6aa225093fe0442e",
+      "stdin_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "work": {
+        "schema": 1,
+        "client_version": 1,
+        "authority": "diagnostic_only",
+        "metric": "bb_entry_app_instructions",
+        "seq": 2,
+        "event": "end",
+        "instructions": 16250,
+        "rep_bytes": 632,
+        "rep_entries": 1,
+        "rep_movs_bytes": 0,
+        "rep_stos_bytes": 632,
+        "rep_movs_entries": 0,
+        "rep_stos_entries": 1,
+        "unsupported_rep_entries": 0,
+        "signals_observed": 0,
+        "threads_started": 1,
+        "threads_finished": 1,
+        "threads_complete": true,
+        "accounting_error": false,
+        "app_exit_seen": true,
+        "app_exit_code": 0,
+        "valid": true,
+        "quality": "uninterrupted"
+      },
+      "rounds": [
+        {
+          "first_arm": "candidate",
+          "cpu_ns": [
+            140199000,
+            128811000
+          ],
+          "wall_ns": [
+            180153473,
+            161259852
+          ]
+        },
+        {
+          "first_arm": "baseline",
+          "cpu_ns": [
+            137646000,
+            1191010000
+          ],
+          "wall_ns": [
+            138266363,
+            2408520605
+          ]
+        },
+        {
+          "first_arm": "candidate",
+          "cpu_ns": [
+            148083000,
+            142030000
+          ],
+          "wall_ns": [
+            189584353,
+            177510812
+          ]
+        },
+        {
+          "first_arm": "baseline",
+          "cpu_ns": [
+            126573000,
+            131479000
+          ],
+          "wall_ns": [
+            136137812,
+            143986362
+          ]
+        },
+        {
+          "first_arm": "candidate",
+          "cpu_ns": [
+            117157000,
+            1696115000
+          ],
+          "wall_ns": [
+            118348171,
+            3482121468
+          ]
+        },
+        {
+          "first_arm": "baseline",
+          "cpu_ns": [
+            149013000,
+            4022958000
+          ],
+          "wall_ns": [
+            260230904,
+            9623963691
+          ]
+        },
+        {
+          "first_arm": "candidate",
+          "cpu_ns": [
+            129221000,
+            140740000
+          ],
+          "wall_ns": [
+            162929273,
+            167702893
+          ]
+        },
+        {
+          "first_arm": "baseline",
+          "cpu_ns": [
+            131243000,
+            156616000
+          ],
+          "wall_ns": [
+            137303701,
+            171507923
+          ]
+        },
+        {
+          "first_arm": "candidate",
+          "cpu_ns": [
+            148856000,
+            120176000
+          ],
+          "wall_ns": [
+            174590252,
+            138782271
+          ]
+        },
+        {
+          "first_arm": "baseline",
+          "cpu_ns": [
+            102943000,
+            125820000
+          ],
+          "wall_ns": [
+            109472872,
+            260860423
+          ]
+        },
+        {
+          "first_arm": "candidate",
+          "cpu_ns": [
+            143019000,
+            151835000
+          ],
+          "wall_ns": [
+            320806604,
+            261154274
+          ]
+        },
+        {
+          "first_arm": "baseline",
+          "cpu_ns": [
+            147088000,
+            161856000
+          ],
+          "wall_ns": [
+            216424313,
+            275043504
+          ]
+        },
+        {
+          "first_arm": "candidate",
+          "cpu_ns": [
+            167399000,
+            143385000
+          ],
+          "wall_ns": [
+            243252893,
+            250575913
+          ]
+        },
+        {
+          "first_arm": "baseline",
+          "cpu_ns": [
+            161745000,
+            159747000
+          ],
+          "wall_ns": [
+            323998814,
+            275830703
+          ]
+        },
+        {
+          "first_arm": "candidate",
+          "cpu_ns": [
+            131569000,
+            148510000
+          ],
+          "wall_ns": [
+            136499232,
+            185790263
+          ]
+        },
+        {
+          "first_arm": "baseline",
+          "cpu_ns": [
+            378990000,
+            420492000
+          ],
+          "wall_ns": [
+            858198121,
+            1184302465
+          ]
+        }
+      ],
+      "cpu": {
+        "median_change_percent": 9.980441072255761,
+        "faster_blocks": 3,
+        "blocks": 8
+      },
+      "wall": {
+        "median_change_percent": 24.66019404241067,
+        "faster_blocks": 2,
+        "blocks": 8
+      }
+    },
+    "short-rep": {
+      "elf_sha256": "e195d89fb76dd638e56f4324cd997b3a80d26adcb1712683e667bf0355da3926",
+      "stdin_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "work": {
+        "schema": 1,
+        "client_version": 1,
+        "authority": "diagnostic_only",
+        "metric": "bb_entry_app_instructions",
+        "seq": 2,
+        "event": "end",
+        "instructions": 15020,
+        "rep_bytes": 67109496,
+        "rep_entries": 2,
+        "rep_movs_bytes": 0,
+        "rep_stos_bytes": 67109496,
+        "rep_movs_entries": 0,
+        "rep_stos_entries": 2,
+        "unsupported_rep_entries": 0,
+        "signals_observed": 0,
+        "threads_started": 1,
+        "threads_finished": 1,
+        "threads_complete": true,
+        "accounting_error": false,
+        "app_exit_seen": true,
+        "app_exit_code": 0,
+        "valid": true,
+        "quality": "uninterrupted"
+      },
+      "rounds": [
+        {
+          "first_arm": "baseline",
+          "cpu_ns": [
+            271056000,
+            228120000
+          ],
+          "wall_ns": [
+            295283764,
+            243501254
+          ]
+        },
+        {
+          "first_arm": "candidate",
+          "cpu_ns": [
+            204937000,
+            214960000
+          ],
+          "wall_ns": [
+            239694654,
+            250941844
+          ]
+        },
+        {
+          "first_arm": "baseline",
+          "cpu_ns": [
+            306199000,
+            205903000
+          ],
+          "wall_ns": [
+            337354925,
+            207256733
+          ]
+        },
+        {
+          "first_arm": "candidate",
+          "cpu_ns": [
+            289156000,
+            327069000
+          ],
+          "wall_ns": [
+            306679595,
+            390650265
+          ]
+        },
+        {
+          "first_arm": "baseline",
+          "cpu_ns": [
+            211866000,
+            214749000
+          ],
+          "wall_ns": [
+            214283092,
+            249652374
+          ]
+        },
+        {
+          "first_arm": "candidate",
+          "cpu_ns": [
+            198016000,
+            301785000
+          ],
+          "wall_ns": [
+            499586087,
+            636550658
+          ]
+        },
+        {
+          "first_arm": "baseline",
+          "cpu_ns": [
+            218538000,
+            188828000
+          ],
+          "wall_ns": [
+            254457163,
+            202366423
+          ]
+        },
+        {
+          "first_arm": "candidate",
+          "cpu_ns": [
+            197686000,
+            315068000
+          ],
+          "wall_ns": [
+            217430262,
+            321022235
+          ]
+        },
+        {
+          "first_arm": "baseline",
+          "cpu_ns": [
+            214602000,
+            192596000
+          ],
+          "wall_ns": [
+            228312842,
+            204240354
+          ]
+        },
+        {
+          "first_arm": "candidate",
+          "cpu_ns": [
+            285265000,
+            235632000
+          ],
+          "wall_ns": [
+            376283665,
+            291566463
+          ]
+        },
+        {
+          "first_arm": "baseline",
+          "cpu_ns": [
+            359086000,
+            312696000
+          ],
+          "wall_ns": [
+            502230847,
+            388839096
+          ]
+        },
+        {
+          "first_arm": "candidate",
+          "cpu_ns": [
+            223010000,
+            388574000
+          ],
+          "wall_ns": [
+            378297045,
+            445424376
+          ]
+        },
+        {
+          "first_arm": "baseline",
+          "cpu_ns": [
+            396559000,
+            255315000
+          ],
+          "wall_ns": [
+            646430278,
+            529748538
+          ]
+        },
+        {
+          "first_arm": "candidate",
+          "cpu_ns": [
+            362238000,
+            340443000
+          ],
+          "wall_ns": [
+            424193625,
+            509390687
+          ]
+        },
+        {
+          "first_arm": "baseline",
+          "cpu_ns": [
+            342313000,
+            383772000
+          ],
+          "wall_ns": [
+            362249694,
+            515494627
+          ]
+        },
+        {
+          "first_arm": "candidate",
+          "cpu_ns": [
+            267806000,
+            394493000
+          ],
+          "wall_ns": [
+            371871094,
+            1110112135
+          ]
+        }
+      ],
+      "cpu": {
+        "median_change_percent": 5.003157084246325,
+        "faster_blocks": 4,
+        "blocks": 8
+      },
+      "wall": {
+        "median_change_percent": -2.678088987461799,
+        "faster_blocks": 5,
+        "blocks": 8
+      }
+    }
+  }
+}

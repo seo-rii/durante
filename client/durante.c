@@ -99,6 +99,11 @@ typedef struct {
   bool child_exit_seen, child_policy_exit;
 } thread_data_t;
 static int tls_index;
+/* In ordinary static code the generated accounting runs at every block and
+ * store. Mirror the drmgr-owned pointer for a single segment-relative load. */
+static bool raw_tls_enabled;
+static reg_id_t raw_tls_register;
+static uint raw_tls_offset;
 static void *state_lock;
 static int report_file = -1;
 static process_id_t owner_pid;
@@ -554,6 +559,13 @@ static inline void record_write_checkpoint(thread_data_t *data, app_pc pc,
 static bool probe_partial_block;
 #endif
 
+static void set_raw_accounting_state(thread_data_t *d) {
+  if (raw_tls_enabled) {
+    byte *base = dr_get_dr_segment_base(raw_tls_register);
+    *(thread_data_t **)(base + raw_tls_offset) = d;
+  }
+}
+
 static void thread_init(void *ctx) {
   thread_data_t *d = dr_thread_alloc(ctx, sizeof(*d));
   if (!d)
@@ -566,6 +578,7 @@ static void thread_init(void *ctx) {
   d->child_file = -1;
   if (!drmgr_set_tls_field(ctx, tls_index, d))
     fail("TLS init failed");
+  set_raw_accounting_state(d);
   process_id_t process = dr_get_process_id();
   if (process != owner_pid) {
     /* DR models CLONE_VM/vfork before exec as a separate drcontext sharing the
@@ -832,6 +845,14 @@ static void restore_charge_state(void *ctx, instrlist_t *bb, instr_t *where) {
   dr_restore_arith_flags(ctx, bb, where, SPILL_SLOT_3);
 }
 
+static void insert_read_accounting_state(void *ctx, instrlist_t *bb, instr_t *where,
+                                         reg_id_t reg) {
+  if (raw_tls_enabled)
+    dr_insert_read_raw_tls(ctx, bb, where, raw_tls_register, raw_tls_offset, reg);
+  else if (!drmgr_insert_read_tls_field(ctx, tls_index, bb, where, reg))
+    fail("cannot load accounting TLS");
+}
+
 static void insert_charge(void *ctx, instrlist_t *bb, instr_t *where, int count,
                           app_pc first_pc) {
   instr_t *slow = INSTR_CREATE_label(ctx), *done = INSTR_CREATE_label(ctx);
@@ -848,8 +869,7 @@ static void insert_charge(void *ctx, instrlist_t *bb, instr_t *where, int count,
   dr_save_reg(ctx, bb, where, DR_REG_R10, SPILL_SLOT_1);
   dr_save_reg(ctx, bb, where, DR_REG_R11, SPILL_SLOT_2);
 #define INSERT(i) instrlist_meta_preinsert(bb, where, (i))
-  if (!drmgr_insert_read_tls_field(ctx, tls_index, bb, where, DR_REG_R11))
-    fail("cannot load instruction count TLS");
+  insert_read_accounting_state(ctx, bb, where, DR_REG_R11);
   INSERT(INSTR_CREATE_mov_ld(ctx, tmp, instructions));
   INSERT(INSTR_CREATE_cmp(ctx, tmp, boundary));
   INSERT(INSTR_CREATE_jcc(ctx, OP_jae, opnd_create_instr(slow)));
@@ -901,8 +921,7 @@ static void insert_write_checkpoint(void *ctx, instrlist_t *bb, instr_t *where,
                                     app_pc pc, app_pc next_pc, int suffix) {
   const reg_id_t data = DR_REG_R11;
   dr_save_reg(ctx, bb, where, data, SPILL_SLOT_1);
-  if (!drmgr_insert_read_tls_field(ctx, tls_index, bb, where, data))
-    fail("cannot load write checkpoint TLS");
+  insert_read_accounting_state(ctx, bb, where, data);
   opnd_t address = opnd_create_base_disp(data, DR_REG_NULL, 0,
                                          offsetof(thread_data_t, write_pc), OPSZ_PTR);
   instrlist_insert_mov_immed_ptrsz(ctx, (ptr_int_t)pc, address, bb, where, NULL, NULL);
@@ -1396,6 +1415,7 @@ static void fork_init(void *ctx) {
   thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
   if (!d)
     fail("fork without surviving TLS");
+  set_raw_accounting_state(d);
   memset(d, 0, sizeof(*d));
   open_stream("fork", parent, previous);
 }
@@ -1432,6 +1452,8 @@ static void process_exit(void) {
   drmgr_unregister_signal_event(signal_event);
   drmgr_unregister_kernel_xfer_event(kernel_xfer);
   dr_unregister_durante_code_replay_event(code_replay);
+  if (raw_tls_enabled)
+    dr_raw_tls_cfree(raw_tls_offset, 1);
   drmgr_unregister_tls_field(tls_index);
 #ifdef DURANTE_L1D_PROBE
   if (probe_l1d) {
@@ -1532,6 +1554,8 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
     fail("test module lifetime registration failed");
 #endif
   state_lock = dr_mutex_create();
+  raw_tls_enabled = static_text_end != 0 &&
+                    dr_raw_tls_calloc(&raw_tls_register, &raw_tls_offset, 1, 0);
   tls_index = drmgr_register_tls_field();
   if (!state_lock || tls_index < 0 ||
       (cpuid_profile != DURANTE_CPUID_NONE &&

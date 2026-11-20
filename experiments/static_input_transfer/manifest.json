@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "source_sha256": "6fde5d88e683dc24a354e4715eb13ede13d067a677a2258e5b6855089ece1aef",
+  "elf_sha256": "b09c89b0274edceefb70c3a21834e2c4d754f0562c939db703788fe2d427a4d8",
+  "cases": {
+    "merge-empty": {
+      "stdin_sha256": "8bbc031247896ac66c59e243da043f4954345f0860f1a6a9384969e2a73694dd",
+      "stdout_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "merge-short": {
+      "stdin_sha256": "81da55e44288c46eca75b6ab88f95b16a84962c2f72991333264d25d945908b2",
+      "stdout_sha256": "264d95a1e1a8e5309ad6a9c9b9a29cfc695d7a5cb132680cff57884598e68530"
+    },
+    "merge-long": {
+      "stdin_sha256": "af7f8701951d25ada040d11299d6d060275b6f94763dc19fb8bad90c73525ec9",
+      "stdout_sha256": "b3f85627329e227816b5f66109e374581d58593ceeda489bb388effe1d7be3df"
+    }
+  }
+}
