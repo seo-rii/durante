@@ -1,0 +1,376 @@
+{
+  "schema": 1,
+  "fields": [
+    "instructions",
+    "rep_movs_bytes",
+    "rep_stos_bytes",
+    "loop_recurrence_cycles_x16",
+    "gshare_mispredicts",
+    "l1d_misses"
+  ],
+  "features_sha256": "5b42ad6f999b8c921224ef863d08545df7fd5c8484adb7e938bf78f4d4461d01",
+  "calibration_sha256": "5a5103d1f03ff03029ed44e511224470f94db735fe644019ab53d3ad8abedfdb",
+  "manifest_sha256": "fb180ab92409852bf24462803e2e3b966eff132bd92b1434bfe5fb9d06dd905b",
+  "original_features_sha256": "46c988d6f38110f28911f7e5c7c260e075375671d5fccfc999c508ed09a2ed82",
+  "original_labels_sha256": "80f5bce9bfde037e0836cb00b5d71d1c13f1fe0eddc8995f9be27bd3ed2e90b4",
+  "original": {
+    "training_cases": 15,
+    "training_replays": 45,
+    "minimax": {
+      "lower_error_ppb": 51921827,
+      "upper_error_ppb": 51921828,
+      "certificate": {
+        "primal_ns_per_unit": [
+          "0.13701181200378698",
+          "0.0",
+          "0.0",
+          "0.0152047783670015",
+          "6.499372588446706",
+          "3.091684679784919"
+        ],
+        "dual_nonzero_units": [
+          [
+            3,
+            474017364223503
+          ],
+          [
+            15,
+            2519423411
+          ],
+          [
+            30,
+            19202733095
+          ],
+          [
+            45,
+            525924759922410
+          ],
+          [
+            81,
+            36153697582
+          ]
+        ],
+        "extra_units_per_upper_row": 1,
+        "dual_denominator": 1000000000000046
+      }
+    },
+    "tolerances": {
+      "6": {
+        "feasible": true,
+        "cases": {
+          "distinct-window": {
+            "min": {
+              "prediction_ns": 39185556.092461064,
+              "ns_per_unit": [
+                0.11969283791325662,
+                0.08878306515285597,
+                0.04890566388067298,
+                0.014130231574958522,
+                7.9584387087889015,
+                0.0
+              ],
+              "worst_training_relative_error": 0.060000000000000275,
+              "scaled_duality_gap": 2.220446049250313e-16,
+              "repetition": 3
+            },
+            "max": {
+              "prediction_ns": 69570092.79717304,
+              "ns_per_unit": [
+                0.1401574421717921,
+                0.0,
+                0.0,
+                0.015157979249063062,
+                6.353192057458155,
+                3.1147929291117293
+              ],
+              "worst_training_relative_error": 0.060000000000000275,
+              "scaled_duality_gap": 4.440892098500626e-16,
+              "repetition": 3
+            },
+            "distinct_work_vectors": 1
+          },
+          "fenwick-prefix": {
+            "min": {
+              "prediction_ns": 37138148.21556185,
+              "ns_per_unit": [
+                0.13140190929973955,
+                0.08873322988478011,
+                0.048850133584834664,
+                0.013215188379957285,
+                6.861538742144196,
+                0.0
+              ],
+              "worst_training_relative_error": 0.060000000000000275,
+              "scaled_duality_gap": 0.0,
+              "repetition": 3
+            },
+            "max": {
+              "prediction_ns": 75530165.59825867,
+              "ns_per_unit": [
+                0.1285498164966417,
+                0.0,
+                0.0,
+                0.016064892048588283,
+                7.440467670191962,
+                3.1183091914064156
+              ],
+              "worst_training_relative_error": 0.06000000000000005,
+              "scaled_duality_gap": 0.0,
+              "repetition": 3
+            },
+            "distinct_work_vectors": 1
+          },
+          "histogram-stack": {
+            "min": {
+              "prediction_ns": 53462392.508475594,
+              "ns_per_unit": [
+                0.1360401195294982,
+                0.0,
+                0.0,
+                0.015479707512611712,
+                6.425633903623685,
+                3.1160455829923763
+              ],
+              "worst_training_relative_error": 0.060000000000000275,
+              "scaled_duality_gap": 0.0,
+              "repetition": 3
+            },
+            "max": {
+              "prediction_ns": 56109743.826840594,
+              "ns_per_unit": [
+                0.12378365211001036,
+                0.08876560859174071,
+                0.04572507046189632,
+                0.013810392823496455,
+                7.88761302898327,
+                0.0
+              ],
+              "worst_training_relative_error": 0.060000000000000164,
+              "scaled_duality_gap": 0.0,
+              "repetition": 3
+            },
+            "distinct_work_vectors": 1
+          },
+          "sparse-rmq": {
+            "min": {
+              "prediction_ns": 20807517.1133427,
+              "ns_per_unit": [
+                0.11969283791325662,
+                0.08878306515285597,
+                0.04890566388067298,
+                0.014130231574958522,
+                7.9584387087889015,
+                0.0
+              ],
+              "worst_training_relative_error": 0.060000000000000275,
+              "scaled_duality_gap": 2.220446049250313e-16,
+              "repetition": 3
+            },
+            "max": {
+              "prediction_ns": 36821959.35318456,
+              "ns_per_unit": [
+                0.1401574421717921,
+                0.0,
+                0.0,
+                0.015157979249063062,
+                6.353192057458155,
+                3.1147929291117293
+              ],
+              "worst_training_relative_error": 0.060000000000000275,
+              "scaled_duality_gap": 4.440892098500626e-16,
+              "repetition": 3
+            },
+            "distinct_work_vectors": 1
+          }
+        }
+      },
+      "20": {
+        "feasible": true,
+        "cases": {
+          "distinct-window": {
+            "min": {
+              "prediction_ns": 29842315.62612388,
+              "ns_per_unit": [
+                0.06297227431833473,
+                0.07593554673521541,
+                0.055815095405358506,
+                0.01506520030937911,
+                10.41668637312744,
+                0.0
+              ],
+              "worst_training_relative_error": 0.20000000000000007,
+              "scaled_duality_gap": 0.0,
+              "repetition": 3
+            },
+            "max": {
+              "prediction_ns": 81878261.36213386,
+              "ns_per_unit": [
+                0.1942309337270052,
+                0.0,
+                0.0,
+                0.014381479602263707,
+                3.861220792547503,
+                3.5154079475711195
+              ],
+              "worst_training_relative_error": 0.19999999999999996,
+              "scaled_duality_gap": 4.440892098500626e-16,
+              "repetition": 3
+            },
+            "distinct_work_vectors": 1
+          },
+          "fenwick-prefix": {
+            "min": {
+              "prediction_ns": 31606903.481932677,
+              "ns_per_unit": [
+                0.11183128267354259,
+                0.07551763747449122,
+                0.055583381454800136,
+                0.011246955323568082,
+                5.8395988427712995,
+                0.0
+              ],
+              "worst_training_relative_error": 0.20000000000000018,
+              "scaled_duality_gap": 0.0,
+              "repetition": 3
+            },
+            "max": {
+              "prediction_ns": 85505847.84708527,
+              "ns_per_unit": [
+                0.14552809414714152,
+                0.0,
+                0.0,
+                0.018186670243684845,
+                8.423170947387124,
+                3.53016134876198
+              ],
+              "worst_training_relative_error": 0.19999999999999996,
+              "scaled_duality_gap": 0.0,
+              "repetition": 3
+            },
+            "distinct_work_vectors": 1
+          },
+          "histogram-stack": {
+            "min": {
+              "prediction_ns": 45079783.42559506,
+              "ns_per_unit": [
+                0.11920005551480659,
+                0.0,
+                0.0,
+                0.020244408829218467,
+                5.147694426231201,
+                3.5382359161730195
+              ],
+              "worst_training_relative_error": 0.20000000000000018,
+              "scaled_duality_gap": 0.0,
+              "repetition": 3
+            },
+            "max": {
+              "prediction_ns": 63763163.13768495,
+              "ns_per_unit": [
+                0.13814973697400598,
+                0.07540476955912614,
+                0.038601025232167456,
+                0.009187409410690465,
+                9.115106938519203,
+                0.0
+              ],
+              "worst_training_relative_error": 0.20000000000000262,
+              "scaled_duality_gap": 0.0,
+              "repetition": 3
+            },
+            "distinct_work_vectors": 1
+          },
+          "sparse-rmq": {
+            "min": {
+              "prediction_ns": 11502425.116160901,
+              "ns_per_unit": [
+                0.06297227431833473,
+                0.07593554673521541,
+                0.055815095405358506,
+                0.01506520030937911,
+                10.41668637312744,
+                0.0
+              ],
+              "worst_training_relative_error": 0.20000000000000007,
+              "scaled_duality_gap": 1.6653345369377348e-16,
+              "repetition": 3
+            },
+            "max": {
+              "prediction_ns": 47316303.506606825,
+              "ns_per_unit": [
+                0.1942309337270052,
+                0.0,
+                0.0,
+                0.014381479602263707,
+                3.861220792547503,
+                3.5154079475711195
+              ],
+              "worst_training_relative_error": 0.19999999999999996,
+              "scaled_duality_gap": 4.440892098500626e-16,
+              "repetition": 3
+            },
+            "distinct_work_vectors": 1
+          }
+        }
+      }
+    }
+  },
+  "expanded": {
+    "training_cases": 21,
+    "training_replays": 63,
+    "minimax": {
+      "lower_error_ppb": 294729798,
+      "upper_error_ppb": 294729799,
+      "certificate": {
+        "primal_ns_per_unit": [
+          "0.026446040360875712",
+          "0.02173475673072395",
+          "0.03767396362731055",
+          "0.015552270838999243",
+          "11.905775100921332",
+          "1.4567451267572622"
+        ],
+        "dual_nonzero_units": [
+          [
+            30,
+            1183746410
+          ],
+          [
+            42,
+            60757790654483
+          ],
+          [
+            57,
+            291876126153112
+          ],
+          [
+            63,
+            124316785658896
+          ],
+          [
+            72,
+            279979779732738
+          ],
+          [
+            81,
+            241411594494159
+          ],
+          [
+            108,
+            1656739560202
+          ]
+        ],
+        "extra_units_per_upper_row": 1,
+        "dual_denominator": 1000000000000063
+      }
+    },
+    "tolerances": {
+      "6": {
+        "feasible": false
+      },
+      "20": {
+        "feasible": false
+      }
+    }
+  }
+}
