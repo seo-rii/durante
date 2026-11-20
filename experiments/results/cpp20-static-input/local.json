@@ -1,0 +1,1022 @@
+{
+  "schema": 1,
+  "source_commits": {
+    "baseline": "b31ce1a5fedf4e6b53c3a0cbd6565836f49a1f38",
+    "candidate": "27954247e094e682a7cf47504ff13682f970469a"
+  },
+  "clients_sha256": {
+    "baseline": "cbe34bac7b5c9b669d4cea1443914f43a7d7211bbcd90c7832c9d9cc1df3b48c",
+    "candidate": "21673e2fcd5b268862f901fc2c439e9edc5fdc70d981472f1b67716cfa0156b9"
+  },
+  "launcher_sha256": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+  "mode": "ordinary-live",
+  "cpu": 5,
+  "rounds": 5,
+  "timer": "wait4 child user plus system CPU; integer nanoseconds, including startup",
+  "case_order": [
+    "histogram-stack",
+    "distinct-window",
+    "sparse-rmq",
+    "start",
+    "short-read",
+    "short-stream",
+    "short-io",
+    "short-rep",
+    "integer-2",
+    "branch-2",
+    "rep_copy-2"
+  ],
+  "cases": {
+    "histogram-stack": {
+      "elf_sha256": "30bcf282f11f83cb5c6886e2ffae8bea98abe02277e238f76a8ac4e748a02ab6",
+      "stdin_sha256": "7a2a3e28431a412953d30d342f740c1d49437734598cb042894e4ec987f5cde0",
+      "stdout_sha256": "01fd10299dd4be83994a4c5de871d7e3cc4d4d31f0141f770b6399f2e278fb96",
+      "rounds": [
+        [
+          [
+            "baseline",
+            2053511000
+          ],
+          [
+            "candidate",
+            268311000
+          ]
+        ],
+        [
+          [
+            "candidate",
+            259110000
+          ],
+          [
+            "baseline",
+            1933504000
+          ]
+        ],
+        [
+          [
+            "baseline",
+            1960649000
+          ],
+          [
+            "candidate",
+            268765000
+          ]
+        ],
+        [
+          [
+            "candidate",
+            320737000
+          ],
+          [
+            "baseline",
+            2350351000
+          ]
+        ],
+        [
+          [
+            "baseline",
+            1809160000
+          ],
+          [
+            "candidate",
+            252086000
+          ]
+        ]
+      ],
+      "work_end": {
+        "schema": 1,
+        "client_version": 1,
+        "authority": "diagnostic_only",
+        "metric": "bb_entry_app_instructions",
+        "seq": 2,
+        "event": "end",
+        "instructions": 220217268,
+        "rep_bytes": 656,
+        "rep_entries": 2,
+        "rep_movs_bytes": 0,
+        "rep_stos_bytes": 656,
+        "rep_movs_entries": 0,
+        "rep_stos_entries": 2,
+        "unsupported_rep_entries": 0,
+        "signals_observed": 0,
+        "threads_started": 1,
+        "threads_finished": 1,
+        "threads_complete": true,
+        "accounting_error": false,
+        "app_exit_seen": true,
+        "app_exit_code": 0,
+        "valid": true,
+        "quality": "uninterrupted"
+      },
+      "median_cpu_ns": {
+        "baseline": 1960649000,
+        "candidate": 268311000
+      }
+    },
+    "distinct-window": {
+      "elf_sha256": "7246aab53e4ffc5fca459b697c207075ae1b497a04c27b3a127e42cabc8797aa",
+      "stdin_sha256": "d7b0f1fa8808fde7b69bb562ac1adb6ce96fc6ed4f6fa67cf946acd9a1db4350",
+      "stdout_sha256": "f9d7e16d0f69203212abb94f7ed100827a12a44ea51c7133534bd5122839e24d",
+      "rounds": [
+        [
+          [
+            "candidate",
+            137126000
+          ],
+          [
+            "baseline",
+            130773000
+          ]
+        ],
+        [
+          [
+            "baseline",
+            127050000
+          ],
+          [
+            "candidate",
+            128908000
+          ]
+        ],
+        [
+          [
+            "candidate",
+            142525000
+          ],
+          [
+            "baseline",
+            143680000
+          ]
+        ],
+        [
+          [
+            "baseline",
+            136717000
+          ],
+          [
+            "candidate",
+            156738000
+          ]
+        ],
+        [
+          [
+            "candidate",
+            125134000
+          ],
+          [
+            "baseline",
+            123829000
+          ]
+        ]
+      ],
+      "work_end": {
+        "schema": 1,
+        "client_version": 1,
+        "authority": "diagnostic_only",
+        "metric": "bb_entry_app_instructions",
+        "seq": 2,
+        "event": "end",
+        "instructions": 184682830,
+        "rep_bytes": 632,
+        "rep_entries": 1,
+        "rep_movs_bytes": 0,
+        "rep_stos_bytes": 632,
+        "rep_movs_entries": 0,
+        "rep_stos_entries": 1,
+        "unsupported_rep_entries": 0,
+        "signals_observed": 0,
+        "threads_started": 1,
+        "threads_finished": 1,
+        "threads_complete": true,
+        "accounting_error": false,
+        "app_exit_seen": true,
+        "app_exit_code": 0,
+        "valid": true,
+        "quality": "uninterrupted"
+      },
+      "median_cpu_ns": {
+        "baseline": 130773000,
+        "candidate": 137126000
+      }
+    },
+    "sparse-rmq": {
+      "elf_sha256": "b8f080857fb7a5ae98513b0712eafec9c3d0ede279c7bddb51b3e44f539585a5",
+      "stdin_sha256": "c9bd9c685d235c6784237eb5378382219e65028c912e0a321991da7dc7443ad3",
+      "stdout_sha256": "fbee43565dc5c2cc1d6f41416a900795ace4d877595d28b1d6997d6911d4bed6",
+      "rounds": [
+        [
+          [
+            "baseline",
+            170012000
+          ],
+          [
+            "candidate",
+            190889000
+          ]
+        ],
+        [
+          [
+            "candidate",
+            180553000
+          ],
+          [
+            "baseline",
+            174004000
+          ]
+        ],
+        [
+          [
+            "baseline",
+            194819000
+          ],
+          [
+            "candidate",
+            187320000
+          ]
+        ],
+        [
+          [
+            "candidate",
+            203775000
+          ],
+          [
+            "baseline",
+            189640000
+          ]
+        ],
+        [
+          [
+            "baseline",
+            183396000
+          ],
+          [
+            "candidate",
+            178206000
+          ]
+        ]
+      ],
+      "work_end": {
+        "schema": 1,
+        "client_version": 1,
+        "authority": "diagnostic_only",
+        "metric": "bb_entry_app_instructions",
+        "seq": 2,
+        "event": "end",
+        "instructions": 165294609,
+        "rep_bytes": 632,
+        "rep_entries": 1,
+        "rep_movs_bytes": 0,
+        "rep_stos_bytes": 632,
+        "rep_movs_entries": 0,
+        "rep_stos_entries": 1,
+        "unsupported_rep_entries": 0,
+        "signals_observed": 0,
+        "threads_started": 1,
+        "threads_finished": 1,
+        "threads_complete": true,
+        "accounting_error": false,
+        "app_exit_seen": true,
+        "app_exit_code": 0,
+        "valid": true,
+        "quality": "uninterrupted"
+      },
+      "median_cpu_ns": {
+        "baseline": 183396000,
+        "candidate": 187320000
+      }
+    },
+    "start": {
+      "elf_sha256": "67ee614e3483acca23d3b2a719fc54f8b31ab8b2c861cffeb367444f74d55dee",
+      "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "a85ba2b36261d0dca4b6cbbc840fa8a441ec95200abba5c5623e7ddadeff99e5",
+      "rounds": [
+        [
+          [
+            "candidate",
+            10824000
+          ],
+          [
+            "baseline",
+            10232000
+          ]
+        ],
+        [
+          [
+            "baseline",
+            10082000
+          ],
+          [
+            "candidate",
+            9813000
+          ]
+        ],
+        [
+          [
+            "candidate",
+            10650000
+          ],
+          [
+            "baseline",
+            10756000
+          ]
+        ],
+        [
+          [
+            "baseline",
+            11407000
+          ],
+          [
+            "candidate",
+            11408000
+          ]
+        ],
+        [
+          [
+            "candidate",
+            10979000
+          ],
+          [
+            "baseline",
+            11104000
+          ]
+        ]
+      ],
+      "work_end": {
+        "schema": 1,
+        "client_version": 1,
+        "authority": "diagnostic_only",
+        "metric": "bb_entry_app_instructions",
+        "seq": 2,
+        "event": "end",
+        "instructions": 8,
+        "rep_bytes": 0,
+        "rep_entries": 0,
+        "rep_movs_bytes": 0,
+        "rep_stos_bytes": 0,
+        "rep_movs_entries": 0,
+        "rep_stos_entries": 0,
+        "unsupported_rep_entries": 0,
+        "signals_observed": 0,
+        "threads_started": 1,
+        "threads_finished": 1,
+        "threads_complete": true,
+        "accounting_error": false,
+        "app_exit_seen": true,
+        "app_exit_code": 0,
+        "valid": true,
+        "quality": "uninterrupted"
+      },
+      "median_cpu_ns": {
+        "baseline": 10756000,
+        "candidate": 10824000
+      }
+    },
+    "short-read": {
+      "elf_sha256": "13b1e1ba33375676c1c6071b2d0bb41c0148e2ee7d90f1c4085d3eb95124f29d",
+      "stdin_sha256": "683a53f3bf36342d32eeb9e0c7da804b5f9e756be5a24a2eee4a01fbafa601f5",
+      "stdout_sha256": "0bc3f1f0c4423cd91ae71cee0888b247d88afaffac54a69f7142110bdf6bbf26",
+      "rounds": [
+        [
+          [
+            "baseline",
+            83357000
+          ],
+          [
+            "candidate",
+            84069000
+          ]
+        ],
+        [
+          [
+            "candidate",
+            81906000
+          ],
+          [
+            "baseline",
+            84804000
+          ]
+        ],
+        [
+          [
+            "baseline",
+            83670000
+          ],
+          [
+            "candidate",
+            87390000
+          ]
+        ],
+        [
+          [
+            "candidate",
+            87442000
+          ],
+          [
+            "baseline",
+            82913000
+          ]
+        ],
+        [
+          [
+            "baseline",
+            81941000
+          ],
+          [
+            "candidate",
+            81623000
+          ]
+        ]
+      ],
+      "work_end": {
+        "schema": 1,
+        "client_version": 1,
+        "authority": "diagnostic_only",
+        "metric": "bb_entry_app_instructions",
+        "seq": 2,
+        "event": "end",
+        "instructions": 148625,
+        "rep_bytes": 3624,
+        "rep_entries": 4,
+        "rep_movs_bytes": 0,
+        "rep_stos_bytes": 3624,
+        "rep_movs_entries": 0,
+        "rep_stos_entries": 4,
+        "unsupported_rep_entries": 0,
+        "signals_observed": 0,
+        "threads_started": 1,
+        "threads_finished": 1,
+        "threads_complete": true,
+        "accounting_error": false,
+        "app_exit_seen": true,
+        "app_exit_code": 0,
+        "valid": true,
+        "quality": "uninterrupted"
+      },
+      "median_cpu_ns": {
+        "baseline": 83357000,
+        "candidate": 84069000
+      }
+    },
+    "short-stream": {
+      "elf_sha256": "3852323cec6294c734617d14a94994d8703ed8b7b491df27048a5b4d9e9c1469",
+      "stdin_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "rounds": [
+        [
+          [
+            "candidate",
+            105244000
+          ],
+          [
+            "baseline",
+            99347000
+          ]
+        ],
+        [
+          [
+            "baseline",
+            94292000
+          ],
+          [
+            "candidate",
+            108729000
+          ]
+        ],
+        [
+          [
+            "candidate",
+            116595000
+          ],
+          [
+            "baseline",
+            94855000
+          ]
+        ],
+        [
+          [
+            "baseline",
+            103350000
+          ],
+          [
+            "candidate",
+            118159000
+          ]
+        ],
+        [
+          [
+            "candidate",
+            103062000
+          ],
+          [
+            "baseline",
+            94188000
+          ]
+        ]
+      ],
+      "work_end": {
+        "schema": 1,
+        "client_version": 1,
+        "authority": "diagnostic_only",
+        "metric": "bb_entry_app_instructions",
+        "seq": 2,
+        "event": "end",
+        "instructions": 63083,
+        "rep_bytes": 1984,
+        "rep_entries": 6,
+        "rep_movs_bytes": 0,
+        "rep_stos_bytes": 1984,
+        "rep_movs_entries": 0,
+        "rep_stos_entries": 6,
+        "unsupported_rep_entries": 0,
+        "signals_observed": 0,
+        "threads_started": 1,
+        "threads_finished": 1,
+        "threads_complete": true,
+        "accounting_error": false,
+        "app_exit_seen": true,
+        "app_exit_code": 0,
+        "valid": true,
+        "quality": "uninterrupted"
+      },
+      "median_cpu_ns": {
+        "baseline": 94855000,
+        "candidate": 108729000
+      },
+      "fixture": {
+        "source": "#include <iostream>\nint main(){unsigned n; if(!(std::cin >> n))return 1; std::cout << n << '\\n';}\n",
+        "stdin": "7\n",
+        "stdout": "7\n"
+      }
+    },
+    "short-io": {
+      "elf_sha256": "be2bc75d56e72df4f311b39dac0dd7788e12276fa87d9eaf6aa225093fe0442e",
+      "stdin_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "rounds": [
+        [
+          [
+            "baseline",
+            59166000
+          ],
+          [
+            "candidate",
+            61037000
+          ]
+        ],
+        [
+          [
+            "candidate",
+            59696000
+          ],
+          [
+            "baseline",
+            60467000
+          ]
+        ],
+        [
+          [
+            "baseline",
+            69519000
+          ],
+          [
+            "candidate",
+            65658000
+          ]
+        ],
+        [
+          [
+            "candidate",
+            59731000
+          ],
+          [
+            "baseline",
+            64461000
+          ]
+        ],
+        [
+          [
+            "baseline",
+            57766000
+          ],
+          [
+            "candidate",
+            58106000
+          ]
+        ]
+      ],
+      "work_end": {
+        "schema": 1,
+        "client_version": 1,
+        "authority": "diagnostic_only",
+        "metric": "bb_entry_app_instructions",
+        "seq": 2,
+        "event": "end",
+        "instructions": 16250,
+        "rep_bytes": 632,
+        "rep_entries": 1,
+        "rep_movs_bytes": 0,
+        "rep_stos_bytes": 632,
+        "rep_movs_entries": 0,
+        "rep_stos_entries": 1,
+        "unsupported_rep_entries": 0,
+        "signals_observed": 0,
+        "threads_started": 1,
+        "threads_finished": 1,
+        "threads_complete": true,
+        "accounting_error": false,
+        "app_exit_seen": true,
+        "app_exit_code": 0,
+        "valid": true,
+        "quality": "uninterrupted"
+      },
+      "median_cpu_ns": {
+        "baseline": 60467000,
+        "candidate": 59731000
+      },
+      "fixture": {
+        "source": "#include <cstdio>\nint main(){unsigned n; if(std::scanf(\"%u\",&n)!=1)return 1; std::printf(\"%u\\n\",n);}\n",
+        "stdin": "7\n",
+        "stdout": "7\n"
+      }
+    },
+    "short-rep": {
+      "elf_sha256": "e195d89fb76dd638e56f4324cd997b3a80d26adcb1712683e667bf0355da3926",
+      "stdin_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "rounds": [
+        [
+          [
+            "candidate",
+            68097000
+          ],
+          [
+            "baseline",
+            66052000
+          ]
+        ],
+        [
+          [
+            "baseline",
+            64354000
+          ],
+          [
+            "candidate",
+            61426000
+          ]
+        ],
+        [
+          [
+            "candidate",
+            65080000
+          ],
+          [
+            "baseline",
+            61261000
+          ]
+        ],
+        [
+          [
+            "baseline",
+            69928000
+          ],
+          [
+            "candidate",
+            65603000
+          ]
+        ],
+        [
+          [
+            "candidate",
+            62720000
+          ],
+          [
+            "baseline",
+            61636000
+          ]
+        ]
+      ],
+      "work_end": {
+        "schema": 1,
+        "client_version": 1,
+        "authority": "diagnostic_only",
+        "metric": "bb_entry_app_instructions",
+        "seq": 2,
+        "event": "end",
+        "instructions": 15020,
+        "rep_bytes": 67109496,
+        "rep_entries": 2,
+        "rep_movs_bytes": 0,
+        "rep_stos_bytes": 67109496,
+        "rep_movs_entries": 0,
+        "rep_stos_entries": 2,
+        "unsupported_rep_entries": 0,
+        "signals_observed": 0,
+        "threads_started": 1,
+        "threads_finished": 1,
+        "threads_complete": true,
+        "accounting_error": false,
+        "app_exit_seen": true,
+        "app_exit_code": 0,
+        "valid": true,
+        "quality": "uninterrupted"
+      },
+      "median_cpu_ns": {
+        "baseline": 64354000,
+        "candidate": 65080000
+      },
+      "fixture": {
+        "source": "#include <cstdio>\n#include <cstdint>\nalignas(64) static unsigned char dest[64*1024*1024];\nint main(){size_t count=sizeof(dest); auto* ptr=dest; volatile unsigned char val=7;\nasm volatile(\"rep stosb\":\"+D\"(ptr),\"+c\"(count):\"a\"(val):\"memory\");\nstd::printf(\"%u\\n\", unsigned(dest[sizeof(dest)-1]));}\n",
+        "stdin": "7\n",
+        "stdout": "7\n"
+      }
+    },
+    "integer-2": {
+      "elf_sha256": "13b1e1ba33375676c1c6071b2d0bb41c0148e2ee7d90f1c4085d3eb95124f29d",
+      "stdin_sha256": "9902ec78038acf436285ea163ff7b72ec7d4674a2510e8c881a63abe151a4f49",
+      "stdout_sha256": "e38d7255181f8787ee1acc901a9ed5f9364fa2bfa006853fbfd327f1d1b6198d",
+      "rounds": [
+        [
+          [
+            "baseline",
+            327264000
+          ],
+          [
+            "candidate",
+            323123000
+          ]
+        ],
+        [
+          [
+            "candidate",
+            334830000
+          ],
+          [
+            "baseline",
+            321758000
+          ]
+        ],
+        [
+          [
+            "baseline",
+            325758000
+          ],
+          [
+            "candidate",
+            324574000
+          ]
+        ],
+        [
+          [
+            "candidate",
+            321207000
+          ],
+          [
+            "baseline",
+            313670000
+          ]
+        ],
+        [
+          [
+            "baseline",
+            315519000
+          ],
+          [
+            "candidate",
+            316785000
+          ]
+        ]
+      ],
+      "work_end": {
+        "schema": 1,
+        "client_version": 1,
+        "authority": "diagnostic_only",
+        "metric": "bb_entry_app_instructions",
+        "seq": 2,
+        "event": "end",
+        "instructions": 335694059,
+        "rep_bytes": 3624,
+        "rep_entries": 4,
+        "rep_movs_bytes": 0,
+        "rep_stos_bytes": 3624,
+        "rep_movs_entries": 0,
+        "rep_stos_entries": 4,
+        "unsupported_rep_entries": 0,
+        "signals_observed": 0,
+        "threads_started": 1,
+        "threads_finished": 1,
+        "threads_complete": true,
+        "accounting_error": false,
+        "app_exit_seen": true,
+        "app_exit_code": 0,
+        "valid": true,
+        "quality": "uninterrupted"
+      },
+      "median_cpu_ns": {
+        "baseline": 321758000,
+        "candidate": 323123000
+      }
+    },
+    "branch-2": {
+      "elf_sha256": "d383e4da2a1953bc72d54fccac0fe98fe575fef2474e469edcf2567d18ece37c",
+      "stdin_sha256": "ae7a13222abd483670b1f3b55d2f9f42790bfcbfdad8356a1c717f37feb59661",
+      "stdout_sha256": "875dae9442036ac9f7d91f17b8007467cda85c61daa09872b262292cb15c6a71",
+      "rounds": [
+        [
+          [
+            "candidate",
+            764625000
+          ],
+          [
+            "baseline",
+            809836000
+          ]
+        ],
+        [
+          [
+            "baseline",
+            780574000
+          ],
+          [
+            "candidate",
+            786768000
+          ]
+        ],
+        [
+          [
+            "candidate",
+            842552000
+          ],
+          [
+            "baseline",
+            865699000
+          ]
+        ],
+        [
+          [
+            "baseline",
+            760737000
+          ],
+          [
+            "candidate",
+            757806000
+          ]
+        ],
+        [
+          [
+            "candidate",
+            771785000
+          ],
+          [
+            "baseline",
+            740699000
+          ]
+        ]
+      ],
+      "work_end": {
+        "schema": 1,
+        "client_version": 1,
+        "authority": "diagnostic_only",
+        "metric": "bb_entry_app_instructions",
+        "seq": 2,
+        "event": "end",
+        "instructions": 458726824,
+        "rep_bytes": 3624,
+        "rep_entries": 4,
+        "rep_movs_bytes": 0,
+        "rep_stos_bytes": 3624,
+        "rep_movs_entries": 0,
+        "rep_stos_entries": 4,
+        "unsupported_rep_entries": 0,
+        "signals_observed": 0,
+        "threads_started": 1,
+        "threads_finished": 1,
+        "threads_complete": true,
+        "accounting_error": false,
+        "app_exit_seen": true,
+        "app_exit_code": 0,
+        "valid": true,
+        "quality": "uninterrupted"
+      },
+      "median_cpu_ns": {
+        "baseline": 780574000,
+        "candidate": 771785000
+      }
+    },
+    "rep_copy-2": {
+      "elf_sha256": "255445d9e1311d5872c4da62e12df42c199012cfbc9b8c5dc6e8a8646cab2100",
+      "stdin_sha256": "034ae8e96eee99a30067d2f7c7b8055992ffb028e1a8309df36a17183c72b95e",
+      "stdout_sha256": "14b4ccf54a685e2b88965fc5f93815b5eb94b8946f65452c7f059ae8239959ac",
+      "rounds": [
+        [
+          [
+            "baseline",
+            277436000
+          ],
+          [
+            "candidate",
+            274381000
+          ]
+        ],
+        [
+          [
+            "candidate",
+            268082000
+          ],
+          [
+            "baseline",
+            277680000
+          ]
+        ],
+        [
+          [
+            "baseline",
+            301598000
+          ],
+          [
+            "candidate",
+            303644000
+          ]
+        ],
+        [
+          [
+            "candidate",
+            316506000
+          ],
+          [
+            "baseline",
+            294592000
+          ]
+        ],
+        [
+          [
+            "baseline",
+            292978000
+          ],
+          [
+            "candidate",
+            279383000
+          ]
+        ]
+      ],
+      "work_end": {
+        "schema": 1,
+        "client_version": 1,
+        "authority": "diagnostic_only",
+        "metric": "bb_entry_app_instructions",
+        "seq": 2,
+        "event": "end",
+        "instructions": 47320129,
+        "rep_bytes": 4294970920,
+        "rep_entries": 1028,
+        "rep_movs_bytes": 4294967296,
+        "rep_stos_bytes": 3624,
+        "rep_movs_entries": 1024,
+        "rep_stos_entries": 4,
+        "unsupported_rep_entries": 0,
+        "signals_observed": 0,
+        "threads_started": 1,
+        "threads_finished": 1,
+        "threads_complete": true,
+        "accounting_error": false,
+        "app_exit_seen": true,
+        "app_exit_code": 0,
+        "valid": true,
+        "quality": "uninterrupted"
+      },
+      "median_cpu_ns": {
+        "baseline": 292978000,
+        "candidate": 279383000
+      }
+    }
+  },
+  "work_start": {
+    "schema": 1,
+    "client_version": 1,
+    "authority": "diagnostic_only",
+    "metric": "bb_entry_app_instructions",
+    "seq": 1,
+    "event": "start",
+    "origin": "initial",
+    "parent_pid": 0,
+    "parent_segment": "",
+    "rep_bytes_enabled": true,
+    "rep_breakdown_version": 1,
+    "sdk_version": "11.3.0",
+    "cpuid_profile_version": 1,
+    "cpuid_profile": "x86-64-v2"
+  },
+  "executions": 110,
+  "compiler": {
+    "version": "GCC 12.2.0 (Debian)",
+    "short_cpp_flags": [
+      "-O2",
+      "-std=c++20",
+      "-static",
+      "-no-pie",
+      "-march=x86-64",
+      "-mtune=generic",
+      "-Wl,--build-id=none",
+      "-s"
+    ]
+  }
+}
