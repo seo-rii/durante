@@ -1,0 +1,171 @@
+{
+  "schema": 1,
+  "case_order": [
+    "branch-1",
+    "branch-2",
+    "branch-4",
+    "integer-1",
+    "integer-2",
+    "integer-4",
+    "rep_copy-1",
+    "rep_copy-2",
+    "rep_copy-4",
+    "rep_fill-1",
+    "rep_fill-2",
+    "rep_fill-4",
+    "sort-1",
+    "sort-2",
+    "sort-4"
+  ],
+  "feature_repetitions": 3,
+  "native_samples_per_case": 6,
+  "models": {
+    "baseline": {
+      "fields": [
+        "instructions",
+        "rep_movs_bytes",
+        "rep_stos_bytes",
+        "loop_recurrence_cycles_x16",
+        "gshare_mispredicts"
+      ],
+      "median": {
+        "lower_error_ppb": 51940675,
+        "upper_error_ppb": 51940676,
+        "certificate": {
+          "primal_ns_per_unit": [
+            "0.1332390086913537",
+            "0.08945562529094916",
+            "0.04842379554914893",
+            "0.015500407498962554",
+            "6.853806355168103"
+          ],
+          "dual_nonzero_units": [
+            [
+              3,
+              474026078938025
+            ],
+            [
+              15,
+              2686181998
+            ],
+            [
+              30,
+              897073687
+            ],
+            [
+              45,
+              525933931756493
+            ],
+            [
+              81,
+              36406049797
+            ]
+          ],
+          "extra_units_per_upper_row": 1,
+          "dual_denominator": 1000000000000045
+        }
+      },
+      "favorable_range": {
+        "lower_error_ppb": 0,
+        "upper_error_ppb": 0,
+        "certificate": {
+          "primal_ns_per_unit": [
+            "0.1337789405982848",
+            "0.09386254960127267",
+            "0.04616971968801606",
+            "0.014672135795478613",
+            "7.391631683992322"
+          ],
+          "dual_nonzero_units": [
+            [
+              24,
+              507747789983714
+            ],
+            [
+              69,
+              492252210016286
+            ]
+          ],
+          "extra_units_per_upper_row": 1,
+          "dual_denominator": 1000000000000045
+        }
+      }
+    },
+    "candidate": {
+      "fields": [
+        "instructions",
+        "rep_movs_bytes",
+        "rep_stos_bytes",
+        "loop_recurrence_cycles_x16",
+        "gshare_mispredicts",
+        "l1d_misses"
+      ],
+      "median": {
+        "lower_error_ppb": 51921827,
+        "upper_error_ppb": 51921828,
+        "certificate": {
+          "primal_ns_per_unit": [
+            "0.13701181200378698",
+            "0.0",
+            "0.0",
+            "0.0152047783670015",
+            "6.499372588446706",
+            "3.091684679784919"
+          ],
+          "dual_nonzero_units": [
+            [
+              3,
+              474017364223503
+            ],
+            [
+              15,
+              2519423411
+            ],
+            [
+              30,
+              19202733095
+            ],
+            [
+              45,
+              525924759922410
+            ],
+            [
+              81,
+              36153697582
+            ]
+          ],
+          "extra_units_per_upper_row": 1,
+          "dual_denominator": 1000000000000046
+        }
+      },
+      "favorable_range": {
+        "lower_error_ppb": 0,
+        "upper_error_ppb": 0,
+        "certificate": {
+          "primal_ns_per_unit": [
+            "0.13730375451323984",
+            "0.0",
+            "0.001915510452533256",
+            "0.013421309208006733",
+            "7.060083577292814",
+            "3.0005774044253357"
+          ],
+          "dual_nonzero_units": [
+            [
+              24,
+              507747789983714
+            ],
+            [
+              69,
+              492252210016286
+            ]
+          ],
+          "extra_units_per_upper_row": 1,
+          "dual_denominator": 1000000000000045
+        }
+      }
+    }
+  },
+  "features_sha256": "46c988d6f38110f28911f7e5c7c260e075375671d5fccfc999c508ed09a2ed82",
+  "labels_sha256": "80f5bce9bfde037e0836cb00b5d71d1c13f1fe0eddc8995f9be27bd3ed2e90b4"
+}
