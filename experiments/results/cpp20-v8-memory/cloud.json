@@ -1,0 +1,1057 @@
+{
+  "schema": 1,
+  "manifest_sha256": "4b770da0e128ae3840aebc3c5654c020453b367f2bc4e8c812527a3787219338",
+  "predictions_sha256": "e26b1001a473e22d72ac9dbad5fac463a9063e0e6a62eb488190ffcdd190efcd",
+  "gate_verified_utc": "2026-11-20T00:17:00.233739+00:00",
+  "protocol_sha256": "2bf99b3f4fd908a8cdf4bfbf4a3537d952d2ed9262142e8dac463e8cbcfada62",
+  "model_protocol_sha256": "2fa027bfe7daaa4a881fbef0d9c12def57898c087a0fe40b988c2621391627ea",
+  "started_utc": "2026-11-20T00:18:03.761680+00:00",
+  "http_responses": 84,
+  "image": "sha256:5a3704ef3f0ece934b24f3a06f59df661a43e819f8be02c47e14d9a61d61049b",
+  "v8_policy": {
+    "method": "weighted-rep-operations-nanoseconds-v2",
+    "model_id": "cloud-v8-diagnostic-transfer",
+    "model_version": 1,
+    "reference_id": "integration",
+    "runtime_id": "CPP20@sha256:5a3704ef3f0ece934b24f3a06f59df661a43e819f8be02c47e14d9a61d61049b",
+    "family": "cpp",
+    "engine_profile": "dynamorio-11.3-durante-v8-vm32m",
+    "dispatch_profile": "default",
+    "cpuid_profile": "x86-64-v2",
+    "instruction_ns_numerator": 233273561,
+    "movs_byte_ns_numerator": 38663059,
+    "stos_byte_ns_numerator": 71296759,
+    "ns_denominator": 1000000000
+  },
+  "v8_runtime_options_id": "runtime-options-v1:sha256:b88c02807007e4cddc0ea7c3fea34b5e0e11fd5a4dd861162b14341c620de901",
+  "v8_installation": {
+    "source_commit": "614761c18d4735f00e93667c74c099cfdb2800c7",
+    "runtime_source_commit": "6847bb210bea0ca11d1bf47704383d6a075da490",
+    "runtime_patch_sha256": "59fc79b5055a0c42b463703768891f0a10199ef1135d43028826c8c3894bab7c",
+    "runtime_code_replay_patch_sha256": "391cd6f5e35dcbda372cab5dd98fa40a5b2a41effda52ecfce9afa945acb249b",
+    "launcher_sha256": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "client_sha256": "d708864bc7d3ea0f4d4f8093b30bd5424436bf417e7bf420abd849eaba33d4c0",
+    "release_core_sha256": "fd1c5645b9fc70a7dcb71459b4b94782d2e016a2aa4ceffcfcab2ade962cdf5b",
+    "unchanged_before_after": true
+  },
+  "platform": {
+    "region": "asia-northeast3",
+    "type": "private authenticated Cloud Run Gen2",
+    "cpu": 1,
+    "memory": "2Gi",
+    "concurrency": 1,
+    "max_instances": 1,
+    "image_sha256": "5a3704ef3f0ece934b24f3a06f59df661a43e819f8be02c47e14d9a61d61049b"
+  },
+  "revision": "aonohako-memory-v8-01c21f9a88-00001-nhv",
+  "source_layer": {
+    "layer_sha256": "4b24db49f44509e312e0d7ff6c053a995e31b723b024c4fae61b73321ccb41d4",
+    "worker_sha256": "a6928c5eeba434f486095e77cca12d14d8b3bc3739763545852e6e017513fcaa",
+    "client_sha256": "d708864bc7d3ea0f4d4f8093b30bd5424436bf417e7bf420abd849eaba33d4c0",
+    "prior_image": "sha256:5a3704ef3f0ece934b24f3a06f59df661a43e819f8be02c47e14d9a61d61049b"
+  },
+  "deployed": {
+    "image_digest": "sha256:5a3704ef3f0ece934b24f3a06f59df661a43e819f8be02c47e14d9a61d61049b",
+    "service_revision": "aonohako-memory-v8-01c21f9a88-00001-nhv",
+    "execution_environment": "EXECUTION_ENVIRONMENT_GEN2",
+    "concurrency": 1,
+    "resources": {
+      "cpu": "1",
+      "memory": "2Gi"
+    },
+    "scaling": {
+      "maxInstanceCount": 1
+    }
+  },
+  "cases": {
+    "fenwick-prefix": {
+      "elf_sha256": "30b0e943a91b8f58de665f9c3d0d5902893a3e71ccdc203583a8d2d2f6ce14e0",
+      "input_sha256": "d65b3050f54941e662535979ec9fc43bb53f0dc6fb8c9e2688f76e4f469a0e29",
+      "output_sha256": "8c0bd1b82196cef44359654cc8978dc7cec09a8f92a272024d3fa84f6030cd7a",
+      "candidate_median_ns": 72788290,
+      "rounds": [
+        {
+          "repetition": 1,
+          "native_before_ns": 38859000,
+          "native_after_ns": 39025000,
+          "native_before": {
+            "status": "Accepted",
+            "cpu_ns": 38859000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 41,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "native_after": {
+            "status": "Accepted",
+            "cpu_ns": 39025000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 39,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 183644000,
+            "wall_ms": 232,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 128473999,
+              "movs_bytes": 0,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 15000000000,
+            "estimated_ns": 29969633
+          },
+          "v8_cpu_ns": 183644000,
+          "predicted_ns": 29969633,
+          "instructions": 128473999,
+          "movs_bytes": 0,
+          "stos_bytes": 632
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 40395000,
+          "native_after_ns": 39855000,
+          "native_before": {
+            "status": "Accepted",
+            "cpu_ns": 40395000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 40,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "native_after": {
+            "status": "Accepted",
+            "cpu_ns": 39855000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 40,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 181729000,
+            "wall_ms": 235,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 128473999,
+              "movs_bytes": 0,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 15000000000,
+            "estimated_ns": 29969633
+          },
+          "v8_cpu_ns": 181729000,
+          "predicted_ns": 29969633,
+          "instructions": 128473999,
+          "movs_bytes": 0,
+          "stos_bytes": 632
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 41800000,
+          "native_after_ns": 50199000,
+          "native_before": {
+            "status": "Accepted",
+            "cpu_ns": 41800000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 41,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "native_after": {
+            "status": "Accepted",
+            "cpu_ns": 50199000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 53,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 167945000,
+            "wall_ms": 210,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 128473999,
+              "movs_bytes": 0,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 15000000000,
+            "estimated_ns": 29969633
+          },
+          "v8_cpu_ns": 167945000,
+          "predicted_ns": 29969633,
+          "instructions": 128473999,
+          "movs_bytes": 0,
+          "stos_bytes": 632
+        }
+      ],
+      "boundaries": [
+        {
+          "limit_ms": 32,
+          "roles": [
+            "native_low"
+          ],
+          "native": [
+            "Time Limit Exceeded",
+            "Time Limit Exceeded",
+            "Time Limit Exceeded"
+          ],
+          "native_samples": [
+            {
+              "status": "Time Limit Exceeded",
+              "cpu_ns": 35619000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 35,
+              "verdict_source": "cpu_time",
+              "exit_code": null
+            },
+            {
+              "status": "Time Limit Exceeded",
+              "cpu_ns": 35338000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 35,
+              "verdict_source": "cpu_time",
+              "exit_code": null
+            },
+            {
+              "status": "Time Limit Exceeded",
+              "cpu_ns": 34161000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 34,
+              "verdict_source": "cpu_time",
+              "exit_code": null
+            }
+          ],
+          "v8": "Accepted",
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 170094000,
+            "wall_ms": 212,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 128473999,
+              "movs_bytes": 0,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 32000000,
+            "estimated_ns": 29969633
+          },
+          "candidate": "Time Limit Exceeded"
+        },
+        {
+          "limit_ms": 48,
+          "roles": [
+            "native_high"
+          ],
+          "native": [
+            "Accepted",
+            "Accepted",
+            "Accepted"
+          ],
+          "native_samples": [
+            {
+              "status": "Accepted",
+              "cpu_ns": 42433000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 42,
+              "verdict_source": "stdout",
+              "exit_code": 0
+            },
+            {
+              "status": "Accepted",
+              "cpu_ns": 41882000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 42,
+              "verdict_source": "stdout",
+              "exit_code": 0
+            },
+            {
+              "status": "Accepted",
+              "cpu_ns": 41075000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 41,
+              "verdict_source": "stdout",
+              "exit_code": 0
+            }
+          ],
+          "v8": "Accepted",
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 163864000,
+            "wall_ms": 210,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 128473999,
+              "movs_bytes": 0,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 48000000,
+            "estimated_ns": 29969633
+          },
+          "candidate": "Time Limit Exceeded"
+        },
+        {
+          "limit_ms": 58,
+          "roles": [
+            "candidate_low"
+          ],
+          "native": [
+            "Accepted",
+            "Accepted",
+            "Accepted"
+          ],
+          "native_samples": [
+            {
+              "status": "Accepted",
+              "cpu_ns": 40745000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 40,
+              "verdict_source": "stdout",
+              "exit_code": 0
+            },
+            {
+              "status": "Accepted",
+              "cpu_ns": 39052000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 39,
+              "verdict_source": "stdout",
+              "exit_code": 0
+            },
+            {
+              "status": "Accepted",
+              "cpu_ns": 43719000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 43,
+              "verdict_source": "stdout",
+              "exit_code": 0
+            }
+          ],
+          "v8": null,
+          "v8_sample": null,
+          "candidate": "Time Limit Exceeded"
+        },
+        {
+          "limit_ms": 87,
+          "roles": [
+            "candidate_high"
+          ],
+          "native": [
+            "Accepted",
+            "Accepted",
+            "Accepted"
+          ],
+          "native_samples": [
+            {
+              "status": "Accepted",
+              "cpu_ns": 37489000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 37,
+              "verdict_source": "stdout",
+              "exit_code": 0
+            },
+            {
+              "status": "Accepted",
+              "cpu_ns": 41005000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 41,
+              "verdict_source": "stdout",
+              "exit_code": 0
+            },
+            {
+              "status": "Accepted",
+              "cpu_ns": 39007000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 39,
+              "verdict_source": "stdout",
+              "exit_code": 0
+            }
+          ],
+          "v8": null,
+          "v8_sample": null,
+          "candidate": "Accepted"
+        }
+      ],
+      "native_median_ns": 40125000,
+      "identical_v8_counters": true
+    },
+    "kmp-match": {
+      "elf_sha256": "65160491589c871ba359a616c5987adf461633dfd85433107b494147a4e83fdb",
+      "input_sha256": "5749469a7fa56bd40384a1f07fd322759082f203114e0bfc09036cb0c324fa47",
+      "output_sha256": "c3d73c4fea99450326ea305f658a18c5528552847e2774f33454350e620ab50c",
+      "candidate_median_ns": 63623356,
+      "rounds": [
+        {
+          "repetition": 1,
+          "native_before_ns": 73531000,
+          "native_after_ns": 69179000,
+          "native_before": {
+            "status": "Accepted",
+            "cpu_ns": 73531000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 90,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "native_after": {
+            "status": "Accepted",
+            "cpu_ns": 69179000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 69,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 332985000,
+            "wall_ms": 429,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 284171142,
+              "movs_bytes": 0,
+              "stos_bytes": 704
+            },
+            "progress_overflow": 0,
+            "budget_ns": 15000000000,
+            "estimated_ns": 66289665
+          },
+          "v8_cpu_ns": 332985000,
+          "predicted_ns": 66289665,
+          "instructions": 284171142,
+          "movs_bytes": 0,
+          "stos_bytes": 704
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 68711000,
+          "native_after_ns": 69790000,
+          "native_before": {
+            "status": "Accepted",
+            "cpu_ns": 68711000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 68,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "native_after": {
+            "status": "Accepted",
+            "cpu_ns": 69790000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 69,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 322842000,
+            "wall_ms": 408,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 284171142,
+              "movs_bytes": 0,
+              "stos_bytes": 704
+            },
+            "progress_overflow": 0,
+            "budget_ns": 15000000000,
+            "estimated_ns": 66289665
+          },
+          "v8_cpu_ns": 322842000,
+          "predicted_ns": 66289665,
+          "instructions": 284171142,
+          "movs_bytes": 0,
+          "stos_bytes": 704
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 72472000,
+          "native_after_ns": 73994000,
+          "native_before": {
+            "status": "Accepted",
+            "cpu_ns": 72472000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 72,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "native_after": {
+            "status": "Accepted",
+            "cpu_ns": 73994000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 89,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 348272000,
+            "wall_ms": 459,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 284171142,
+              "movs_bytes": 0,
+              "stos_bytes": 704
+            },
+            "progress_overflow": 0,
+            "budget_ns": 15000000000,
+            "estimated_ns": 66289665
+          },
+          "v8_cpu_ns": 348272000,
+          "predicted_ns": 66289665,
+          "instructions": 284171142,
+          "movs_bytes": 0,
+          "stos_bytes": 704
+        }
+      ],
+      "boundaries": [
+        {
+          "limit_ms": 57,
+          "roles": [
+            "native_low"
+          ],
+          "native": [
+            "Time Limit Exceeded",
+            "Time Limit Exceeded",
+            "Time Limit Exceeded"
+          ],
+          "native_samples": [
+            {
+              "status": "Time Limit Exceeded",
+              "cpu_ns": 60581000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 69,
+              "verdict_source": "cpu_time",
+              "exit_code": null
+            },
+            {
+              "status": "Time Limit Exceeded",
+              "cpu_ns": 58410000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 58,
+              "verdict_source": "cpu_time",
+              "exit_code": null
+            },
+            {
+              "status": "Time Limit Exceeded",
+              "cpu_ns": 61017000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 64,
+              "verdict_source": "cpu_time",
+              "exit_code": null
+            }
+          ],
+          "v8": "Time Limit Exceeded",
+          "v8_sample": {
+            "status": "Time Limit Exceeded",
+            "cpu_ns": 256363000,
+            "wall_ms": 326,
+            "termination": "durante_work_clock",
+            "verdict_source": "durante_judge",
+            "exit_code": null,
+            "progress": {
+              "instructions": 244572513,
+              "movs_bytes": 0,
+              "stos_bytes": 704
+            },
+            "progress_overflow": 0,
+            "budget_ns": 57000000,
+            "estimated_ns": null
+          },
+          "candidate": "Time Limit Exceeded"
+        },
+        {
+          "limit_ms": 85,
+          "roles": [
+            "native_high"
+          ],
+          "native": [
+            "Accepted",
+            "Accepted",
+            "Accepted"
+          ],
+          "native_samples": [
+            {
+              "status": "Accepted",
+              "cpu_ns": 63217000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 63,
+              "verdict_source": "stdout",
+              "exit_code": 0
+            },
+            {
+              "status": "Accepted",
+              "cpu_ns": 63741000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 63,
+              "verdict_source": "stdout",
+              "exit_code": 0
+            },
+            {
+              "status": "Accepted",
+              "cpu_ns": 63628000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 63,
+              "verdict_source": "stdout",
+              "exit_code": 0
+            }
+          ],
+          "v8": "Accepted",
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 316195000,
+            "wall_ms": 404,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 284171142,
+              "movs_bytes": 0,
+              "stos_bytes": 704
+            },
+            "progress_overflow": 0,
+            "budget_ns": 85000000,
+            "estimated_ns": 66289665
+          },
+          "candidate": "Accepted"
+        },
+        {
+          "limit_ms": 51,
+          "roles": [
+            "candidate_low"
+          ],
+          "native": [
+            "Time Limit Exceeded",
+            "Time Limit Exceeded",
+            "Time Limit Exceeded"
+          ],
+          "native_samples": [
+            {
+              "status": "Time Limit Exceeded",
+              "cpu_ns": 55286000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 59,
+              "verdict_source": "cpu_time",
+              "exit_code": null
+            },
+            {
+              "status": "Time Limit Exceeded",
+              "cpu_ns": 56598000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 56,
+              "verdict_source": "cpu_time",
+              "exit_code": null
+            },
+            {
+              "status": "Time Limit Exceeded",
+              "cpu_ns": 53128000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 54,
+              "verdict_source": "cpu_time",
+              "exit_code": null
+            }
+          ],
+          "v8": null,
+          "v8_sample": null,
+          "candidate": "Time Limit Exceeded"
+        },
+        {
+          "limit_ms": 76,
+          "roles": [
+            "candidate_high"
+          ],
+          "native": [
+            "Accepted",
+            "Accepted",
+            "Accepted"
+          ],
+          "native_samples": [
+            {
+              "status": "Accepted",
+              "cpu_ns": 63864000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 64,
+              "verdict_source": "stdout",
+              "exit_code": 0
+            },
+            {
+              "status": "Accepted",
+              "cpu_ns": 62976000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 63,
+              "verdict_source": "stdout",
+              "exit_code": 0
+            },
+            {
+              "status": "Accepted",
+              "cpu_ns": 65012000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 65,
+              "verdict_source": "stdout",
+              "exit_code": 0
+            }
+          ],
+          "v8": null,
+          "v8_sample": null,
+          "candidate": "Accepted"
+        }
+      ],
+      "native_median_ns": 71131000,
+      "identical_v8_counters": true
+    },
+    "union-find": {
+      "elf_sha256": "d96d8c30ca7b4851407458b55960bc2a6ddb348b4800f02fc8b50ed2f5d2cd2a",
+      "input_sha256": "c60da46cbd8f6e51461de55e1fda4baf9a71a6bd273d7c26f3d8c794a0faf5f5",
+      "output_sha256": "33c67e18e7b08b8bd19c4640555765a15f8c8526a0eb648143a44c1f9a971896",
+      "candidate_median_ns": 57760811,
+      "rounds": [
+        {
+          "repetition": 1,
+          "native_before_ns": 49450000,
+          "native_after_ns": 49688000,
+          "native_before": {
+            "status": "Accepted",
+            "cpu_ns": 49450000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 49,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "native_after": {
+            "status": "Accepted",
+            "cpu_ns": 49688000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 49,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 177078000,
+            "wall_ms": 228,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 126572654,
+              "movs_bytes": 0,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 15000000000,
+            "estimated_ns": 29526099
+          },
+          "v8_cpu_ns": 177078000,
+          "predicted_ns": 29526099,
+          "instructions": 126572654,
+          "movs_bytes": 0,
+          "stos_bytes": 632
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 49520000,
+          "native_after_ns": 49865000,
+          "native_before": {
+            "status": "Accepted",
+            "cpu_ns": 49520000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 49,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "native_after": {
+            "status": "Accepted",
+            "cpu_ns": 49865000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 49,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 169168000,
+            "wall_ms": 202,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 126572648,
+              "movs_bytes": 0,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 15000000000,
+            "estimated_ns": 29526098
+          },
+          "v8_cpu_ns": 169168000,
+          "predicted_ns": 29526098,
+          "instructions": 126572648,
+          "movs_bytes": 0,
+          "stos_bytes": 632
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 53626000,
+          "native_after_ns": 53200000,
+          "native_before": {
+            "status": "Accepted",
+            "cpu_ns": 53626000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 53,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "native_after": {
+            "status": "Accepted",
+            "cpu_ns": 53200000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 77,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 192297000,
+            "wall_ms": 235,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 126572654,
+              "movs_bytes": 0,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 15000000000,
+            "estimated_ns": 29526099
+          },
+          "v8_cpu_ns": 192297000,
+          "predicted_ns": 29526099,
+          "instructions": 126572654,
+          "movs_bytes": 0,
+          "stos_bytes": 632
+        }
+      ],
+      "boundaries": [
+        {
+          "limit_ms": 40,
+          "roles": [
+            "native_low"
+          ],
+          "native": [
+            "Time Limit Exceeded",
+            "Time Limit Exceeded",
+            "Time Limit Exceeded"
+          ],
+          "native_samples": [
+            {
+              "status": "Time Limit Exceeded",
+              "cpu_ns": 43524000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 43,
+              "verdict_source": "cpu_time",
+              "exit_code": null
+            },
+            {
+              "status": "Time Limit Exceeded",
+              "cpu_ns": 43165000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 43,
+              "verdict_source": "cpu_time",
+              "exit_code": null
+            },
+            {
+              "status": "Time Limit Exceeded",
+              "cpu_ns": 41938000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 41,
+              "verdict_source": "cpu_time",
+              "exit_code": null
+            }
+          ],
+          "v8": "Accepted",
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 166936000,
+            "wall_ms": 200,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 126572654,
+              "movs_bytes": 0,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 40000000,
+            "estimated_ns": 29526099
+          },
+          "candidate": "Time Limit Exceeded"
+        },
+        {
+          "limit_ms": 60,
+          "roles": [
+            "native_high"
+          ],
+          "native": [
+            "Accepted",
+            "Accepted",
+            "Accepted"
+          ],
+          "native_samples": [
+            {
+              "status": "Accepted",
+              "cpu_ns": 47497000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 47,
+              "verdict_source": "stdout",
+              "exit_code": 0
+            },
+            {
+              "status": "Accepted",
+              "cpu_ns": 49177000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 49,
+              "verdict_source": "stdout",
+              "exit_code": 0
+            },
+            {
+              "status": "Accepted",
+              "cpu_ns": 47664000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 47,
+              "verdict_source": "stdout",
+              "exit_code": 0
+            }
+          ],
+          "v8": "Accepted",
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 164902000,
+            "wall_ms": 197,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 126572654,
+              "movs_bytes": 0,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 60000000,
+            "estimated_ns": 29526099
+          },
+          "candidate": "Accepted"
+        },
+        {
+          "limit_ms": 46,
+          "roles": [
+            "candidate_low"
+          ],
+          "native": [
+            "Time Limit Exceeded",
+            "Time Limit Exceeded",
+            "Time Limit Exceeded"
+          ],
+          "native_samples": [
+            {
+              "status": "Time Limit Exceeded",
+              "cpu_ns": 47727000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 47,
+              "verdict_source": "cpu_time",
+              "exit_code": null
+            },
+            {
+              "status": "Time Limit Exceeded",
+              "cpu_ns": 48003000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 48,
+              "verdict_source": "cpu_time",
+              "exit_code": null
+            },
+            {
+              "status": "Time Limit Exceeded",
+              "cpu_ns": 47824000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 47,
+              "verdict_source": "cpu_time",
+              "exit_code": null
+            }
+          ],
+          "v8": null,
+          "v8_sample": null,
+          "candidate": "Time Limit Exceeded"
+        },
+        {
+          "limit_ms": 69,
+          "roles": [
+            "candidate_high"
+          ],
+          "native": [
+            "Accepted",
+            "Accepted",
+            "Accepted"
+          ],
+          "native_samples": [
+            {
+              "status": "Accepted",
+              "cpu_ns": 48665000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 48,
+              "verdict_source": "stdout",
+              "exit_code": 0
+            },
+            {
+              "status": "Accepted",
+              "cpu_ns": 47822000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 47,
+              "verdict_source": "stdout",
+              "exit_code": 0
+            },
+            {
+              "status": "Accepted",
+              "cpu_ns": 51052000,
+              "cpu_source": "wait_rusage",
+              "wall_ms": 51,
+              "verdict_source": "stdout",
+              "exit_code": 0
+            }
+          ],
+          "v8": null,
+          "v8_sample": null,
+          "candidate": "Accepted"
+        }
+      ],
+      "native_median_ns": 49776500,
+      "identical_v8_counters": false
+    }
+  },
+  "completed_utc": "2026-11-20T00:18:18.813078+00:00",
+  "prospective_http_responses": 69,
+  "anchor_http_responses": 15,
+  "anchors_sha256": "b6d440334cfbcacfe49b0c2d29046bc8694ac582a825383eb49477beb0521f66",
+  "anchor_protocol_sha256": "a7b2085381a0d25146c87ef047f766b4b0816e9945f07803fc5faaa91208181e"
+}
