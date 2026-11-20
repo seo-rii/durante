@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "primary_question": "Does independent calibration of simulated cache pressure and repeated copy bytes improve prospective CPU time and limit predictions?",
+  "base_commit": "082b1adc40846929c1d185f2a4857eb5b5fb78da",
+  "historical": {
+    "experiments/results/cpp20-v8-memory/features.json": "46c988d6f38110f28911f7e5c7c260e075375671d5fccfc999c508ed09a2ed82",
+    "experiments/results/cpp20-v8-training.json": "80f5bce9bfde037e0836cb00b5d71d1c13f1fe0eddc8995f9be27bd3ed2e90b4",
+    "experiments/branch_load_interaction.py": "49d251588a0f4eb6f61c366e38c77098817cee704e0a486f9159ede26fb78cab"
+  },
+  "cloud_request_protocol_sha256": "f98a38bd6734f2ca8fd2e89308486b2d90c0d3933d2f044742cd048aad23e45c",
+  "calibration_ids": [
+    "cross-rep0-small",
+    "cross-rep0-medium",
+    "cross-rep0-large",
+    "cross-rep256-small",
+    "cross-rep256-medium",
+    "cross-rep256-large"
+  ],
+  "external_ids": [
+    "sparse-rmq",
+    "histogram-stack",
+    "distinct-window"
+  ],
+  "crossing": "Fixed number of seeded gathers over three footprints, with two REP MOVSB byte counts per footprint. Pin corpus source, binaries, inputs and independently generated answers before native calibration.",
+  "models": {
+    "control": "Fit historical 15 only. Reproduce published six-counter coefficients.",
+    "expanded": "Fit same 15 plus all six new calibration medians. Each case gets one relative-error residual. No stability-based exclusion."
+  },
+  "estimator": "Nonnegative least squares on residuals relative to each median, zero intercept, same six features and integer rounding at denominator 1000000000 as the published memory candidate. No model selection.",
+  "counts": "Instructions, REP MOVS bytes, REP STOS bytes, raw recurrence, gshare14 misses and total simulated L1D misses. Join each diagnostic pass by binary/input/output and check all common ordinary counters per replay.",
+  "seal": "Publish both fits and all three predictions per new external program before any native or live blind requests. Blind labels are excluded from fitting.",
+  "native": "Three native-before, ordinary-live, native-after triplets per program. Native target is the median of the six uninstrumented CPU times.",
+  "gates": {
+    "accuracy": "Each of three predictions for every distinct blind program must be within 20% of its native median.",
+    "minimum": "Every native sample must be at least 20 ms.",
+    "native_stability": "(max-min)/median <= 0.10 for each program.",
+    "counter_stability": "(max-min)/median <= 0.001 for every feature, with constant zero stable."
+  },
+  "limits": "Compare predicted AC/TLE to three actual native verdicts at each rounded 0.8x and 1.2x native median and expanded median. Reuse identical integer limits within a case. Measure ordinary live v8 at native-centered limits; retain mixed native verdicts explicitly.",
+  "ambiguity": "On the original and expanded training medians, bound nonnegative six-counter predictions for historical Fenwick and new input counts subject to per-row +/-6% and +/-20% constraints. Report infeasibility when appropriate, with smallest possible worst relative training residual. No new weights selected from these bounds.",
+  "scope": "C++20, x86-64, this workload and Cloud Run configuration. Production policy is outside this experiment."
+}

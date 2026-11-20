@@ -1,0 +1,190 @@
+{
+  "schema": 1,
+  "manifest_sha256": "fb180ab92409852bf24462803e2e3b966eff132bd92b1434bfe5fb9d06dd905b",
+  "tools_sha256": {
+    "drrun": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "runtime": "fd1c5645b9fc70a7dcb71459b4b94782d2e016a2aa4ceffcfcab2ade962cdf5b",
+    "drmgr": "372cc1f1f95ffa29a1f11de4be14f99de5938bbcae11294a38d0a7932069429a",
+    "meter": "d708864bc7d3ea0f4d4f8093b30bd5424436bf417e7bf420abd849eaba33d4c0"
+  },
+  "rounds": 5,
+  "cpu": 3,
+  "kernel": "6.1.0-56-cloud-amd64",
+  "arm_order": [
+    "native",
+    "engine",
+    "ordinary",
+    "live"
+  ],
+  "runtime_options": [
+    "-quiet",
+    "-no_cleancall_ignore_eflags",
+    "-follow_children",
+    "-disable_traces",
+    "-vm_size",
+    "32M",
+    "-vmheap_size",
+    "32M"
+  ],
+  "client_options": [
+    "-rep_bytes",
+    "-cpuid_profile",
+    "x86-64-v2"
+  ],
+  "description": "Rotating arm and case order, fixed ASLR-disabled Linux CPU. wait4 child user plus system time includes startup. Engine-only runs without a DynamoRIO client. Live adds -live_work_v1 with a checked shared progress file.",
+  "cases": {
+    "distinct-window": {
+      "cpu_ns": {
+        "native": [
+          39567000,
+          40880000,
+          41331000,
+          40052000,
+          41210000
+        ],
+        "engine": [
+          54200000,
+          53838000,
+          52401000,
+          53023000,
+          56722000
+        ],
+        "ordinary": [
+          574096000,
+          570475000,
+          566378000,
+          592634000,
+          716965000
+        ],
+        "live": [
+          127028000,
+          119358000,
+          121282000,
+          119301000,
+          132301000
+        ]
+      },
+      "elf_sha256": "7246aab53e4ffc5fca459b697c207075ae1b497a04c27b3a127e42cabc8797aa",
+      "stdin_sha256": "d7b0f1fa8808fde7b69bb562ac1adb6ce96fc6ed4f6fa67cf946acd9a1db4350",
+      "stdout_sha256": "f9d7e16d0f69203212abb94f7ed100827a12a44ea51c7133534bd5122839e24d",
+      "work": {
+        "instructions": 184682786,
+        "rep_movs_bytes": 0,
+        "rep_stos_bytes": 632
+      },
+      "median_cpu_ns": {
+        "native": 40880000,
+        "engine": 53838000,
+        "ordinary": 574096000,
+        "live": 121282000
+      },
+      "median_paired_ratio_to_native": {
+        "engine": 1.3238539898132429,
+        "ordinary": 14.509464958172215,
+        "live": 2.97865275142315
+      }
+    },
+    "histogram-stack": {
+      "cpu_ns": {
+        "native": [
+          38373000,
+          39143000,
+          38428000,
+          40331000,
+          39648000
+        ],
+        "engine": [
+          55674000,
+          56881000,
+          55022000,
+          59499000,
+          55216000
+        ],
+        "ordinary": [
+          1685127000,
+          1692990000,
+          1683986000,
+          1686144000,
+          1679930000
+        ],
+        "live": [
+          1806244000,
+          1818871000,
+          1810356000,
+          1843401000,
+          1865515000
+        ]
+      },
+      "elf_sha256": "30bcf282f11f83cb5c6886e2ffae8bea98abe02277e238f76a8ac4e748a02ab6",
+      "stdin_sha256": "7a2a3e28431a412953d30d342f740c1d49437734598cb042894e4ec987f5cde0",
+      "stdout_sha256": "01fd10299dd4be83994a4c5de871d7e3cc4d4d31f0141f770b6399f2e278fb96",
+      "work": {
+        "instructions": 220217224,
+        "rep_movs_bytes": 0,
+        "rep_stos_bytes": 656
+      },
+      "median_cpu_ns": {
+        "native": 39143000,
+        "engine": 55674000,
+        "ordinary": 1685127000,
+        "live": 1818871000
+      },
+      "median_paired_ratio_to_native": {
+        "engine": 1.4508638886717222,
+        "ordinary": 43.25141149119894,
+        "live": 47.051932001614205
+      }
+    },
+    "sparse-rmq": {
+      "cpu_ns": {
+        "native": [
+          42502000,
+          47005000,
+          42804000,
+          41791000,
+          49730000
+        ],
+        "engine": [
+          55885000,
+          63403000,
+          67338000,
+          57809000,
+          67739000
+        ],
+        "ordinary": [
+          685813000,
+          639291000,
+          737562000,
+          648091000,
+          736596000
+        ],
+        "live": [
+          179433000,
+          192081000,
+          168474000,
+          164963000,
+          178269000
+        ]
+      },
+      "elf_sha256": "b8f080857fb7a5ae98513b0712eafec9c3d0ede279c7bddb51b3e44f539585a5",
+      "stdin_sha256": "c9bd9c685d235c6784237eb5378382219e65028c912e0a321991da7dc7443ad3",
+      "stdout_sha256": "fbee43565dc5c2cc1d6f41416a900795ace4d877595d28b1d6997d6911d4bed6",
+      "work": {
+        "instructions": 165294559,
+        "rep_movs_bytes": 0,
+        "rep_stos_bytes": 632
+      },
+      "median_cpu_ns": {
+        "native": 42804000,
+        "engine": 63403000,
+        "ordinary": 685813000,
+        "live": 178269000
+      },
+      "median_paired_ratio_to_native": {
+        "engine": 1.3621355318721093,
+        "ordinary": 15.50790840133043,
+        "live": 3.947333157856955
+      }
+    }
+  }
+}

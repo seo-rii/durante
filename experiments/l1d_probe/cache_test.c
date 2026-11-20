@@ -178,12 +178,15 @@ static void test_large_movs(void) {
                         (UINT64_C(3) << 40) + distant + 16,
                         count32, bytes, backwards, true);
     }
-    for (unsigned span_lines = 2 * capacity / line - 1;
-         span_lines <= 2 * capacity / line + 1; ++span_lines) {
-      unsigned length = span_lines * line;
-      uintptr_t start = backwards ? length - 8 : 0;
-      compare_warm_movs(base + start, distant + start, length / 8, 8,
-                        backwards, false);
+    /* Cross the prefix boundary with every relative set position, changing
+     * which stream supplies the newest tag for each set. */
+    for (unsigned gap = 0; gap < L1D_SETS; ++gap) {
+      for (unsigned extra = 0; extra <= 2; ++extra) {
+        unsigned length = capacity / 2 - line + extra * line;
+        uintptr_t start = backwards ? length - 8 : 0;
+        compare_warm_movs(distant + start + gap * line, base + start,
+                          length / 8, 8, backwards, false);
+      }
     }
     /* Disjoint bytes can still share an endpoint line. Other cases revisit
      * overlapping streams in both orders, or have unequal line offsets or

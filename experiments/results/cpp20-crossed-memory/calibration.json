@@ -1,0 +1,1187 @@
+{
+  "schema": 1,
+  "image": "sha256:5a3704ef3f0ece934b24f3a06f59df661a43e819f8be02c47e14d9a61d61049b",
+  "revision": "aonohako-cross-v8-529ec0d9af-00001-258",
+  "v8_policy": {
+    "method": "weighted-rep-operations-nanoseconds-v2",
+    "model_id": "cloud-v8-diagnostic-transfer",
+    "model_version": 1,
+    "reference_id": "integration",
+    "runtime_id": "CPP20@sha256:5a3704ef3f0ece934b24f3a06f59df661a43e819f8be02c47e14d9a61d61049b",
+    "family": "cpp",
+    "engine_profile": "dynamorio-11.3-durante-v8-vm32m",
+    "dispatch_profile": "default",
+    "cpuid_profile": "x86-64-v2",
+    "instruction_ns_numerator": 233273561,
+    "movs_byte_ns_numerator": 38663059,
+    "stos_byte_ns_numerator": 71296759,
+    "ns_denominator": 1000000000
+  },
+  "v8_runtime_options_id": "runtime-options-v1:sha256:b88c02807007e4cddc0ea7c3fea34b5e0e11fd5a4dd861162b14341c620de901",
+  "v8_installation": {
+    "source_commit": "614761c18d4735f00e93667c74c099cfdb2800c7",
+    "runtime_source_commit": "6847bb210bea0ca11d1bf47704383d6a075da490",
+    "runtime_patch_sha256": "59fc79b5055a0c42b463703768891f0a10199ef1135d43028826c8c3894bab7c",
+    "runtime_code_replay_patch_sha256": "391cd6f5e35dcbda372cab5dd98fa40a5b2a41effda52ecfce9afa945acb249b",
+    "launcher_sha256": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "client_sha256": "d708864bc7d3ea0f4d4f8093b30bd5424436bf417e7bf420abd849eaba33d4c0",
+    "release_core_sha256": "fd1c5645b9fc70a7dcb71459b4b94782d2e016a2aa4ceffcfcab2ade962cdf5b",
+    "unchanged_before_after": true
+  },
+  "source_layer": {
+    "layer_sha256": "4b24db49f44509e312e0d7ff6c053a995e31b723b024c4fae61b73321ccb41d4",
+    "worker_sha256": "a6928c5eeba434f486095e77cca12d14d8b3bc3739763545852e6e017513fcaa",
+    "client_sha256": "d708864bc7d3ea0f4d4f8093b30bd5424436bf417e7bf420abd849eaba33d4c0",
+    "prior_image": "sha256:5a3704ef3f0ece934b24f3a06f59df661a43e819f8be02c47e14d9a61d61049b"
+  },
+  "deployed": {
+    "image_digest": "sha256:5a3704ef3f0ece934b24f3a06f59df661a43e819f8be02c47e14d9a61d61049b",
+    "service_revision": "aonohako-cross-v8-529ec0d9af-00001-258",
+    "execution_environment": "EXECUTION_ENVIRONMENT_GEN2",
+    "concurrency": 1,
+    "resources": {
+      "cpu": "1",
+      "memory": "2Gi"
+    },
+    "scaling": {
+      "minInstanceCount": 1,
+      "maxInstanceCount": 1
+    }
+  },
+  "platform": {
+    "environment": "private authenticated Cloud Run Gen2",
+    "region": "asia-northeast3",
+    "cpu": 1,
+    "memory": "2Gi",
+    "concurrency": 1,
+    "min_instances": 1,
+    "max_instances": 1,
+    "image": "sha256:5a3704ef3f0ece934b24f3a06f59df661a43e819f8be02c47e14d9a61d61049b"
+  },
+  "manifest_sha256": "fb180ab92409852bf24462803e2e3b966eff132bd92b1434bfe5fb9d06dd905b",
+  "experiment_protocol_sha256": "2c9ca0d633c62193e6012b5baf4258668cacf5953da0785805a1bd44ae395716",
+  "protocol_sha256": "f98a38bd6734f2ca8fd2e89308486b2d90c0d3933d2f044742cd048aad23e45c",
+  "calibration_gate_verified_utc": "2026-11-20T00:54:01.400503+00:00",
+  "stage": "calibration",
+  "started_utc": "2026-11-20T00:54:20.494635+00:00",
+  "completed_utc": "2026-11-20T00:54:30.783130+00:00",
+  "http_responses": 54,
+  "cases": {
+    "cross-rep0-large": {
+      "elf_sha256": "e7f821391fa63816ad2ee4ef826f565736e98c94b5d6aca5db77613104d01b92",
+      "input_sha256": "aa8f34376ea2c483f672c445b80e9845dbd2e945bd537c11daf471a3b1084779",
+      "output_sha256": "43d9349b7331f76eac3fab334c03ad8eca46d7323dd98f1c69fb56cc2c91dbd6",
+      "rounds": [
+        {
+          "repetition": 1,
+          "native_before_ns": 51237000,
+          "native_after_ns": 54455000,
+          "native_before": {
+            "status": "Accepted",
+            "cpu_ns": 51237000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 51,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "native_after": {
+            "status": "Accepted",
+            "cpu_ns": 54455000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 54,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 173943000,
+            "wall_ms": 216,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 151268995,
+              "movs_bytes": 0,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 15000000000,
+            "estimated_ns": 35287103,
+            "raw_limits": {
+              "cpu_time_ms": 90000,
+              "wall_time_ms": 120000,
+              "memory_mb": 256
+            },
+            "nominal_limits": {
+              "time_ms": 15000,
+              "wall_time_ms": 30000,
+              "memory_mb": 256
+            },
+            "clock_model_binding": "work-clock-v1:sha256:a5ee2b9c932e98419a6a7442f6def564429ffb69a3f47a6e4724f7d5ad676f5b",
+            "state": "complete",
+            "output_matches": true,
+            "work_complete": true,
+            "authority": "diagnostic_only",
+            "quality": "uninterrupted",
+            "unsupported_rep_entries": 0
+          },
+          "v8_cpu_ns": 173943000,
+          "predicted_ns": 35287103,
+          "instructions": 151268995,
+          "movs_bytes": 0,
+          "stos_bytes": 632
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 46458000,
+          "native_after_ns": 53821000,
+          "native_before": {
+            "status": "Accepted",
+            "cpu_ns": 46458000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 46,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "native_after": {
+            "status": "Accepted",
+            "cpu_ns": 53821000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 53,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 163511000,
+            "wall_ms": 206,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 151268989,
+              "movs_bytes": 0,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 15000000000,
+            "estimated_ns": 35287101,
+            "raw_limits": {
+              "cpu_time_ms": 90000,
+              "wall_time_ms": 120000,
+              "memory_mb": 256
+            },
+            "nominal_limits": {
+              "time_ms": 15000,
+              "wall_time_ms": 30000,
+              "memory_mb": 256
+            },
+            "clock_model_binding": "work-clock-v1:sha256:a5ee2b9c932e98419a6a7442f6def564429ffb69a3f47a6e4724f7d5ad676f5b",
+            "state": "complete",
+            "output_matches": true,
+            "work_complete": true,
+            "authority": "diagnostic_only",
+            "quality": "uninterrupted",
+            "unsupported_rep_entries": 0
+          },
+          "v8_cpu_ns": 163511000,
+          "predicted_ns": 35287101,
+          "instructions": 151268989,
+          "movs_bytes": 0,
+          "stos_bytes": 632
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 49842000,
+          "native_after_ns": 46497000,
+          "native_before": {
+            "status": "Accepted",
+            "cpu_ns": 49842000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 49,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "native_after": {
+            "status": "Accepted",
+            "cpu_ns": 46497000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 46,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 149340000,
+            "wall_ms": 186,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 151268995,
+              "movs_bytes": 0,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 15000000000,
+            "estimated_ns": 35287103,
+            "raw_limits": {
+              "cpu_time_ms": 90000,
+              "wall_time_ms": 120000,
+              "memory_mb": 256
+            },
+            "nominal_limits": {
+              "time_ms": 15000,
+              "wall_time_ms": 30000,
+              "memory_mb": 256
+            },
+            "clock_model_binding": "work-clock-v1:sha256:a5ee2b9c932e98419a6a7442f6def564429ffb69a3f47a6e4724f7d5ad676f5b",
+            "state": "complete",
+            "output_matches": true,
+            "work_complete": true,
+            "authority": "diagnostic_only",
+            "quality": "uninterrupted",
+            "unsupported_rep_entries": 0
+          },
+          "v8_cpu_ns": 149340000,
+          "predicted_ns": 35287103,
+          "instructions": 151268995,
+          "movs_bytes": 0,
+          "stos_bytes": 632
+        }
+      ],
+      "native_median_ns": 50539500,
+      "identical_v8_counters": false
+    },
+    "cross-rep0-medium": {
+      "elf_sha256": "e7f821391fa63816ad2ee4ef826f565736e98c94b5d6aca5db77613104d01b92",
+      "input_sha256": "64e98b59452d75d7f83c1ba85509b90b0899b395dc61c0bccf441734c3ec7236",
+      "output_sha256": "1e6a4a1c8a9072abc4e25598d5242d4fef77dbe7fbdd188a867b6469183b35a2",
+      "rounds": [
+        {
+          "repetition": 1,
+          "native_before_ns": 30377000,
+          "native_after_ns": 31887000,
+          "native_before": {
+            "status": "Accepted",
+            "cpu_ns": 30377000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 30,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "native_after": {
+            "status": "Accepted",
+            "cpu_ns": 31887000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 31,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 129520000,
+            "wall_ms": 172,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 151268937,
+              "movs_bytes": 0,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 15000000000,
+            "estimated_ns": 35287089,
+            "raw_limits": {
+              "cpu_time_ms": 90000,
+              "wall_time_ms": 120000,
+              "memory_mb": 256
+            },
+            "nominal_limits": {
+              "time_ms": 15000,
+              "wall_time_ms": 30000,
+              "memory_mb": 256
+            },
+            "clock_model_binding": "work-clock-v1:sha256:a5ee2b9c932e98419a6a7442f6def564429ffb69a3f47a6e4724f7d5ad676f5b",
+            "state": "complete",
+            "output_matches": true,
+            "work_complete": true,
+            "authority": "diagnostic_only",
+            "quality": "uninterrupted",
+            "unsupported_rep_entries": 0
+          },
+          "v8_cpu_ns": 129520000,
+          "predicted_ns": 35287089,
+          "instructions": 151268937,
+          "movs_bytes": 0,
+          "stos_bytes": 632
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 29720000,
+          "native_after_ns": 33415000,
+          "native_before": {
+            "status": "Accepted",
+            "cpu_ns": 29720000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 29,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "native_after": {
+            "status": "Accepted",
+            "cpu_ns": 33415000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 33,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 123368000,
+            "wall_ms": 135,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 151268937,
+              "movs_bytes": 0,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 15000000000,
+            "estimated_ns": 35287089,
+            "raw_limits": {
+              "cpu_time_ms": 90000,
+              "wall_time_ms": 120000,
+              "memory_mb": 256
+            },
+            "nominal_limits": {
+              "time_ms": 15000,
+              "wall_time_ms": 30000,
+              "memory_mb": 256
+            },
+            "clock_model_binding": "work-clock-v1:sha256:a5ee2b9c932e98419a6a7442f6def564429ffb69a3f47a6e4724f7d5ad676f5b",
+            "state": "complete",
+            "output_matches": true,
+            "work_complete": true,
+            "authority": "diagnostic_only",
+            "quality": "uninterrupted",
+            "unsupported_rep_entries": 0
+          },
+          "v8_cpu_ns": 123368000,
+          "predicted_ns": 35287089,
+          "instructions": 151268937,
+          "movs_bytes": 0,
+          "stos_bytes": 632
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 30413000,
+          "native_after_ns": 29968000,
+          "native_before": {
+            "status": "Accepted",
+            "cpu_ns": 30413000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 30,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "native_after": {
+            "status": "Accepted",
+            "cpu_ns": 29968000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 30,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 112377000,
+            "wall_ms": 132,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 151268937,
+              "movs_bytes": 0,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 15000000000,
+            "estimated_ns": 35287089,
+            "raw_limits": {
+              "cpu_time_ms": 90000,
+              "wall_time_ms": 120000,
+              "memory_mb": 256
+            },
+            "nominal_limits": {
+              "time_ms": 15000,
+              "wall_time_ms": 30000,
+              "memory_mb": 256
+            },
+            "clock_model_binding": "work-clock-v1:sha256:a5ee2b9c932e98419a6a7442f6def564429ffb69a3f47a6e4724f7d5ad676f5b",
+            "state": "complete",
+            "output_matches": true,
+            "work_complete": true,
+            "authority": "diagnostic_only",
+            "quality": "uninterrupted",
+            "unsupported_rep_entries": 0
+          },
+          "v8_cpu_ns": 112377000,
+          "predicted_ns": 35287089,
+          "instructions": 151268937,
+          "movs_bytes": 0,
+          "stos_bytes": 632
+        }
+      ],
+      "native_median_ns": 30395000,
+      "identical_v8_counters": true
+    },
+    "cross-rep0-small": {
+      "elf_sha256": "e7f821391fa63816ad2ee4ef826f565736e98c94b5d6aca5db77613104d01b92",
+      "input_sha256": "34653efc18f65c08046ae7c453ad636189cb1e6fb3d218db0ad4211031c212d1",
+      "output_sha256": "bcf524fd617cc1344081405999d2f2e72ffbc8bf0438740ee38fc819d443cd82",
+      "rounds": [
+        {
+          "repetition": 1,
+          "native_before_ns": 30449000,
+          "native_after_ns": 38463000,
+          "native_before": {
+            "status": "Accepted",
+            "cpu_ns": 30449000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 30,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "native_after": {
+            "status": "Accepted",
+            "cpu_ns": 38463000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 38,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 117118000,
+            "wall_ms": 138,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 151268837,
+              "movs_bytes": 0,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 15000000000,
+            "estimated_ns": 35287066,
+            "raw_limits": {
+              "cpu_time_ms": 90000,
+              "wall_time_ms": 120000,
+              "memory_mb": 256
+            },
+            "nominal_limits": {
+              "time_ms": 15000,
+              "wall_time_ms": 30000,
+              "memory_mb": 256
+            },
+            "clock_model_binding": "work-clock-v1:sha256:a5ee2b9c932e98419a6a7442f6def564429ffb69a3f47a6e4724f7d5ad676f5b",
+            "state": "complete",
+            "output_matches": true,
+            "work_complete": true,
+            "authority": "diagnostic_only",
+            "quality": "uninterrupted",
+            "unsupported_rep_entries": 0
+          },
+          "v8_cpu_ns": 117118000,
+          "predicted_ns": 35287066,
+          "instructions": 151268837,
+          "movs_bytes": 0,
+          "stos_bytes": 632
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 28701000,
+          "native_after_ns": 29192000,
+          "native_before": {
+            "status": "Accepted",
+            "cpu_ns": 28701000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 28,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "native_after": {
+            "status": "Accepted",
+            "cpu_ns": 29192000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 29,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 118820000,
+            "wall_ms": 132,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 151268843,
+              "movs_bytes": 0,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 15000000000,
+            "estimated_ns": 35287067,
+            "raw_limits": {
+              "cpu_time_ms": 90000,
+              "wall_time_ms": 120000,
+              "memory_mb": 256
+            },
+            "nominal_limits": {
+              "time_ms": 15000,
+              "wall_time_ms": 30000,
+              "memory_mb": 256
+            },
+            "clock_model_binding": "work-clock-v1:sha256:a5ee2b9c932e98419a6a7442f6def564429ffb69a3f47a6e4724f7d5ad676f5b",
+            "state": "complete",
+            "output_matches": true,
+            "work_complete": true,
+            "authority": "diagnostic_only",
+            "quality": "uninterrupted",
+            "unsupported_rep_entries": 0
+          },
+          "v8_cpu_ns": 118820000,
+          "predicted_ns": 35287067,
+          "instructions": 151268843,
+          "movs_bytes": 0,
+          "stos_bytes": 632
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 31269000,
+          "native_after_ns": 28603000,
+          "native_before": {
+            "status": "Accepted",
+            "cpu_ns": 31269000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 31,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "native_after": {
+            "status": "Accepted",
+            "cpu_ns": 28603000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 28,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 115867000,
+            "wall_ms": 132,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 151268837,
+              "movs_bytes": 0,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 15000000000,
+            "estimated_ns": 35287066,
+            "raw_limits": {
+              "cpu_time_ms": 90000,
+              "wall_time_ms": 120000,
+              "memory_mb": 256
+            },
+            "nominal_limits": {
+              "time_ms": 15000,
+              "wall_time_ms": 30000,
+              "memory_mb": 256
+            },
+            "clock_model_binding": "work-clock-v1:sha256:a5ee2b9c932e98419a6a7442f6def564429ffb69a3f47a6e4724f7d5ad676f5b",
+            "state": "complete",
+            "output_matches": true,
+            "work_complete": true,
+            "authority": "diagnostic_only",
+            "quality": "uninterrupted",
+            "unsupported_rep_entries": 0
+          },
+          "v8_cpu_ns": 115867000,
+          "predicted_ns": 35287066,
+          "instructions": 151268837,
+          "movs_bytes": 0,
+          "stos_bytes": 632
+        }
+      ],
+      "native_median_ns": 29820500,
+      "identical_v8_counters": false
+    },
+    "cross-rep256-large": {
+      "elf_sha256": "e7f821391fa63816ad2ee4ef826f565736e98c94b5d6aca5db77613104d01b92",
+      "input_sha256": "d1d4d4e4a9c3a6701099a2c3d7f74a28b6770692e2a9b12152c116e548753777",
+      "output_sha256": "aeb71d5bf39fe4a15efc29516a78af8a71ee4afbff596c9f6102b4be75edc3cf",
+      "rounds": [
+        {
+          "repetition": 1,
+          "native_before_ns": 48347000,
+          "native_after_ns": 44750000,
+          "native_before": {
+            "status": "Accepted",
+            "cpu_ns": 48347000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 49,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "native_after": {
+            "status": "Accepted",
+            "cpu_ns": 44750000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 44,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 168716000,
+            "wall_ms": 211,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 151269143,
+              "movs_bytes": 268435456,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 15000000000,
+            "estimated_ns": 45665673,
+            "raw_limits": {
+              "cpu_time_ms": 90000,
+              "wall_time_ms": 120000,
+              "memory_mb": 256
+            },
+            "nominal_limits": {
+              "time_ms": 15000,
+              "wall_time_ms": 30000,
+              "memory_mb": 256
+            },
+            "clock_model_binding": "work-clock-v1:sha256:a5ee2b9c932e98419a6a7442f6def564429ffb69a3f47a6e4724f7d5ad676f5b",
+            "state": "complete",
+            "output_matches": true,
+            "work_complete": true,
+            "authority": "diagnostic_only",
+            "quality": "uninterrupted",
+            "unsupported_rep_entries": 0
+          },
+          "v8_cpu_ns": 168716000,
+          "predicted_ns": 45665673,
+          "instructions": 151269143,
+          "movs_bytes": 268435456,
+          "stos_bytes": 632
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 46544000,
+          "native_after_ns": 48091000,
+          "native_before": {
+            "status": "Accepted",
+            "cpu_ns": 46544000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 46,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "native_after": {
+            "status": "Accepted",
+            "cpu_ns": 48091000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 48,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 158618000,
+            "wall_ms": 198,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 151269143,
+              "movs_bytes": 268435456,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 15000000000,
+            "estimated_ns": 45665673,
+            "raw_limits": {
+              "cpu_time_ms": 90000,
+              "wall_time_ms": 120000,
+              "memory_mb": 256
+            },
+            "nominal_limits": {
+              "time_ms": 15000,
+              "wall_time_ms": 30000,
+              "memory_mb": 256
+            },
+            "clock_model_binding": "work-clock-v1:sha256:a5ee2b9c932e98419a6a7442f6def564429ffb69a3f47a6e4724f7d5ad676f5b",
+            "state": "complete",
+            "output_matches": true,
+            "work_complete": true,
+            "authority": "diagnostic_only",
+            "quality": "uninterrupted",
+            "unsupported_rep_entries": 0
+          },
+          "v8_cpu_ns": 158618000,
+          "predicted_ns": 45665673,
+          "instructions": 151269143,
+          "movs_bytes": 268435456,
+          "stos_bytes": 632
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 47129000,
+          "native_after_ns": 50028000,
+          "native_before": {
+            "status": "Accepted",
+            "cpu_ns": 47129000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 47,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "native_after": {
+            "status": "Accepted",
+            "cpu_ns": 50028000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 50,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 151661000,
+            "wall_ms": 169,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 151269159,
+              "movs_bytes": 268435456,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 15000000000,
+            "estimated_ns": 45665677,
+            "raw_limits": {
+              "cpu_time_ms": 90000,
+              "wall_time_ms": 120000,
+              "memory_mb": 256
+            },
+            "nominal_limits": {
+              "time_ms": 15000,
+              "wall_time_ms": 30000,
+              "memory_mb": 256
+            },
+            "clock_model_binding": "work-clock-v1:sha256:a5ee2b9c932e98419a6a7442f6def564429ffb69a3f47a6e4724f7d5ad676f5b",
+            "state": "complete",
+            "output_matches": true,
+            "work_complete": true,
+            "authority": "diagnostic_only",
+            "quality": "uninterrupted",
+            "unsupported_rep_entries": 0
+          },
+          "v8_cpu_ns": 151661000,
+          "predicted_ns": 45665677,
+          "instructions": 151269159,
+          "movs_bytes": 268435456,
+          "stos_bytes": 632
+        }
+      ],
+      "native_median_ns": 47610000,
+      "identical_v8_counters": false
+    },
+    "cross-rep256-medium": {
+      "elf_sha256": "e7f821391fa63816ad2ee4ef826f565736e98c94b5d6aca5db77613104d01b92",
+      "input_sha256": "dcc7adb829cfb8f2091fc7c85bd141b262d812be4f709e06684e2126d4216320",
+      "output_sha256": "bdced37458a5c5e8071ba7ee63dcd3cfbdaf719619f3e0c567ab353130bcca63",
+      "rounds": [
+        {
+          "repetition": 1,
+          "native_before_ns": 36548000,
+          "native_after_ns": 30307000,
+          "native_before": {
+            "status": "Accepted",
+            "cpu_ns": 36548000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 36,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "native_after": {
+            "status": "Accepted",
+            "cpu_ns": 30307000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 30,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 115197000,
+            "wall_ms": 132,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 151269091,
+              "movs_bytes": 268435456,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 15000000000,
+            "estimated_ns": 45665661,
+            "raw_limits": {
+              "cpu_time_ms": 90000,
+              "wall_time_ms": 120000,
+              "memory_mb": 256
+            },
+            "nominal_limits": {
+              "time_ms": 15000,
+              "wall_time_ms": 30000,
+              "memory_mb": 256
+            },
+            "clock_model_binding": "work-clock-v1:sha256:a5ee2b9c932e98419a6a7442f6def564429ffb69a3f47a6e4724f7d5ad676f5b",
+            "state": "complete",
+            "output_matches": true,
+            "work_complete": true,
+            "authority": "diagnostic_only",
+            "quality": "uninterrupted",
+            "unsupported_rep_entries": 0
+          },
+          "v8_cpu_ns": 115197000,
+          "predicted_ns": 45665661,
+          "instructions": 151269091,
+          "movs_bytes": 268435456,
+          "stos_bytes": 632
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 49545000,
+          "native_after_ns": 31810000,
+          "native_before": {
+            "status": "Accepted",
+            "cpu_ns": 49545000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 49,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "native_after": {
+            "status": "Accepted",
+            "cpu_ns": 31810000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 31,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 119156000,
+            "wall_ms": 141,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 151269091,
+              "movs_bytes": 268435456,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 15000000000,
+            "estimated_ns": 45665661,
+            "raw_limits": {
+              "cpu_time_ms": 90000,
+              "wall_time_ms": 120000,
+              "memory_mb": 256
+            },
+            "nominal_limits": {
+              "time_ms": 15000,
+              "wall_time_ms": 30000,
+              "memory_mb": 256
+            },
+            "clock_model_binding": "work-clock-v1:sha256:a5ee2b9c932e98419a6a7442f6def564429ffb69a3f47a6e4724f7d5ad676f5b",
+            "state": "complete",
+            "output_matches": true,
+            "work_complete": true,
+            "authority": "diagnostic_only",
+            "quality": "uninterrupted",
+            "unsupported_rep_entries": 0
+          },
+          "v8_cpu_ns": 119156000,
+          "predicted_ns": 45665661,
+          "instructions": 151269091,
+          "movs_bytes": 268435456,
+          "stos_bytes": 632
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 31132000,
+          "native_after_ns": 31709000,
+          "native_before": {
+            "status": "Accepted",
+            "cpu_ns": 31132000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 31,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "native_after": {
+            "status": "Accepted",
+            "cpu_ns": 31709000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 32,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 121840000,
+            "wall_ms": 140,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 151269091,
+              "movs_bytes": 268435456,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 15000000000,
+            "estimated_ns": 45665661,
+            "raw_limits": {
+              "cpu_time_ms": 90000,
+              "wall_time_ms": 120000,
+              "memory_mb": 256
+            },
+            "nominal_limits": {
+              "time_ms": 15000,
+              "wall_time_ms": 30000,
+              "memory_mb": 256
+            },
+            "clock_model_binding": "work-clock-v1:sha256:a5ee2b9c932e98419a6a7442f6def564429ffb69a3f47a6e4724f7d5ad676f5b",
+            "state": "complete",
+            "output_matches": true,
+            "work_complete": true,
+            "authority": "diagnostic_only",
+            "quality": "uninterrupted",
+            "unsupported_rep_entries": 0
+          },
+          "v8_cpu_ns": 121840000,
+          "predicted_ns": 45665661,
+          "instructions": 151269091,
+          "movs_bytes": 268435456,
+          "stos_bytes": 632
+        }
+      ],
+      "native_median_ns": 31759500,
+      "identical_v8_counters": true
+    },
+    "cross-rep256-small": {
+      "elf_sha256": "e7f821391fa63816ad2ee4ef826f565736e98c94b5d6aca5db77613104d01b92",
+      "input_sha256": "3ee511bb2cf493256ef048602072a7ab5e9b5ae6e8c3867fd2fa573d85b54758",
+      "output_sha256": "0c38f0c24ff640ee67d791a6a519d1bb26887ddfc0ee5299713452e9a3459119",
+      "rounds": [
+        {
+          "repetition": 1,
+          "native_before_ns": 30900000,
+          "native_after_ns": 33265000,
+          "native_before": {
+            "status": "Accepted",
+            "cpu_ns": 30900000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 30,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "native_after": {
+            "status": "Accepted",
+            "cpu_ns": 33265000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 33,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 112253000,
+            "wall_ms": 126,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 151268985,
+              "movs_bytes": 268435456,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 15000000000,
+            "estimated_ns": 45665636,
+            "raw_limits": {
+              "cpu_time_ms": 90000,
+              "wall_time_ms": 120000,
+              "memory_mb": 256
+            },
+            "nominal_limits": {
+              "time_ms": 15000,
+              "wall_time_ms": 30000,
+              "memory_mb": 256
+            },
+            "clock_model_binding": "work-clock-v1:sha256:a5ee2b9c932e98419a6a7442f6def564429ffb69a3f47a6e4724f7d5ad676f5b",
+            "state": "complete",
+            "output_matches": true,
+            "work_complete": true,
+            "authority": "diagnostic_only",
+            "quality": "uninterrupted",
+            "unsupported_rep_entries": 0
+          },
+          "v8_cpu_ns": 112253000,
+          "predicted_ns": 45665636,
+          "instructions": 151268985,
+          "movs_bytes": 268435456,
+          "stos_bytes": 632
+        },
+        {
+          "repetition": 2,
+          "native_before_ns": 31268000,
+          "native_after_ns": 33446000,
+          "native_before": {
+            "status": "Accepted",
+            "cpu_ns": 31268000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 31,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "native_after": {
+            "status": "Accepted",
+            "cpu_ns": 33446000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 33,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 122225000,
+            "wall_ms": 139,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 151268991,
+              "movs_bytes": 268435456,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 15000000000,
+            "estimated_ns": 45665638,
+            "raw_limits": {
+              "cpu_time_ms": 90000,
+              "wall_time_ms": 120000,
+              "memory_mb": 256
+            },
+            "nominal_limits": {
+              "time_ms": 15000,
+              "wall_time_ms": 30000,
+              "memory_mb": 256
+            },
+            "clock_model_binding": "work-clock-v1:sha256:a5ee2b9c932e98419a6a7442f6def564429ffb69a3f47a6e4724f7d5ad676f5b",
+            "state": "complete",
+            "output_matches": true,
+            "work_complete": true,
+            "authority": "diagnostic_only",
+            "quality": "uninterrupted",
+            "unsupported_rep_entries": 0
+          },
+          "v8_cpu_ns": 122225000,
+          "predicted_ns": 45665638,
+          "instructions": 151268991,
+          "movs_bytes": 268435456,
+          "stos_bytes": 632
+        },
+        {
+          "repetition": 3,
+          "native_before_ns": 30696000,
+          "native_after_ns": 31447000,
+          "native_before": {
+            "status": "Accepted",
+            "cpu_ns": 30696000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 30,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "native_after": {
+            "status": "Accepted",
+            "cpu_ns": 31447000,
+            "cpu_source": "wait_rusage",
+            "wall_ms": 31,
+            "verdict_source": "stdout",
+            "exit_code": 0
+          },
+          "v8_sample": {
+            "status": "Accepted",
+            "cpu_ns": 117380000,
+            "wall_ms": 138,
+            "termination": "stdout",
+            "verdict_source": "durante_judge",
+            "exit_code": 0,
+            "progress": {
+              "instructions": 151268991,
+              "movs_bytes": 268435456,
+              "stos_bytes": 632
+            },
+            "progress_overflow": 0,
+            "budget_ns": 15000000000,
+            "estimated_ns": 45665638,
+            "raw_limits": {
+              "cpu_time_ms": 90000,
+              "wall_time_ms": 120000,
+              "memory_mb": 256
+            },
+            "nominal_limits": {
+              "time_ms": 15000,
+              "wall_time_ms": 30000,
+              "memory_mb": 256
+            },
+            "clock_model_binding": "work-clock-v1:sha256:a5ee2b9c932e98419a6a7442f6def564429ffb69a3f47a6e4724f7d5ad676f5b",
+            "state": "complete",
+            "output_matches": true,
+            "work_complete": true,
+            "authority": "diagnostic_only",
+            "quality": "uninterrupted",
+            "unsupported_rep_entries": 0
+          },
+          "v8_cpu_ns": 117380000,
+          "predicted_ns": 45665638,
+          "instructions": 151268991,
+          "movs_bytes": 268435456,
+          "stos_bytes": 632
+        }
+      ],
+      "native_median_ns": 31357500,
+      "identical_v8_counters": false
+    }
+  }
+}

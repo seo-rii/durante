@@ -127,15 +127,16 @@ static inline bool l1d_contiguous_stos(l1d_cache_t *cache, uintptr_t dst,
 }
 
 /* For two disjoint streams moving in lockstep each line pair is visited once.
- * After one cache's worth of consecutive source lines, every set contains
- * only tags from this copy. All later lines miss in both streams. Replay the
- * last such window to reconstruct the exact LRU order, including when source
- * and destination compete for the same set. */
+ * Four complete turns of each stream through the sets replace all eight ways,
+ * even when the two streams visit a given set at different times. After that
+ * prefix all accesses to new line pairs miss. */
 static inline bool l1d_streaming_movs(l1d_cache_t *cache, uintptr_t src,
                                       uintptr_t dst, uint64_t count, unsigned bytes,
                                       unsigned width_shift, bool backwards, bool addr32) {
-  const unsigned capacity = L1D_SETS * L1D_WAYS;
-  if (count <= ((uint64_t)2 * capacity * L1D_LINE_BYTES >> width_shift) ||
+  _Static_assert(L1D_WAYS % 2 == 0 && (L1D_SETS & (L1D_SETS - 1)) == 0,
+                 "paired streams require even associativity and a power-of-two set count");
+  const unsigned prefix = L1D_SETS * (L1D_WAYS / 2);
+  if (count <= ((uint64_t)prefix * L1D_LINE_BYTES >> width_shift) ||
       (src ^ dst) % L1D_LINE_BYTES != 0 || (src & (bytes - 1)) != 0)
     return false;
   uintptr_t limit = addr32 ? UINT32_MAX : UINTPTR_MAX;
@@ -156,18 +157,31 @@ static inline bool l1d_streaming_movs(l1d_cache_t *cache, uintptr_t src,
     return false;
 
   uintptr_t step = backwards ? -(uintptr_t)1 : 1;
-  const uintptr_t offsets[] = {0, pairs - capacity};
-  for (unsigned window = 0; window < 2; ++window) {
-    uintptr_t read_line = source_line + offsets[window] * step;
-    uintptr_t write_line = dest_line + offsets[window] * step;
-    for (unsigned i = 0; i < capacity; ++i) {
-      l1d_touch_line(cache, read_line);
-      l1d_touch_line(cache, write_line);
-      read_line += step;
-      write_line += step;
+  uintptr_t read_line = source_line, write_line = dest_line;
+  for (unsigned i = 0; i < prefix; ++i) {
+    l1d_touch_line(cache, read_line);
+    l1d_touch_line(cache, write_line);
+    read_line += step;
+    write_line += step;
+  }
+  cache->misses += 2 * (pairs - prefix);
+
+  /* In the last four turns each set is touched once by each stream per
+   * turn. Their relative order repeats. On a tie MOVS writes after reading. */
+  uintptr_t last_dest = dest_line + (pairs - 1) * step;
+  for (unsigned set = 0; set < L1D_SETS; ++set) {
+    unsigned read_age = ((last - set) * step) % L1D_SETS;
+    unsigned write_age = ((last_dest - set) * step) % L1D_SETS;
+    uint64_t read_tag = last - read_age * step + 1;
+    uint64_t write_tag = last_dest - write_age * step + 1;
+    bool read_newer = read_age < write_age;
+    for (unsigned way = 0; way < L1D_WAYS; way += 2) {
+      cache->tags[set][way] = read_newer ? read_tag : write_tag;
+      cache->tags[set][way + 1] = read_newer ? write_tag : read_tag;
+      read_tag -= step * L1D_SETS;
+      write_tag -= step * L1D_SETS;
     }
   }
-  cache->misses += 2 * (pairs - 2 * capacity);
   /* Naturally aligned elements cannot cross a line. */
   cache->refs += 2 * count;
   cache->lines += 2 * count;

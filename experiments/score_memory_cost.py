@@ -42,7 +42,7 @@ def native_verdict(sample, limit_ms):
     return TLE
 
 
-def score_case(name, frozen, observed):
+def score_case(name, frozen, observed, model_fields=MODELS, candidate="candidate"):
     require(identity(frozen) == identity(observed), f"{name}: artifact, input or oracle changed")
     runs = observed["rounds"]
     require(sorted(r["repetition"] for r in runs) == [1, 2, 3], f"{name}: incomplete full-run triplets")
@@ -60,7 +60,7 @@ def score_case(name, frozen, observed):
             (type(v) in (int, float) and isfinite(v) and v >= 0) for v in stability.values()),
             f"{name}: invalid diagnostic counter spread")
     models = {}
-    for model, fields in MODELS.items():
+    for model, fields in model_fields.items():
         estimates = frozen["predictions_ns"][model]
         require(len(estimates) == 3 and all(type(v) is int and v >= 0 for v in estimates),
                 f"{name}: expected three integer predictions")
@@ -70,7 +70,7 @@ def score_case(name, frozen, observed):
                          "within_20_percent": all(5 * abs(v - center) <= center for v in estimates),
                          "counter_spread_pass": all(stability[k] is not None and stability[k] <= .001 for k in fields)}
 
-    bounds = {label + "_" + side: ms for label, ns in (("native", center), ("candidate", models["candidate"]["median_ns"]))
+    bounds = {label + "_" + side: ms for label, ns in (("native", center), ("candidate", models[candidate]["median_ns"]))
               for side, ms in limits(ns).items()}
     rows = observed["boundaries"]
     require(all(type(row["limit_ms"]) is int and row["limit_ms"] > 0 for row in rows),
@@ -87,7 +87,7 @@ def score_case(name, frozen, observed):
         labels = [label for label, value in bounds.items() if value == ms]
         require(set(row["roles"]) == set(labels), f"{name}: contradictory boundary role")
         comparisons = {}
-        for model in MODELS:
+        for model in model_fields:
             predicted = TLE if models[model]["median_ns"] > ms * NS_PER_MS else AC
             comparisons[model] = {"verdict": predicted, "native_matches": actual.count(predicted),
                                   "comparison": agreement(predicted, actual)}
@@ -95,7 +95,7 @@ def score_case(name, frozen, observed):
         sample = row.get("v8_sample")
         require(live == (sample["status"] if sample is not None else None),
                 f"{name}: boundary verdict contradicts its live receipt")
-        require(row["candidate"] == comparisons["candidate"]["verdict"],
+        require(row["candidate"] == comparisons[candidate]["verdict"],
                 f"{name}: contradictory recorded candidate verdict")
         if ms in (bounds["native_low"], bounds["native_high"]):
             require(live in (AC, TLE), f"{name}: missing historical live verdict")
@@ -110,15 +110,16 @@ def score_case(name, frozen, observed):
             "models": models, "boundaries": results}
 
 
-def score(prediction_bytes, cloud):
+def score(prediction_bytes, cloud, *, model_fields=MODELS, external=EXTERNAL, candidate="candidate"):
     predictions = json.loads(prediction_bytes)
     require(predictions["schema"] == cloud["schema"] == 1, "unsupported input schema")
     require(hashlib.sha256(prediction_bytes).hexdigest() == cloud["predictions_sha256"],
             "Cloud Run evidence does not match the sealed predictions")
-    require(set(predictions["external"]) == set(cloud["cases"]) == EXTERNAL, "wrong prospective case set")
-    cases = {name: score_case(name, predictions["external"][name], cloud["cases"][name]) for name in sorted(EXTERNAL)}
+    require(set(predictions["external"]) == set(cloud["cases"]) == external, "wrong prospective case set")
+    cases = {name: score_case(name, predictions["external"][name], cloud["cases"][name], model_fields, candidate)
+             for name in sorted(external)}
     summary = {}
-    for model in MODELS:
+    for model in model_fields:
         accurate = sum(c["models"][model]["within_20_percent"] for c in cases.values())
         stable = all(c["duration_pass"] and c["native_spread_pass"] and c["models"][model]["counter_spread_pass"] for c in cases.values())
         summary[model] = {"accurate_programs": accurate, "programs": len(cases),
@@ -130,9 +131,16 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("predictions", type=Path)
     parser.add_argument("cloud", type=Path)
+    parser.add_argument("--crossed-memory", action="store_true",
+                        help="score the 15-case control and 21-case expanded six-counter fits")
     args = parser.parse_args()
     try:
-        scored = score(args.predictions.read_bytes(), json.loads(args.cloud.read_bytes()))
+        options = {}
+        if args.crossed_memory:
+            from crossed_memory_model import EXTERNAL as crossed_cases
+            options = dict(model_fields={"control": CANDIDATE, "expanded": CANDIDATE},
+                           external=crossed_cases, candidate="expanded")
+        scored = score(args.predictions.read_bytes(), json.loads(args.cloud.read_bytes()), **options)
     except (KeyError, TypeError, ValueError) as error:
         parser.error(str(error))
     print(json.dumps(scored, indent=2, allow_nan=False))

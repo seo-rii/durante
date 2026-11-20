@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "platform": {
+    "environment": "private authenticated Cloud Run Gen2",
+    "region": "asia-northeast3",
+    "cpu": 1,
+    "memory": "2Gi",
+    "concurrency": 1,
+    "min_instances": 1,
+    "max_instances": 1,
+    "image": "sha256:5a3704ef3f0ece934b24f3a06f59df661a43e819f8be02c47e14d9a61d61049b"
+  },
+  "calibration": [
+    "cross-rep0-small",
+    "cross-rep0-medium",
+    "cross-rep0-large",
+    "cross-rep256-small",
+    "cross-rep256-medium",
+    "cross-rep256-large"
+  ],
+  "external": [
+    "sparse-rmq",
+    "histogram-stack",
+    "distinct-window"
+  ],
+  "gates": [
+    "Freeze the nine source / ELF / stdin / oracle identities and signed experimental protocol before the first worker contact.",
+    "On the same temporary instance collect only the six calibration arms first; publish calibration.json and its SHA-256 once all 54 executions reconcile.",
+    "Do not submit any of the three new held-out programs, including instrumented or native, before verifying the independently sealed predictions SHA-256 and its calibration/corpus hashes. No refit on external native readings."
+  ],
+  "triplets": {
+    "repetitions": 3,
+    "order": "Within each stage sort IDs and rotate left by 0,1,2 per round. For each input run native-before, ordinary historical three-counter live, native-after in that sequence.",
+    "expected_calibration_http": 54,
+    "expected_external_bracket_http": 27,
+    "nominal_cpu_ms": 15000,
+    "nominal_wall_ms": 30000,
+    "memory_mb": 256,
+    "outer_live_cpu_ms": 90000,
+    "outer_live_wall_ms": 120000
+  },
+  "historical_model": {
+    "method": "weighted-rep-operations-nanoseconds-v2",
+    "instruction_ns_numerator": 233273561,
+    "movs_byte_ns_numerator": 38663059,
+    "stos_byte_ns_numerator": 71296759,
+    "ns_denominator": 1000000000,
+    "purpose": "v7 weights bound to ordinary v8 clock for this experiment"
+  },
+  "boundaries": {
+    "N": "exact median of six full uninstrumented CPU nanosecond readings per external case",
+    "P": "median of three sealed expanded-model integer nanosecond predictions per external case",
+    "ratio": {
+      "low": [
+        4,
+        5
+      ],
+      "high": [
+        6,
+        5
+      ]
+    },
+    "round": "use max(1,floor(center_ns*ratio/1000000+0.5)); exact rational until rounded, including half-nanosecond medians",
+    "order": "For each external input in sorted order, visit N-low,N-high,P-low,P-high. For each distinct (case,rounded limit) execute three native repeats; for each N limit additionally execute one ordinary historical live run after the natives. Reuse duplicate rounded limits, retaining all labels.",
+    "prediction": "Offline predicted TLE iff P > limit_ms*1000000, otherwise AC. Record each actual verdict and all mixed/non-success outcomes. No retesting valid discordance."
+  },
+  "validation": "Each request uses verified native CPU source, nominal and hard limits, expected stdout and full or live-cutoff progress. Record every submitted /execute attempt and all HTTP statuses in the two stages. Record all direct CPU readings and clock counter repeats (including variability), evidence of actual placement, and resource deletion."
+}
