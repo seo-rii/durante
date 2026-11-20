@@ -34,7 +34,7 @@ int main(void) {
 """
 
 
-def check_run(prefix, work, name, command, *, valid=True):
+def check_run(prefix, work, name, command, *, valid=True, stdin=None):
     directory = work / name
     directory.mkdir()
     records = directory / "records"
@@ -42,7 +42,7 @@ def check_run(prefix, work, name, command, *, valid=True):
     page = directory / "live"
     page.write_bytes(bytes(PAGE.size))
     proc = subprocess.Popen([*prefix, "-outdir", str(records), "-rep_bytes", "-live_work_v1",
-                             str(page), "--", *command], start_new_session=True, cwd=directory)
+                             str(page), "--", *command], start_new_session=True, cwd=directory, stdin=stdin)
     try:
         if proc.wait(timeout=10) != 0:
             raise RuntimeError(f"{name}: fixture exited {proc.returncode}")
@@ -84,6 +84,18 @@ def main():
                             ROOT / "experiments/l1d_probe/clock_control.S", "-o", boundaries], check=True)
             for mode, argv in (("cold", []), ("warm", ["warm"])):
                 check_run(prefix, work, f"clock-boundaries-{mode}", [boundaries, *argv])
+            input_clock = work / "clock-input"
+            subprocess.run(["cc", "-static", "-nostdlib", "-no-pie",
+                            ROOT / "tests/clock_input.S", "-o", input_clock], check=True)
+            input_file = work / "input"
+            for mode in ("r", "v", "e", "x"):
+                input_file.write_bytes(b"" if mode == "e" else b"A")
+                with input_file.open("rb") as stdin:
+                    measurement = check_run(prefix, work, f"input-{mode}", [input_clock, mode], stdin=stdin)
+                # Three setup instructions, 12,000 two-instruction iterations,
+                # and 33 instructions through the read, checks and exit.
+                if measurement["instructions"] != 24_036:
+                    raise ValueError(f"unexpected input clock for {mode}: {measurement['instructions']}")
             threaded = work / "clock-threads"
             subprocess.run(["cc", "-static", "-nostdlib", "-no-pie", ROOT / "tests/clock_threads.S",
                             "-o", threaded], check=True)
