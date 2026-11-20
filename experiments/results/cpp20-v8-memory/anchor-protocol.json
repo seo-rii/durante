@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "primary_protocol_sha256": "2bf99b3f4fd908a8cdf4bfbf4a3537d952d2ed9262142e8dac463e8cbcfada62",
+  "purpose": "Descriptive session transfer comparison independent of candidate evaluation. No refit or rescaling.",
+  "training_artifact_sha256": "80f5bce9bfde037e0836cb00b5d71d1c13f1fe0eddc8995f9be27bd3ed2e90b4",
+  "corpus_sha256": "7148495309ec653e642aac86e1ed64ea44ee0218bf25f5a7e7f491846b734cf1",
+  "scale": 2,
+  "families": [
+    "branch",
+    "integer",
+    "rep_copy",
+    "rep_fill",
+    "sort"
+  ],
+  "requests": 15,
+  "schedule": "After ALL prospective full and boundary requests on the same immutable revision, three rounds rotating the sorted family order left by 0, 1 and then 2 entries. Run exactly one full native execution per arm per round with generous upper bounds (15,000 ms CPU; 30,000 ms wall; 256 MiB). Require Accepted from stdout, direct positive CPU ns with verified accounting, exact historical ELF/stdin/oracle digests. Compare all 6 historical samples with all 3 repeat samples per case; retain medians, ranges and new/old ratio, without exclusions or calibration."
+}

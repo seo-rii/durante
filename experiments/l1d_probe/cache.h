@@ -126,6 +126,54 @@ static inline bool l1d_contiguous_stos(l1d_cache_t *cache, uintptr_t dst,
   return true;
 }
 
+/* For two disjoint streams moving in lockstep each line pair is visited once.
+ * After one cache's worth of consecutive source lines, every set contains
+ * only tags from this copy. All later lines miss in both streams. Replay the
+ * last such window to reconstruct the exact LRU order, including when source
+ * and destination compete for the same set. */
+static inline bool l1d_streaming_movs(l1d_cache_t *cache, uintptr_t src,
+                                      uintptr_t dst, uint64_t count, unsigned bytes,
+                                      unsigned width_shift, bool backwards, bool addr32) {
+  const unsigned capacity = L1D_SETS * L1D_WAYS;
+  if (count <= ((uint64_t)2 * capacity * L1D_LINE_BYTES >> width_shift) ||
+      (src ^ dst) % L1D_LINE_BYTES != 0 || (src & (bytes - 1)) != 0)
+    return false;
+  uintptr_t limit = addr32 ? UINT32_MAX : UINTPTR_MAX;
+  uintptr_t smaller = src < dst ? src : dst;
+  uintptr_t larger = src < dst ? dst : src;
+  if (larger > limit - (bytes - 1))
+    return false;
+  uintptr_t available = backwards ? smaller : limit - (bytes - 1) - larger;
+  if (count - 1 > (available >> width_shift))
+    return false;
+
+  uintptr_t distance = (uintptr_t)(count - 1) << width_shift;
+  uintptr_t source_line = src / L1D_LINE_BYTES;
+  uintptr_t dest_line = dst / L1D_LINE_BYTES;
+  uintptr_t last = (backwards ? src - distance : src + distance) / L1D_LINE_BYTES;
+  uintptr_t pairs = (backwards ? source_line - last : last - source_line) + 1;
+  if ((larger - smaller) / L1D_LINE_BYTES < pairs)
+    return false;
+
+  uintptr_t step = backwards ? -(uintptr_t)1 : 1;
+  const uintptr_t offsets[] = {0, pairs - capacity};
+  for (unsigned window = 0; window < 2; ++window) {
+    uintptr_t read_line = source_line + offsets[window] * step;
+    uintptr_t write_line = dest_line + offsets[window] * step;
+    for (unsigned i = 0; i < capacity; ++i) {
+      l1d_touch_line(cache, read_line);
+      l1d_touch_line(cache, write_line);
+      read_line += step;
+      write_line += step;
+    }
+  }
+  cache->misses += 2 * (pairs - 2 * capacity);
+  /* Naturally aligned elements cannot cross a line. */
+  cache->refs += 2 * count;
+  cache->lines += 2 * count;
+  return true;
+}
+
 /* MOVS touches source then destination for each element. While neither line
  * changes, repeating that pair cannot add misses or change its final order,
  * even if both lines map to the same set. STOS needs only its destination. */
@@ -136,8 +184,13 @@ static inline void l1d_repeat(l1d_cache_t *cache, bool movs, uintptr_t src,
   unsigned width_shift = 0;
   while ((1u << width_shift) < bytes)
     ++width_shift;
-  if (addr32)
+  if (addr32) {
+    src = (uint32_t)src;
+    dst = (uint32_t)dst;
     count = (uint32_t)count;
+  }
+  if (movs && l1d_streaming_movs(cache, src, dst, count, bytes, width_shift, backwards, addr32))
+    return;
   if (!movs && count > ((unsigned)L1D_LINE_BYTES >> width_shift) &&
       l1d_contiguous_stos(cache, dst, count, bytes, width_shift, backwards, addr32))
     return;

@@ -1,0 +1,286 @@
+{
+  "schema": 1,
+  "protocol_sha256": "a7b2085381a0d25146c87ef047f766b4b0816e9945f07803fc5faaa91208181e",
+  "image": "sha256:5a3704ef3f0ece934b24f3a06f59df661a43e819f8be02c47e14d9a61d61049b",
+  "revision": "aonohako-memory-v8-01c21f9a88-00001-nhv",
+  "historical_training_sha256": "80f5bce9bfde037e0836cb00b5d71d1c13f1fe0eddc8995f9be27bd3ed2e90b4",
+  "cases": {
+    "branch": {
+      "elf_sha256": "d383e4da2a1953bc72d54fccac0fe98fe575fef2474e469edcf2567d18ece37c",
+      "input_sha256": "ae7a13222abd483670b1f3b55d2f9f42790bfcbfdad8356a1c717f37feb59661",
+      "output_sha256": "875dae9442036ac9f7d91f17b8007467cda85c61daa09872b262292cb15c6a71",
+      "old_native_ns": [
+        88913000,
+        88489000,
+        94319000,
+        99647000,
+        89004000,
+        91017000
+      ],
+      "new_samples": [
+        {
+          "status": "Accepted",
+          "cpu_ns": 66389000,
+          "cpu_source": "wait_rusage",
+          "wall_ms": 67,
+          "verdict_source": "stdout",
+          "exit_code": 0
+        },
+        {
+          "status": "Accepted",
+          "cpu_ns": 74918000,
+          "cpu_source": "wait_rusage",
+          "wall_ms": 82,
+          "verdict_source": "stdout",
+          "exit_code": 0
+        },
+        {
+          "status": "Accepted",
+          "cpu_ns": 70571000,
+          "cpu_source": "wait_rusage",
+          "wall_ms": 71,
+          "verdict_source": "stdout",
+          "exit_code": 0
+        }
+      ],
+      "new_native_ns": [
+        66389000,
+        74918000,
+        70571000
+      ],
+      "old_range_ns": [
+        88489000,
+        99647000
+      ],
+      "new_range_ns": [
+        66389000,
+        74918000
+      ],
+      "old_median_ns": 90010500.0,
+      "new_median_ns": 70571000,
+      "new_old_median_ratio": 0.784030751967826
+    },
+    "integer": {
+      "elf_sha256": "13b1e1ba33375676c1c6071b2d0bb41c0148e2ee7d90f1c4085d3eb95124f29d",
+      "input_sha256": "9902ec78038acf436285ea163ff7b72ec7d4674a2510e8c881a63abe151a4f49",
+      "output_sha256": "e38d7255181f8787ee1acc901a9ed5f9364fa2bfa006853fbfd327f1d1b6198d",
+      "old_native_ns": [
+        101694000,
+        106324000,
+        109632000,
+        106112000,
+        107681000,
+        102078000
+      ],
+      "new_samples": [
+        {
+          "status": "Accepted",
+          "cpu_ns": 107097000,
+          "cpu_source": "wait_rusage",
+          "wall_ms": 128,
+          "verdict_source": "stdout",
+          "exit_code": 0
+        },
+        {
+          "status": "Accepted",
+          "cpu_ns": 103294000,
+          "cpu_source": "wait_rusage",
+          "wall_ms": 103,
+          "verdict_source": "stdout",
+          "exit_code": 0
+        },
+        {
+          "status": "Accepted",
+          "cpu_ns": 113095000,
+          "cpu_source": "wait_rusage",
+          "wall_ms": 133,
+          "verdict_source": "stdout",
+          "exit_code": 0
+        }
+      ],
+      "new_native_ns": [
+        107097000,
+        103294000,
+        113095000
+      ],
+      "old_range_ns": [
+        101694000,
+        109632000
+      ],
+      "new_range_ns": [
+        103294000,
+        113095000
+      ],
+      "old_median_ns": 106218000.0,
+      "new_median_ns": 107097000,
+      "new_old_median_ratio": 1.0082754335423374
+    },
+    "rep_copy": {
+      "elf_sha256": "255445d9e1311d5872c4da62e12df42c199012cfbc9b8c5dc6e8a8646cab2100",
+      "input_sha256": "034ae8e96eee99a30067d2f7c7b8055992ffb028e1a8309df36a17183c72b95e",
+      "output_sha256": "14b4ccf54a685e2b88965fc5f93815b5eb94b8946f65452c7f059ae8239959ac",
+      "old_native_ns": [
+        396651000,
+        397134000,
+        405368000,
+        421601000,
+        415614000,
+        410928000
+      ],
+      "new_samples": [
+        {
+          "status": "Accepted",
+          "cpu_ns": 369779000,
+          "cpu_source": "wait_rusage",
+          "wall_ms": 451,
+          "verdict_source": "stdout",
+          "exit_code": 0
+        },
+        {
+          "status": "Accepted",
+          "cpu_ns": 387801000,
+          "cpu_source": "wait_rusage",
+          "wall_ms": 474,
+          "verdict_source": "stdout",
+          "exit_code": 0
+        },
+        {
+          "status": "Accepted",
+          "cpu_ns": 384422000,
+          "cpu_source": "wait_rusage",
+          "wall_ms": 485,
+          "verdict_source": "stdout",
+          "exit_code": 0
+        }
+      ],
+      "new_native_ns": [
+        369779000,
+        387801000,
+        384422000
+      ],
+      "old_range_ns": [
+        396651000,
+        421601000
+      ],
+      "new_range_ns": [
+        369779000,
+        387801000
+      ],
+      "old_median_ns": 408148000.0,
+      "new_median_ns": 384422000,
+      "new_old_median_ratio": 0.9418691259053089
+    },
+    "rep_fill": {
+      "elf_sha256": "316549bd773f5dba0b5978f423ba8fc93f9fb881339478e030f22b1b2f9d1bc7",
+      "input_sha256": "034ae8e96eee99a30067d2f7c7b8055992ffb028e1a8309df36a17183c72b95e",
+      "output_sha256": "2eeb559b1920bcd118e23727ff5bf06499ed939972f79f592afcf0d7dd1945b0",
+      "old_native_ns": [
+        200834000,
+        199665000,
+        203085000,
+        217841000,
+        200896000,
+        210173000
+      ],
+      "new_samples": [
+        {
+          "status": "Accepted",
+          "cpu_ns": 200043000,
+          "cpu_source": "wait_rusage",
+          "wall_ms": 239,
+          "verdict_source": "stdout",
+          "exit_code": 0
+        },
+        {
+          "status": "Accepted",
+          "cpu_ns": 197325000,
+          "cpu_source": "wait_rusage",
+          "wall_ms": 235,
+          "verdict_source": "stdout",
+          "exit_code": 0
+        },
+        {
+          "status": "Accepted",
+          "cpu_ns": 204527000,
+          "cpu_source": "wait_rusage",
+          "wall_ms": 247,
+          "verdict_source": "stdout",
+          "exit_code": 0
+        }
+      ],
+      "new_native_ns": [
+        200043000,
+        197325000,
+        204527000
+      ],
+      "old_range_ns": [
+        199665000,
+        217841000
+      ],
+      "new_range_ns": [
+        197325000,
+        204527000
+      ],
+      "old_median_ns": 201990500.0,
+      "new_median_ns": 200043000,
+      "new_old_median_ratio": 0.990358457452207
+    },
+    "sort": {
+      "elf_sha256": "d96565357cdd163ea7de5eb145aaf915b0b0ba9e238a46718e9e1352e51c4b75",
+      "input_sha256": "be3b3a973edc5f34763d5808c7d0866e068ff309898e83e80bb37674405ce7a7",
+      "output_sha256": "ac3bae82b8b8660ab74bd85aa2d0685aaea14b95148def632987ef659f44842e",
+      "old_native_ns": [
+        96031000,
+        104211000,
+        94962000,
+        93499000,
+        103483000,
+        96336000
+      ],
+      "new_samples": [
+        {
+          "status": "Accepted",
+          "cpu_ns": 91118000,
+          "cpu_source": "wait_rusage",
+          "wall_ms": 98,
+          "verdict_source": "stdout",
+          "exit_code": 0
+        },
+        {
+          "status": "Accepted",
+          "cpu_ns": 103746000,
+          "cpu_source": "wait_rusage",
+          "wall_ms": 121,
+          "verdict_source": "stdout",
+          "exit_code": 0
+        },
+        {
+          "status": "Accepted",
+          "cpu_ns": 93098000,
+          "cpu_source": "wait_rusage",
+          "wall_ms": 114,
+          "verdict_source": "stdout",
+          "exit_code": 0
+        }
+      ],
+      "new_native_ns": [
+        91118000,
+        103746000,
+        93098000
+      ],
+      "old_range_ns": [
+        93499000,
+        104211000
+      ],
+      "new_range_ns": [
+        91118000,
+        103746000
+      ],
+      "old_median_ns": 96183500.0,
+      "new_median_ns": 93098000,
+      "new_old_median_ratio": 0.9679206932581992
+    }
+  },
+  "http_responses": 15,
+  "completed_utc": "2026-11-20T00:18:23.540807+00:00"
+}

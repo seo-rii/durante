@@ -50,3 +50,9 @@ python3 -B experiments/l1d_probe/compare.py \
 ```
 
 Use an unused output directory. Its `summary.json` includes executable and input hashes, per-run counters, CPU and elapsed times, and the median and range. The machine needs Python 3.11 or newer, GNU timeout, taskset and permission to use `setarch x86_64 -R`.
+
+## Long disjoint copies
+
+A long REP MOVS between disjoint cache-line ranges now handles its middle in constant time. This applies when source and destination start at the same offset within a line, the elements are naturally aligned and neither range wraps around the effective address space. The direction flag may select either traversal direction. The first 512 line pairs evict every preexisting cache tag. Each later pair therefore misses twice. Processing the last 512 pairs reconstructs the final LRU order in every set, including when the streams compete for the same set. Other copies use the existing per-line or per-element path.
+
+On the three static CPP20 copy inputs the median child CPU for the complete diagnostic fell by 46.7%, 49.0% and 60.8%. At the largest size it fell from 1.703 s to 0.668 s, compared with 0.467 s with simulation disabled. On the three held-out algorithms the optimized cache-enabled meter still took 2.09–3.68 times the CPU of the same meter with cache simulation disabled. These are local pinned-CPU costs. The experiment included five rounds per arm for seven inputs, verified actual stdout, matched the full cache fields between both simulators, and reconciled live and terminal work across all three arms. [Per-run measurements and exact counter comparisons](../results/cpp20-v8-memory/rep-movs-cost.json)

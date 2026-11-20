@@ -80,3 +80,35 @@ python3 experiments/branch_load_interaction.py score \
 ```
 
 The prediction file was frozen before the first held-out Cloud Run request. Its SHA-256 was `ab88d6578d6b355a1e8caa0400350c3172622e143002e155455fe6c5bc7e66ff`. The scoring command verifies the executable, input and oracle hashes for each case. To rebuild the three held-out executables, compile each `main.cpp` using the compiler and flags in the manifest. The adjacent `in` and `oracle` files contain the exact stdin and expected stdout. The independent oracle script regenerates the outputs from the inputs. [Frozen corpus](../experiments/branch_load_holdout/manifest.json)
+
+## Prospective L1 data-cache model
+
+We froze two nonnegative weighted sums using the six historical Cloud Run CPU readings for each of the fifteen calibration cases. Both use instructions, REP MOVS/STOS bytes, raw loop recurrence and 14-bit gshare mispredictions. The candidate also uses misses in the cold 32 KiB, eight-way, 64-byte-line virtual data-cache simulation. The two local diagnostic passes shared executable, stdin, expected stdout, fixed address layout and the v8 runtime. All 54 pairs agreed exactly on instructions and typed REP bytes. All ten recorded counters repeated exactly within each input. Unsupported operands were recorded separately. [Fitting protocol](../experiments/results/cpp20-v8-memory/model-protocol.json) · [Counter vectors and tool identities](../experiments/results/cpp20-v8-memory/features.json)
+
+The [three new programs](../experiments/memory_cost_holdout/manifest.json) and their independent oracles were fixed before measurement. Coefficients and predictions were sealed before the new Cloud Run service started. The SHA-256 of the prediction file is `e26b1001a473e22d72ac9dbad5fac463a9063e0e6a62eb488190ffcdd190efcd`. The following predictions were scored offline. The historical v7 weights bound to the v8 image supplied the separate live-clock verdicts. [Frozen predictions](../experiments/results/cpp20-v8-memory/predictions.json)
+
+| New program | Actual native CPU median (range) | Five counters | With L1D misses | Six-counter error |
+| --- | ---: | ---: | ---: | ---: |
+| Fenwick prefix sums | 40.125 ms (38.859–50.199) | 38.576 ms | 72.788 ms | +81.4% |
+| KMP string matching | 71.131 ms (68.711–73.994) | 60.959 ms | 63.623 ms | −10.6% |
+| Union-find connectivity | 49.777 ms (49.450–53.626) | 34.925 ms | 57.761 ms | +16.0% |
+
+Both fits passed ±20% on two of the three programs. Fenwick missed the native 10% spread gate. Even the slowest of its six readings was below the candidate prediction by more than 20%. At 48 and 58 ms the candidate predicted TLE and all six native runs accepted. For union-find the candidate correctly predicted TLE at both 40 and 46 ms, where the five-counter fit predicted AC. At the six limits centered on native medians, the two offline models each matched five unanimous native verdicts. The ordinary live clock matched four. The KMP 57 ms run actually stopped on Durante's work budget, with 90 s CPU and 120 s wall watchdogs. The research model met neither the all-program accuracy gate nor the prerequisites for a live grading policy. [CPU triplets, actual verdicts and live receipts](../experiments/results/cpp20-v8-memory/cloud.json)
+
+Adding cache misses barely changed what the model could achieve on the calibration medians. The best possible worst relative error was 5.1941% with five counters and 5.1922% with six. The candidate's relative least-squares fit assigned 2.997 ns per simulated miss and zero to transferred MOVS bytes. The training copy and fill loops stream across cache lines, so misses there closely track bytes transferred. The cache coefficient added 34.5 ms to the Fenwick prediction from its 11,516,798 misses alone. The coefficient is specific to this calibration mix. [Calibration-only bounds and rational certificates](../experiments/results/cpp20-v8-memory/capacity.json)
+
+A subsequent check used only the original training times and the new programs' counts. Two different nonnegative weight vectors both reproduce every training median within 6%. The first predicts 37.14 ms for the same Fenwick input and the second predicts 75.53 ms. They give opposite verdicts at both 48 and 58 ms. These witnesses show why additional calibration workloads need to vary non-REP misses independently of streamed bytes before fitting another cache penalty. [Two feasible weight vectors](../experiments/results/cpp20-v8-memory/fenwick-ambiguity.json)
+
+After the blind trial, three additional native executions per middle-scale calibration family checked how the reference transferred to this instance. Median changes ranged from −21.6% for branching to +0.8% for integer arithmetic. These controls were excluded from fitting. Cloud Logging placed all 69 prospective requests and all 15 control requests on one Seoul instance. [Repeated calibration cases](../experiments/results/cpp20-v8-memory/anchors.json) · [Request placement](../experiments/results/cpp20-v8-memory/placement.json)
+
+From the repository root, the following commands reproduce the published predictions, score the cases, and check calibration capacity. Fitting or recomputing the optimum requires NumPy and SciPy. Scoring uses the Python standard library.
+
+```sh
+data=experiments/results/cpp20-v8-memory
+python3 experiments/memory_cost_model.py "$data/features.json" --output /tmp/memory-predictions.json
+cmp /tmp/memory-predictions.json "$data/predictions.json"
+python3 experiments/score_memory_cost.py "$data/predictions.json" "$data/cloud.json"
+python3 experiments/memory_cost_capacity.py "$data/features.json" --output /tmp/memory-capacity.json
+```
+
+The cache-pass runner `experiments/collect_memory_cache.py --help` lists the inputs for replaying one case. Combine its cache report with the full time-features client (`-bpred`) and a v8 worker meter (`-latency_bound -rep_bytes -cpuid_profile x86-64-v2`) using the same executable path, environment, working directory and disabled ASLR. The full probe source used for this series is the version in commit `a08933762c4a85deb3866ceb7f294835314ce493`. The simulated-cache pass in the prediction file uses the pre-optimization client. [Subsequent REP MOVS optimization and its paired measurements](../experiments/l1d_probe/README.md#long-disjoint-copies)

@@ -1,0 +1,56 @@
+{
+  "schema": 1,
+  "platform": {
+    "region": "asia-northeast3",
+    "type": "private authenticated Cloud Run Gen2",
+    "cpu": 1,
+    "memory": "2Gi",
+    "concurrency": 1,
+    "max_instances": 1,
+    "image_sha256": "5a3704ef3f0ece934b24f3a06f59df661a43e819f8be02c47e14d9a61d61049b"
+  },
+  "cases": [
+    "fenwick-prefix",
+    "kmp-match",
+    "union-find"
+  ],
+  "gates": [
+    "The source ELF, stdin and expected stdout manifest is hashed and confirmed by its independent owner before deployment.",
+    "All three repeated diagnostic predictions for all cases must be frozen and confirmed by the modeling owner before deploying or contacting the service. No curve fitting with these measurements."
+  ],
+  "historical_model": {
+    "method": "weighted-rep-operations-nanoseconds-v2",
+    "source": "test-only transferred weights from the earlier historical diagnostic",
+    "instruction_ns_numerator": 233273561,
+    "movs_byte_ns_numerator": 38663059,
+    "stos_byte_ns_numerator": 71296759,
+    "ns_denominator": 1000000000
+  },
+  "full_runs": {
+    "repeats": 3,
+    "order": "Sort case IDs and rotate left by 0, 1, then 2 per round. Within every case run native before, ordinary three-counter live v8, native after.",
+    "nominal_cpu_ms": 15000,
+    "nominal_wall_ms": 30000,
+    "memory_mb": 256,
+    "hard_instrumented_cpu_ms": 90000,
+    "hard_instrumented_wall_ms": 120000
+  },
+  "boundaries": {
+    "N": "exact median of six full native run CPU ns",
+    "P": "median of three frozen full-run research-model predictions in ns, when per-row predictions are stored as integral ns",
+    "scales": [
+      [
+        4,
+        5
+      ],
+      [
+        6,
+        5
+      ]
+    ],
+    "round": "nearest whole positive millisecond after multiplication, ties rounded upward, minimum 1 ms",
+    "schedule": "In sorted case order, process the two N bounds first and then the two P bounds; low then high. For each distinct (case,limit), collect 3 independent native statuses. Collect one real ordinary historical-v8 status for any N bound. Reuse results for shared rounded limits, retaining each label. No retries on valid discordant results.",
+    "candidate_prediction": "TLE if frozen P > limit_ms * 1000000, Accepted otherwise. All individual native responses including mixtures retained. New model is scored offline only."
+  },
+  "validation": "Require request/expected-stdout digests at both gates and prior to submission; same v8 installation/policy/source with raw CPU+wall > nominal. Retain ns timings, source, status, work counters and observed termination; check every complete high-cap run matched stdout. Report all spreads rather than silently discarding unstable sets. Verify per-request HTTP placement and clean up revision/service/registry package."
+}
