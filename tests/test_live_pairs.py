@@ -48,3 +48,40 @@ class PairedRoundsTests(unittest.TestCase):
             invalid["samples"][1][key] = value
             with self.subTest(key=key), self.assertRaises(ValueError):
                 summarize(invalid)
+
+
+class PublishedPairsTests(unittest.TestCase):
+    def test_receipts_and_held_out_identities(self):
+        from hashlib import sha256
+        import json
+        from summarize_live_pairs import effect
+
+        results = EXP / "results/cpp20-static-tls"
+        source = EXP / "static_input_transfer"
+        manifest = json.loads((source / "manifest.json").read_bytes())
+        self.assertEqual(sha256((source / "main.cpp").read_bytes()).hexdigest(), manifest["source_sha256"])
+        self.assertEqual(sha256((source / "manifest.json").read_bytes()).hexdigest(),
+                         "85dd9d336934b7711cc5fb48e15942391cbdd11aa64e27f9608bd801b195e031")
+        self.assertEqual(sha256((results / "protocol.txt").read_bytes()).hexdigest(),
+                         "b050567432c534dd5974d467536d3db53a86a1494874361221dd586c1cf039c5")
+        base = json.loads((results / "identical.json").read_bytes())
+        main = json.loads((results / "local.json").read_bytes())
+        self.assertEqual(base["clients"]["baseline"], base["clients"]["candidate"])
+        self.assertEqual(base["clients"]["baseline"], main["clients"]["baseline"])
+        self.assertNotEqual(main["clients"]["baseline"], main["clients"]["candidate"])
+        for name, identity in manifest["cases"].items():
+            case = main["cases"][name]
+            self.assertEqual(case["elf_sha256"], manifest["elf_sha256"])
+            for field, file in (("stdin_sha256", "in"), ("stdout_sha256", "oracle")):
+                self.assertEqual(case[field], identity[field])
+                self.assertEqual(case[field], sha256((source / name / file).read_bytes()).hexdigest())
+        for report, case_count in ((base, 3), (main, 14)):
+            self.assertEqual(report["time_columns"], ["baseline", "candidate"])
+            self.assertEqual(len(report["cases"]), case_count)
+            for case in report["cases"].values():
+                self.assertEqual(len(case["rounds"]), 16)
+                for clock in ("cpu", "wall"):
+                    computed = effect(case["rounds"], clock + "_ns")
+                    self.assertEqual(computed["faster_blocks"], case[clock]["faster_blocks"])
+                    self.assertEqual(computed["blocks"], case[clock]["blocks"])
+                    self.assertAlmostEqual(computed["median_change_percent"], case[clock]["median_change_percent"])
