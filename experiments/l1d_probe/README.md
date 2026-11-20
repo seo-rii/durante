@@ -53,6 +53,88 @@ Use an unused output directory. Its `summary.json` includes executable and input
 
 ## Long disjoint copies
 
-A long REP MOVS between disjoint cache-line ranges now handles its middle in constant time. This applies when source and destination start at the same offset within a line, the elements are naturally aligned and neither range wraps around the effective address space. The direction flag may select either traversal direction. The first 512 line pairs evict every preexisting cache tag. Each later pair therefore misses twice. Processing the last 512 pairs reconstructs the final LRU order in every set, including when the streams compete for the same set. Other copies use the existing per-line or per-element path.
+For long REP MOVS, the probe checks whether the source and destination cover disjoint cache lines, start at the same offset within a line, are naturally aligned and stay within the effective address space. It handles forward and backward traversal. It simulates the first 256 line pairs in order. Four passes by each stream through the 64 sets replace all eight ways, so each subsequent pair adds two misses. The probe reconstructs the eight most recent tags directly for each set from the final read and write lines. A write wins when a read and write touch the same set in the same iteration. Short transfers and other layouts use the existing per-line or per-element simulation.
 
-On the three static CPP20 copy inputs the median child CPU for the complete diagnostic fell by 46.7%, 49.0% and 60.8%. At the largest size it fell from 1.703 s to 0.668 s, compared with 0.467 s with simulation disabled. On the three held-out algorithms the optimized cache-enabled meter still took 2.09–3.68 times the CPU of the same meter with cache simulation disabled. These are local pinned-CPU costs. The experiment included five rounds per arm for seven inputs, verified actual stdout, matched the full cache fields between both simulators, and reconciled live and terminal work across all three arms. [Per-run measurements and exact counter comparisons](../results/cpp20-v8-memory/rep-movs-cost.json)
+### Local CPU measurements
+
+On a pinned AMD EPYC 7B12 core, each assembly fixture copied 2 GiB in disjoint chunks of one size. The table gives median child CPU time across seven rounds.
+
+| Chunk size | Previous probe, ms | Updated probe, ms | Cache disabled, ms |
+| --- | ---: | ---: | ---: |
+| 32 KiB | 316.695 | 192.099 | 79.213 |
+| 64 KiB | 307.064 | 130.769 | 74.433 |
+| 256 KiB | 112.001 | 81.473 | 68.647 |
+
+The six CPP20 fixtures had smaller changes. Across five rounds, median CPU fell by 1.2%, 6.8% and 2.5% on the three standard copy inputs and rose by 1.4% on the fill input. For the crossed controls it fell from 624.0 to 606.7 ms with a small working set and hot copies, and rose from 2,283.6 to 2,353.0 ms with the large working set and no explicit copies. The five readings for this last case ranged from 2,162 to 2,570 ms with the previous probe and from 2,227 to 2,448 ms with the updated probe.
+
+Each of the 153 runs produced its expected stdout, matched its case's terminal work counters and published the same final live clock. Both enabled clients agreed on every reported cache field. The record retains individual CPU readings, arm order, binary identities and counts. [Paired results](../results/cpp20-crossed-memory/rep-movs-cost.json)
+
+An earlier local experiment measured the optimization that first skipped guaranteed misses in the middle, with a 512-pair prefix and 512-pair tail. For its three CPP20 copy inputs the median CPU fell by 46.7%, 49.0% and 60.8% against the preceding implementation. Its optimized client is the baseline for the comparison above. [Earlier measurements](../results/cpp20-v8-memory/rep-movs-cost.json)
+
+### Reproduce the comparison
+
+Starting at the repository root, build the current probe as above. Use the previous implementation at commit `082b1ad` for the baseline, a patched 11.3 launcher, and an available logical CPU. The recorded run used CPU 5. These commands use Bash.
+
+```bash
+bench=$(mktemp -d)
+cpu=5
+git worktree add --detach "$bench/baseline" 082b1ad
+cmake -S "$bench/baseline/experiments/l1d_probe" -B "$bench/build" \
+  -DCMAKE_BUILD_TYPE=Release -DDynamoRIO_DIR="$sdk/cmake"
+cmake --build "$bench/build" --target durante_l1d -j2
+compare=(python3 -B experiments/l1d_probe/compare.py --drrun "$sdk/bin64/drrun"
+         --baseline "$bench/build/libdurante_l1d.so" --candidate "$PWD/build/l1d/libdurante_l1d.so"
+         --include-off --cpu "$cpu")
+```
+
+GNU ld retains the object basename as an ELF symbol. The names below reproduce the measured assembly binaries with GCC 12.2.0 and GNU binutils 2.40.
+
+```bash
+: > "$bench/in"
+printf 'ZZZZZZZZ' > "$bench/out"
+micro=()
+while read -r bytes object; do
+  cc -c -DCOPY_BYTES="$bytes" experiments/l1d_probe/stream_copy.S -o "$bench/$object"
+  cc -nostdlib -static -no-pie -Wl,--build-id=none "$bench/$object" -o "$bench/movs-$bytes"
+  micro+=(--case "movs-$bytes" "$bench/movs-$bytes" "$bench/in" "$bench/out")
+done <<'FIXTURES'
+32768 ccSZZ5MN.o
+65536 ccfm0Ly3.o
+262144 ccVUoj1b.o
+FIXTURES
+"${compare[@]}" --rounds 7 --output "$bench/micro" "${micro[@]}"
+```
+
+For the six CPP20 inputs, set `AONOHAKO` to a local Aonohako repository containing the commit in `experiments/load_corpus.json`. The existing preparation helper checks the historical sources and compiled ELF hashes using the compiler image in that manifest. Build the crossed control with the compiler and flags in its frozen manifest. [Crossed corpus](../crossed_memory_corpus/manifest.json)
+
+```bash
+PYTHONPATH=experiments python3 -B - "$AONOHAKO" "$bench/cpp" <<'PYTHON'
+import json
+from pathlib import Path
+import sys
+from types import SimpleNamespace
+from collect_load_model import CORPUS, prepare
+
+aonohako, output = map(Path, sys.argv[1:])
+corpus = json.loads(CORPUS.read_bytes())
+corpus["families"] = {name: corpus["families"][name] for name in ("rep_copy", "rep_fill")}
+prepare(SimpleNamespace(output=output, aonohako=aonohako), corpus)
+for name, family in corpus["families"].items():
+    for case in family["cases"]:
+        stem = f"{name}-{case['scale']}"
+        (output / (stem + ".in")).write_bytes(case["stdin"].encode())
+        (output / (stem + ".out")).write_bytes(case["stdout"].encode())
+PYTHON
+cross=experiments/crossed_memory_corpus
+g++ -std=c++20 -O2 -static -no-pie -march=x86-64 -mtune=generic \
+    -Wl,--build-id=none -s "$cross/crossed/main.cpp" -o "$bench/crossed"
+cpp=()
+for id in rep_copy-1 rep_copy-2 rep_copy-4 rep_fill-2; do
+  cpp+=(--case "$id" "$bench/cpp/${id%-*}/Main" "$bench/cpp/$id.in" "$bench/cpp/$id.out")
+done
+for id in cross-rep256-small cross-rep0-large; do
+  cpp+=(--case "$id" "$bench/crossed" "$cross/$id/in" "$cross/$id/oracle")
+done
+"${compare[@]}" --rounds 5 --output "$bench/paired" "${cpp[@]}"
+git worktree remove "$bench/baseline"
+```
