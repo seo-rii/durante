@@ -38,6 +38,8 @@ On Cloud Run, the histogram submission used a median 2,761.9 ms of CPU under the
 
 A local follow-up ran five matched rounds per program using native execution, the bare DynamoRIO engine, the archived ordinary client and the same client with live reporting. On the histogram input those arms used median CPU times of 39.1, 55.7, 1,685.1 and 1,818.9 ms. None of these arms enabled cache simulation. This localizes most of the slowdown to ordinary instrumentation on this input. A separate benchmark measures the cost of the optional cache simulator. [Ordinary controls and run order](../experiments/results/cpp20-crossed-memory/ordinary-cost.json) · [Disjoint-copy cache probe benchmark](../experiments/l1d_probe/README.md#long-disjoint-copies)
 
+The follow-up changes the live meter’s instrumentation choice after a static program reads stdin and measures both the histogram improvement and startup costs. [Static-input live meter measurements](STATIC_INPUT_METER.md)
+
 ## Reproduce the comparison
 
 Run from the repository root. Numerical fitting and bound optimization require NumPy and SciPy. Scoring the frozen predictions uses the Python standard library. Use a fresh temporary directory for the generated files.

@@ -85,8 +85,11 @@ def main():
                         metavar=("NAME", "PROGRAM", "STDIN", "EXPECTED_STDOUT"))
     parser.add_argument("--cpu", type=int, required=True)
     parser.add_argument("--rounds", type=int, default=3)
-    parser.add_argument("--include-off", action="store_true",
+    modes = parser.add_mutually_exclusive_group()
+    modes.add_argument("--include-off", action="store_true",
                         help="also time the candidate with its cache probe disabled")
+    modes.add_argument("--ordinary-live", action="store_true",
+                       help="compare two ordinary live clients with cache instrumentation disabled")
     parser.add_argument("--timeout", type=int, default=150, help="seconds per execution")
     args = parser.parse_args()
     if args.rounds < 1 or args.timeout < 1 or args.cpu not in os.sched_getaffinity(0):
@@ -106,6 +109,8 @@ def main():
         images[mode] = root / (mode + ".so")
         shutil.copyfile(source, images[mode])
         report["clients"][mode] = digest(images[mode])
+    if args.ordinary_live:
+        report["mode"] = "ordinary-live"
     if args.include_off:
         images["off"] = images["candidate"]
         report["clients"]["off"] = report["clients"]["candidate"]
@@ -129,13 +134,14 @@ def main():
             offset = (i + j) % len(modes)
             order = modes[offset:] + modes[:offset]
             for mode in order:
-                sample = measure(drrun, case, slot, images[mode], args.cpu, args.timeout, mode != "off")
+                probe = not args.ordinary_live and mode != "off"
+                sample = measure(drrun, case, slot, images[mode], args.cpu, args.timeout, probe)
                 archive = root / f"sample-{i + 1}-{j + 1}-{mode}"
                 (slot / "run").rename(archive)
                 (archive / "sample.json").write_text(json.dumps(sample, indent=2) + "\n")
                 if work_reference.setdefault(case[0], sample["work"]) != sample["work"]:
                     raise ValueError(f"{case[0]} work counters differ, see {archive}")
-                if mode != "off" and cache_reference.setdefault(case[0], sample["cache"]) != sample["cache"]:
+                if probe and cache_reference.setdefault(case[0], sample["cache"]) != sample["cache"]:
                     raise ValueError(f"{case[0]} cache counters differ, see {archive}")
                 rows.append({"name": case[0], "mode": mode, "round": i + 1, **sample})
                 print(f"{case[0]} {mode} #{i + 1}: {sample['cpu_s']:.3f} CPU seconds", flush=True)
