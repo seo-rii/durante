@@ -5,18 +5,26 @@
 .balign 16
 worker_stack: .skip 65536
 worker_stack_end:
-worker_tid: .long 0
+worker_state: .long 0
 
 .text
 .globl _start
 _start:
+#ifdef CLOCK_FORK
+    /* Populate the accounting state and execute the shared blocks before
+     * fork. The child then charges those blocks to its own segment. */
+    mov $1009, %ecx
+    call .Lwork
+    mov $57, %eax
+#else
     /* PARENT_SETTID | CHILD_CLEARTID | THREAD | SIGHAND | VM */
     mov $0x310900, %edi
     lea worker_stack_end(%rip), %rsi
-    lea worker_tid(%rip), %rdx
+    lea worker_state(%rip), %rdx
     mov %rdx, %r10
     xor %r8d, %r8d
     mov $56, %eax
+#endif
     syscall
 
     test %eax, %eax
@@ -25,15 +33,27 @@ _start:
     mov %eax, %r12d
     mov $100003, %ecx
     call .Lwork
+#ifdef CLOCK_FORK
+    /* wait4(pid, &status, 0, NULL); also require a clean child exit. */
+    mov $61, %eax
+    mov %r12d, %edi
+    lea worker_state(%rip), %rsi
+    xor %edx, %edx
+    xor %r10d, %r10d
+    syscall
+    cmp %r12d, %eax
+    jne .Lfail
+#else
     /* FUTEX_WAIT on the original tid. Kernel teardown clears it and wakes
      * waiters. If it was already zero the syscall returns EAGAIN. */
     mov $202, %eax
-    lea worker_tid(%rip), %rdi
+    lea worker_state(%rip), %rdi
     xor %esi, %esi
     mov %r12d, %edx
     xor %r10d, %r10d
     syscall
-    cmpl $0, worker_tid(%rip)
+#endif
+    cmpl $0, worker_state(%rip)
     jne .Lfail
     xor %edi, %edi
     mov $60, %eax
@@ -47,6 +67,25 @@ _start:
     syscall
 
 .Lwork:
+#ifdef CLOCK_READ_STDIN
+    /* Activate post-input inline accounting in each caller before the
+     * checked loads and stores. Use each thread's own stack as the buffer. */
+    mov %ecx, %r9d
+    sub $8, %rsp
+    xor %eax, %eax
+    xor %edi, %edi
+    mov %rsp, %rsi
+    mov $1, %edx
+    syscall
+    cmp $1, %eax
+    jne .Lfail
+    add $8, %rsp
+    mov $10000, %ecx
+.Lwarm:
+    dec %ecx
+    jnz .Lwarm
+    mov %r9d, %ecx
+#endif
     /* Distinct live values in each thread, including across slow boundaries. */
     mov %ecx, %r10d
     not %r10d

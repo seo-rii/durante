@@ -96,15 +96,30 @@ def main():
                 # and 33 instructions through the read, checks and exit.
                 if measurement["instructions"] != 24_036:
                     raise ValueError(f"unexpected input clock for {mode}: {measurement['instructions']}")
-            threaded = work / "clock-threads"
-            subprocess.run(["cc", "-static", "-nostdlib", "-no-pie", ROOT / "tests/clock_threads.S",
-                            "-o", threaded], check=True)
-            measurement = check_run(prefix, work, "thread-clock", [threaded])
-            # Each call to .Lwork takes 5*N+18 instructions. 32 are executed
-            # outside it: 7 up through clone, 3 on each return, 14 parent, 5 worker.
-            expected = 5 * (100003 + 70001) + 2 * 18 + 32
-            if measurement["instructions"] != expected or measurement["segments"][0]["threads"] != 2:
-                raise ValueError(f"unexpected threaded clock: {measurement}")
+            # Each .Lwork body takes 5*N+18 instructions. Reading stdin adds
+            # 12 instructions and a two-instruction loop with 10,000 iterations.
+            thread_work = 5 * (100003 + 70001) + 2 * 18 + 32
+            read_work = 12 + 2 * 10000
+            # The fork parent also runs .Lwork(1009) before the syscall. It
+            # executes 4 + 3 + 16 instructions outside both calls, the child 3 + 5.
+            fork_parent = 5 * (1009 + 100003) + 2 * (18 + read_work) + 23
+            fork_child = 5 * 70001 + 18 + read_work + 8
+            for name, defines, segments in (
+                    ("thread-clock", [], [(2, thread_work)]),
+                    ("thread-clock-input", ["-DCLOCK_READ_STDIN"], [(2, thread_work + 2 * read_work)]),
+                    ("fork-clock-input", ["-DCLOCK_READ_STDIN", "-DCLOCK_FORK"],
+                     [(1, fork_parent), (1, fork_child)])):
+                exe = work / (name + "-exe")
+                subprocess.run(["cc", "-static", "-nostdlib", "-no-pie", *defines,
+                                ROOT / "tests/clock_threads.S", "-o", exe], check=True)
+                input_file.write_bytes(b"XYZ")
+                with input_file.open("rb") as stdin:
+                    measurement = check_run(prefix, work, name, [exe], stdin=stdin)
+                root_pid = next(p["pid"] for p in measurement["processes"] if p["parent_pid"] == 0)
+                ordered = sorted(measurement["segments"], key=lambda row: row["pid"] != root_pid)
+                actual = [(row["threads"], row["instructions"]) for row in ordered]
+                if actual != segments or measurement["instructions"] != sum(count for _, count in segments):
+                    raise ValueError(f"unexpected {name} clock: {measurement}")
             for fixture, flag, modes in [
                 ("rep_breakdown", "MODE", {name: row[0] for name, row in CASES.items()}),
                 ("jit_replay", "CASE", {name: row["case"] for name, row in FIXTURES.items()}),
