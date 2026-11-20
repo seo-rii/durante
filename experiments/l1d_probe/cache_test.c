@@ -122,8 +122,89 @@ static void test_large_stos(void) {
   }
 }
 
+static void scalar_pair(l1d_cache_t *cache, struct reference *ref,
+                        uintptr_t addr, bool addr32) {
+  if (addr32)
+    addr = (uint32_t)addr;
+  l1d_access(cache, addr, 1);
+  ref_access(ref, addr, 1);
+}
+
+/* Each case starts with tags from both streams near the first, middle and
+ * last accesses. Verify every counter and way before and after scalar reuse. */
+static void compare_warm_movs(uintptr_t src, uintptr_t dst, uint64_t count,
+                              unsigned bytes, bool backwards, bool addr32) {
+  l1d_cache_t cache = {0};
+  struct reference ref = {0};
+  uintptr_t n = addr32 ? (uint32_t)count : count;
+  uintptr_t end = (n - 1) * bytes;
+  for (unsigned i = 0; i < L1D_SETS; ++i) {
+    uintptr_t delta = i * L1D_LINE_BYTES;
+    const uintptr_t positions[] = {delta, end / 2 + delta, end - delta};
+    for (unsigned j = 0; j < 3; ++j) {
+      uintptr_t step = backwards ? -positions[j] : positions[j];
+      scalar_pair(&cache, &ref, src + step, addr32);
+      scalar_pair(&cache, &ref, dst + step, addr32);
+    }
+  }
+  compare_repeat(&cache, &ref, true, src, dst, count, bytes, backwards, addr32);
+  uintptr_t step = backwards ? -end : end;
+  scalar_pair(&cache, &ref, dst + step, addr32);
+  scalar_pair(&cache, &ref, src + step, addr32);
+  scalar_pair(&cache, &ref, dst, addr32);
+  scalar_pair(&cache, &ref, src, addr32);
+  verify(&cache, &ref);
+}
+
+static void test_large_movs(void) {
+  const unsigned line = L1D_LINE_BYTES;
+  const unsigned capacity = L1D_SETS * L1D_WAYS * line;
+  const unsigned span = 3 * capacity;
+  const uintptr_t base = 0x200000;
+  const uintptr_t distant = base + 0x80000;
+  for (unsigned direction = 0; direction < 2; ++direction) {
+    bool backwards = direction != 0;
+    for (unsigned bytes = 1; bytes <= 8; bytes *= 2) {
+      /* The last source cache line neighbors the first destination line.
+       * The odd gap in lines gives the streams different set indices. */
+      unsigned adjacent_span = span + 5 * line;
+      uintptr_t start = base + (backwards ? adjacent_span - bytes : 0);
+      compare_warm_movs(start, start + adjacent_span, adjacent_span / bytes,
+                        bytes, backwards, false);
+      /* Same-set streams, partial endpoint lines, nonzero high address and
+       * count bits discarded for addr32. */
+      uint64_t count32 = (UINT64_C(1) << 32) + span / bytes + 3;
+      compare_warm_movs((UINT64_C(1) << 40) + base + 16,
+                        (UINT64_C(3) << 40) + distant + 16,
+                        count32, bytes, backwards, true);
+    }
+    for (unsigned span_lines = 2 * capacity / line - 1;
+         span_lines <= 2 * capacity / line + 1; ++span_lines) {
+      unsigned length = span_lines * line;
+      uintptr_t start = backwards ? length - 8 : 0;
+      compare_warm_movs(base + start, distant + start, length / 8, 8,
+                        backwards, false);
+    }
+    /* Disjoint bytes can still share an endpoint line. Other cases revisit
+     * overlapping streams in both orders, or have unequal line offsets or
+     * elements that straddle lines. */
+    compare_warm_movs(base + 8, base + span + 8, span / 8, 8, backwards, false);
+    compare_warm_movs(base, base + line, span / 8, 8, backwards, false);
+    compare_warm_movs(base + line, base, span / 8, 8, backwards, false);
+    compare_warm_movs(base + 8, distant + 16, span / 8, 8, backwards, false);
+    compare_warm_movs(base + 63, distant + 63, span / 8, 8, backwards, false);
+    for (unsigned addr32 = 0; addr32 < 2; ++addr32) {
+      uintptr_t limit = addr32 ? UINT32_MAX : UINTPTR_MAX;
+      uintptr_t near_wrap = backwards ? 512 : limit - 511;
+      compare_warm_movs(near_wrap, distant, span / 8, 8, backwards, addr32);
+      compare_warm_movs(base, near_wrap, span / 8, 8, backwards, addr32);
+    }
+  }
+}
+
 int main(void) {
   test_large_stos();
+  test_large_movs();
   l1d_cache_t cache = {0};
   struct reference ref = {0};
   uint32_t rng = 8425613;

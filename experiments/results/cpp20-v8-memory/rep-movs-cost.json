@@ -1,0 +1,627 @@
+{
+  "schema": 1,
+  "host": {
+    "system": "Linux",
+    "machine": "x86_64",
+    "kernel": "6.1.0-56-cloud-amd64",
+    "cpu_model": "AMD EPYC 7B12",
+    "pinned_cpu": 6
+  },
+  "timing": "Child wait4 user plus system CPU, converted to integer nanoseconds. Each round runs the cases in case_order. Each case gives the observed arm_order and one CPU sample per arm per round.",
+  "arms": {
+    "baseline": "Original diagnostic client with -probe_l1d",
+    "candidate": "Optimized diagnostic client with -probe_l1d",
+    "off": "Same optimized diagnostic client with its L1D probe disabled"
+  },
+  "rounds": 5,
+  "executions": 105,
+  "case_order": [
+    "rep_copy-1",
+    "rep_copy-2",
+    "rep_copy-4",
+    "rep_fill-2",
+    "fenwick-prefix",
+    "kmp-match",
+    "union-find"
+  ],
+  "tools_sha256": {
+    "drrun": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "release_core": "fd1c5645b9fc70a7dcb71459b4b94782d2e016a2aa4ceffcfcab2ade962cdf5b",
+    "drmgr": "372cc1f1f95ffa29a1f11de4be14f99de5938bbcae11294a38d0a7932069429a",
+    "compare_py": "0ff0afd2988632024ccfbf3c3858a1b0fba5d293dfc2ba2ba75d94c73bc63841"
+  },
+  "clients_sha256": {
+    "baseline": "b8042afde4697b1a1161125258f03c2e37a8d1fdfaae4e2a96b88ecd64e5b012",
+    "candidate": "e10e8091e8b7d12de09dbd997565ad31a3f3b2f2d573e7d363208ff3482dd77e",
+    "off": "e10e8091e8b7d12de09dbd997565ad31a3f3b2f2d573e7d363208ff3482dd77e"
+  },
+  "cache_header_sha256": {
+    "baseline": "0f2e73e10a8102e6e4119bf125e90f089e96a05027e61a0235bf6dff65d1f40c",
+    "candidate": "7d62edb887fcefa637fb723e8e9a7303dabb52ac872e1d8abe890ced8b7f1ff3"
+  },
+  "shared_sources_sha256": {
+    "client/cpu_policy.h": "b53e1987b92ab82aa303723fbda68d26aaf6b826172ab0e4b9be6e4c337bd363",
+    "client/cpuid_emulation.h": "5fade2d6c5760276a6b5ff198863cd1196095fdb9859270a6ea8f898f6c24527",
+    "client/cpuid_profile.h": "75cda24c23e45ea450b2d47265928335fc0780cc09ceebeddd13a20136edc216",
+    "client/durante.c": "d0c7fea020229a3473571850f3eed3688061c8ff81e662613e47bc695f3904ea",
+    "client/durante_runtime.h": "425c6811b9947cb806d8ffd77a7c7d512bb0bfe303e6d500bc485b77be2d8456",
+    "client/latency_bound.h": "51ea8177b786753196b24e80de74141af62df27395258cc94ab95b6eba4cfed5",
+    "experiments/l1d_probe/CMakeLists.txt": "414073aa9dfbbee704aa8524795d7d18b01dbf21c2b345814bd54e2dcc3fef96",
+    "experiments/l1d_probe/probe.h": "8a45f41b70d17c3c694eb166f39d218cd7668c9a79bd0306e966f7564f0c409a"
+  },
+  "work_start": {
+    "schema": 1,
+    "client_version": 1,
+    "authority": "diagnostic_only",
+    "metric": "bb_entry_app_instructions",
+    "seq": 1,
+    "event": "start",
+    "origin": "initial",
+    "parent_pid": 0,
+    "parent_segment": "",
+    "rep_bytes_enabled": true,
+    "rep_breakdown_version": 1,
+    "sdk_version": "11.3.0",
+    "cpuid_profile_version": 1,
+    "cpuid_profile": "x86-64-v2"
+  },
+  "common_work_end": {
+    "schema": 1,
+    "client_version": 1,
+    "authority": "diagnostic_only",
+    "metric": "bb_entry_app_instructions",
+    "seq": 2,
+    "event": "end",
+    "unsupported_rep_entries": 0,
+    "signals_observed": 0,
+    "threads_started": 1,
+    "threads_finished": 1,
+    "threads_complete": true,
+    "accounting_error": false,
+    "app_exit_seen": true,
+    "app_exit_code": 0,
+    "valid": true,
+    "quality": "uninterrupted"
+  },
+  "cases": {
+    "rep_copy-1": {
+      "elf_sha256": "255445d9e1311d5872c4da62e12df42c199012cfbc9b8c5dc6e8a8646cab2100",
+      "stdin_sha256": "b61d14fabac7a8c4a193c44ce1394bbc7399ff3de0c728f96d280c832632a60b",
+      "stdout_sha256": "c5a2caa53f27de21a0a1081f8afd6fddfea30ea90cd8da5a2be91b17f2960d8a",
+      "arm_order": [
+        [
+          "baseline",
+          "candidate",
+          "off"
+        ],
+        [
+          "candidate",
+          "off",
+          "baseline"
+        ],
+        [
+          "off",
+          "baseline",
+          "candidate"
+        ],
+        [
+          "baseline",
+          "candidate",
+          "off"
+        ],
+        [
+          "candidate",
+          "off",
+          "baseline"
+        ]
+      ],
+      "child_cpu_ns": {
+        "baseline": [
+          1051096000,
+          1109595000,
+          653846000,
+          647901000,
+          750704000
+        ],
+        "candidate": [
+          597603000,
+          592410000,
+          399802000,
+          398023000,
+          390624000
+        ],
+        "off": [
+          259064000,
+          261248000,
+          230211000,
+          219238000,
+          236655000
+        ]
+      },
+      "work": {
+        "instructions": 47308800,
+        "rep_bytes": 2147487272,
+        "rep_entries": 516,
+        "rep_movs_bytes": 2147483648,
+        "rep_stos_bytes": 3624,
+        "rep_movs_entries": 512,
+        "rep_stos_entries": 4
+      },
+      "cache": {
+        "refs": 4308132678,
+        "lines": 4308132690,
+        "misses": 67374715,
+        "skipped": 148,
+        "rep": 516,
+        "threads": 1
+      },
+      "median_cpu_ns": {
+        "baseline": 750704000,
+        "candidate": 399802000,
+        "off": 236655000
+      }
+    },
+    "rep_copy-2": {
+      "elf_sha256": "255445d9e1311d5872c4da62e12df42c199012cfbc9b8c5dc6e8a8646cab2100",
+      "stdin_sha256": "034ae8e96eee99a30067d2f7c7b8055992ffb028e1a8309df36a17183c72b95e",
+      "stdout_sha256": "14b4ccf54a685e2b88965fc5f93815b5eb94b8946f65452c7f059ae8239959ac",
+      "arm_order": [
+        [
+          "candidate",
+          "off",
+          "baseline"
+        ],
+        [
+          "off",
+          "baseline",
+          "candidate"
+        ],
+        [
+          "baseline",
+          "candidate",
+          "off"
+        ],
+        [
+          "candidate",
+          "off",
+          "baseline"
+        ],
+        [
+          "off",
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "child_cpu_ns": {
+        "baseline": [
+          1581121000,
+          1702588000,
+          987065000,
+          979159000,
+          1008643000
+        ],
+        "candidate": [
+          642654000,
+          656914000,
+          480563000,
+          479437000,
+          514147000
+        ],
+        "off": [
+          306342000,
+          305628000,
+          272013000,
+          276135000,
+          320946000
+        ]
+      },
+      "work": {
+        "instructions": 47320113,
+        "rep_bytes": 4294970920,
+        "rep_entries": 1028,
+        "rep_movs_bytes": 4294967296,
+        "rep_stos_bytes": 3624,
+        "rep_movs_entries": 1024,
+        "rep_stos_entries": 4
+      },
+      "cache": {
+        "refs": 8603103567,
+        "lines": 8603103579,
+        "misses": 134485623,
+        "skipped": 148,
+        "rep": 1028,
+        "threads": 1
+      },
+      "median_cpu_ns": {
+        "baseline": 1008643000,
+        "candidate": 514147000,
+        "off": 305628000
+      }
+    },
+    "rep_copy-4": {
+      "elf_sha256": "255445d9e1311d5872c4da62e12df42c199012cfbc9b8c5dc6e8a8646cab2100",
+      "stdin_sha256": "0fe76953bddd45fec27d8d55ede03f2eab50c90d933c2432900985db384855bd",
+      "stdout_sha256": "73607328886253eec5e94bab9f192c471d8dde15612d82f23ce4d32675b4ee50",
+      "arm_order": [
+        [
+          "off",
+          "baseline",
+          "candidate"
+        ],
+        [
+          "baseline",
+          "candidate",
+          "off"
+        ],
+        [
+          "candidate",
+          "off",
+          "baseline"
+        ],
+        [
+          "off",
+          "baseline",
+          "candidate"
+        ],
+        [
+          "baseline",
+          "candidate",
+          "off"
+        ]
+      ],
+      "child_cpu_ns": {
+        "baseline": [
+          2651603000,
+          2422157000,
+          1696192000,
+          1663844000,
+          1703274000
+        ],
+        "candidate": [
+          773918000,
+          625058000,
+          644261000,
+          668232000,
+          738639000
+        ],
+        "off": [
+          472079000,
+          457586000,
+          446199000,
+          467176000,
+          498182000
+        ]
+      },
+      "work": {
+        "instructions": 47342641,
+        "rep_bytes": 8589938216,
+        "rep_entries": 2052,
+        "rep_movs_bytes": 8589934592,
+        "rep_stos_bytes": 3624,
+        "rep_movs_entries": 2048,
+        "rep_stos_entries": 4
+      },
+      "cache": {
+        "refs": 17193045327,
+        "lines": 17193045339,
+        "misses": 268707438,
+        "skipped": 148,
+        "rep": 2052,
+        "threads": 1
+      },
+      "median_cpu_ns": {
+        "baseline": 1703274000,
+        "candidate": 668232000,
+        "off": 467176000
+      }
+    },
+    "rep_fill-2": {
+      "elf_sha256": "316549bd773f5dba0b5978f423ba8fc93f9fb881339478e030f22b1b2f9d1bc7",
+      "stdin_sha256": "034ae8e96eee99a30067d2f7c7b8055992ffb028e1a8309df36a17183c72b95e",
+      "stdout_sha256": "2eeb559b1920bcd118e23727ff5bf06499ed939972f79f592afcf0d7dd1945b0",
+      "arm_order": [
+        [
+          "baseline",
+          "candidate",
+          "off"
+        ],
+        [
+          "candidate",
+          "off",
+          "baseline"
+        ],
+        [
+          "off",
+          "baseline",
+          "candidate"
+        ],
+        [
+          "baseline",
+          "candidate",
+          "off"
+        ],
+        [
+          "candidate",
+          "off",
+          "baseline"
+        ]
+      ],
+      "child_cpu_ns": {
+        "baseline": [
+          345035000,
+          266696000,
+          250048000,
+          255153000,
+          263725000
+        ],
+        "candidate": [
+          344890000,
+          273211000,
+          259593000,
+          261825000,
+          263707000
+        ],
+        "off": [
+          229217000,
+          188886000,
+          202451000,
+          186199000,
+          190130000
+        ]
+      },
+      "work": {
+        "instructions": 25806620,
+        "rep_bytes": 4294970920,
+        "rep_entries": 1028,
+        "rep_movs_bytes": 0,
+        "rep_stos_bytes": 4294970920,
+        "rep_movs_entries": 0,
+        "rep_stos_entries": 1028
+      },
+      "cache": {
+        "refs": 4299465464,
+        "lines": 4299465477,
+        "misses": 67244311,
+        "skipped": 136,
+        "rep": 1028,
+        "threads": 1
+      },
+      "median_cpu_ns": {
+        "baseline": 263725000,
+        "candidate": 263707000,
+        "off": 190130000
+      }
+    },
+    "fenwick-prefix": {
+      "elf_sha256": "30b0e943a91b8f58de665f9c3d0d5902893a3e71ccdc203583a8d2d2f6ce14e0",
+      "stdin_sha256": "d65b3050f54941e662535979ec9fc43bb53f0dc6fb8c9e2688f76e4f469a0e29",
+      "stdout_sha256": "8c0bd1b82196cef44359654cc8978dc7cec09a8f92a272024d3fa84f6030cd7a",
+      "arm_order": [
+        [
+          "candidate",
+          "off",
+          "baseline"
+        ],
+        [
+          "off",
+          "baseline",
+          "candidate"
+        ],
+        [
+          "baseline",
+          "candidate",
+          "off"
+        ],
+        [
+          "candidate",
+          "off",
+          "baseline"
+        ],
+        [
+          "off",
+          "baseline",
+          "candidate"
+        ]
+      ],
+      "child_cpu_ns": {
+        "baseline": [
+          1077885000,
+          592374000,
+          668318000,
+          690419000,
+          636910000
+        ],
+        "candidate": [
+          1033804000,
+          593255000,
+          654048000,
+          637076000,
+          712092000
+        ],
+        "off": [
+          227019000,
+          177799000,
+          184334000,
+          170086000,
+          167918000
+        ]
+      },
+      "work": {
+        "instructions": 128437315,
+        "rep_bytes": 632,
+        "rep_entries": 1,
+        "rep_movs_bytes": 0,
+        "rep_stos_bytes": 632,
+        "rep_movs_entries": 0,
+        "rep_stos_entries": 1
+      },
+      "cache": {
+        "refs": 22943499,
+        "lines": 22943514,
+        "misses": 11516802,
+        "skipped": 125,
+        "rep": 1,
+        "threads": 1
+      },
+      "median_cpu_ns": {
+        "baseline": 668318000,
+        "candidate": 654048000,
+        "off": 177799000
+      }
+    },
+    "kmp-match": {
+      "elf_sha256": "65160491589c871ba359a616c5987adf461633dfd85433107b494147a4e83fdb",
+      "stdin_sha256": "5749469a7fa56bd40384a1f07fd322759082f203114e0bfc09036cb0c324fa47",
+      "stdout_sha256": "c3d73c4fea99450326ea305f658a18c5528552847e2774f33454350e620ab50c",
+      "arm_order": [
+        [
+          "off",
+          "baseline",
+          "candidate"
+        ],
+        [
+          "baseline",
+          "candidate",
+          "off"
+        ],
+        [
+          "candidate",
+          "off",
+          "baseline"
+        ],
+        [
+          "off",
+          "baseline",
+          "candidate"
+        ],
+        [
+          "baseline",
+          "candidate",
+          "off"
+        ]
+      ],
+      "child_cpu_ns": {
+        "baseline": [
+          1155560000,
+          790395000,
+          798710000,
+          809481000,
+          826757000
+        ],
+        "candidate": [
+          1157187000,
+          854481000,
+          794543000,
+          790553000,
+          827861000
+        ],
+        "off": [
+          504359000,
+          394947000,
+          395390000,
+          393230000,
+          428803000
+        ]
+      },
+      "work": {
+        "instructions": 284134458,
+        "rep_bytes": 704,
+        "rep_entries": 2,
+        "rep_movs_bytes": 0,
+        "rep_stos_bytes": 704,
+        "rep_movs_entries": 0,
+        "rep_stos_entries": 2
+      },
+      "cache": {
+        "refs": 59373868,
+        "lines": 59603258,
+        "misses": 885124,
+        "skipped": 117,
+        "rep": 2,
+        "threads": 1
+      },
+      "median_cpu_ns": {
+        "baseline": 809481000,
+        "candidate": 827861000,
+        "off": 395390000
+      }
+    },
+    "union-find": {
+      "elf_sha256": "d96d8c30ca7b4851407458b55960bc2a6ddb348b4800f02fc8b50ed2f5d2cd2a",
+      "stdin_sha256": "c60da46cbd8f6e51461de55e1fda4baf9a71a6bd273d7c26f3d8c794a0faf5f5",
+      "stdout_sha256": "33c67e18e7b08b8bd19c4640555765a15f8c8526a0eb648143a44c1f9a971896",
+      "arm_order": [
+        [
+          "baseline",
+          "candidate",
+          "off"
+        ],
+        [
+          "candidate",
+          "off",
+          "baseline"
+        ],
+        [
+          "off",
+          "baseline",
+          "candidate"
+        ],
+        [
+          "baseline",
+          "candidate",
+          "off"
+        ],
+        [
+          "candidate",
+          "off",
+          "baseline"
+        ]
+      ],
+      "child_cpu_ns": {
+        "baseline": [
+          1087864000,
+          669863000,
+          838471000,
+          623674000,
+          745052000
+        ],
+        "candidate": [
+          1094307000,
+          630639000,
+          839743000,
+          655350000,
+          658358000
+        ],
+        "off": [
+          242012000,
+          184527000,
+          173117000,
+          181778000,
+          194840000
+        ]
+      },
+      "work": {
+        "instructions": 126535970,
+        "rep_bytes": 632,
+        "rep_entries": 1,
+        "rep_movs_bytes": 0,
+        "rep_stos_bytes": 632,
+        "rep_movs_entries": 0,
+        "rep_stos_entries": 1
+      },
+      "cache": {
+        "refs": 18976078,
+        "lines": 18976116,
+        "misses": 7750101,
+        "skipped": 595,
+        "rep": 1,
+        "threads": 1
+      },
+      "median_cpu_ns": {
+        "baseline": 745052000,
+        "candidate": 658358000,
+        "off": 184527000
+      }
+    }
+  }
+}
