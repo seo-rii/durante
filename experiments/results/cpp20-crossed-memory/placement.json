@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "revision": "aonohako-cross-v8-529ec0d9af-00001-258",
+  "expected_http_executions": 123,
+  "request_logs": 123,
+  "successful_request_logs": 123,
+  "http_status_counts": {
+    "200": 123
+  },
+  "stage_verdict_counts": {
+    "calibration": {
+      "Accepted": 54
+    },
+    "external": {
+      "Accepted": 46,
+      "Time Limit Exceeded": 23
+    }
+  },
+  "distinct_recorded_instances": 1,
+  "unknown_requests": 0,
+  "instance_id_sha256_counts": {
+    "a12d4b67d5098f7c441bdd011ffc7b6af81154946fa8c1dcc04d5217f4e352a4": 123
+  },
+  "requests_per_recorded_instance": [
+    123
+  ],
+  "all_execution_logs_recorded": true
+}
