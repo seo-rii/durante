@@ -26,7 +26,10 @@ class BoundaryTests(unittest.TestCase):
             for phase in ("before", "after"):
                 run["native_" + phase] = {"status": AC, "cpu_ns": run[f"native_{phase}_ns"]}
         for row, side, verdict in zip(self.cloud["boundaries"], ("low", "high"), (TLE, AC)):
-            row.update(native_samples=[{"status": v} for v in row["native"]], v8_sample={"status": row["v8"]},
+            samples = [{"status": v, "cpu_ns": row["limit_ms"] * 1_000_000 + int(v == TLE),
+                        "cpu_source": "wait_rusage", "exit_code": 0 if v == AC else None,
+                        "verdict_source": "stdout" if v == AC else "cpu_time"} for v in row["native"]]
+            row.update(native_samples=samples, v8_sample={"status": row["v8"]},
                        roles=["native_" + side, "candidate_" + side], candidate=verdict)
 
     def test_half_up_and_minimum_at_rounded_boundaries(self):
@@ -58,11 +61,23 @@ class BoundaryTests(unittest.TestCase):
         self.assertEqual(agreement(TLE, [TLE, AC, AC]), "mixed")
 
     def test_summaries_must_match_original_observations(self):
-        for key, bad in (("native_samples", [{"status": AC}] * 3), ("v8_sample", {"status": TLE})):
-            changed = copy.deepcopy(self.cloud)
-            changed["boundaries"][0][key] = bad
-            with self.subTest(key=key), self.assertRaisesRegex(ValueError, "contradicts"):
-                score_case("fixture", self.frozen, changed)
+        changed = copy.deepcopy(self.cloud)
+        changed["boundaries"][0]["v8_sample"] = {"status": TLE}
+        with self.assertRaisesRegex(ValueError, "contradicts"):
+            score_case("fixture", self.frozen, changed)
+        changed = copy.deepcopy(self.cloud)
+        row = changed["boundaries"][0]
+        row["native"] = [AC] * 3
+        for sample in row["native_samples"]:
+            sample["status"] = AC
+        with self.assertRaisesRegex(ValueError, "CPU-limit decision"):
+            score_case("fixture", self.frozen, changed)
+
+    def test_only_the_model_using_an_unstable_counter_fails_repeatability(self):
+        self.frozen["counter_spread"]["l1d_misses"] = 0.002
+        models = score_case("fixture", self.frozen, self.cloud)["models"]
+        self.assertTrue(models["baseline"]["counter_spread_pass"])
+        self.assertFalse(models["candidate"]["counter_spread_pass"])
 
     def test_published_all_program_gates_and_native_verdicts(self):
         data = Path(__file__).resolve().parents[1] / "experiments/results/cpp20-v8-memory"

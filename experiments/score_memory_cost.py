@@ -28,6 +28,20 @@ def agreement(status, native):
     return "opposition" if hits == 0 else "mixed"
 
 
+def native_verdict(sample, limit_ms):
+    ns = sample["cpu_ns"]
+    require(type(ns) is int and ns > 0 and sample["cpu_source"] in ("wait_rusage", "process_clock", "cgroup"),
+            "native sample needs a positive accounted CPU time")
+    if ns <= limit_ms * NS_PER_MS:
+        require(sample["status"] == AC and sample["verdict_source"] == "stdout" and sample["exit_code"] == 0,
+                "native acceptance needs a verified stdout exit within the CPU limit")
+        return AC
+    require(sample["status"] == TLE and sample["verdict_source"] in
+            ("cpu_time", "cpu_time_final", "cpu_time_cgroup", "cpu_time_cgroup_final"),
+            "native timeout needs a CPU-limit decision")
+    return TLE
+
+
 def score_case(name, frozen, observed):
     require(identity(frozen) == identity(observed), f"{name}: artifact, input or oracle changed")
     runs = observed["rounds"]
@@ -41,15 +55,20 @@ def score_case(name, frozen, observed):
                     f"{name}: native bracket contradicts its receipt")
     center = Fraction(native[2] + native[3], 2)
     spread = (max(native) - min(native)) / center
+    stability = frozen["counter_spread"]
+    require(set(stability) == set(CANDIDATE) and all(v is None or
+            (type(v) in (int, float) and isfinite(v) and v >= 0) for v in stability.values()),
+            f"{name}: invalid diagnostic counter spread")
     models = {}
-    for model in MODELS:
+    for model, fields in MODELS.items():
         estimates = frozen["predictions_ns"][model]
         require(len(estimates) == 3 and all(type(v) is int and v >= 0 for v in estimates),
                 f"{name}: expected three integer predictions")
         point = median(estimates)
         require(point == frozen[model + "_median_ns"], f"{name}: prediction median mismatch")
         models[model] = {"median_ns": point, "error_percent": float(100 * (point - center) / center),
-                         "within_20_percent": all(5 * abs(v - center) <= center for v in estimates)}
+                         "within_20_percent": all(5 * abs(v - center) <= center for v in estimates),
+                         "counter_spread_pass": all(stability[k] is not None and stability[k] <= .001 for k in fields)}
 
     bounds = {label + "_" + side: ms for label, ns in (("native", center), ("candidate", models["candidate"]["median_ns"]))
               for side, ms in limits(ns).items()}
@@ -63,7 +82,7 @@ def score_case(name, frozen, observed):
         ms, actual = row["limit_ms"], row["native"]
         require(isinstance(actual, list) and len(actual) == 3 and all(s in (AC, TLE) for s in actual),
                 f"{name}: incomplete native boundary verdicts")
-        require(actual == [sample["status"] for sample in row["native_samples"]],
+        require(actual == [native_verdict(sample, ms) for sample in row["native_samples"]],
                 f"{name}: boundary verdict contradicts its native receipts")
         labels = [label for label, value in bounds.items() if value == ms]
         require(set(row["roles"]) == set(labels), f"{name}: contradictory boundary role")
@@ -86,13 +105,8 @@ def score_case(name, frozen, observed):
             require(live is None, f"{name}: unexpected historical live verdict")
         results.append({"limit_ms": ms, "labels": labels, "native": actual, "comparisons": comparisons})
 
-    stability = frozen["counter_spread"]
-    require(set(stability) == set(CANDIDATE) and all(v is None or
-            (type(v) in (int, float) and isfinite(v) and v >= 0) for v in stability.values()),
-            f"{name}: invalid diagnostic counter spread")
     return {"native_median_ns": float(center), "native_spread_percent": float(spread * 100),
             "duration_pass": min(native) >= 20_000_000, "native_spread_pass": spread <= Fraction(1, 10),
-            "counter_spread_pass": all(v is not None and v <= .001 for v in stability.values()),
             "models": models, "boundaries": results}
 
 
@@ -106,7 +120,7 @@ def score(prediction_bytes, cloud):
     summary = {}
     for model in MODELS:
         accurate = sum(c["models"][model]["within_20_percent"] for c in cases.values())
-        stable = all(c["duration_pass"] and c["native_spread_pass"] and c["counter_spread_pass"] for c in cases.values())
+        stable = all(c["duration_pass"] and c["native_spread_pass"] and c["models"][model]["counter_spread_pass"] for c in cases.values())
         summary[model] = {"accurate_programs": accurate, "programs": len(cases),
                           "passes_duration_and_stability": stable, "passes_all_gates": stable and accurate == len(cases)}
     return {"cases": cases, "summary": summary}
