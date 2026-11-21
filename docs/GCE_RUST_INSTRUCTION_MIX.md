@@ -1,5 +1,7 @@
 # Rust instruction mix on a pinned Compute Engine vCPU
 
+**The recurrence-only probe took 23.39% less diagnostic CPU than the full probe on three new Rust programs.** Their predicted times differed by at most 0.0171%, but the frozen clock met the ±20% native-time target on only one of the three. Binary search was underestimated by 42.04%. [Prospective measurements](../experiments/results/gce-rust-instruction-mix/holdout/evaluation.json)
+
 This study compares instruction count, scalar integer multiply count and loop-carried register dependencies as predictors of uninstrumented Rust process CPU time. An earlier Aonohako experiment found that integer/4 took at least 4.20 times as much native CPU as sort/1, despite their ordinary Durante counters permitting at most a 1.265-fold difference. The new study measures all timers and counters again on the same fresh executables. [Earlier GCE measurement](https://github.com/seo-rii/aonohako/blob/f04ae258094e099c524c9191ef2f7b8a4c4f772a/docs/durante/GCE_PINNED_RUST_V10.md) · [Prespecified protocol](../experiments/rust_instruction_mix/protocol.json)
 
 ## Results
@@ -30,6 +32,24 @@ Each of five optimized Rust programs runs at three scales. Each case has three n
 
 The protocol fixes three models before collecting data. All use a nonnegative instruction weight and zero intercept. The second can also weight scalar integer multiplies, and the third can weight the loop recurrence estimate. Each model minimizes squared relative error on integer and copy, using one native median per scale. Branch, sort and fill supply nine validation cases. A case passes when all three predictions are within ±20% of the median of its six native controls. Native stability also requires every control to reach 20 ms and the range divided by the median to be at most 10%. The corpus and its previous timings were already known when choosing these features. [Scorer](../experiments/rust_instruction_mix/score.py)
 
+## Prospective test on three new programs
+
+The supplementary protocol fixed the retrospective coefficients and three new source/input/oracle pairs before measuring them on a second pinned VM. Euclidean GCD computes the GCDs of 524,288 pseudorandom pairs with the Euclidean remainder algorithm, lower bound makes 524,288 searches over 262,144 sorted keys, and rolling window sums overlapping windows over an array of 1,048,576 values for 16 sweeps. Independent Python oracles compute the expected checksums using the standard library GCD, an arithmetic lower bound, and a window-membership identity. [Frozen protocol and fixtures](../experiments/rust_instruction_mix/holdout/protocol.json) · [Oracles](../experiments/rust_instruction_mix/holdout/oracles.py)
+
+Each of the three rounds runs both the full research client and its existing recurrence-only mode between two native controls. Both modes use the same production instruction meter. The lighter mode charges only eligible loop blocks for recurrence and omits the other research counters. Both mode orders occur for each program. We score the fixed nanosecond prediction against the six-native median, and examine whether each pair's two predictions agree within 0.1% of the full prediction. [Holdout collector](../experiments/rust_instruction_mix/holdout/collect_holdout.py)
+
+| New Rust algorithm | Native CPU median | Worst fast prediction error | Paired median fast/full diagnostic CPU |
+| --- | ---: | ---: | ---: |
+| Euclidean GCD | 39.082 ms | +15.85% | 0.897 |
+| Binary lower bound | 34.968 ms | −42.04% | 0.871 |
+| Rolling window | 15.891 ms | +20.57% | 0.692 |
+
+**The frozen clock passed one of three new programs in both modes.** GCD and binary lower bound both met the native duration and spread criteria. Lower bound took 33.611–36.309 ms across its six controls, while the recurrence-only prediction was about 20.27 ms. Rolling window remained below the 20 ms duration floor in every native run. [All prospective errors and paired timings](../experiments/results/gce-rust-instruction-mix/holdout/evaluation.json)
+
+The lighter probe reduced total child CPU across nine matched pairs from 11.056 to 8.469 seconds (23.39%). The largest difference between paired clock predictions was 0.0171%, within the prespecified 0.1% in all nine pairs. The recurrence-only diagnostics still used 31.29 times the summed per-round mean native CPU on these three programs. Binary lower bound provides a repeatable case to investigate the cost of a search where each comparison selects the address of the next load. [Raw prospective dataset](../experiments/results/gce-rust-instruction-mix/holdout/dataset.json.gz)
+
+The second guest had the same machine type, CPU model and image digest. The scheduler trace confirmed all 36 measured children and 18 same-PID loader re-execs on CPU 1. The VM and boot disk each returned HTTP 404 after deletion in both studies. [Prospective placement](../experiments/results/gce-rust-instruction-mix/holdout/placement.json.gz) · [Prospective platform and cleanup](../experiments/results/gce-rust-instruction-mix/holdout/platform.json)
+
 ## Reproduction
 
 Replay the archived observations with Python 3.10 or later and the source revision used for collection.
@@ -40,6 +60,11 @@ results=experiments/results/gce-rust-instruction-mix
 python3 "$experiment/verify_archive.py" "$results/dataset.json.gz" "$results/samples.tar.xz" --probe-build "$results/probe-build.json"
 python3 "$experiment/placement.py" "$results/dataset.json.gz" "$results/placement.json.gz" --platform "$results/platform.json"
 python3 "$experiment/score.py" "$results/dataset.json.gz" --verify "$results/evaluation.json"
+
+holdout="$results/holdout"
+python3 "$experiment/verify_archive.py" "$holdout/dataset.json.gz" "$holdout/samples.tar.xz" --probe-build "$results/probe-build.json"
+python3 "$experiment/placement.py" "$holdout/dataset.json.gz" "$holdout/placement.json.gz" --platform "$holdout/platform.json"
+python3 "$experiment/holdout/score_holdout.py" "$holdout/dataset.json.gz" --verify "$holdout/evaluation.json"
 ```
 
 For a new collection, build the research client against the pinned DynamoRIO 11.3 SDK. Stage the two experiment JSON files and collector in `/study`, the root production `collect.py` in `/study/production`, and the five Rust sources from the pinned Aonohako revision in `/study/src`. These hashes identify the probe build, fixtures, image and ordinary client. [Probe build](../experiments/results/gce-rust-instruction-mix/probe-build.json) · [Inputs and output oracles](../experiments/rust_instruction_mix/corpus.json) · [Rust sources](https://github.com/seo-rii/aonohako/tree/f04ae258094e099c524c9191ef2f7b8a4c4f772a/internal/durante/reference/fixtures/runtime)
@@ -58,3 +83,9 @@ taskset -c 1 python3 /study/collect.py collect --corpus /study/corpus.json \
 ```
 
 For a placement receipt start the pinned Aonohako trace script on CPU 0 before the collector, and stop it after the collector exits. Run `placement.py dataset.json placement.json.gz --capture TRACE_DIRECTORY` on the unmodified capture. The public receipt includes the observed fork, exec and exit records for all measured child PIDs. Run `verify_archive.py dataset.json samples.tar.xz --pack COLLECTOR_OUTPUT` to retain the five measured ELFs and their individual receipts. [Guest observer and usage](https://github.com/seo-rii/aonohako/blob/f04ae258094e099c524c9191ef2f7b8a4c4f772a/docs/durante/GCE_PINNED_RUST_V10.md#repeating-the-collection)
+
+For the prospective run, copy the repository’s `holdout/` directory under `/study`, and retain the shared collector, production reader and the same DSO under `/study` as above. Use a fresh VM and an empty output directory. The protocol pins the systematic difference between the two diagnostic runs to the feature client's `-loop_recurrence_only` option.
+
+```sh
+taskset -c 1 python3 /study/holdout/collect_holdout.py --bundle /opt/durante --out /out --cpu 1
+```
