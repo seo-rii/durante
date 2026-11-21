@@ -1,0 +1,15 @@
+{
+  "base_durante_commit": "252685c18543799f72a14e20dce5b8eee72842c8",
+  "source_sha256": "95d943e9bbdcc9743b812540778266838a3ac25e5f819131f622f20dabd6c5a3",
+  "files": {
+    "experiments/time_features/featclient.c": "95d943e9bbdcc9743b812540778266838a3ac25e5f819131f622f20dabd6c5a3",
+    "experiments/time_features/CMakeLists.txt": "9d225357e7616b0c93519ae97f809ab5db2e3f4f81dac5531020f73be3f4f2ae",
+    "client/durante_runtime.h": "425c6811b9947cb806d8ffd77a7c7d512bb0bfe303e6d500bc485b77be2d8456"
+  },
+  "sdk_version": "DynamoRIO-Linux-11.3.0-1",
+  "sdk_header_path": "include/dr_api.h",
+  "sdk_header_sha256": "e10baca19b2b39663122b3b15fe3c6e4c51594928ca804180007a05a533730c9",
+  "cmake_build_type": "Release",
+  "cc": "12.2.0",
+  "feature_dso_sha256": "695416e64ded846bd10b8f6821dc2f2248877c82252662c08dbb46ba5b15c133"
+}
