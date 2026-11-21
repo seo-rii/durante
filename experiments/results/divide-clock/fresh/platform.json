@@ -1,0 +1,118 @@
+{
+  "schema": 1,
+  "target": "compute_engine",
+  "zone": "asia-northeast3-a",
+  "machine_type": "n2d-standard-4",
+  "cpu_platform": "AMD Milan",
+  "cpu_model": "AMD EPYC 7B13",
+  "threads_per_core": 1,
+  "online_cpus": [
+    0,
+    1
+  ],
+  "topology": [
+    {
+      "cpu": 0,
+      "core_id": 0,
+      "physical_package_id": 0,
+      "thread_siblings_list": "0"
+    },
+    {
+      "cpu": 1,
+      "core_id": 1,
+      "physical_package_id": 0,
+      "thread_siblings_list": "1"
+    }
+  ],
+  "benchmark_cpu": 1,
+  "observer_cpus": [
+    0
+  ],
+  "housekeeping_slice_effective": {
+    "system.slice": "0",
+    "user.slice": "0",
+    "init.scope": "0"
+  },
+  "private_ipv4_only": true,
+  "service_account_attached": false,
+  "boot_image": "debian-12-bookworm-v20261117",
+  "kernel": "6.1.0-56-cloud-amd64",
+  "guest_id_sha256": "1b0c2c3d9809a53b65fd000e77a4e38fda7c01f8b0f521f10628d6593b928b37",
+  "guest_boot_id_sha256": "569b74e283cc42967f06770a6c634426b15d67d3b2d867184d79f6d60322856c",
+  "clock_ticks_per_second": 100,
+  "benchmark_steal_ticks_before": 0,
+  "benchmark_steal_ticks_after": 0,
+  "docker_version": "27.5.1",
+  "docker_package_sha256": "4f798b3ee1e0140eab5bf30b0edc4e84f4cdb53255a429dc3bbae9524845d640",
+  "docker_pid_namespace": "host",
+  "network_mode": "none",
+  "image_manifest_sha256": "856be473011809c36a32d7ecfb6501c45db07b3204b7e475be515ca4baa6cf95",
+  "image_config_digest": "sha256:23de5e0567295587df1b06740beb848b570518e9189926c41f65d1b676808cab",
+  "container_id_sha256": "0dbe660825e62249b6806c44845499d43342da8683a412dc45f8265bab72f03c",
+  "capture_script_sha256": "277c453c5697bce67a7a4c910f7630ba34c20731aa9278da70cd94ec42a37955",
+  "trace_raw_sha256": "186716d3e86f6246adcbd320b1ce9bbbb583c9e279515e6ded10cdcce4628680",
+  "dataset_sha256": "bc735689f9ff0377d285c3ff91a35787436b108e7656f605f7b262cbc26b5f63",
+  "placement_sha256": "55163c15b4c304d1d6c51a807f72f634547e87f182747badfec01e93b801afdd",
+  "protocol_sha256": "1f60bb463d5a274e45ad8979190841c7f5601a52b32ad64f94d4450a5dbc1bd7",
+  "collector_sha256": "3cecc0d52f11487bc5b5532c45e5bb6ef1794188c1f73da5fa8896fbf83f7eeb",
+  "tools": {
+    "launcher": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "runtime": "fd1c5645b9fc70a7dcb71459b4b94782d2e016a2aa4ceffcfcab2ade962cdf5b",
+    "meter": "849c432a4832b554ebbf867f7fdce788a635f7193cd1343e0df3eac4089b9ea4",
+    "production_reader": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a",
+    "sampler": "4bb12b7da18b3c969c8b9ecedc1bf0a335000d6be74375011e8ef91b38b90f7e",
+    "fast": "22817e062bfd5625ac71304c78f6e2c1b8ee55623679a1c5746454a46544cc2f"
+  },
+  "study_sources_sha256": {
+    "client/cpu_policy.h": "b53e1987b92ab82aa303723fbda68d26aaf6b826172ab0e4b9be6e4c337bd363",
+    "client/cpuid_emulation.h": "5fade2d6c5760276a6b5ff198863cd1196095fdb9859270a6ea8f898f6c24527",
+    "client/cpuid_profile.h": "75cda24c23e45ea450b2d47265928335fc0780cc09ceebeddd13a20136edc216",
+    "client/durante.c": "b6af8e090846cf64a983bff4c0e4aafd6dc1cb3783d7713aad6f91694f467fd4",
+    "client/durante_runtime.h": "425c6811b9947cb806d8ffd77a7c7d512bb0bfe303e6d500bc485b77be2d8456",
+    "client/latency_bound.h": "51ea8177b786753196b24e80de74141af62df27395258cc94ab95b6eba4cfed5",
+    "collect.py": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a",
+    "experiments/divide_clock/CMakeLists.txt": "702de9005af514da3bf23c5c9033bed97602207a3f4d25b1b92147b146424822",
+    "experiments/divide_clock/fast/CMakeLists.txt": "87fdd5885e5376f843d0f84dcd06a845bad04615807a85358638ac682899d42d",
+    "experiments/divide_clock/fast/fast.c": "36fc2892e482cb5581c37015f9e916c21a2dfdcbb74db1457e45681c410411a3",
+    "experiments/divide_clock/fast_reader.py": "0aa63c93c17690e72679e90acd87574092cb7dba07734b0e10da9b8386a71695",
+    "experiments/divide_clock/fresh/collect.py": "3cecc0d52f11487bc5b5532c45e5bb6ef1794188c1f73da5fa8896fbf83f7eeb",
+    "experiments/divide_clock/fresh/fixtures.py": "05b8d9f5f8de601fe5126e38ff5d53b9aa6541c770481f1306c5effa399363ee",
+    "experiments/divide_clock/fresh/holdouts.rs": "b7dbff581623fe9773005293f5522e907ba5c62d565e78c11ba1ca5b5d692914",
+    "experiments/divide_clock/fresh/placement.py": "b601a598bed32ee1a60879038046dc1e84893ec3f4d4425a16e7bdac59685073",
+    "experiments/divide_clock/fresh/study.py": "4cf7b69e29ce940c4ec82f2cf35c19bce423a96ba788a7c37983b5c62ca09b1a",
+    "experiments/divide_clock/fresh/verify.py": "a1cb05c74ecc1290a9e72b48d6de926b9944cd1f0972f9ab06819f2e2e9a5935",
+    "experiments/divide_clock/parameters.json": "31b2e97cb416bbc1362a15b3d931847e16745e7a0a8fda6ff67f85faf3c63f20",
+    "experiments/divide_clock/probe.c": "099eff10b2f4a94f1e4054f704bed2dfaf84408370a4f2bbe69505444ccaa785",
+    "experiments/divide_clock/protocol.json": "8079fc19932643ad8045f99fd87fc6ece0e741081bfedfa97a9a8fa8b615c40a",
+    "experiments/divide_clock/replay.py": "7fd77dcede0e4ffbe646e5fb7aefeb2e17d09667a43c9535b7abbb49ba473a1c",
+    "experiments/results/divide-clock/fresh/fixtures.json": "29148bf80e4f0fef4c3e566388201ab2107b8528d80ea9350b2dfbd4a46e0ad5",
+    "experiments/rust_instruction_mix/collect.py": "b90aa20707ba81a376edb8ac4d288632b097f33f9def8bbd8b0e5d3175436775",
+    "experiments/rust_operand_bytes/collect.py": "1fea28282d1c823b3d9ca8dfc9b5e6443f9f373c2468be2f0348bdebd81c8b04"
+  },
+  "workloads_sha256": {
+    "div_large_serial": "02ecd2992aca22b68bdf5dbbbe9a349fae1ab3f53dbc49cfcae7c9345f1646d9",
+    "gcd": "5b7aece7ce2817e5b68bc9961e7663f3d1fbd66dd4b079eae22f65ff47d4d35f",
+    "floor_groups": "d9c0c42498a2f0905158334435994296ac2b56935bdb9de0a3a5d2e0c712e735",
+    "batch_quotients": "a72e92c6a7547d550d6ab9f105300500117e198f51809d52150c6a14272a9a47"
+  },
+  "control": {
+    "hand_counted_operand_bytes": 48
+  },
+  "started_at": "2026-11-21T13:31:30Z",
+  "finished_at": "2026-11-21T13:32:13Z",
+  "elapsed_seconds": 43,
+  "collector_exit": 0,
+  "samples": 12,
+  "measured_execs": 60,
+  "loader_reexecs": 36,
+  "affinity_observer_polls": 171,
+  "frozen_head": "a348a25883e68a297c46b8caa58d6b2f570bc736",
+  "vm_lifetime_cap_seconds": 7200,
+  "cleanup": {
+    "instance_http": 404,
+    "boot_disk_http": 404,
+    "disposable_ssh_key_removed": true,
+    "started_at": "2026-11-21T13:32:24.699185+00:00",
+    "verified_at": "2026-11-21T13:34:16.154921+00:00"
+  }
+}

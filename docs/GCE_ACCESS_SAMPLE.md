@@ -21,7 +21,7 @@ The table uses the median of the three estimates per program. The frozen clock p
 
 The affected workloads cannot both meet ±20% with one nonnegative far-load penalty and the frozen baseline. Even allowing the most favorable native endpoints and diagnostic readings, serial scattered traversal requires **more than 12.60 ns per far load**, while binary search permits **at most 3.17 ns**. Both programs saturate the scaling factor at one, so the same bound applies to both candidate features. Correcting the binary-search sampling bias below would increase its estimated far-load count and make its upper bound tighter. [Coefficient bound from the archived measurements](../experiments/access_sample/check_penalty.py)
 
-GCD's main division loop used register operands. The entire executable recorded only 221 eligible scalar loads per run. Adding a nonnegative memory penalty leaves its +57.63% error essentially untouched. The division dependency and throughput controls from the preceding study remain relevant to this workload. [Previous divide controls](GCE_DEPENDENCY_PAIRS.md)
+GCD's main division loop used register operands. The entire executable recorded only 221 eligible scalar loads per run. Adding a nonnegative memory penalty leaves its +57.63% error essentially untouched. A follow-up evaluated separate divide latency and issue costs on the original GCD and two new Rust workloads. [Previous divide controls](GCE_DEPENDENCY_PAIRS.md) · [Translation-time division study](GCE_DIVIDE_CLOCK.md)
 
 ## Additional measurement cost
 

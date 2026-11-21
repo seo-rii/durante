@@ -1,0 +1,675 @@
+{
+  "dataset_sha256": "bc735689f9ff0377d285c3ff91a35787436b108e7656f605f7b262cbc26b5f63",
+  "parameters_sha256": "31b2e97cb416bbc1362a15b3d931847e16745e7a0a8fda6ff67f85faf3c63f20",
+  "fresh_protocol_sha256": "1f60bb463d5a274e45ad8979190841c7f5601a52b32ad64f94d4450a5dbc1bd7",
+  "instrumented_cpu": {
+    "fresh_anchors": {
+      "n": 6,
+      "total_cpu_ns": {
+        "baseline": 2148106000,
+        "sampled": 3242574000,
+        "fast": 2155565000
+      },
+      "sampled_over_baseline": {
+        "pooled_ppm": 1509504,
+        "median_pair_ppm": 1532962
+      },
+      "fast_over_baseline": {
+        "pooled_ppm": 1003472,
+        "median_pair_ppm": 1000231
+      },
+      "fast_over_sampled": {
+        "pooled_ppm": 664770,
+        "median_pair_ppm": 658734
+      }
+    },
+    "fresh_holdouts": {
+      "n": 6,
+      "total_cpu_ns": {
+        "baseline": 10187008000,
+        "sampled": 12698094000,
+        "fast": 10213483000
+      },
+      "sampled_over_baseline": {
+        "pooled_ppm": 1246499,
+        "median_pair_ppm": 1323725
+      },
+      "fast_over_baseline": {
+        "pooled_ppm": 1002599,
+        "median_pair_ppm": 1001647
+      },
+      "fast_over_sampled": {
+        "pooled_ppm": 804332,
+        "median_pair_ppm": 759067
+      }
+    },
+    "all": {
+      "n": 12,
+      "total_cpu_ns": {
+        "baseline": 12335114000,
+        "sampled": 15940668000,
+        "fast": 12369048000
+      },
+      "sampled_over_baseline": {
+        "pooled_ppm": 1292300,
+        "median_pair_ppm": 1428171
+      },
+      "fast_over_baseline": {
+        "pooled_ppm": 1002751,
+        "median_pair_ppm": 1000535
+      },
+      "fast_over_sampled": {
+        "pooled_ppm": 775943,
+        "median_pair_ppm": 700012
+      }
+    }
+  },
+  "cases": {
+    "div_large_serial": {
+      "native_min_ns": 136459000,
+      "native_median_ns": "136583500",
+      "native_max_ns": 137224000,
+      "duration_pass": true,
+      "spread_pass": true,
+      "models": {
+        "v1": {
+          "estimates_ns": [
+            246519874,
+            246519874,
+            246519874
+          ],
+          "cycles_x16": [
+            12348025616,
+            12348025616,
+            12348025616
+          ],
+          "signed_errors_ppm": [
+            804902,
+            804902,
+            804902
+          ],
+          "pass": false
+        },
+        "zero": {
+          "estimates_ns": [
+            246519874,
+            246519874,
+            246519874
+          ],
+          "cycles_x16": [
+            12348025616,
+            12348025616,
+            12348025616
+          ],
+          "signed_errors_ppm": [
+            804902,
+            804902,
+            804902
+          ],
+          "pass": false
+        },
+        "latency": {
+          "estimates_ns": [
+            150055579,
+            150055579,
+            150055579
+          ],
+          "cycles_x16": [
+            7516189712,
+            7516189712,
+            7516189712
+          ],
+          "signed_errors_ppm": [
+            98636,
+            98636,
+            98636
+          ],
+          "pass": true
+        },
+        "latency_interval": {
+          "estimates_ns": [
+            128619092,
+            128619092,
+            128619092
+          ],
+          "cycles_x16": [
+            6442449536,
+            6442449536,
+            6442449536
+          ],
+          "signed_errors_ppm": [
+            -58312,
+            -58312,
+            -58312
+          ],
+          "pass": true
+        }
+      },
+      "baseline": {
+        "estimates_ns": [
+          246519874,
+          246519874,
+          246519874
+        ],
+        "cycles_x16": [
+          12348025616,
+          12348025616,
+          12348025616
+        ],
+        "signed_errors_ppm": [
+          804902,
+          804902,
+          804902
+        ],
+        "pass": false
+      },
+      "fast": {
+        "estimates_ns": [
+          128619092,
+          128619092,
+          128619092
+        ],
+        "cycles_x16": [
+          6442449536,
+          6442449536,
+          6442449536
+        ],
+        "signed_errors_ppm": [
+          -58312,
+          -58312,
+          -58312
+        ],
+        "pass": true
+      },
+      "fast_minus_replay_cycles_ppm": [
+        0,
+        0,
+        0
+      ],
+      "executed_main_div32": [
+        33554432,
+        33554432,
+        33554432
+      ],
+      "instrumented_cpu": {
+        "n": 3,
+        "total_cpu_ns": {
+          "baseline": 818816000,
+          "sampled": 1335766000,
+          "fast": 818510000
+        },
+        "sampled_over_baseline": {
+          "pooled_ppm": 1631338,
+          "median_pair_ppm": 1625672
+        },
+        "fast_over_baseline": {
+          "pooled_ppm": 999626,
+          "median_pair_ppm": 999828
+        },
+        "fast_over_sampled": {
+          "pooled_ppm": 612765,
+          "median_pair_ppm": 615025
+        }
+      }
+    },
+    "gcd": {
+      "native_min_ns": 39213000,
+      "native_median_ns": "39276000",
+      "native_max_ns": 39841000,
+      "duration_pass": true,
+      "spread_pass": true,
+      "models": {
+        "v1": {
+          "estimates_ns": [
+            62020711,
+            62020740,
+            62020850
+          ],
+          "cycles_x16": [
+            3106359056,
+            3106360456,
+            3106365808
+          ],
+          "signed_errors_ppm": [
+            579099,
+            579100,
+            579103
+          ],
+          "pass": false
+        },
+        "zero": {
+          "estimates_ns": [
+            62020711,
+            62020740,
+            62020850
+          ],
+          "cycles_x16": [
+            3106359056,
+            3106360456,
+            3106365808
+          ],
+          "signed_errors_ppm": [
+            579099,
+            579100,
+            579103
+          ],
+          "pass": false
+        },
+        "latency": {
+          "estimates_ns": [
+            36143584,
+            36143612,
+            36143723
+          ],
+          "cycles_x16": [
+            1810190000,
+            1810191400,
+            1810196752
+          ],
+          "signed_errors_ppm": [
+            -79754,
+            -79753,
+            -79750
+          ],
+          "pass": true
+        },
+        "latency_interval": {
+          "estimates_ns": [
+            30393111,
+            30393139,
+            30393250
+          ],
+          "cycles_x16": [
+            1522152432,
+            1522153832,
+            1522159184
+          ],
+          "signed_errors_ppm": [
+            -226166,
+            -226165,
+            -226162
+          ],
+          "pass": false
+        }
+      },
+      "baseline": {
+        "estimates_ns": [
+          62019420,
+          62019449,
+          62019629
+        ],
+        "cycles_x16": [
+          3106300084,
+          3106301524,
+          3106310212
+        ],
+        "signed_errors_ppm": [
+          579067,
+          579067,
+          579072
+        ],
+        "pass": false
+      },
+      "fast": {
+        "estimates_ns": [
+          30391980,
+          30392140,
+          30391905
+        ],
+        "cycles_x16": [
+          1522101776,
+          1522108964,
+          1522097604
+        ],
+        "signed_errors_ppm": [
+          -226195,
+          -226191,
+          -226197
+        ],
+        "pass": false
+      },
+      "fast_minus_replay_cycles_ppm": [
+        -33,
+        -29,
+        -40
+      ],
+      "executed_main_div32": [
+        9525462,
+        9525462,
+        9525462
+      ],
+      "instrumented_cpu": {
+        "n": 3,
+        "total_cpu_ns": {
+          "baseline": 1329290000,
+          "sampled": 1906808000,
+          "fast": 1337055000
+        },
+        "sampled_over_baseline": {
+          "pooled_ppm": 1434456,
+          "median_pair_ppm": 1428487
+        },
+        "fast_over_baseline": {
+          "pooled_ppm": 1005841,
+          "median_pair_ppm": 1005483
+        },
+        "fast_over_sampled": {
+          "pooled_ppm": 701201,
+          "median_pair_ppm": 700002
+        }
+      }
+    },
+    "floor_groups": {
+      "native_min_ns": 51822000,
+      "native_median_ns": "51915000",
+      "native_max_ns": 52019000,
+      "duration_pass": true,
+      "spread_pass": true,
+      "models": {
+        "v1": {
+          "estimates_ns": [
+            104778122,
+            104777926,
+            104778084
+          ],
+          "cycles_x16": [
+            5248051344,
+            5248041888,
+            5248049544
+          ],
+          "signed_errors_ppm": [
+            1018263,
+            1018259,
+            1018262
+          ],
+          "pass": false
+        },
+        "zero": {
+          "estimates_ns": [
+            97796268,
+            97796072,
+            97796231
+          ],
+          "cycles_x16": [
+            4898334672,
+            4898325216,
+            4898332872
+          ],
+          "signed_errors_ppm": [
+            883777,
+            883773,
+            883776
+          ],
+          "pass": false
+        },
+        "latency": {
+          "estimates_ns": [
+            55905145,
+            55904949,
+            55905108
+          ],
+          "cycles_x16": [
+            2800034640,
+            2800025184,
+            2800032840
+          ],
+          "signed_errors_ppm": [
+            76859,
+            76855,
+            76858
+          ],
+          "pass": true
+        },
+        "latency_interval": {
+          "estimates_ns": [
+            46596538,
+            46596342,
+            46596500
+          ],
+          "cycles_x16": [
+            2333772352,
+            2333762896,
+            2333770552
+          ],
+          "signed_errors_ppm": [
+            -102446,
+            -102449,
+            -102446
+          ],
+          "pass": true
+        }
+      },
+      "baseline": {
+        "estimates_ns": [
+          104776538,
+          104776536,
+          104776576
+        ],
+        "cycles_x16": [
+          5247978756,
+          5247978660,
+          5247980028
+        ],
+        "signed_errors_ppm": [
+          1018232,
+          1018232,
+          1018233
+        ],
+        "pass": false
+      },
+      "fast": {
+        "estimates_ns": [
+          46594958,
+          46594949,
+          46595106
+        ],
+        "cycles_x16": [
+          2333699380,
+          2333698948,
+          2333706532
+        ],
+        "signed_errors_ppm": [
+          -102476,
+          -102476,
+          -102473
+        ],
+        "pass": true
+      },
+      "fast_minus_replay_cycles_ppm": [
+        -31,
+        -27,
+        -27
+      ],
+      "executed_main_div32": [
+        14572040,
+        14572040,
+        14572040
+      ],
+      "instrumented_cpu": {
+        "n": 3,
+        "total_cpu_ns": {
+          "baseline": 1060688000,
+          "sampled": 1511424000,
+          "fast": 1057122000
+        },
+        "sampled_over_baseline": {
+          "pooled_ppm": 1424947,
+          "median_pair_ppm": 1424835
+        },
+        "fast_over_baseline": {
+          "pooled_ppm": 996638,
+          "median_pair_ppm": 996502
+        },
+        "fast_over_sampled": {
+          "pooled_ppm": 699421,
+          "median_pair_ppm": 700023
+        }
+      }
+    },
+    "batch_quotients": {
+      "native_min_ns": 64547000,
+      "native_median_ns": "64724000",
+      "native_max_ns": 64913000,
+      "duration_pass": true,
+      "spread_pass": true,
+      "models": {
+        "v1": {
+          "estimates_ns": [
+            31367432,
+            31367096,
+            31367089
+          ],
+          "cycles_x16": [
+            1479329856,
+            1479313560,
+            1479313224
+          ],
+          "signed_errors_ppm": [
+            -515366,
+            -515371,
+            -515372
+          ],
+          "pass": false
+        },
+        "zero": {
+          "estimates_ns": [
+            31367432,
+            31367096,
+            31367089
+          ],
+          "cycles_x16": [
+            1479329856,
+            1479313560,
+            1479313224
+          ],
+          "signed_errors_ppm": [
+            -515366,
+            -515371,
+            -515372
+          ],
+          "pass": false
+        },
+        "latency": {
+          "estimates_ns": [
+            31367432,
+            31367096,
+            31367089
+          ],
+          "cycles_x16": [
+            1479329856,
+            1479313560,
+            1479313224
+          ],
+          "signed_errors_ppm": [
+            -515366,
+            -515371,
+            -515372
+          ],
+          "pass": false
+        },
+        "latency_interval": {
+          "estimates_ns": [
+            74240473,
+            74240136,
+            74240129
+          ],
+          "cycles_x16": [
+            3626813504,
+            3626797208,
+            3626796872
+          ],
+          "signed_errors_ppm": [
+            147032,
+            147026,
+            147026
+          ],
+          "pass": true
+        }
+      },
+      "baseline": {
+        "estimates_ns": [
+          31365698,
+          31366162,
+          31366070
+        ],
+        "cycles_x16": [
+          1479249404,
+          1479271844,
+          1479267404
+        ],
+        "signed_errors_ppm": [
+          -515393,
+          -515386,
+          -515387
+        ],
+        "pass": false
+      },
+      "fast": {
+        "estimates_ns": [
+          74239137,
+          74238914,
+          74238927
+        ],
+        "cycles_x16": [
+          3626752376,
+          3626741624,
+          3626742248
+        ],
+        "signed_errors_ppm": [
+          147011,
+          147008,
+          147008
+        ],
+        "pass": true
+      },
+      "fast_minus_replay_cycles_ppm": [
+        -17,
+        -15,
+        -15
+      ],
+      "executed_main_div32": [
+        33554432,
+        33554432,
+        33554432
+      ],
+      "instrumented_cpu": {
+        "n": 3,
+        "total_cpu_ns": {
+          "baseline": 9126320000,
+          "sampled": 11186670000,
+          "fast": 9156361000
+        },
+        "sampled_over_baseline": {
+          "pooled_ppm": 1225759,
+          "median_pair_ppm": 1224782
+        },
+        "fast_over_baseline": {
+          "pooled_ppm": 1003292,
+          "median_pair_ppm": 1002841
+        },
+        "fast_over_sampled": {
+          "pooled_ppm": 818506,
+          "median_pair_ppm": 819640
+        }
+      }
+    }
+  },
+  "passed": {
+    "fresh_anchors": {
+      "v1": 0,
+      "zero": 0,
+      "latency": 2,
+      "latency_interval": 1
+    },
+    "fresh_holdouts": {
+      "v1": 0,
+      "zero": 0,
+      "latency": 1,
+      "latency_interval": 2
+    }
+  },
+  "fast_meter_passes": {
+    "fresh_anchors": 1,
+    "fresh_holdouts": 2
+  }
+}
