@@ -28,10 +28,12 @@ BASES = ((34,21),(514229,317811))
 
 
 class History:
+    """Replay both pair hashes. Only the multiply-high table drives measured charges."""
+
     def __init__(self):
         self.last = self.penultimate = None
-        self.one, self.two = [None]*64, [None]*64
-        self.changes = self.unpredicted = 0
+        self.one, self.two, self.low_hash = [None]*64, [None]*64, [None]*64
+        self.changes = self.unpredicted = self.low_unpredicted = 0
         self.histogram = Counter()
 
     def visit(self, length):
@@ -39,20 +41,27 @@ class History:
         last, earlier = self.last, self.penultimate
         if last is not None:
             one = last % 64
-            predicted = self.one[one] == (last,length)
+            predicted = low_predicted = self.one[one] == (last,length)
             self.one[one] = (last,length)
             if earlier is not None:
-                two = (31*earlier + last) % 64
-                predicted |= self.two[two] == (earlier,last,length)
-                self.two[two] = (earlier,last,length)
+                mask = (1 << 64) - 1
+                rotated = ((earlier << 32) & mask) | (earlier >> 32)
+                two = (((rotated ^ last) * 0x9e3779b97f4a7c15) & mask) >> 58
+                low = (31*earlier + last) % 64
+                tag = (earlier,last,length)
+                predicted |= self.two[two] == tag
+                low_predicted |= self.low_hash[low] == tag
+                self.two[two] = self.low_hash[low] = tag
             if length != last:
                 self.changes += 1
                 self.unpredicted += not predicted
+                self.low_unpredicted += not low_predicted
         self.penultimate, self.last = last, length
 
     def summary(self, checksum):
         return {**prior["counts"](self.histogram,self.changes,checksum),
-                "unpredicted_changes": self.unpredicted}
+                "unpredicted_changes": self.unpredicted,
+                "low_hash_unpredicted_changes": self.low_unpredicted}
 
 
 def random_case(count, seed):
