@@ -1,0 +1,79 @@
+{
+  "schema": 1,
+  "cases": [
+    "gcd",
+    "stream_independent",
+    "stream_dividend",
+    "stream_divisor",
+    "loop_remainder_original",
+    "loop_remainder_grouped",
+    "loop_counted_original",
+    "loop_counted_grouped",
+    "floor_groups",
+    "batch_quotients"
+  ],
+  "contrasts": {
+    "dividend_dependency": [
+      "stream_dividend",
+      "stream_independent"
+    ],
+    "divisor_dependency": [
+      "stream_divisor",
+      "stream_independent"
+    ],
+    "divisor_vs_dividend": [
+      "stream_divisor",
+      "stream_dividend"
+    ],
+    "order_remainder": [
+      "loop_remainder_original",
+      "loop_remainder_grouped"
+    ],
+    "order_counted": [
+      "loop_counted_original",
+      "loop_counted_grouped"
+    ],
+    "control_original": [
+      "loop_remainder_original",
+      "loop_counted_original"
+    ],
+    "control_grouped": [
+      "loop_remainder_grouped",
+      "loop_counted_grouped"
+    ]
+  },
+  "calibration": "Use only the published GCD result from the preceding fresh Compute Engine study. Subtract the median of its three reported fast-clock estimates (rounded to ns in that archive) from the median of its six native observations. Allocate this entire residual separately to one of three known counts in the original input. Do not combine these alternatives or refit on new observations.",
+  "models": {
+    "fast": "The existing version-9001 clock and the original frozen cycles and nominal-operand-byte weights.",
+    "divisor_edge": "Add the historical residual per within-chain edge on which the last machine remainder supplies the next divisor. Each actual GCD case has divisions minus GCDs such edges. In the synthetic stream, only the divisor treatment has that dependency and it spans all adjacent stream records.",
+    "chain_exit": "Add the historical residual per completed GCD chain to each real GCD loop including the anchor. The fixed-trip stream has no GCD loop exits.",
+    "length_change": "Add the historical residual per GCD whose trip count differs from the previous GCD, excluding the first pair. This order feature is derived from the fixture oracle, and is zero on the fixed-trip stream. It is a proposed predictor of the time attributable to changing run lengths, not a hardware branch-miss count."
+  },
+  "reference": "experiments/results/divide-clock/fresh/evaluation.json",
+  "tolerance_ppm": 200000,
+  "min_native_ns": 20000000,
+  "max_spread_ppm": 100000,
+  "scoring": "Keep all cases. For a case, compare every estimate from the four diagnostics with the native median of eight wait4 CPU times. All four must be within 20 percent to pass. Report native minimum, median, maximum, spread, raw clock estimates and each separately calibrated alternative. Keep the previously observed Rust anchor separate from the new mechanistic controls. For the two additional archived Rust transfer programs, report v9001 and the two online corrections. The three input-oracle hypotheses apply only to the original eight cases. Always compare the corresponding online baseline from the same run. Distinguish the two new matched sets from three existing Rust workloads.",
+  "comparison": "For each preregistered contrast report the native median difference, ratio, the per-round median native difference with both endpoints of each quartet, and the estimate difference for each model. Conservatively bound the native difference using first minimum minus second maximum and first maximum minus second minimum. Display the interaction (original minus grouped for remainder-driven termination, less the same contrast with counted termination). These are whole-process timings including reads of a pre-warmed file. Input order also changes the order in which numerical operands reach the processor. No hardware performance events are observed.",
+  "groups": {
+    "anchor": [
+      "gcd"
+    ],
+    "stream": [
+      "stream_independent",
+      "stream_dividend",
+      "stream_divisor"
+    ],
+    "loop": [
+      "loop_remainder_original",
+      "loop_remainder_grouped",
+      "loop_counted_original",
+      "loop_counted_grouped"
+    ],
+    "transfer": [
+      "floor_groups",
+      "batch_quotients"
+    ]
+  },
+  "online": "Use a second instrumented run with the same v9001 clock plus the experimental main-executable DIV32 loop probe. For each site sum completed traversals across sites for online chain_exit. Sum unequal lengths of two consecutive completed traversals at the same static closing branch for online length_change. Include the first completion in the exit count only. Apply the same GCD-trained cost to all cases, including two previously measured Rust programs unrelated to Euclidean GCD. Compare with the original symbolic counts on the four assembly GCD controls and on the original GCD, and compare measured CPU ratios vs v9001-only runs. No online prediction is a time-limit policy."
+}
