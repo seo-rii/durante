@@ -1,0 +1,49 @@
+--- probe.c
++++ history_probe.c
+@@ -7 +7,5 @@
+-enum { MAX_BODY = 256, MAX_SITES = 1024 };
++enum { MAX_BODY = 256, MAX_SITES = 1024, SLOTS = 64 };
++/* A successor is a strictly positive completed length. Zero therefore marks
++ * an unused slot. Each entry also stores the exact 64-bit key(s). */
++typedef struct { uint64_t previous, successor; } one_key_t;
++typedef struct { uint64_t earlier, previous, successor; } two_key_t;
+@@ -10,0 +15,3 @@
++    uint64_t earlier, unpredicted_changes;
++    one_key_t one[SLOTS];
++    two_key_t two[SLOTS];
+@@ -20 +27 @@
+-    dr_fprintf(STDERR, "trip_probe: %s\n", message);
++    dr_fprintf(STDERR, "history_probe: %s\n", message);
+@@ -95 +102,21 @@
+-    s->changes += s->completed && s->last != length;
++    if (s->completed) {
++        one_key_t *one = &s->one[s->last & (SLOTS - 1)];
++        bool predicted = one->previous == s->last && one->successor == length;
++        if (s->completed >= 2) {
++            uint64_t rotated = (s->earlier << 32) | (s->earlier >> 32);
++            uint64_t mixed = (rotated ^ s->last) * UINT64_C(0x9e3779b97f4a7c15);
++            two_key_t *two = &s->two[mixed >> 58];
++            predicted |= two->earlier == s->earlier && two->previous == s->last &&
++                         two->successor == length;
++            two->earlier = s->earlier;
++            two->previous = s->last;
++            two->successor = length;
++        }
++        if (s->last != length) {
++            ++s->changes;
++            s->unpredicted_changes += !predicted;
++        }
++        one->previous = s->last;
++        one->successor = length;
++    }
++    s->earlier = s->last;
+@@ -156 +183 @@
+-    dr_fprintf(output, "{\"schema\":1,\"pid\":%u,\"threads\":1,\"sites\":[", (unsigned)owner);
++    dr_fprintf(output, "{\"schema\":2,\"pid\":%u,\"threads\":1,\"sites\":[", (unsigned)owner);
+@@ -165 +192 @@
+-                   "\"completed\":%llu,\"changes\":%llu,\"last_length\":%llu,\"pending_length\":%llu}",
++                   "\"completed\":%llu,\"changes\":%llu,\"last_length\":%llu,\"pending_length\":%llu,\"unpredicted_changes\":%llu}",
+@@ -170 +197,2 @@
+-                   (unsigned long long)s->last, (unsigned long long)s->pending);
++                   (unsigned long long)s->last, (unsigned long long)s->pending,
++                   (unsigned long long)s->unpredicted_changes);

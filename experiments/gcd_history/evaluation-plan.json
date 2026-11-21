@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "anchors": [
+    "gcd_seed_b",
+    "fibonacci_alternating"
+  ],
+  "prospective": [
+    "gcd_seed_d",
+    "fibonacci_aabb",
+    "fibonacci_runs32",
+    "fibonacci_permuted"
+  ],
+  "model": "Retain the archived classifier, both signed loop costs and the same-run version-9001 baseline. For an eligible remainder-driven branch, charge the existing change cost only when the new length differs from its predecessor and matches neither available last-successor prediction. One table is keyed by the previous length and the other by the previous two lengths. Each uses 64 direct-mapped entries, with complete key tags. Predict before updating. Count changes only between completed traversals at the same static site. There is no fit using any new native observation.",
+  "scoring": "Compare each of four estimates with the median of eight native wait4 CPU observations. A workload passes when each estimate is within 20 percent. Report the native minimum 20 ms and maximum 10 percent spread gates separately. Report the two repeat inputs separately from the four new inputs, every counted and charged change, the paired flat-change and version-9001 estimates and total/median paired instrumentation overhead. Each Fibonacci order has the same numeric operand multiset. No hardware performance event is measured.",
+  "table_slots": {
+    "previous": "previous & 63",
+    "previous_two": "high six bits of the unsigned 64-bit product of (rotate-left(earlier, 32) XOR previous) and 0x9e3779b97f4a7c15. Check full keys before interpreting a successor."
+  },
+  "premeasurement_hash_check": "An unreleased low-bit pair hash (31*earlier+previous) & 63 mapped all equal odd pairs to slot 32. Input-only replay on AABB showed that it evicted a known transition on every change. Keep its oracle count for design provenance. Only the multiplicative hash is collected and scored prospectively."
+}
