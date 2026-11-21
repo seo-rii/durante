@@ -8,15 +8,17 @@ import sys
 import tempfile
 import unittest
 
+from registered_tree import registered_root
+
 ROOT = Path(__file__).resolve().parents[1]
 STUDY = ROOT / "experiments/gcd_controls"
 DATA = ROOT / "experiments/results/gce-gcd-controls"
 
 
 class GcdControlStudy(unittest.TestCase):
-    def run_script(self, script, *args):
+    def run_script(self, script, *args, study=STUDY):
         result = subprocess.run(
-            [sys.executable, STUDY / script, *args],
+            [sys.executable, study / script, *args],
             capture_output=True, text=True, timeout=120,
         )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
@@ -45,10 +47,13 @@ class GcdControlStudy(unittest.TestCase):
         self.run_script("calibrate.py")
 
     def test_receipts_placement_and_scores(self):
-        dataset = DATA / "dataset.json.gz"
-        self.run_script("verify.py", dataset, DATA / "receipts.tar.xz")
-        self.run_script("placement.py", dataset, DATA / "placement.json.gz", "--platform", DATA / "platform.json")
-        self.run_script("score.py", "--verify")
+        root = registered_root(self, "experiments/gcd_controls/protocol.json")
+        study, data = root / STUDY.relative_to(ROOT), root / DATA.relative_to(ROOT)
+        dataset = data / "dataset.json.gz"
+        self.run_script("verify.py", dataset, data / "receipts.tar.xz", study=study)
+        self.run_script("placement.py", dataset, data / "placement.json.gz", "--platform",
+                        data / "platform.json", study=study)
+        self.run_script("score.py", "--verify", study=study)
 
     def test_measured_loop_counts_match_source(self):
         plan = json.loads((STUDY / "evaluation-plan.json").read_bytes())
