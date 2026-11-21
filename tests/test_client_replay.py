@@ -105,6 +105,14 @@ file_t dr_open_file(const char *path, uint flags) {
     abort();
 }
 
+static reg_t syscall_result;
+reg_t dr_syscall_get_result(void *ctx) {
+    assert(ctx == CTX);
+    return syscall_result;
+}
+void dr_mutex_lock(void *mutex) { assert(mutex == state_lock); }
+void dr_mutex_unlock(void *mutex) { assert(mutex == state_lock); }
+
 /* The scope fixture supplies its own ELF header and syscall arguments. */
 bool dr_safe_read(const void *src, size_t size, void *dst, size_t *read) {
     memcpy(dst, src, size);
@@ -250,6 +258,13 @@ int main(int argc, char **argv) {
     const char *test = argv[1];
     if (!strcmp(test, "static-text-scope")) {
         check_static_text_scope();
+    } else if (!strcmp(test, "returning-lifecycle")) {
+        state.pending_syscall = SYS_fork;
+        state.pending_spawn = true;
+        syscall_result = 201;
+        post_syscall(CTX, SYS_fork);
+        assert(strstr(record, "\"event\":\"spawn\"") && strstr(record, "\"child_pid\":201,"));
+        assert(!state.pending_spawn && state.pending_syscall == -1);
     } else if (!strcmp(test, "suffix")) {
         test_ir nodes[6] = {{1, NULL}, {0, NULL}, {1, NULL},
                             {0, NULL}, {1, NULL}, {0, NULL}};
@@ -857,6 +872,9 @@ class ClientReplayStateTests(unittest.TestCase):
 
     def test_executed_prefix_survives_retry(self):
         self.run_case("prefix")
+
+    def test_returning_lifecycle_syscall_clears_pending_number(self):
+        self.run_case("returning-lifecycle")
 
     def test_static_text_scope(self):
         self.run_case("static-text-scope")

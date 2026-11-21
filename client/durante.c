@@ -1488,6 +1488,7 @@ static void post_syscall(void *ctx, int number) {
                 number, (long long)result);
     route_event(d, "exec_failed", fields);
   }
+  d->pending_syscall = -1;
   d->pending_spawn = false;
   d->pending_exec = false;
   d->pending_unsupported = false;
