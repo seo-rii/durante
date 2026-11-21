@@ -1,0 +1,1405 @@
+{
+  "dataset_sha256": "377790710f4429fc8e73dd2b495b78150a3871b69f4279fcb0d064ddbfc998c2",
+  "plan_sha256": "6e549bcb3b5dadcd2cce22c46d63042f4cf57c57dcea795676c9b3b1dfaa56bd",
+  "feasibility": {
+    "cmov": {
+      "suffix": {
+        "median": {
+          "minimum_tolerance_ppm_ceiling": 581574,
+          "possible_at_20_percent": false
+        },
+        "favorable_endpoints": {
+          "minimum_tolerance_ppm_ceiling": 538254,
+          "possible_at_20_percent": false
+        }
+      },
+      "above_9": {
+        "median": {
+          "minimum_tolerance_ppm_ceiling": 476418,
+          "possible_at_20_percent": false
+        },
+        "favorable_endpoints": {
+          "minimum_tolerance_ppm_ceiling": 429572,
+          "possible_at_20_percent": false
+        }
+      }
+    },
+    "jcc": {
+      "suffix": {
+        "median": {
+          "minimum_tolerance_ppm_ceiling": 89310,
+          "possible_at_20_percent": true
+        },
+        "favorable_endpoints": {
+          "minimum_tolerance_ppm_ceiling": 81297,
+          "possible_at_20_percent": true
+        }
+      },
+      "above_9": {
+        "median": {
+          "minimum_tolerance_ppm_ceiling": 312184,
+          "possible_at_20_percent": false
+        },
+        "favorable_endpoints": {
+          "minimum_tolerance_ppm_ceiling": 305368,
+          "possible_at_20_percent": false
+        }
+      }
+    }
+  },
+  "parameters": {
+    "cmov": {
+      "query_only": {
+        "ns_per_query": "4570672036009532512916180979646534340987417881425947007565668854729679896565194185625/2597205221488477503298567477286957655637518048161266605669525866392494182216982069248",
+        "ns_per_level": "0"
+      },
+      "suffix": {
+        "ns_per_query": "-24277001671419557890966446560200732810575155569196157765483077442297710047032175052825875/1434306583567011701196633889331722365325819342097059482980995659715254912129328347742208",
+        "ns_per_level": "88850040/30884029"
+      },
+      "above_9": {
+        "ns_per_query": "-21798374004435691033843908167846822450939980225871094491195046118379214959529567240125/1298602610744238751649283738643478827818759024080633302834762933196247091108491034624",
+        "ns_per_level": "177700080/19112027"
+      }
+    },
+    "jcc": {
+      "query_only": {
+        "ns_per_query": "84985149150470716057306922170809081407626887200437109778821070208603125185650838844125/1298602610744238751649283738643478827818759024080633302834762933196247091108491034624",
+        "ns_per_level": "0"
+      },
+      "suffix": {
+        "ns_per_query": "36134961976801238734467094955495386584157474906187155314431638007818473494679826742256875/2868613167134023402393267778663444730651638684194118965961991319430509824258656695484416",
+        "ns_per_level": "251284320/30884029"
+      },
+      "above_9": {
+        "ns_per_query": "16871969954759211023853022461438761992339938457178870964839893295474850493233790949375/1298602610744238751649283738643478827818759024080633302834762933196247091108491034624",
+        "ns_per_level": "502568640/19112027"
+      }
+    }
+  },
+  "cases": {
+    "cmov_random": {
+      "native_ns": [
+        56145000,
+        63419000,
+        62367000,
+        63008000,
+        65387000,
+        63686000,
+        62792000,
+        62928000
+      ],
+      "native_median_ns": "62968000",
+      "duration_pass": true,
+      "spread_ppm": 146773,
+      "spread_pass": false,
+      "visits": 1048576,
+      "sampled_pairs": 1028,
+      "full_means": {
+        "suffix": "4543963/349525",
+        "above_9": "1409141/349525"
+      },
+      "sampled_means": {
+        "suffix": "3326/257",
+        "above_9": "4101/1028"
+      },
+      "models": {
+        "fast": {
+          "estimate_ns": [
+            41675921,
+            41675921,
+            41675921,
+            41675921
+          ],
+          "median_ns": 41675921,
+          "signed_errors_ppm": [
+            -338141,
+            -338141,
+            -338141,
+            -338141
+          ],
+          "pass": false
+        },
+        "paired_baseline": {
+          "estimate_ns": [
+            41675921,
+            41675921,
+            41675921,
+            41675921
+          ],
+          "median_ns": 41675921,
+          "signed_errors_ppm": [
+            -338141,
+            -338141,
+            -338141,
+            -338141
+          ],
+          "pass": false
+        },
+        "query_only": {
+          "estimate_ns": [
+            43521250,
+            43521250,
+            43521250,
+            43521250
+          ],
+          "median_ns": 43521250,
+          "signed_errors_ppm": [
+            -308835,
+            -308835,
+            -308835,
+            -308835
+          ],
+          "pass": false
+        },
+        "suffix": {
+          "estimate_ns": [
+            62968000,
+            62968000,
+            62968000,
+            62968000
+          ],
+          "median_ns": 62968000,
+          "signed_errors_ppm": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pass": true
+        },
+        "above_9": {
+          "estimate_ns": [
+            62968000,
+            62968000,
+            62968000,
+            62968000
+          ],
+          "median_ns": 62968000,
+          "signed_errors_ppm": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pass": true
+        }
+      },
+      "cpu": {
+        "pairs": 4,
+        "fast_ns": 2515959000,
+        "sampled_ns": 2515526000,
+        "pooled_overhead_ppm": -172,
+        "median_pair_overhead_ppm": 1979
+      }
+    },
+    "cmov_sorted": {
+      "native_ns": [
+        23646000,
+        24432000,
+        23734000,
+        24221000,
+        24387000,
+        23928000,
+        23571000,
+        24349000
+      ],
+      "native_median_ns": "24074500",
+      "duration_pass": true,
+      "spread_ppm": 35764,
+      "spread_pass": true,
+      "visits": 1048576,
+      "sampled_pairs": 1028,
+      "full_means": {
+        "suffix": "32752/1048575",
+        "above_9": "19/349525"
+      },
+      "sampled_means": {
+        "suffix": "25/514",
+        "above_9": "0"
+      },
+      "models": {
+        "fast": {
+          "estimate_ns": [
+            41675921,
+            41675921,
+            41675921,
+            41675921
+          ],
+          "median_ns": 41675921,
+          "signed_errors_ppm": [
+            731123,
+            731123,
+            731123,
+            731123
+          ],
+          "pass": false
+        },
+        "paired_baseline": {
+          "estimate_ns": [
+            41675921,
+            41675921,
+            41675921,
+            41675921
+          ],
+          "median_ns": 41675921,
+          "signed_errors_ppm": [
+            731123,
+            731123,
+            731123,
+            731123
+          ],
+          "pass": false
+        },
+        "query_only": {
+          "estimate_ns": [
+            43521250,
+            43521250,
+            43521250,
+            43521250
+          ],
+          "median_ns": 43521250,
+          "signed_errors_ppm": [
+            807774,
+            807774,
+            807774,
+            807774
+          ],
+          "pass": false
+        },
+        "suffix": {
+          "estimate_ns": [
+            24074500,
+            24074500,
+            24074500,
+            24074500
+          ],
+          "median_ns": 24074500,
+          "signed_errors_ppm": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pass": true
+        },
+        "above_9": {
+          "estimate_ns": [
+            24074500,
+            24074500,
+            24074500,
+            24074500
+          ],
+          "median_ns": 24074500,
+          "signed_errors_ppm": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pass": true
+        }
+      },
+      "cpu": {
+        "pairs": 4,
+        "fast_ns": 2434888000,
+        "sampled_ns": 2431869000,
+        "pooled_overhead_ppm": -1240,
+        "median_pair_overhead_ppm": 30
+      }
+    },
+    "jcc_random": {
+      "native_ns": [
+        135016000,
+        135816000,
+        135738000,
+        137795000,
+        137593000,
+        139115000,
+        137568000,
+        138741000
+      ],
+      "native_median_ns": "137580500",
+      "duration_pass": true,
+      "spread_ppm": 29793,
+      "spread_pass": true,
+      "visits": 1048576,
+      "sampled_pairs": 1028,
+      "full_means": {
+        "suffix": "4543963/349525",
+        "above_9": "1409141/349525"
+      },
+      "sampled_means": {
+        "suffix": "3326/257",
+        "above_9": "4101/1028"
+      },
+      "models": {
+        "fast": {
+          "estimate_ns": [
+            13958977,
+            13958977,
+            13958977,
+            13958977
+          ],
+          "median_ns": 13958977,
+          "signed_errors_ppm": [
+            -898540,
+            -898540,
+            -898540,
+            -898540
+          ],
+          "pass": false
+        },
+        "paired_baseline": {
+          "estimate_ns": [
+            13958977,
+            13958977,
+            13958977,
+            13958977
+          ],
+          "median_ns": 13958977,
+          "signed_errors_ppm": [
+            -898540,
+            -898540,
+            -898540,
+            -898540
+          ],
+          "pass": false
+        },
+        "query_only": {
+          "estimate_ns": [
+            82581500,
+            82581500,
+            82581500,
+            82581500
+          ],
+          "median_ns": 82581500,
+          "signed_errors_ppm": [
+            -399759,
+            -399759,
+            -399759,
+            -399759
+          ],
+          "pass": false
+        },
+        "suffix": {
+          "estimate_ns": [
+            137580500,
+            137580500,
+            137580500,
+            137580500
+          ],
+          "median_ns": 137580500,
+          "signed_errors_ppm": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pass": true
+        },
+        "above_9": {
+          "estimate_ns": [
+            137580500,
+            137580500,
+            137580500,
+            137580500
+          ],
+          "median_ns": 137580500,
+          "signed_errors_ppm": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pass": true
+        }
+      },
+      "cpu": {
+        "pairs": 4,
+        "fast_ns": 5340367000,
+        "sampled_ns": 5334830000,
+        "pooled_overhead_ppm": -1037,
+        "median_pair_overhead_ppm": -1213
+      }
+    },
+    "jcc_sorted": {
+      "native_ns": [
+        27601000,
+        27505000,
+        27575000,
+        27590000,
+        27645000,
+        27533000,
+        27724000,
+        27528000
+      ],
+      "native_median_ns": "27582500",
+      "duration_pass": true,
+      "spread_ppm": 7940,
+      "spread_pass": true,
+      "visits": 1048576,
+      "sampled_pairs": 1028,
+      "full_means": {
+        "suffix": "32752/1048575",
+        "above_9": "19/349525"
+      },
+      "sampled_means": {
+        "suffix": "25/514",
+        "above_9": "0"
+      },
+      "models": {
+        "fast": {
+          "estimate_ns": [
+            13958977,
+            13958977,
+            13958977,
+            13958977
+          ],
+          "median_ns": 13958977,
+          "signed_errors_ppm": [
+            -493919,
+            -493919,
+            -493919,
+            -493919
+          ],
+          "pass": false
+        },
+        "paired_baseline": {
+          "estimate_ns": [
+            13958977,
+            13958977,
+            13958977,
+            13958977
+          ],
+          "median_ns": 13958977,
+          "signed_errors_ppm": [
+            -493919,
+            -493919,
+            -493919,
+            -493919
+          ],
+          "pass": false
+        },
+        "query_only": {
+          "estimate_ns": [
+            82581500,
+            82581500,
+            82581500,
+            82581500
+          ],
+          "median_ns": 82581500,
+          "signed_errors_ppm": [
+            1993982,
+            1993982,
+            1993982,
+            1993982
+          ],
+          "pass": false
+        },
+        "suffix": {
+          "estimate_ns": [
+            27582500,
+            27582500,
+            27582500,
+            27582500
+          ],
+          "median_ns": 27582500,
+          "signed_errors_ppm": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pass": true
+        },
+        "above_9": {
+          "estimate_ns": [
+            27582500,
+            27582500,
+            27582500,
+            27582500
+          ],
+          "median_ns": 27582500,
+          "signed_errors_ppm": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pass": true
+        }
+      },
+      "cpu": {
+        "pairs": 4,
+        "fast_ns": 4669328000,
+        "sampled_ns": 4676790000,
+        "pooled_overhead_ppm": 1598,
+        "median_pair_overhead_ppm": 1178
+      }
+    },
+    "cmov_block32": {
+      "native_ns": [
+        56582000,
+        61309000,
+        59629000,
+        60965000,
+        59707000,
+        61630000,
+        60273000,
+        60950000
+      ],
+      "native_median_ns": "60611500",
+      "duration_pass": true,
+      "spread_ppm": 83285,
+      "spread_pass": true,
+      "visits": 1048576,
+      "sampled_pairs": 1028,
+      "full_means": {
+        "suffix": "704083/69905",
+        "above_9": "1582439/1048575"
+      },
+      "sampled_means": {
+        "suffix": "10419/1028",
+        "above_9": "407/257"
+      },
+      "models": {
+        "fast": {
+          "estimate_ns": [
+            41675921,
+            41675921,
+            41675921,
+            41675921
+          ],
+          "median_ns": 41675921,
+          "signed_errors_ppm": [
+            -312409,
+            -312409,
+            -312409,
+            -312409
+          ],
+          "pass": false
+        },
+        "paired_baseline": {
+          "estimate_ns": [
+            41675921,
+            41675921,
+            41675921,
+            41675921
+          ],
+          "median_ns": 41675921,
+          "signed_errors_ppm": [
+            -312409,
+            -312409,
+            -312409,
+            -312409
+          ],
+          "pass": false
+        },
+        "query_only": {
+          "estimate_ns": [
+            43521250,
+            43521250,
+            43521250,
+            43521250
+          ],
+          "median_ns": 43521250,
+          "signed_errors_ppm": [
+            -281964,
+            -281964,
+            -281964,
+            -281964
+          ],
+          "pass": false
+        },
+        "suffix": {
+          "estimate_ns": [
+            54502047,
+            54502047,
+            54502047,
+            54502047
+          ],
+          "median_ns": 54502047,
+          "signed_errors_ppm": [
+            -100797,
+            -100797,
+            -100797,
+            -100797
+          ],
+          "pass": true
+        },
+        "above_9": {
+          "estimate_ns": [
+            39514300,
+            39514300,
+            39514300,
+            39514300
+          ],
+          "median_ns": 39514300,
+          "signed_errors_ppm": [
+            -348073,
+            -348073,
+            -348073,
+            -348073
+          ],
+          "pass": false
+        }
+      },
+      "cpu": {
+        "pairs": 4,
+        "fast_ns": 2513464000,
+        "sampled_ns": 2526307000,
+        "pooled_overhead_ppm": 5110,
+        "median_pair_overhead_ppm": 4731
+      }
+    },
+    "jcc_block32": {
+      "native_ns": [
+        136495000,
+        136581000,
+        136358000,
+        135198000,
+        135332000,
+        136439000,
+        135406000,
+        135493000
+      ],
+      "native_median_ns": "135925500",
+      "duration_pass": true,
+      "spread_ppm": 10175,
+      "spread_pass": true,
+      "visits": 1048576,
+      "sampled_pairs": 1028,
+      "full_means": {
+        "suffix": "704083/69905",
+        "above_9": "1582439/1048575"
+      },
+      "sampled_means": {
+        "suffix": "10419/1028",
+        "above_9": "407/257"
+      },
+      "models": {
+        "fast": {
+          "estimate_ns": [
+            13958977,
+            13958977,
+            13958977,
+            13958977
+          ],
+          "median_ns": 13958977,
+          "signed_errors_ppm": [
+            -897304,
+            -897304,
+            -897304,
+            -897304
+          ],
+          "pass": false
+        },
+        "paired_baseline": {
+          "estimate_ns": [
+            13958977,
+            13958977,
+            13958977,
+            13958977
+          ],
+          "median_ns": 13958977,
+          "signed_errors_ppm": [
+            -897304,
+            -897304,
+            -897304,
+            -897304
+          ],
+          "pass": false
+        },
+        "query_only": {
+          "estimate_ns": [
+            82581500,
+            82581500,
+            82581500,
+            82581500
+          ],
+          "median_ns": 82581500,
+          "signed_errors_ppm": [
+            -392450,
+            -392450,
+            -392450,
+            -392450
+          ],
+          "pass": false
+        },
+        "suffix": {
+          "estimate_ns": [
+            113637220,
+            113637220,
+            113637220,
+            113637220
+          ],
+          "median_ns": 113637220,
+          "signed_errors_ppm": [
+            -163974,
+            -163974,
+            -163974,
+            -163974
+          ],
+          "pass": true
+        },
+        "above_9": {
+          "estimate_ns": [
+            71249104,
+            71249104,
+            71249104,
+            71249104
+          ],
+          "median_ns": 71249104,
+          "signed_errors_ppm": [
+            -475822,
+            -475822,
+            -475822,
+            -475822
+          ],
+          "pass": false
+        }
+      },
+      "cpu": {
+        "pairs": 4,
+        "fast_ns": 5379912000,
+        "sampled_ns": 5331647000,
+        "pooled_overhead_ppm": -8971,
+        "median_pair_overhead_ppm": -4206
+      }
+    },
+    "cmov_random_small": {
+      "native_ns": [
+        13740000,
+        13552000,
+        13635000,
+        13646000,
+        13696000,
+        13608000,
+        14340000,
+        13633000
+      ],
+      "native_median_ns": "13640500",
+      "duration_pass": false,
+      "spread_ppm": 57769,
+      "spread_pass": true,
+      "visits": 1048576,
+      "sampled_pairs": 1028,
+      "full_means": {
+        "suffix": "2447914/349525",
+        "above_9": "0"
+      },
+      "sampled_means": {
+        "suffix": "1794/257",
+        "above_9": "0"
+      },
+      "models": {
+        "fast": {
+          "estimate_ns": [
+            27415967,
+            27415967,
+            27415967,
+            27415967
+          ],
+          "median_ns": 27415967,
+          "signed_errors_ppm": [
+            1009895,
+            1009895,
+            1009895,
+            1009895
+          ],
+          "pass": false
+        },
+        "paired_baseline": {
+          "estimate_ns": [
+            27415967,
+            27415967,
+            27415967,
+            27415967
+          ],
+          "median_ns": 27415967,
+          "signed_errors_ppm": [
+            1009895,
+            1009895,
+            1009895,
+            1009895
+          ],
+          "pass": false
+        },
+        "query_only": {
+          "estimate_ns": [
+            29261296,
+            29261296,
+            29261296,
+            29261296
+          ],
+          "median_ns": 29261296,
+          "signed_errors_ppm": [
+            1145178,
+            1145178,
+            1145178,
+            1145178
+          ],
+          "pass": false
+        },
+        "suffix": {
+          "estimate_ns": [
+            30725597,
+            30725597,
+            30725597,
+            30725597
+          ],
+          "median_ns": 30725597,
+          "signed_errors_ppm": [
+            1252527,
+            1252527,
+            1252527,
+            1252527
+          ],
+          "pass": false
+        },
+        "above_9": {
+          "estimate_ns": [
+            9814546,
+            9814546,
+            9814546,
+            9814546
+          ],
+          "median_ns": 9814546,
+          "signed_errors_ppm": [
+            -280485,
+            -280485,
+            -280485,
+            -280485
+          ],
+          "pass": false
+        }
+      },
+      "cpu": {
+        "pairs": 4,
+        "fast_ns": 1646702000,
+        "sampled_ns": 1656783000,
+        "pooled_overhead_ppm": 6122,
+        "median_pair_overhead_ppm": 4959
+      }
+    },
+    "cmov_random_large": {
+      "native_ns": [
+        167521000,
+        165145000,
+        178232000,
+        172510000,
+        152679000,
+        159092000,
+        183999000,
+        172792000
+      ],
+      "native_median_ns": "170015500",
+      "duration_pass": true,
+      "spread_ppm": 184218,
+      "spread_pass": false,
+      "visits": 1048576,
+      "sampled_pairs": 1028,
+      "full_means": {
+        "suffix": "5592227/349525",
+        "above_9": "2447886/349525"
+      },
+      "sampled_means": {
+        "suffix": "4135/257",
+        "above_9": "7293/1028"
+      },
+      "models": {
+        "fast": {
+          "estimate_ns": [
+            49510310,
+            49510310,
+            49510310,
+            49510310
+          ],
+          "median_ns": 49510310,
+          "signed_errors_ppm": [
+            -708789,
+            -708789,
+            -708789,
+            -708789
+          ],
+          "pass": false
+        },
+        "paired_baseline": {
+          "estimate_ns": [
+            49510310,
+            49510310,
+            49510310,
+            49510310
+          ],
+          "median_ns": 49510310,
+          "signed_errors_ppm": [
+            -708789,
+            -708789,
+            -708789,
+            -708789
+          ],
+          "pass": false
+        },
+        "query_only": {
+          "estimate_ns": [
+            51355638,
+            51355638,
+            51355638,
+            51355638
+          ],
+          "median_ns": 51355638,
+          "signed_errors_ppm": [
+            -697936,
+            -697936,
+            -697936,
+            -697936
+          ],
+          "pass": false
+        },
+        "suffix": {
+          "estimate_ns": [
+            80298342,
+            80298342,
+            80298342,
+            80298342
+          ],
+          "median_ns": 80298342,
+          "signed_errors_ppm": [
+            -527700,
+            -527700,
+            -527700,
+            -527700
+          ],
+          "pass": false
+        },
+        "above_9": {
+          "estimate_ns": [
+            101075018,
+            101075018,
+            101075018,
+            101075018
+          ],
+          "median_ns": 101075018,
+          "signed_errors_ppm": [
+            -405495,
+            -405495,
+            -405495,
+            -405495
+          ],
+          "pass": false
+        }
+      },
+      "cpu": {
+        "pairs": 4,
+        "fast_ns": 4616171000,
+        "sampled_ns": 4427208000,
+        "pooled_overhead_ppm": -40935,
+        "median_pair_overhead_ppm": -36344
+      }
+    },
+    "rust_original": {
+      "native_ns": [
+        37152000,
+        38447000,
+        37649000,
+        38383000,
+        37481000,
+        37993000,
+        37640000,
+        37276000
+      ],
+      "native_median_ns": "37644500",
+      "duration_pass": true,
+      "spread_ppm": 34401,
+      "spread_pass": true,
+      "visits": 524288,
+      "sampled_pairs": 514,
+      "full_means": {
+        "suffix": "6816595/524287",
+        "above_9": "2114355/524287"
+      },
+      "sampled_means": {
+        "suffix": "6695/514",
+        "above_9": "2075/514"
+      },
+      "models": {
+        "fast": {
+          "estimate_ns": [
+            22039128,
+            22038983,
+            22039254,
+            22039226
+          ],
+          "median_ns": 22039177,
+          "signed_errors_ppm": [
+            -414546,
+            -414550,
+            -414543,
+            -414543
+          ],
+          "pass": false
+        },
+        "paired_baseline": {
+          "estimate_ns": [
+            22040215,
+            22040132,
+            22040385,
+            22040104
+          ],
+          "median_ns": 22040174,
+          "signed_errors_ppm": [
+            -414517,
+            -414519,
+            -414512,
+            -414520
+          ],
+          "pass": false
+        },
+        "query_only": {
+          "estimate_ns": [
+            22962880,
+            22962796,
+            22963049,
+            22962768
+          ],
+          "median_ns": 22962838,
+          "signed_errors_ppm": [
+            -390007,
+            -390009,
+            -390003,
+            -390010
+          ],
+          "pass": false
+        },
+        "suffix": {
+          "estimate_ns": [
+            32812418,
+            32812335,
+            32812588,
+            32812307
+          ],
+          "median_ns": 32812377,
+          "signed_errors_ppm": [
+            -128361,
+            -128363,
+            -128356,
+            -128364
+          ],
+          "pass": true
+        },
+        "above_9": {
+          "estimate_ns": [
+            32918592,
+            32918508,
+            32918761,
+            32918480
+          ],
+          "median_ns": 32918550,
+          "signed_errors_ppm": [
+            -125540,
+            -125543,
+            -125536,
+            -125543
+          ],
+          "pass": true
+        }
+      },
+      "cpu": {
+        "pairs": 4,
+        "fast_ns": 2114844000,
+        "sampled_ns": 2149796000,
+        "pooled_overhead_ppm": 16527,
+        "median_pair_overhead_ppm": 14611
+      }
+    },
+    "rust_new": {
+      "native_ns": [
+        39187000,
+        38271000,
+        37446000,
+        39027000,
+        39680000,
+        39658000,
+        38561000,
+        37932000
+      ],
+      "native_median_ns": "38794000",
+      "duration_pass": true,
+      "spread_ppm": 57586,
+      "spread_pass": true,
+      "visits": 1310720,
+      "sampled_pairs": 1284,
+      "full_means": {
+        "suffix": "15472161/1310719",
+        "above_9": "3782665/1310719"
+      },
+      "sampled_means": {
+        "suffix": "1265/107",
+        "above_9": "1865/642"
+      },
+      "models": {
+        "fast": {
+          "estimate_ns": [
+            52018715,
+            52018756,
+            52018864,
+            52018923
+          ],
+          "median_ns": 52018810,
+          "signed_errors_ppm": [
+            340896,
+            340897,
+            340900,
+            340901
+          ],
+          "pass": false
+        },
+        "paired_baseline": {
+          "estimate_ns": [
+            52019858,
+            52019786,
+            52019552,
+            52019976
+          ],
+          "median_ns": 52019822,
+          "signed_errors_ppm": [
+            340925,
+            340924,
+            340917,
+            340928
+          ],
+          "pass": false
+        },
+        "query_only": {
+          "estimate_ns": [
+            54326518,
+            54326447,
+            54326213,
+            54326637
+          ],
+          "median_ns": 54326483,
+          "signed_errors_ppm": [
+            400385,
+            400383,
+            400377,
+            400388
+          ],
+          "pass": false
+        },
+        "suffix": {
+          "estimate_ns": [
+            74414672,
+            74414600,
+            74414366,
+            74414790
+          ],
+          "median_ns": 74414636,
+          "signed_errors_ppm": [
+            918201,
+            918199,
+            918193,
+            918204
+          ],
+          "pass": false
+        },
+        "above_9": {
+          "estimate_ns": [
+            65420609,
+            65420538,
+            65420304,
+            65420728
+          ],
+          "median_ns": 65420573,
+          "signed_errors_ppm": [
+            686359,
+            686357,
+            686351,
+            686362
+          ],
+          "pass": false
+        }
+      },
+      "cpu": {
+        "pairs": 4,
+        "fast_ns": 3996647000,
+        "sampled_ns": 4016567000,
+        "pooled_overhead_ppm": 4984,
+        "median_pair_overhead_ppm": -291
+      }
+    }
+  },
+  "contrasts": {
+    "cmov_random_minus_sorted": {
+      "median_difference_ns": "38893500",
+      "endpoint_range_ns": [
+        31713000,
+        41816000
+      ],
+      "round_differences_ns": [
+        "35743000",
+        "38710000",
+        "40379000",
+        "38900000"
+      ],
+      "prediction_differences_ns": {
+        "fast": 0,
+        "paired_baseline": 0,
+        "query_only": 0,
+        "suffix": 38893500,
+        "above_9": 38893500
+      }
+    },
+    "jcc_random_minus_sorted": {
+      "median_difference_ns": "109998000",
+      "endpoint_range_ns": [
+        107292000,
+        111610000
+      ],
+      "round_differences_ns": [
+        "107863000",
+        "109184000",
+        "110765000",
+        "110528500"
+      ],
+      "prediction_differences_ns": {
+        "fast": 0,
+        "paired_baseline": 0,
+        "query_only": 0,
+        "suffix": 109998000,
+        "above_9": 109998000
+      }
+    },
+    "jcc_minus_cmov_random": {
+      "median_difference_ns": "74612500",
+      "endpoint_range_ns": [
+        69629000,
+        82970000
+      ],
+      "round_differences_ns": [
+        "75634000",
+        "74079000",
+        "73817500",
+        "75294500"
+      ],
+      "prediction_differences_ns": {
+        "fast": -27716944,
+        "paired_baseline": -27716944,
+        "query_only": 39060250,
+        "suffix": 74612500,
+        "above_9": 74612500
+      }
+    },
+    "jcc_minus_cmov_sorted": {
+      "median_difference_ns": "3508000",
+      "endpoint_range_ns": [
+        3073000,
+        4153000
+      ],
+      "round_differences_ns": [
+        "3514000",
+        "3605000",
+        "3431500",
+        "3666000"
+      ],
+      "prediction_differences_ns": {
+        "fast": -27716944,
+        "paired_baseline": -27716944,
+        "query_only": 39060250,
+        "suffix": 3508000,
+        "above_9": 3508000
+      }
+    },
+    "jcc_minus_cmov_block32": {
+      "median_difference_ns": "75314000",
+      "endpoint_range_ns": [
+        73568000,
+        79999000
+      ],
+      "round_differences_ns": [
+        "77592500",
+        "75481000",
+        "75217000",
+        "74838000"
+      ],
+      "prediction_differences_ns": {
+        "fast": -27716944,
+        "paired_baseline": -27716944,
+        "query_only": 39060250,
+        "suffix": 59135173,
+        "above_9": 31734804
+      }
+    },
+    "large_minus_small_random": {
+      "median_difference_ns": "156375000",
+      "endpoint_range_ns": [
+        138339000,
+        170447000
+      ],
+      "round_differences_ns": [
+        "152687000",
+        "161730500",
+        "142233500",
+        "164409000"
+      ],
+      "prediction_differences_ns": {
+        "fast": 22094343,
+        "paired_baseline": 22094343,
+        "query_only": 22094342,
+        "suffix": 49572745,
+        "above_9": 91260472
+      }
+    }
+  },
+  "interaction_ns": "71104500",
+  "interaction_by_round_ns": [
+    "72120000",
+    "70474000",
+    "70386000",
+    "71628500"
+  ],
+  "passes": {
+    "training": {
+      "fast": 0,
+      "paired_baseline": 0,
+      "query_only": 0,
+      "suffix": 4,
+      "above_9": 4
+    },
+    "order": {
+      "fast": 0,
+      "paired_baseline": 0,
+      "query_only": 0,
+      "suffix": 2,
+      "above_9": 0
+    },
+    "footprint": {
+      "fast": 0,
+      "paired_baseline": 0,
+      "query_only": 0,
+      "suffix": 0,
+      "above_9": 0
+    },
+    "archived_rust": {
+      "fast": 0,
+      "paired_baseline": 0,
+      "query_only": 0,
+      "suffix": 1,
+      "above_9": 1
+    },
+    "new_rust": {
+      "fast": 0,
+      "paired_baseline": 0,
+      "query_only": 0,
+      "suffix": 0,
+      "above_9": 0
+    }
+  },
+  "cpu": {
+    "pairs": 40,
+    "fast_ns": 35228282000,
+    "sampled_ns": 35067323000,
+    "pooled_overhead_ppm": -4569,
+    "median_pair_overhead_ppm": 1178
+  }
+}
