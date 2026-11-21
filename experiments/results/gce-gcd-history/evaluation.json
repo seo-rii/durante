@@ -1,0 +1,836 @@
+{
+  "dataset_sha256": "50e13f4e5bb8e74bbcc4c69730c08c98986345ecf08cac801ed2a67b8d422b17",
+  "cases": {
+    "gcd_seed_b": {
+      "native_ns": [
+        76442000,
+        76511000,
+        76340000,
+        76452000,
+        76375000,
+        76260000,
+        76516000,
+        76453000
+      ],
+      "median_ns": "76447000",
+      "spread_ppm": 3349,
+      "duration_pass": true,
+      "spread_pass": true,
+      "counts": [
+        {
+          "sites": [
+            {
+              "branch_offset": 86090,
+              "mode": "remainder"
+            }
+          ],
+          "eligible_visits": 19057763,
+          "remainder_length_changes": 960310,
+          "unpredicted_changes": 864403
+        },
+        {
+          "sites": [
+            {
+              "branch_offset": 86090,
+              "mode": "remainder"
+            }
+          ],
+          "eligible_visits": 19057763,
+          "remainder_length_changes": 960310,
+          "unpredicted_changes": 864403
+        },
+        {
+          "sites": [
+            {
+              "branch_offset": 86090,
+              "mode": "remainder"
+            }
+          ],
+          "eligible_visits": 19057763,
+          "remainder_length_changes": 960310,
+          "unpredicted_changes": 864403
+        },
+        {
+          "sites": [
+            {
+              "branch_offset": 86090,
+              "mode": "remainder"
+            }
+          ],
+          "eligible_visits": 19057763,
+          "remainder_length_changes": 960310,
+          "unpredicted_changes": 864403
+        }
+      ],
+      "models": {
+        "fast": {
+          "ns": [
+            60757197,
+            60757072,
+            60757029,
+            60756948
+          ],
+          "median_ns": 60757050,
+          "error_ppm": [
+            -205238,
+            -205239,
+            -205240,
+            -205241
+          ],
+          "pass": false
+        },
+        "paired_baseline": {
+          "ns": [
+            60758339,
+            60758289,
+            60758358,
+            60758451
+          ],
+          "median_ns": 60758349,
+          "error_ppm": [
+            -205223,
+            -205223,
+            -205222,
+            -205221
+          ],
+          "pass": false
+        },
+        "flat_changes": {
+          "ns": [
+            76068705,
+            76068655,
+            76068724,
+            76068816
+          ],
+          "median_ns": 76068714,
+          "error_ppm": [
+            -4948,
+            -4949,
+            -4948,
+            -4947
+          ],
+          "pass": true
+        },
+        "history": {
+          "ns": [
+            72352450,
+            72352400,
+            72352469,
+            72352562
+          ],
+          "median_ns": 72352460,
+          "error_ppm": [
+            -53561,
+            -53561,
+            -53560,
+            -53559
+          ],
+          "pass": true
+        }
+      },
+      "cpu": {
+        "fast_ns": 2951558000,
+        "probe_ns": 3070419000,
+        "pairs": 4,
+        "pooled_increase_ppm": 40271,
+        "median_pair_increase_ppm": 39983
+      }
+    },
+    "fibonacci_alternating": {
+      "native_ns": [
+        71190000,
+        71086000,
+        70890000,
+        71100000,
+        70826000,
+        71329000,
+        71123000,
+        71016000
+      ],
+      "median_ns": "71093000",
+      "spread_ppm": 7075,
+      "duration_pass": true,
+      "spread_pass": true,
+      "counts": [
+        {
+          "sites": [
+            {
+              "branch_offset": 88122,
+              "mode": "remainder"
+            }
+          ],
+          "eligible_visits": 35651584,
+          "remainder_length_changes": 2097151,
+          "unpredicted_changes": 2
+        },
+        {
+          "sites": [
+            {
+              "branch_offset": 88122,
+              "mode": "remainder"
+            }
+          ],
+          "eligible_visits": 35651584,
+          "remainder_length_changes": 2097151,
+          "unpredicted_changes": 2
+        },
+        {
+          "sites": [
+            {
+              "branch_offset": 88122,
+              "mode": "remainder"
+            }
+          ],
+          "eligible_visits": 35651584,
+          "remainder_length_changes": 2097151,
+          "unpredicted_changes": 2
+        },
+        {
+          "sites": [
+            {
+              "branch_offset": 88122,
+              "mode": "remainder"
+            }
+          ],
+          "eligible_visits": 35651584,
+          "remainder_length_changes": 2097151,
+          "unpredicted_changes": 2
+        }
+      ],
+      "models": {
+        "fast": {
+          "ns": [
+            112590287,
+            112590219,
+            112590104,
+            112589989
+          ],
+          "median_ns": 112590162,
+          "error_ppm": [
+            583704,
+            583703,
+            583702,
+            583700
+          ],
+          "pass": false
+        },
+        "paired_baseline": {
+          "ns": [
+            112591746,
+            112591474,
+            112591302,
+            112591381
+          ],
+          "median_ns": 112591428,
+          "error_ppm": [
+            583725,
+            583721,
+            583719,
+            583720
+          ],
+          "pass": false
+        },
+        "flat_changes": {
+          "ns": [
+            152884232,
+            152883960,
+            152883788,
+            152883867
+          ],
+          "median_ns": 152883914,
+          "error_ppm": [
+            1150482,
+            1150478,
+            1150476,
+            1150477
+          ],
+          "pass": false
+        },
+        "history": {
+          "ns": [
+            71622805,
+            71622532,
+            71622361,
+            71622440
+          ],
+          "median_ns": 71622486,
+          "error_ppm": [
+            7452,
+            7448,
+            7446,
+            7447
+          ],
+          "pass": true
+        }
+      },
+      "cpu": {
+        "fast_ns": 5015668000,
+        "probe_ns": 5235511000,
+        "pairs": 4,
+        "pooled_increase_ppm": 43831,
+        "median_pair_increase_ppm": 45425
+      }
+    },
+    "gcd_seed_d": {
+      "native_ns": [
+        113892000,
+        113534000,
+        113509000,
+        113479000,
+        113791000,
+        113605000,
+        113521000,
+        113714000
+      ],
+      "median_ns": "113569500",
+      "spread_ppm": 3637,
+      "duration_pass": true,
+      "spread_pass": true,
+      "counts": [
+        {
+          "sites": [
+            {
+              "branch_offset": 86090,
+              "mode": "remainder"
+            }
+          ],
+          "eligible_visits": 28587474,
+          "remainder_length_changes": 1440825,
+          "unpredicted_changes": 1297413
+        },
+        {
+          "sites": [
+            {
+              "branch_offset": 86090,
+              "mode": "remainder"
+            }
+          ],
+          "eligible_visits": 28587474,
+          "remainder_length_changes": 1440825,
+          "unpredicted_changes": 1297413
+        },
+        {
+          "sites": [
+            {
+              "branch_offset": 86090,
+              "mode": "remainder"
+            }
+          ],
+          "eligible_visits": 28587474,
+          "remainder_length_changes": 1440825,
+          "unpredicted_changes": 1297413
+        },
+        {
+          "sites": [
+            {
+              "branch_offset": 86090,
+              "mode": "remainder"
+            }
+          ],
+          "eligible_visits": 28587474,
+          "remainder_length_changes": 1440825,
+          "unpredicted_changes": 1297413
+        }
+      ],
+      "models": {
+        "fast": {
+          "ns": [
+            91113959,
+            91114131,
+            91114014,
+            91114044
+          ],
+          "median_ns": 91114029,
+          "error_ppm": [
+            -197725,
+            -197724,
+            -197725,
+            -197724
+          ],
+          "pass": true
+        },
+        "paired_baseline": {
+          "ns": [
+            91115014,
+            91115106,
+            91115151,
+            91115114
+          ],
+          "median_ns": 91115110,
+          "error_ppm": [
+            -197716,
+            -197715,
+            -197715,
+            -197715
+          ],
+          "pass": true
+        },
+        "flat_changes": {
+          "ns": [
+            114093558,
+            114093650,
+            114093696,
+            114093659
+          ],
+          "median_ns": 114093655,
+          "error_ppm": [
+            4614,
+            4615,
+            4616,
+            4615
+          ],
+          "pass": true
+        },
+        "history": {
+          "ns": [
+            108536555,
+            108536647,
+            108536692,
+            108536656
+          ],
+          "median_ns": 108536651,
+          "error_ppm": [
+            -44316,
+            -44315,
+            -44315,
+            -44315
+          ],
+          "pass": true
+        }
+      },
+      "cpu": {
+        "fast_ns": 4134340000,
+        "probe_ns": 4303317000,
+        "pairs": 4,
+        "pooled_increase_ppm": 40872,
+        "median_pair_increase_ppm": 41005
+      }
+    },
+    "fibonacci_aabb": {
+      "native_ns": [
+        70317000,
+        70326000,
+        73303000,
+        70416000,
+        70347000,
+        70307000,
+        70362000,
+        70537000
+      ],
+      "median_ns": "70354500",
+      "spread_ppm": 42584,
+      "duration_pass": true,
+      "spread_pass": true,
+      "counts": [
+        {
+          "sites": [
+            {
+              "branch_offset": 88122,
+              "mode": "remainder"
+            }
+          ],
+          "eligible_visits": 35651584,
+          "remainder_length_changes": 1048575,
+          "unpredicted_changes": 2
+        },
+        {
+          "sites": [
+            {
+              "branch_offset": 88122,
+              "mode": "remainder"
+            }
+          ],
+          "eligible_visits": 35651584,
+          "remainder_length_changes": 1048575,
+          "unpredicted_changes": 2
+        },
+        {
+          "sites": [
+            {
+              "branch_offset": 88122,
+              "mode": "remainder"
+            }
+          ],
+          "eligible_visits": 35651584,
+          "remainder_length_changes": 1048575,
+          "unpredicted_changes": 2
+        },
+        {
+          "sites": [
+            {
+              "branch_offset": 88122,
+              "mode": "remainder"
+            }
+          ],
+          "eligible_visits": 35651584,
+          "remainder_length_changes": 1048575,
+          "unpredicted_changes": 2
+        }
+      ],
+      "models": {
+        "fast": {
+          "ns": [
+            112590051,
+            112590094,
+            112590204,
+            112590327
+          ],
+          "median_ns": 112590149,
+          "error_ppm": [
+            600325,
+            600325,
+            600327,
+            600329
+          ],
+          "pass": false
+        },
+        "paired_baseline": {
+          "ns": [
+            112591466,
+            112591490,
+            112591446,
+            112591243
+          ],
+          "median_ns": 112591456,
+          "error_ppm": [
+            600345,
+            600345,
+            600345,
+            600342
+          ],
+          "pass": false
+        },
+        "flat_changes": {
+          "ns": [
+            112253180,
+            112253204,
+            112253160,
+            112252957
+          ],
+          "median_ns": 112253170,
+          "error_ppm": [
+            595537,
+            595537,
+            595536,
+            595533
+          ],
+          "pass": false
+        },
+        "history": {
+          "ns": [
+            71622524,
+            71622549,
+            71622504,
+            71622302
+          ],
+          "median_ns": 71622514,
+          "error_ppm": [
+            18023,
+            18024,
+            18023,
+            18020
+          ],
+          "pass": true
+        }
+      },
+      "cpu": {
+        "fast_ns": 5037143000,
+        "probe_ns": 5334551000,
+        "pairs": 4,
+        "pooled_increase_ppm": 59043,
+        "median_pair_increase_ppm": 56729
+      }
+    },
+    "fibonacci_runs32": {
+      "native_ns": [
+        69875000,
+        70654000,
+        69666000,
+        72069000,
+        70227000,
+        70285000,
+        70227000,
+        69474000
+      ],
+      "median_ns": "70227000",
+      "spread_ppm": 36952,
+      "duration_pass": true,
+      "spread_pass": true,
+      "counts": [
+        {
+          "sites": [
+            {
+              "branch_offset": 88122,
+              "mode": "remainder"
+            }
+          ],
+          "eligible_visits": 35651584,
+          "remainder_length_changes": 65535,
+          "unpredicted_changes": 65535
+        },
+        {
+          "sites": [
+            {
+              "branch_offset": 88122,
+              "mode": "remainder"
+            }
+          ],
+          "eligible_visits": 35651584,
+          "remainder_length_changes": 65535,
+          "unpredicted_changes": 65535
+        },
+        {
+          "sites": [
+            {
+              "branch_offset": 88122,
+              "mode": "remainder"
+            }
+          ],
+          "eligible_visits": 35651584,
+          "remainder_length_changes": 65535,
+          "unpredicted_changes": 65535
+        },
+        {
+          "sites": [
+            {
+              "branch_offset": 88122,
+              "mode": "remainder"
+            }
+          ],
+          "eligible_visits": 35651584,
+          "remainder_length_changes": 65535,
+          "unpredicted_changes": 65535
+        }
+      ],
+      "models": {
+        "fast": {
+          "ns": [
+            112590202,
+            112590377,
+            112590321,
+            112590417
+          ],
+          "median_ns": 112590349,
+          "error_ppm": [
+            603232,
+            603235,
+            603234,
+            603235
+          ],
+          "pass": false
+        },
+        "paired_baseline": {
+          "ns": [
+            112591372,
+            112591542,
+            112591473,
+            112591377
+          ],
+          "median_ns": 112591425,
+          "error_ppm": [
+            603249,
+            603251,
+            603250,
+            603249
+          ],
+          "pass": false
+        },
+        "flat_changes": {
+          "ns": [
+            74161737,
+            74161907,
+            74161838,
+            74161742
+          ],
+          "median_ns": 74161790,
+          "error_ppm": [
+            56029,
+            56031,
+            56030,
+            56029
+          ],
+          "pass": true
+        },
+        "history": {
+          "ns": [
+            74161737,
+            74161907,
+            74161838,
+            74161742
+          ],
+          "median_ns": 74161790,
+          "error_ppm": [
+            56029,
+            56031,
+            56030,
+            56029
+          ],
+          "pass": true
+        }
+      },
+      "cpu": {
+        "fast_ns": 5001586000,
+        "probe_ns": 5182243000,
+        "pairs": 4,
+        "pooled_increase_ppm": 36120,
+        "median_pair_increase_ppm": 40038
+      }
+    },
+    "fibonacci_permuted": {
+      "native_ns": [
+        83062000,
+        83138000,
+        83073000,
+        83253000,
+        82879000,
+        83086000,
+        84629000,
+        83090000
+      ],
+      "median_ns": "83088000",
+      "spread_ppm": 21062,
+      "duration_pass": true,
+      "spread_pass": true,
+      "counts": [
+        {
+          "sites": [
+            {
+              "branch_offset": 88397,
+              "mode": "remainder"
+            }
+          ],
+          "eligible_visits": 35651584,
+          "remainder_length_changes": 1066990,
+          "unpredicted_changes": 259322
+        },
+        {
+          "sites": [
+            {
+              "branch_offset": 88397,
+              "mode": "remainder"
+            }
+          ],
+          "eligible_visits": 35651584,
+          "remainder_length_changes": 1066990,
+          "unpredicted_changes": 259322
+        },
+        {
+          "sites": [
+            {
+              "branch_offset": 88397,
+              "mode": "remainder"
+            }
+          ],
+          "eligible_visits": 35651584,
+          "remainder_length_changes": 1066990,
+          "unpredicted_changes": 259322
+        },
+        {
+          "sites": [
+            {
+              "branch_offset": 88397,
+              "mode": "remainder"
+            }
+          ],
+          "eligible_visits": 35651584,
+          "remainder_length_changes": 1066990,
+          "unpredicted_changes": 259322
+        }
+      ],
+      "models": {
+        "fast": {
+          "ns": [
+            113762354,
+            113762623,
+            113762456,
+            113762780
+          ],
+          "median_ns": 113762540,
+          "error_ppm": [
+            369179,
+            369182,
+            369180,
+            369184
+          ],
+          "pass": false
+        },
+        "paired_baseline": {
+          "ns": [
+            113763954,
+            113763952,
+            113763546,
+            113763924
+          ],
+          "median_ns": 113763938,
+          "error_ppm": [
+            369198,
+            369198,
+            369193,
+            369198
+          ],
+          "pass": false
+        },
+        "flat_changes": {
+          "ns": [
+            114139223,
+            114139221,
+            114138814,
+            114139192
+          ],
+          "median_ns": 114139206,
+          "error_ppm": [
+            373715,
+            373715,
+            373710,
+            373715
+          ],
+          "pass": false
+        },
+        "history": {
+          "ns": [
+            82843280,
+            82843278,
+            82842872,
+            82843250
+          ],
+          "median_ns": 82843264,
+          "error_ppm": [
+            -2945,
+            -2945,
+            -2950,
+            -2946
+          ],
+          "pass": true
+        }
+      },
+      "cpu": {
+        "fast_ns": 5058533000,
+        "probe_ns": 5260500000,
+        "pairs": 4,
+        "pooled_increase_ppm": 39926,
+        "median_pair_increase_ppm": 42731
+      }
+    }
+  },
+  "passes": {
+    "anchors": {
+      "fast": 0,
+      "paired_baseline": 0,
+      "flat_changes": 1,
+      "history": 2
+    },
+    "prospective": {
+      "fast": 1,
+      "paired_baseline": 1,
+      "flat_changes": 2,
+      "history": 4
+    }
+  },
+  "cpu": {
+    "fast_ns": 27198828000,
+    "probe_ns": 28386541000,
+    "pairs": 24,
+    "pooled_increase_ppm": 43668,
+    "median_pair_increase_ppm": 41230
+  }
+}
