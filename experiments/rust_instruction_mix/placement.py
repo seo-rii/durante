@@ -37,12 +37,13 @@ def field(details, key):
     return int(re.search(r"(?:^| )" + key + r"=(\d+)(?: |$)", details)[1])
 
 
-def placement(dataset, receipt):
+def placement(dataset, receipt, layout=sample_layout, binary_dir="/out/bin"):
     expected = []
-    for row, _, phases in sample_layout(dataset):
+    for row, _, phases in layout(dataset):
         for phase in phases:
             pid = row[phase]["pid"]
-            paths = [LAUNCHER, LOADER] if phase in ("metered", "full", "fast") else ["/out/bin/" + row["workload_id"] + "/Main"]
+            paths = ([f'{binary_dir}/{row["workload_id"]}/Main'] if phase.startswith("native_")
+                     else [LAUNCHER, LOADER])
             expected.append((pid, paths))
     require(len({pid for pid, _ in expected}) == len(expected), "duplicate child PID")
     children = {pid: [] for pid, _ in expected}
@@ -79,7 +80,7 @@ def placement(dataset, receipt):
         for c in cpus.values()), "lost or unaccounted trace events")
 
 
-def reduce(dataset, folder):
+def reduce(dataset, folder, layout=sample_layout):
     snap, stop, sampler = [json.loads((folder / name).read_bytes()) for name in
                            ("start.json", "stop.json", "samples.json")]
     first, last = snap["before"], stop["after"]
@@ -94,7 +95,7 @@ def reduce(dataset, folder):
     require(sha(raw) == stop["event_sha256"], "guest trace digest mismatch")
     group = first["path"]
     root = dataset["collector_pid"]
-    pids = {row[phase]["pid"] for row, _, phases in sample_layout(dataset) for phase in phases}
+    pids = {row[phase]["pid"] for row, _, phases in layout(dataset) for phase in phases}
     totals = Counter()
     events = []
     root_group = ""
@@ -160,7 +161,7 @@ def reduce(dataset, folder):
     return receipt
 
 
-def main():
+def main(layout=sample_layout, binary_dir="/out/bin"):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("dataset", type=Path)
     parser.add_argument("receipt", type=Path, help="compressed, public placement receipt")
@@ -170,14 +171,14 @@ def main():
     raw = read(args.dataset)
     dataset = json.loads(raw)
     if args.capture:
-        receipt = reduce(dataset, args.capture)
+        receipt = reduce(dataset, args.capture, layout)
         receipt["dataset_sha256"] = sha(raw)
-        placement(dataset, receipt)
+        placement(dataset, receipt, layout, binary_dir)
         args.receipt.write_bytes(gzip.compress((json.dumps(receipt, separators=(",", ":")) + "\n").encode(), mtime=0))
     else:
         receipt = json.loads(read(args.receipt))
         require(receipt["schema"] == 1 and receipt["dataset_sha256"] == sha(raw), "receipt dataset mismatch")
-        placement(dataset, receipt)
+        placement(dataset, receipt, layout, binary_dir)
     if args.platform:
         platform = json.loads(args.platform.read_bytes())
         require(platform["target"] == "compute_engine" and platform["threads_per_core"] == 1 and
