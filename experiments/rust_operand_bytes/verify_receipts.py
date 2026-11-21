@@ -45,7 +45,9 @@ def main():
     if args.pack:
         require(args.reader and sha(args.reader.read_bytes()) == data["tools"]["production_reader"],
                 "measured production reader required")
-        with tarfile.open(args.archive, "x:gz") as archive:
+        with args.archive.open("xb") as output, \
+             gzip.GzipFile(fileobj=output, mode="wb", filename="", mtime=0) as compressed, \
+             tarfile.open(fileobj=compressed, mode="w|") as archive:
             for name in names:
                 raw = (args.reader if name == "tools/collect.py" else args.pack/name).read_bytes()
                 member = tarfile.TarInfo(name)
