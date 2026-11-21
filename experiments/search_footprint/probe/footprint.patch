@@ -1,0 +1,19 @@
+--- probe.c
++++ footprint_probe.c
+@@ -13,0 +14 @@
++static uint64_t min_index = UINT64_MAX, max_index;
+@@ -25,0 +27,4 @@
++    if (index < min_index)
++        min_index = index;
++    if (index > max_index)
++        max_index = index;
+@@ -103 +108 @@
+-    dr_fprintf(output, "{\"schema\":1,\"pid\":%u,\"threads\":1,\"pc\":%llu,"
++    dr_fprintf(output, "{\"schema\":2,\"pid\":%u,\"threads\":1,\"pc\":%llu,"
+@@ -109 +114,5 @@
+-    dr_fprintf(output, "]}\n");
++    if (visits)
++        dr_fprintf(output, "],\"sampled_min_index\":%llu,\"sampled_max_index\":%llu}\n",
++                   (unsigned long long)min_index, (unsigned long long)max_index);
++    else
++        dr_fprintf(output, "],\"sampled_min_index\":null,\"sampled_max_index\":null}\n");

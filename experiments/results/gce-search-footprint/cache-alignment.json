@@ -1,0 +1,278 @@
+{
+  "schema": 1,
+  "study": "Post-hoc simulation of key-array demand reads in two archived Rust lower-bound cases.",
+  "fixtures_sha256": "1536ab026004214f4b1b33c4ae02c47339249211668ec5ce831d4601a3939ff8",
+  "compressed_native_dataset_sha256": "0a11ed699ca8417d264acfb24aab3e2c895563a30a53cfc9df71db55d3efbfb6",
+  "replay_cpp_sha256": "7f91269a87178243e6b03ee1371db2b8040118dac108fa60e7c194bf2bdc7fe1",
+  "policy": "Empty caches, least-recently-used replacement, 64-byte lines, four-byte elements. Each modeled cache receives every inner and terminal comparison load in program order. The traces exclude initialization, stack traffic, prefetch, page walks and other processes.",
+  "models": {
+    "l1_misses": {
+      "bytes": 32768,
+      "sets": 64,
+      "ways": 8
+    },
+    "l2_misses": {
+      "bytes": 524288,
+      "sets": 1024,
+      "ways": 8
+    },
+    "fully_associative_l1_misses": {
+      "bytes": 32768,
+      "sets": 1,
+      "ways": 512,
+      "offset_bytes": 0
+    }
+  },
+  "cases": {
+    "prior_nonpower": {
+      "keys": 100003,
+      "queries": 1310720,
+      "seed": 161803399,
+      "input_sha256": "7d3cc8647dc58c0b0717d34bae470382d0cb6d1c2fc4a63a847672b5a89fbcbd",
+      "expected_checksum": 65501574319,
+      "expected_loads": 23592960,
+      "native_median_ns": "38111000",
+      "native_ns_per_query": "952775/32768",
+      "alignments": [
+        {
+          "offset_bytes": 0,
+          "loads": 23592960,
+          "checksum": 65501574319,
+          "l1_misses": 6397769,
+          "l2_misses": 6251,
+          "fully_associative_l1_misses": 6397221
+        },
+        {
+          "offset_bytes": 4,
+          "loads": 23592960,
+          "checksum": 65501574319,
+          "l1_misses": 6405514,
+          "l2_misses": 6251
+        },
+        {
+          "offset_bytes": 8,
+          "loads": 23592960,
+          "checksum": 65501574319,
+          "l1_misses": 6400662,
+          "l2_misses": 6251
+        },
+        {
+          "offset_bytes": 12,
+          "loads": 23592960,
+          "checksum": 65501574319,
+          "l1_misses": 6402277,
+          "l2_misses": 6251
+        },
+        {
+          "offset_bytes": 16,
+          "loads": 23592960,
+          "checksum": 65501574319,
+          "l1_misses": 6407325,
+          "l2_misses": 6251
+        },
+        {
+          "offset_bytes": 20,
+          "loads": 23592960,
+          "checksum": 65501574319,
+          "l1_misses": 6401552,
+          "l2_misses": 6251
+        },
+        {
+          "offset_bytes": 24,
+          "loads": 23592960,
+          "checksum": 65501574319,
+          "l1_misses": 6406321,
+          "l2_misses": 6251
+        },
+        {
+          "offset_bytes": 28,
+          "loads": 23592960,
+          "checksum": 65501574319,
+          "l1_misses": 6402462,
+          "l2_misses": 6251
+        },
+        {
+          "offset_bytes": 32,
+          "loads": 23592960,
+          "checksum": 65501574319,
+          "l1_misses": 6401040,
+          "l2_misses": 6251
+        },
+        {
+          "offset_bytes": 36,
+          "loads": 23592960,
+          "checksum": 65501574319,
+          "l1_misses": 6406701,
+          "l2_misses": 6251
+        },
+        {
+          "offset_bytes": 40,
+          "loads": 23592960,
+          "checksum": 65501574319,
+          "l1_misses": 6404590,
+          "l2_misses": 6251
+        },
+        {
+          "offset_bytes": 44,
+          "loads": 23592960,
+          "checksum": 65501574319,
+          "l1_misses": 6401637,
+          "l2_misses": 6251
+        },
+        {
+          "offset_bytes": 48,
+          "loads": 23592960,
+          "checksum": 65501574319,
+          "l1_misses": 6403228,
+          "l2_misses": 6251
+        },
+        {
+          "offset_bytes": 52,
+          "loads": 23592960,
+          "checksum": 65501574319,
+          "l1_misses": 6397730,
+          "l2_misses": 6251
+        },
+        {
+          "offset_bytes": 56,
+          "loads": 23592960,
+          "checksum": 65501574319,
+          "l1_misses": 6402512,
+          "l2_misses": 6252
+        },
+        {
+          "offset_bytes": 60,
+          "loads": 23592960,
+          "checksum": 65501574319,
+          "l1_misses": 6403109,
+          "l2_misses": 6252
+        }
+      ]
+    },
+    "new_384k": {
+      "keys": 98317,
+      "queries": 1572864,
+      "seed": 327950289,
+      "input_sha256": "44b28a88c76cc53cd9bb91f8459dce0d8e95f010c268dbb6a1bc1f6f1054583f",
+      "expected_checksum": 77327391908,
+      "expected_loads": 28311552,
+      "native_median_ns": "52153000",
+      "native_ns_per_query": "6519125/196608",
+      "alignments": [
+        {
+          "offset_bytes": 0,
+          "loads": 28311552,
+          "checksum": 77327391908,
+          "l1_misses": 14345335,
+          "l2_misses": 6145,
+          "fully_associative_l1_misses": 7623481
+        },
+        {
+          "offset_bytes": 4,
+          "loads": 28311552,
+          "checksum": 77327391908,
+          "l1_misses": 14344784,
+          "l2_misses": 6145
+        },
+        {
+          "offset_bytes": 8,
+          "loads": 28311552,
+          "checksum": 77327391908,
+          "l1_misses": 14344819,
+          "l2_misses": 6145
+        },
+        {
+          "offset_bytes": 12,
+          "loads": 28311552,
+          "checksum": 77327391908,
+          "l1_misses": 14344365,
+          "l2_misses": 6145
+        },
+        {
+          "offset_bytes": 16,
+          "loads": 28311552,
+          "checksum": 77327391908,
+          "l1_misses": 13641004,
+          "l2_misses": 6146
+        },
+        {
+          "offset_bytes": 20,
+          "loads": 28311552,
+          "checksum": 77327391908,
+          "l1_misses": 12871731,
+          "l2_misses": 6146
+        },
+        {
+          "offset_bytes": 24,
+          "loads": 28311552,
+          "checksum": 77327391908,
+          "l1_misses": 12450628,
+          "l2_misses": 6146
+        },
+        {
+          "offset_bytes": 28,
+          "loads": 28311552,
+          "checksum": 77327391908,
+          "l1_misses": 11347164,
+          "l2_misses": 6146
+        },
+        {
+          "offset_bytes": 32,
+          "loads": 28311552,
+          "checksum": 77327391908,
+          "l1_misses": 11147221,
+          "l2_misses": 6146
+        },
+        {
+          "offset_bytes": 36,
+          "loads": 28311552,
+          "checksum": 77327391908,
+          "l1_misses": 11167314,
+          "l2_misses": 6146
+        },
+        {
+          "offset_bytes": 40,
+          "loads": 28311552,
+          "checksum": 77327391908,
+          "l1_misses": 11140791,
+          "l2_misses": 6146
+        },
+        {
+          "offset_bytes": 44,
+          "loads": 28311552,
+          "checksum": 77327391908,
+          "l1_misses": 11279303,
+          "l2_misses": 6146
+        },
+        {
+          "offset_bytes": 48,
+          "loads": 28311552,
+          "checksum": 77327391908,
+          "l1_misses": 11408608,
+          "l2_misses": 6146
+        },
+        {
+          "offset_bytes": 52,
+          "loads": 28311552,
+          "checksum": 77327391908,
+          "l1_misses": 12598645,
+          "l2_misses": 6146
+        },
+        {
+          "offset_bytes": 56,
+          "loads": 28311552,
+          "checksum": 77327391908,
+          "l1_misses": 13324483,
+          "l2_misses": 6146
+        },
+        {
+          "offset_bytes": 60,
+          "loads": 28311552,
+          "checksum": 77327391908,
+          "l1_misses": 13910102,
+          "l2_misses": 6146
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,1538 @@
+{
+  "dataset_sha256": "9141b302ffb0b5cd6f7bff75f6434b7169aed79026813f2875e2c386cd1509fd",
+  "cases": {
+    "fit_16k": {
+      "native_ns": [
+        46514000,
+        46444000,
+        46482000,
+        46354000,
+        46363000,
+        46826000,
+        46235000,
+        46488000
+      ],
+      "median_ns": "46463000",
+      "spread_ppm": 12720,
+      "duration_pass": true,
+      "spread_pass": true,
+      "span_bytes": [
+        16384,
+        16384,
+        16384,
+        16384
+      ],
+      "uniform_distance_ppm": [
+        12005,
+        12005,
+        12005,
+        12005
+      ],
+      "status": [
+        "eligible",
+        "eligible",
+        "eligible",
+        "eligible"
+      ],
+      "cpu": {
+        "pairs": 4,
+        "fast_ns": 6830689000,
+        "sampled_ns": 6920211000,
+        "pooled_overhead_ppm": 13106,
+        "median_pair_overhead_ppm": 1617,
+        "pair_overhead_ppm": [
+          55642,
+          206,
+          -6517,
+          3028
+        ]
+      },
+      "models": {
+        "fast": {
+          "pass": false,
+          "ns": [
+            89368533,
+            89368760,
+            89368793,
+            89368838
+          ],
+          "median_ns": 89368777,
+          "error_ppm": [
+            923434,
+            923439,
+            923440,
+            923441
+          ]
+        },
+        "paired_baseline": {
+          "pass": false,
+          "ns": [
+            89369676,
+            89369407,
+            89369830,
+            89369941
+          ],
+          "median_ns": 89369753,
+          "error_ppm": [
+            923459,
+            923453,
+            923462,
+            923465
+          ]
+        },
+        "previous_suffix": {
+          "pass": false,
+          "ns": [
+            99586259,
+            99585990,
+            99586412,
+            99586524
+          ],
+          "median_ns": 99586335,
+          "error_ppm": [
+            1143345,
+            1143340,
+            1143349,
+            1143351
+          ]
+        },
+        "footprint": {
+          "pass": true,
+          "ns": [
+            46462923,
+            46462654,
+            46463077,
+            46463188
+          ],
+          "median_ns": 46463000,
+          "error_ppm": [
+            -2,
+            -7,
+            2,
+            4
+          ]
+        }
+      }
+    },
+    "fit_256k": {
+      "native_ns": [
+        47561000,
+        47755000,
+        47678000,
+        47383000,
+        47686000,
+        48036000,
+        47870000,
+        48512000
+      ],
+      "median_ns": "47720500",
+      "spread_ppm": 23659,
+      "duration_pass": true,
+      "spread_pass": true,
+      "span_bytes": [
+        261940,
+        261940,
+        261940,
+        261940
+      ],
+      "uniform_distance_ppm": [
+        22388,
+        22388,
+        22388,
+        22388
+      ],
+      "status": [
+        "eligible",
+        "eligible",
+        "eligible",
+        "eligible"
+      ],
+      "cpu": {
+        "pairs": 4,
+        "fast_ns": 4473347000,
+        "sampled_ns": 4475760000,
+        "pooled_overhead_ppm": 539,
+        "median_pair_overhead_ppm": 672,
+        "pair_overhead_ppm": [
+          -129,
+          1474,
+          2972,
+          -2148
+        ]
+      },
+      "models": {
+        "fast": {
+          "pass": false,
+          "ns": [
+            58868843,
+            58868211,
+            58868854,
+            58868817
+          ],
+          "median_ns": 58868830,
+          "error_ppm": [
+            233617,
+            233604,
+            233618,
+            233617
+          ]
+        },
+        "paired_baseline": {
+          "pass": false,
+          "ns": [
+            58869993,
+            58869592,
+            58869840,
+            58869717
+          ],
+          "median_ns": 58869778,
+          "error_ppm": [
+            233642,
+            233633,
+            233638,
+            233636
+          ]
+        },
+        "previous_suffix": {
+          "pass": false,
+          "ns": [
+            82110407,
+            82110006,
+            82110254,
+            82110131
+          ],
+          "median_ns": 82110192,
+          "error_ppm": [
+            720653,
+            720644,
+            720649,
+            720647
+          ]
+        },
+        "footprint": {
+          "pass": true,
+          "ns": [
+            47720714,
+            47720313,
+            47720562,
+            47720438
+          ],
+          "median_ns": 47720500,
+          "error_ppm": [
+            4,
+            -4,
+            1,
+            -1
+          ]
+        }
+      }
+    },
+    "fit_512k": {
+      "native_ns": [
+        57380000,
+        55361000,
+        54928000,
+        58123000,
+        55340000,
+        57020000,
+        53920000,
+        57984000
+      ],
+      "median_ns": "56190500",
+      "spread_ppm": 74799,
+      "duration_pass": true,
+      "spread_pass": true,
+      "span_bytes": [
+        523776,
+        523776,
+        523776,
+        523776
+      ],
+      "uniform_distance_ppm": [
+        16745,
+        16745,
+        16745,
+        16745
+      ],
+      "status": [
+        "eligible",
+        "eligible",
+        "eligible",
+        "eligible"
+      ],
+      "cpu": {
+        "pairs": 4,
+        "fast_ns": 4031707000,
+        "sampled_ns": 4019652000,
+        "pooled_overhead_ppm": -2990,
+        "median_pair_overhead_ppm": -662,
+        "pair_overhead_ppm": [
+          -13152,
+          -60,
+          2692,
+          -1265
+        ]
+      },
+      "models": {
+        "fast": {
+          "pass": true,
+          "ns": [
+            52021814,
+            52022036,
+            52021880,
+            52021889
+          ],
+          "median_ns": 52021884,
+          "error_ppm": [
+            -74188,
+            -74184,
+            -74187,
+            -74187
+          ]
+        },
+        "paired_baseline": {
+          "pass": true,
+          "ns": [
+            52023116,
+            52022859,
+            52022877,
+            52023059
+          ],
+          "median_ns": 52022968,
+          "error_ppm": [
+            -74165,
+            -74170,
+            -74170,
+            -74166
+          ]
+        },
+        "previous_suffix": {
+          "pass": false,
+          "ns": [
+            75425238,
+            75424981,
+            75424999,
+            75425181
+          ],
+          "median_ns": 75425090,
+          "error_ppm": [
+            342313,
+            342308,
+            342309,
+            342312
+          ]
+        },
+        "footprint": {
+          "pass": true,
+          "ns": [
+            56190649,
+            56190392,
+            56190409,
+            56190591
+          ],
+          "median_ns": 56190500,
+          "error_ppm": [
+            3,
+            -2,
+            -2,
+            2
+          ]
+        }
+      }
+    },
+    "fit_1m": {
+      "native_ns": [
+        68329000,
+        71580000,
+        68252000,
+        67911000,
+        65621000,
+        66423000,
+        65559000,
+        65438000
+      ],
+      "median_ns": "67167000",
+      "spread_ppm": 91444,
+      "duration_pass": true,
+      "spread_pass": true,
+      "span_bytes": [
+        1046692,
+        1046692,
+        1046692,
+        1046692
+      ],
+      "uniform_distance_ppm": [
+        19455,
+        19455,
+        19455,
+        19455
+      ],
+      "status": [
+        "eligible",
+        "eligible",
+        "eligible",
+        "eligible"
+      ],
+      "cpu": {
+        "pairs": 4,
+        "fast_ns": 3558949000,
+        "sampled_ns": 3548790000,
+        "pooled_overhead_ppm": -2854,
+        "median_pair_overhead_ppm": -2355,
+        "pair_overhead_ppm": [
+          -15874,
+          -9329,
+          9618,
+          4619
+        ]
+      },
+      "models": {
+        "fast": {
+          "pass": false,
+          "ns": [
+            44002414,
+            44002566,
+            44002529,
+            44002322
+          ],
+          "median_ns": 44002472,
+          "error_ppm": [
+            -344880,
+            -344878,
+            -344879,
+            -344882
+          ]
+        },
+        "paired_baseline": {
+          "pass": false,
+          "ns": [
+            44003731,
+            44003681,
+            44003455,
+            44003590
+          ],
+          "median_ns": 44003636,
+          "error_ppm": [
+            -344861,
+            -344862,
+            -344865,
+            -344863
+          ]
+        },
+        "previous_suffix": {
+          "pass": true,
+          "ns": [
+            65339827,
+            65339777,
+            65339551,
+            65339686
+          ],
+          "median_ns": 65339731,
+          "error_ppm": [
+            -27203,
+            -27204,
+            -27208,
+            -27206
+          ]
+        },
+        "footprint": {
+          "pass": true,
+          "ns": [
+            67167095,
+            67167046,
+            67166819,
+            67166954
+          ],
+          "median_ns": 67167000,
+          "error_ppm": [
+            1,
+            1,
+            -3,
+            -1
+          ]
+        }
+      }
+    },
+    "fit_8m": {
+      "native_ns": [
+        157944000,
+        167776000,
+        136057000,
+        149270000,
+        138188000,
+        142503000,
+        133719000,
+        138987000
+      ],
+      "median_ns": "140745000",
+      "spread_ppm": 241977,
+      "duration_pass": true,
+      "spread_pass": false,
+      "span_bytes": [
+        8382848,
+        8382848,
+        8382848,
+        8382848
+      ],
+      "uniform_distance_ppm": [
+        19455,
+        19455,
+        19455,
+        19455
+      ],
+      "status": [
+        "eligible",
+        "eligible",
+        "eligible",
+        "eligible"
+      ],
+      "cpu": {
+        "pairs": 4,
+        "fast_ns": 5264928000,
+        "sampled_ns": 5322672000,
+        "pooled_overhead_ppm": 10968,
+        "median_pair_overhead_ppm": 7961,
+        "pair_overhead_ppm": [
+          -13752,
+          6511,
+          41174,
+          9412
+        ]
+      },
+      "models": {
+        "fast": {
+          "pass": false,
+          "ns": [
+            51269158,
+            51268796,
+            51268886,
+            51269034
+          ],
+          "median_ns": 51268960,
+          "error_ppm": [
+            -635730,
+            -635733,
+            -635732,
+            -635731
+          ]
+        },
+        "paired_baseline": {
+          "pass": false,
+          "ns": [
+            51270267,
+            51269923,
+            51269865,
+            51270273
+          ],
+          "median_ns": 51270095,
+          "error_ppm": [
+            -635722,
+            -635725,
+            -635725,
+            -635722
+          ]
+        },
+        "previous_suffix": {
+          "pass": false,
+          "ns": [
+            81946789,
+            81946445,
+            81946387,
+            81946795
+          ],
+          "median_ns": 81946617,
+          "error_ppm": [
+            -417764,
+            -417767,
+            -417767,
+            -417764
+          ]
+        },
+        "footprint": {
+          "pass": true,
+          "ns": [
+            140745172,
+            140744828,
+            140744770,
+            140745178
+          ],
+          "median_ns": 140745000,
+          "error_ppm": [
+            1,
+            -1,
+            -2,
+            1
+          ]
+        }
+      }
+    },
+    "archived": {
+      "native_ns": [
+        35278000,
+        36276000,
+        35361000,
+        35351000,
+        35375000,
+        39842000,
+        34342000,
+        34464000
+      ],
+      "median_ns": "35356000",
+      "spread_ppm": 155561,
+      "duration_pass": true,
+      "spread_pass": false,
+      "span_bytes": [
+        1047712,
+        1047712,
+        1047712,
+        1047712
+      ],
+      "uniform_distance_ppm": [
+        13619,
+        13619,
+        13619,
+        13619
+      ],
+      "status": [
+        "eligible",
+        "eligible",
+        "eligible",
+        "eligible"
+      ],
+      "cpu": {
+        "pairs": 4,
+        "fast_ns": 2105975000,
+        "sampled_ns": 2110780000,
+        "pooled_overhead_ppm": 2282,
+        "median_pair_overhead_ppm": 2220,
+        "pair_overhead_ppm": [
+          4184,
+          1878,
+          492,
+          2562
+        ]
+      },
+      "models": {
+        "fast": {
+          "pass": false,
+          "ns": [
+            22039322,
+            22039302,
+            22039390,
+            22039171
+          ],
+          "median_ns": 22039312,
+          "error_ppm": [
+            -376645,
+            -376646,
+            -376644,
+            -376650
+          ]
+        },
+        "paired_baseline": {
+          "pass": false,
+          "ns": [
+            22040523,
+            22040421,
+            22040201,
+            22040064
+          ],
+          "median_ns": 22040311,
+          "error_ppm": [
+            -376612,
+            -376614,
+            -376621,
+            -376625
+          ]
+        },
+        "previous_suffix": {
+          "pass": true,
+          "ns": [
+            32812726,
+            32812624,
+            32812404,
+            32812267
+          ],
+          "median_ns": 32812514,
+          "error_ppm": [
+            -71933,
+            -71936,
+            -71942,
+            -71946
+          ]
+        },
+        "footprint": {
+          "pass": true,
+          "ns": [
+            33626815,
+            33626713,
+            33626493,
+            33626356
+          ],
+          "median_ns": 33626603,
+          "error_ppm": [
+            -48908,
+            -48911,
+            -48917,
+            -48921
+          ]
+        }
+      }
+    },
+    "prior_nonpower": {
+      "native_ns": [
+        38112000,
+        38592000,
+        37812000,
+        38443000,
+        38110000,
+        37694000,
+        38482000,
+        37507000
+      ],
+      "median_ns": "38111000",
+      "spread_ppm": 28469,
+      "duration_pass": true,
+      "spread_pass": true,
+      "span_bytes": [
+        399856,
+        399856,
+        399856,
+        399856
+      ],
+      "uniform_distance_ppm": [
+        10724,
+        10724,
+        10724,
+        10724
+      ],
+      "status": [
+        "eligible",
+        "eligible",
+        "eligible",
+        "eligible"
+      ],
+      "cpu": {
+        "pairs": 4,
+        "fast_ns": 4000776000,
+        "sampled_ns": 4024936000,
+        "pooled_overhead_ppm": 6039,
+        "median_pair_overhead_ppm": 5781,
+        "pair_overhead_ppm": [
+          4977,
+          15343,
+          -2776,
+          6586
+        ]
+      },
+      "models": {
+        "fast": {
+          "pass": false,
+          "ns": [
+            52018778,
+            52018906,
+            52018811,
+            52018545
+          ],
+          "median_ns": 52018794,
+          "error_ppm": [
+            364928,
+            364932,
+            364929,
+            364922
+          ]
+        },
+        "paired_baseline": {
+          "pass": false,
+          "ns": [
+            52019635,
+            52019869,
+            52019743,
+            52019700
+          ],
+          "median_ns": 52019722,
+          "error_ppm": [
+            364951,
+            364957,
+            364954,
+            364952
+          ]
+        },
+        "previous_suffix": {
+          "pass": false,
+          "ns": [
+            74414449,
+            74414683,
+            74414557,
+            74414514
+          ],
+          "median_ns": 74414536,
+          "error_ppm": [
+            952571,
+            952578,
+            952574,
+            952573
+          ]
+        },
+        "footprint": {
+          "pass": false,
+          "ns": [
+            49817572,
+            49817806,
+            49817680,
+            49817637
+          ],
+          "median_ns": 49817658,
+          "error_ppm": [
+            307170,
+            307177,
+            307173,
+            307172
+          ]
+        }
+      }
+    },
+    "new_96k": {
+      "native_ns": [
+        45139000,
+        45655000,
+        45104000,
+        45221000,
+        45194000,
+        45215000,
+        45063000,
+        45067000
+      ],
+      "median_ns": "45166500",
+      "spread_ppm": 13107,
+      "duration_pass": true,
+      "spread_pass": true,
+      "span_bytes": [
+        98232,
+        98232,
+        98232,
+        98232
+      ],
+      "uniform_distance_ppm": [
+        16059,
+        16059,
+        16059,
+        16059
+      ],
+      "status": [
+        "eligible",
+        "eligible",
+        "eligible",
+        "eligible"
+      ],
+      "cpu": {
+        "pairs": 4,
+        "fast_ns": 5481614000,
+        "sampled_ns": 5504092000,
+        "pooled_overhead_ppm": 4101,
+        "median_pair_overhead_ppm": 1822,
+        "pair_overhead_ppm": [
+          1857,
+          1786,
+          11794,
+          978
+        ]
+      },
+      "models": {
+        "fast": {
+          "pass": false,
+          "ns": [
+            73751145,
+            73751010,
+            73751170,
+            73751047
+          ],
+          "median_ns": 73751096,
+          "error_ppm": [
+            632873,
+            632870,
+            632873,
+            632871
+          ]
+        },
+        "paired_baseline": {
+          "pass": false,
+          "ns": [
+            73752084,
+            73752186,
+            73752030,
+            73752038
+          ],
+          "median_ns": 73752061,
+          "error_ppm": [
+            632893,
+            632896,
+            632892,
+            632892
+          ]
+        },
+        "previous_suffix": {
+          "pass": false,
+          "ns": [
+            97302655,
+            97302757,
+            97302601,
+            97302609
+          ],
+          "median_ns": 97302632,
+          "error_ppm": [
+            1154310,
+            1154313,
+            1154309,
+            1154309
+          ]
+        },
+        "footprint": {
+          "pass": true,
+          "ns": [
+            49726957,
+            49727060,
+            49726904,
+            49726912
+          ],
+          "median_ns": 49726935,
+          "error_ppm": [
+            100970,
+            100972,
+            100969,
+            100969
+          ]
+        }
+      }
+    },
+    "new_384k": {
+      "native_ns": [
+        53348000,
+        52915000,
+        51640000,
+        52166000,
+        52140000,
+        51718000,
+        51968000,
+        53353000
+      ],
+      "median_ns": "52153000",
+      "spread_ppm": 32846,
+      "duration_pass": true,
+      "spread_pass": true,
+      "span_bytes": [
+        392940,
+        392940,
+        392940,
+        392940
+      ],
+      "uniform_distance_ppm": [
+        12653,
+        12653,
+        12653,
+        12653
+      ],
+      "status": [
+        "eligible",
+        "eligible",
+        "eligible",
+        "eligible"
+      ],
+      "cpu": {
+        "pairs": 4,
+        "fast_ns": 4704638000,
+        "sampled_ns": 4690279000,
+        "pooled_overhead_ppm": -3052,
+        "median_pair_overhead_ppm": -3881,
+        "pair_overhead_ppm": [
+          15255,
+          1605,
+          -19364,
+          -9367
+        ]
+      },
+      "models": {
+        "fast": {
+          "pass": true,
+          "ns": [
+            62410292,
+            62410432,
+            62410511,
+            62410364
+          ],
+          "median_ns": 62410398,
+          "error_ppm": [
+            196677,
+            196680,
+            196681,
+            196678
+          ]
+        },
+        "paired_baseline": {
+          "pass": true,
+          "ns": [
+            62411580,
+            62411451,
+            62411500,
+            62411663
+          ],
+          "median_ns": 62411540,
+          "error_ppm": [
+            196702,
+            196699,
+            196700,
+            196703
+          ]
+        },
+        "previous_suffix": {
+          "pass": false,
+          "ns": [
+            89058193,
+            89058064,
+            89058113,
+            89058275
+          ],
+          "median_ns": 89058153,
+          "error_ppm": [
+            707633,
+            707631,
+            707632,
+            707635
+          ]
+        },
+        "footprint": {
+          "pass": true,
+          "ns": [
+            59342518,
+            59342389,
+            59342439,
+            59342601
+          ],
+          "median_ns": 59342478,
+          "error_ppm": [
+            137854,
+            137852,
+            137853,
+            137856
+          ]
+        }
+      }
+    },
+    "new_768k": {
+      "native_ns": [
+        61691000,
+        60894000,
+        61562000,
+        61845000,
+        61531000,
+        61983000,
+        62034000,
+        63379000
+      ],
+      "median_ns": "61768000",
+      "spread_ppm": 40231,
+      "duration_pass": true,
+      "spread_pass": true,
+      "span_bytes": [
+        785700,
+        785700,
+        785700,
+        785700
+      ],
+      "uniform_distance_ppm": [
+        17134,
+        17134,
+        17134,
+        17134
+      ],
+      "status": [
+        "eligible",
+        "eligible",
+        "eligible",
+        "eligible"
+      ],
+      "cpu": {
+        "pairs": 4,
+        "fast_ns": 4204661000,
+        "sampled_ns": 4211185000,
+        "pooled_overhead_ppm": 1552,
+        "median_pair_overhead_ppm": 2657,
+        "pair_overhead_ppm": [
+          1859,
+          3456,
+          8245,
+          -7180
+        ]
+      },
+      "models": {
+        "fast": {
+          "pass": true,
+          "ns": [
+            54977533,
+            54977315,
+            54977483,
+            54977378
+          ],
+          "median_ns": 54977430,
+          "error_ppm": [
+            -109935,
+            -109939,
+            -109936,
+            -109938
+          ]
+        },
+        "paired_baseline": {
+          "pass": true,
+          "ns": [
+            54978353,
+            54978547,
+            54978616,
+            54978586
+          ],
+          "median_ns": 54978567,
+          "error_ppm": [
+            -109922,
+            -109919,
+            -109917,
+            -109918
+          ]
+        },
+        "previous_suffix": {
+          "pass": false,
+          "ns": [
+            80885531,
+            80885724,
+            80885794,
+            80885764
+          ],
+          "median_ns": 80885744,
+          "error_ppm": [
+            309505,
+            309509,
+            309510,
+            309509
+          ]
+        },
+        "footprint": {
+          "pass": true,
+          "ns": [
+            71561311,
+            71561504,
+            71561574,
+            71561544
+          ],
+          "median_ns": 71561524,
+          "error_ppm": [
+            158550,
+            158553,
+            158554,
+            158554
+          ]
+        }
+      }
+    },
+    "new_2m": {
+      "native_ns": [
+        80692000,
+        81851000,
+        88258000,
+        80715000,
+        81914000,
+        82243000,
+        79611000,
+        79149000
+      ],
+      "median_ns": "81283000",
+      "spread_ppm": 112065,
+      "duration_pass": true,
+      "spread_pass": false,
+      "span_bytes": [
+        2096028,
+        2096028,
+        2096028,
+        2096028
+      ],
+      "uniform_distance_ppm": [
+        11665,
+        11665,
+        11665,
+        11665
+      ],
+      "status": [
+        "eligible",
+        "eligible",
+        "eligible",
+        "eligible"
+      ],
+      "cpu": {
+        "pairs": 4,
+        "fast_ns": 3953217000,
+        "sampled_ns": 3948724000,
+        "pooled_overhead_ppm": -1137,
+        "median_pair_overhead_ppm": -762,
+        "pair_overhead_ppm": [
+          -6346,
+          5452,
+          4823,
+          -8389
+        ]
+      },
+      "models": {
+        "fast": {
+          "pass": false,
+          "ns": [
+            48747249,
+            48747337,
+            48747469,
+            48747546
+          ],
+          "median_ns": 48747403,
+          "error_ppm": [
+            -400277,
+            -400276,
+            -400275,
+            -400274
+          ]
+        },
+        "paired_baseline": {
+          "pass": false,
+          "ns": [
+            48748319,
+            48748625,
+            48748453,
+            48748540
+          ],
+          "median_ns": 48748497,
+          "error_ppm": [
+            -400264,
+            -400261,
+            -400263,
+            -400262
+          ]
+        },
+        "previous_suffix": {
+          "pass": true,
+          "ns": [
+            73335811,
+            73336116,
+            73335945,
+            73336032
+          ],
+          "median_ns": 73335988,
+          "error_ppm": [
+            -97772,
+            -97768,
+            -97770,
+            -97769
+          ]
+        },
+        "footprint": {
+          "pass": true,
+          "ns": [
+            81396635,
+            81396941,
+            81396769,
+            81396856
+          ],
+          "median_ns": 81396813,
+          "error_ppm": [
+            1398,
+            1402,
+            1400,
+            1401
+          ]
+        }
+      }
+    },
+    "new_4m": {
+      "native_ns": [
+        116499000,
+        113077000,
+        112048000,
+        122672000,
+        114518000,
+        114734000,
+        116994000,
+        115925000
+      ],
+      "median_ns": "115329500",
+      "spread_ppm": 92119,
+      "duration_pass": true,
+      "spread_pass": true,
+      "span_bytes": [
+        4191892,
+        4191892,
+        4191892,
+        4191892
+      ],
+      "uniform_distance_ppm": [
+        19455,
+        19455,
+        19455,
+        19455
+      ],
+      "status": [
+        "eligible",
+        "eligible",
+        "eligible",
+        "eligible"
+      ],
+      "cpu": {
+        "pairs": 4,
+        "fast_ns": 4328770000,
+        "sampled_ns": 4374875000,
+        "pooled_overhead_ppm": 10651,
+        "median_pair_overhead_ppm": 8334,
+        "pair_overhead_ppm": [
+          18642,
+          39141,
+          -1973,
+          -13172
+        ]
+      },
+      "models": {
+        "fast": {
+          "pass": false,
+          "ns": [
+            48801688,
+            48801674,
+            48801657,
+            48801437
+          ],
+          "median_ns": 48801666,
+          "error_ppm": [
+            -576850,
+            -576850,
+            -576850,
+            -576852
+          ]
+        },
+        "paired_baseline": {
+          "pass": false,
+          "ns": [
+            48802621,
+            48802785,
+            48802824,
+            48802843
+          ],
+          "median_ns": 48802804,
+          "error_ppm": [
+            -576842,
+            -576840,
+            -576840,
+            -576840
+          ]
+        },
+        "previous_suffix": {
+          "pass": false,
+          "ns": [
+            76154385,
+            76154549,
+            76154588,
+            76154608
+          ],
+          "median_ns": 76154569,
+          "error_ppm": [
+            -339680,
+            -339678,
+            -339678,
+            -339678
+          ]
+        },
+        "footprint": {
+          "pass": true,
+          "ns": [
+            100395459,
+            100395623,
+            100395662,
+            100395682
+          ],
+          "median_ns": 100395643,
+          "error_ppm": [
+            -129490,
+            -129489,
+            -129488,
+            -129488
+          ]
+        }
+      }
+    }
+  },
+  "cpu": {
+    "pairs": 48,
+    "fast_ns": 52939271000,
+    "sampled_ns": 53151956000,
+    "pooled_overhead_ppm": 4018,
+    "median_pair_overhead_ppm": 1858,
+    "pair_overhead_ppm": [
+      55642,
+      206,
+      -6517,
+      3028,
+      -129,
+      1474,
+      2972,
+      -2148,
+      -13152,
+      -60,
+      2692,
+      -1265,
+      -15874,
+      -9329,
+      9618,
+      4619,
+      -13752,
+      6511,
+      41174,
+      9412,
+      4184,
+      1878,
+      492,
+      2562,
+      4977,
+      15343,
+      -2776,
+      6586,
+      1857,
+      1786,
+      11794,
+      978,
+      15255,
+      1605,
+      -19364,
+      -9367,
+      1859,
+      3456,
+      8245,
+      -7180,
+      -6346,
+      5452,
+      4823,
+      -8389,
+      18642,
+      39141,
+      -1973,
+      -13172
+    ]
+  },
+  "omitted_calibration": {
+    "fit_16k": {
+      "status": [
+        "outside_calibrated_span",
+        "outside_calibrated_span",
+        "outside_calibrated_span",
+        "outside_calibrated_span"
+      ],
+      "pass": false,
+      "ns": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "median_ns": null
+    },
+    "fit_256k": {
+      "status": [
+        "eligible",
+        "eligible",
+        "eligible",
+        "eligible"
+      ],
+      "pass": true,
+      "ns": [
+        50219420,
+        50219019,
+        50219268,
+        50219144
+      ],
+      "median_ns": 50219206,
+      "error_ppm": [
+        52366,
+        52357,
+        52363,
+        52360
+      ]
+    },
+    "fit_512k": {
+      "status": [
+        "eligible",
+        "eligible",
+        "eligible",
+        "eligible"
+      ],
+      "pass": true,
+      "ns": [
+        55492756,
+        55492499,
+        55492516,
+        55492698
+      ],
+      "median_ns": 55492607,
+      "error_ppm": [
+        -12417,
+        -12422,
+        -12422,
+        -12419
+      ]
+    },
+    "fit_1m": {
+      "status": [
+        "eligible",
+        "eligible",
+        "eligible",
+        "eligible"
+      ],
+      "pass": false,
+      "ns": [
+        53069279,
+        53069229,
+        53069003,
+        53069138
+      ],
+      "median_ns": 53069184,
+      "error_ppm": [
+        -209891,
+        -209891,
+        -209895,
+        -209893
+      ]
+    },
+    "fit_8m": {
+      "status": [
+        "outside_calibrated_span",
+        "outside_calibrated_span",
+        "outside_calibrated_span",
+        "outside_calibrated_span"
+      ],
+      "pass": false,
+      "ns": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "median_ns": null
+    }
+  },
+  "passes": {
+    "calibration": {
+      "fast": 1,
+      "paired_baseline": 1,
+      "previous_suffix": 1,
+      "footprint": 5
+    },
+    "repeats": {
+      "fast": 0,
+      "paired_baseline": 0,
+      "previous_suffix": 1,
+      "footprint": 1
+    },
+    "new": {
+      "fast": 2,
+      "paired_baseline": 2,
+      "previous_suffix": 1,
+      "footprint": 5
+    }
+  }
+}
