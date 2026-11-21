@@ -15,6 +15,9 @@ The CPP20 branch and sort replay uses Aonohako’s original executables and inpu
 to test which counters distinguish two observed native time differences.
 [Replay method and results](REFERENCE_FEATURES.md)
 
+The CPU-pinned Rust study tests scalar multiplies and loop recurrence against
+matched native controls from Compute Engine. [Measurements and replay](GCE_RUST_INSTRUCTION_MIX.md)
+
 ## Method
 
 The fixed corpus in `experiments/time_features/work.c` has 18 kernels, each

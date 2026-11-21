@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "purpose": "Prospectively time the three unseen Rust programs using fixed coefficients chosen retrospectively on the separate 15-case study. Compare collection CPU for full-feature and recurrence-only diagnostics on those same binaries.",
+  "training_commit": "f7a9f16",
+  "training_dataset_sha256": "27c0b57e23a4a2e210b958d1b0bc4d0f3a992651b53dae69da3d004ab2a5e3c6",
+  "fixtures_sha256": "9fe1ff0f27c311d70ed591922048f9cb02420174f84a793d9d9ce649c1790265",
+  "programs": [
+    "gcd",
+    "lower_bound",
+    "rolling_window"
+  ],
+  "cases": [
+    {
+      "workload_id": "gcd",
+      "source_sha256": "f7d2917ea9f107ee3148de54e90f76d603b2478d2c09051f752930e6f07aa90f",
+      "input_sha256": "91f53e183337f40e73b97e53d1d40e98c6e8ced0f05f6e590bb91fac5d9d1639",
+      "expected_sha256": "88be510b9393faa06cb4a4ed03034f2888e0bdd2c8a056190f552c7656fc539f"
+    },
+    {
+      "workload_id": "lower_bound",
+      "source_sha256": "ad92435b2c52c3839b74f36526ae6199da59a5cee2764738ccaf6394888889af",
+      "input_sha256": "1abdba68ac5fbaa67f12476bb845df80182b2005eb9690e83f91b078e38c7d95",
+      "expected_sha256": "13a70b629c17a244366c5c8946bb9bce1dae359e5a8a24d4e171ebca5fc66dab"
+    },
+    {
+      "workload_id": "rolling_window",
+      "source_sha256": "2f2fd3bb19ec77d4f07b9028f9f8105808fcb1228ecd8f0c0d6b84f60288a95e",
+      "input_sha256": "029dd4bd28eff5b4ce7a9b38c6631515d6fdc1c3a75f4fc58f1717c49f7d0f60",
+      "expected_sha256": "b21b47a808cabaab0114eaff7f5b6a3cad8d646fe23c230843d7d1ec746daa05"
+    }
+  ],
+  "scales": [
+    1
+  ],
+  "repetitions": 3,
+  "round_rotations": [
+    0,
+    1,
+    2
+  ],
+  "full_first_indices": [
+    0,
+    2,
+    3,
+    6,
+    7
+  ],
+  "order": "Rotate the canonical programs left by the offset once per round. Each quadruplet brackets a full and a recurrence-only observation with native controls. The full probe runs first if the zero-based round number plus the canonical program index is even.",
+  "weights": {
+    "instructions": 80,
+    "loop_recurrence_cycles_x16": 13,
+    "denominator": 1000
+  },
+  "thresholds": {
+    "min_native_ns": 20000000,
+    "max_native_spread_ppm": 100000,
+    "max_error_ppm": 200000,
+    "max_probe_prediction_delta_ppm": 1000
+  },
+  "tools": {
+    "launcher": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "meter": "dfa6bcd57398cda092ea6510d033d738d9104883c0d030a69f9041e661aefcf0",
+    "runtime": "fd1c5645b9fc70a7dcb71459b4b94782d2e016a2aa4ceffcfcab2ade962cdf5b",
+    "probe": "695416e64ded846bd10b8f6821dc2f2248877c82252662c08dbb46ba5b15c133",
+    "production_reader": "671a6c0bfc58f19c9c73b04bab78e7fcba88214a9eb31acb6da49adaa2cac59b"
+  },
+  "platform": "A second disposable Seoul N2D VM, one thread per core, measured on guest CPU 1, observer and normal guest services on CPU 0. Use the same image, compiler and ordinary/feature clients as the training study. Keep hard cpuset and independently verify each measured PID and loader exec. Retain all outputs and exact ELFs.",
+  "measure": "Compile each frozen source once with the unchanged Rust 1.95 optimized flags. Use the same binary and input in every mode. Select full feature mode or -loop_recurrence_only in the same existing DSO. Co-load the production v10 client with x86-64-v2 and take the ordinary instructions from its uninterrupted one-process, one-thread receipt. Full additionally requires instruction equality with the independent feature counter. Check all four phase outputs and times, without removing any slow observation.",
+  "analysis": "For each family use its six-native median as the target and require all three frozen predictions to fall within ±20% to pass. Report each family including native floor and spread, score fast and full separately, and compare them pairwise by abs(fast_prediction-full_prediction)/full_prediction <= 0.001. Report median paired fast/full child CPU ratio by program, mode order, and pooled CPU. Do not refit. This three-family experiment qualifies only its named cases."
+}

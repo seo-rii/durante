@@ -1,0 +1,146 @@
+{
+  "schema": 1,
+  "corpus_id": "rust-long-reference-v1",
+  "aonohako_commit": "f04ae258094e099c524c9191ef2f7b8a4c4f772a",
+  "reference_sha256": "a1a159aeeea8dc0fbef999ca976a2cdbbbdafefb32e9911af30e76d0034eeb52",
+  "compiler_version": "rustc 1.95.0 (59807616e 2026-04-14)",
+  "compiler_flags": [
+    "--edition",
+    "2024",
+    "-O",
+    "--cfg",
+    "ONLINE_JUDGE"
+  ],
+  "programs": {
+    "integer": {
+      "source_sha256": "dcb8ad3d0654e5a531975b07146828161c9f20dfd1a96a39d503dbd10dd297b9",
+      "cases": [
+        {
+          "scale": 1,
+          "stdin": "268435456 81985529216486895\n",
+          "stdout": "17075496932915006959\n",
+          "input_sha256": "3d774ad476a1349fb0abba3be4d4145919d139a4a12407b2508a87533a65cadb",
+          "expected_sha256": "c4d223d801ae0e29ddc438ee8791c7fedf6b3740217e28fdb4a3d4ad30db0d04"
+        },
+        {
+          "scale": 2,
+          "stdin": "536870912 81985529216486895\n",
+          "stdout": "13604651629841993199\n",
+          "input_sha256": "85e082854b029851e5f6988ab36de4714d2a9b493f92049d7793b83fcc26e510",
+          "expected_sha256": "6ac139dfcaba453c5d42166b29d8416b74fb8c5a27393d8c3b4ffedb152496ec"
+        },
+        {
+          "scale": 4,
+          "stdin": "1073741824 81985529216486895\n",
+          "stdout": "610123124510019055\n",
+          "input_sha256": "9d00dbad197fd0a6db92c2c50027859e0618fe8cd8f426f4aacfee51e97c05d9",
+          "expected_sha256": "f14621e84b1895779bd4ebee5aae0248631e51744cbf9cb5285a9cdd04c71729"
+        }
+      ]
+    },
+    "copy": {
+      "source_sha256": "6c5b252b1f0135c454c594891969b456db3f9e3e0d419bbb7a48a86702ad2c98",
+      "cases": [
+        {
+          "scale": 1,
+          "stdin": "262144 8192\n",
+          "stdout": "4385225814237\n",
+          "input_sha256": "ae208c367d26f9d3a72185dd18ff434842fa3d5995a937a37e36fa34a879f49c",
+          "expected_sha256": "2a5d6d9ea5639753996ce01ecf3a53a436345fb7d9efda247f2da803e40bd284"
+        },
+        {
+          "scale": 2,
+          "stdin": "262144 16384\n",
+          "stdout": "4398070456541\n",
+          "input_sha256": "ae82e52ba812584bc32f2f607185327397dc1e53df1b3b742ecd6786762b3f5b",
+          "expected_sha256": "ba4a82ddaac0a90847e7d302ac45547c326725451d8c4e415dc8f1985a5d9724"
+        },
+        {
+          "scale": 4,
+          "stdin": "262144 32768\n",
+          "stdout": "4449395327197\n",
+          "input_sha256": "79e42bbb8fbed399ac348468bb3c5ff423314c8507b3b502bb8ab093d77a2736",
+          "expected_sha256": "21a53e96ef95fe955197fcb1763096581ac65d059c108ade3f3cf6f70842c361"
+        }
+      ]
+    },
+    "branch": {
+      "source_sha256": "468db446e268202968ba0dae4f552eb218ef65dc64f1fb775f41ed9fde7527ce",
+      "cases": [
+        {
+          "scale": 1,
+          "stdin": "67108864 44257\n",
+          "stdout": "7428163301764546560\n",
+          "input_sha256": "16c3402cf255887d19eed335f65b177e4c9f57e5111da11ad7fca6806199710e",
+          "expected_sha256": "e35976992cf6245cbcdcd50a983e687be0a6915b46c393238b18c81fc94d91a5"
+        },
+        {
+          "scale": 2,
+          "stdin": "134217728 44257\n",
+          "stdout": "14856326603529093120\n",
+          "input_sha256": "74db0aaabfe610dc5e07497dfd7eb0c9eff50eca7a956c2b0ae27d2627c93ca8",
+          "expected_sha256": "fd7bfcfd4768728c1614baf2f17003dd5be277c1e3c64563a3fceedc5249138c"
+        },
+        {
+          "scale": 4,
+          "stdin": "268435456 44257\n",
+          "stdout": "11265909133348634624\n",
+          "input_sha256": "2e9c029bf0c9d96273badeb75b2a3867c2590eaecb27bac3fdffc4a0833932e9",
+          "expected_sha256": "d3c90322a73b8e2660dbdda6cc368db9e0bdb70f1d80e436f21875e2c760e63d"
+        }
+      ]
+    },
+    "sort": {
+      "source_sha256": "e3f307e0c849aae0598a54a74f89465adfb6393158c06b9f93ca7cda0379f1f5",
+      "cases": [
+        {
+          "scale": 1,
+          "stdin": "2097152\n",
+          "stdout": "3074459544641863680\n",
+          "input_sha256": "ef801656107acf2762ce10512091bba7ae297ce0f4bc9be76b789f7ba54a4136",
+          "expected_sha256": "ae623b09f4edbec8846d384b18c43c9978e4275da018ef20dd7a5efdf61de461"
+        },
+        {
+          "scale": 2,
+          "stdin": "4194304\n",
+          "stdout": "6148923487330238464\n",
+          "input_sha256": "3ea66b35931dd842ef0fd34c124f898dc005c6776ff7ccb143da1f8fd8dec3d0",
+          "expected_sha256": "35436ad819bf1b6685e049bb7354fa3d6e0f574f00b2549731431d4c9ccc4c8c"
+        },
+        {
+          "scale": 4,
+          "stdin": "8388608\n",
+          "stdout": "12297864566846521344\n",
+          "input_sha256": "22ee405617f143f8b43cdb9268b81b558e106454ba7a8b8c1354e9574481ba1e",
+          "expected_sha256": "6b1f26bd4106fabf69b3b5e6f82492dac987009772489138ef8423d806d912bd"
+        }
+      ]
+    },
+    "fill": {
+      "source_sha256": "ab2e488cda2708649d80fde97a8de3e64d54cb8f0db406bbdf5a876c7633e2da",
+      "cases": [
+        {
+          "scale": 1,
+          "stdin": "262144 16384\n",
+          "stdout": "6957814931456\n",
+          "input_sha256": "ae82e52ba812584bc32f2f607185327397dc1e53df1b3b742ecd6786762b3f5b",
+          "expected_sha256": "6fd369bd5bac7fadfd9ffbaae3de091a69931cec1693fce66b6c0656038344df"
+        },
+        {
+          "scale": 2,
+          "stdin": "262144 32768\n",
+          "stdout": "7009161756672\n",
+          "input_sha256": "79e42bbb8fbed399ac348468bb3c5ff423314c8507b3b502bb8ab093d77a2736",
+          "expected_sha256": "6f8387ca9ab3b67b13b5b91fe6d10fec5fe4ccaad71446f595ba56c9ba4c19ab"
+        },
+        {
+          "scale": 4,
+          "stdin": "262144 65536\n",
+          "stdout": "7214531969024\n",
+          "input_sha256": "8c157de8ada046ef0089506f18e7638580a786951bd5a66f589532600cbe5bbd",
+          "expected_sha256": "16178a3084dbdd6d48a1dd5a7eca77636e2aa8865f8f332f3c624f3114a46a42"
+        }
+      ]
+    }
+  }
+}

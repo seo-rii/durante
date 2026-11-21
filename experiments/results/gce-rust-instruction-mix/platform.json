@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "target": "compute_engine",
+  "zone": "asia-northeast3-a",
+  "machine_type": "n2d-standard-4",
+  "cpu_platform": "AMD Milan",
+  "cpu_model": "AMD EPYC 7B13",
+  "threads_per_core": 1,
+  "online_cpus": [
+    0,
+    1
+  ],
+  "topology": [
+    {
+      "cpu": 0,
+      "core_id": 0,
+      "physical_package_id": 0,
+      "thread_siblings_list": "0"
+    },
+    {
+      "cpu": 1,
+      "core_id": 1,
+      "physical_package_id": 0,
+      "thread_siblings_list": "1"
+    }
+  ],
+  "benchmark_cpu": 1,
+  "observer_cpus": [
+    0
+  ],
+  "housekeeping_slice_effective": {
+    "system.slice": "0",
+    "user.slice": "0",
+    "init.scope": "0"
+  },
+  "private_ipv4_only": true,
+  "service_account_attached": false,
+  "boot_image": "debian-12-bookworm-v20261117",
+  "kernel": "6.1.0-56-cloud-amd64",
+  "guest_id_sha256": "cacbe40b732b4c538dfb61e3bf0c683f0257cb8a752bd43d35919c267c9293cc",
+  "guest_boot_id_sha256": "96d30efed48fed4fd33f23a678d2224d03fb82d9f95748e03765d202b78b09d8",
+  "clock_ticks_per_second": 100,
+  "benchmark_steal_ticks_before": 0,
+  "benchmark_steal_ticks_after": 0,
+  "docker_version": "27.5.1",
+  "docker_package_sha256": "4f798b3ee1e0140eab5bf30b0edc4e84f4cdb53255a429dc3bbae9524845d640",
+  "docker_pid_namespace": "host",
+  "network_mode": "none",
+  "image_manifest_sha256": "856be473011809c36a32d7ecfb6501c45db07b3204b7e475be515ca4baa6cf95",
+  "image_config_digest": "sha256:23de5e0567295587df1b06740beb848b570518e9189926c41f65d1b676808cab",
+  "base_image": "asia.gcr.io/hancomac/aonohako@sha256:7af8d4b78ae6d7a9951bee0992a84df8282473bf3faf29cfbfdc56772f18ae51",
+  "layer_sha256": "b3a4896c90ebe13e244f8d9ccf2293d702ac9b0389cdc1c3817c88f21816853c",
+  "installed_software_sha256": {
+    "aonohako": "082f83a6456e42469cf31aba5cd44ea4ad53dda29dd616cea7be7f71a40f4864",
+    "durante-reference": "0f103605e5d024eaf3f278b20f4c07674b08d41e3089f25a20ba93acd8a5d361",
+    "libdurante.so": "dfa6bcd57398cda092ea6510d033d738d9104883c0d030a69f9041e661aefcf0",
+    "UPSTREAM.json": "4930e4cd05c2009f495839488507a77ab6101a30e2eb917281c39fbdc048df27"
+  },
+  "container_id_sha256": "52514c0cb2582b1ba8ff72862017c6bc77becdd3c0e4ffc6d62e718e9e8d5f83",
+  "capture_script_sha256": "277c453c5697bce67a7a4c910f7630ba34c20731aa9278da70cd94ec42a37955",
+  "trace_raw_sha256": "622a8412d8f1757feb461a6bbf0b5c4a9c8fb5ffb1ce4d955d475b796151536a",
+  "dataset_sha256": "27c0b57e23a4a2e210b958d1b0bc4d0f3a992651b53dae69da3d004ab2a5e3c6",
+  "protocol_sha256": "2c00e689ae19bbfd79607f85a81fa5e65a816b24bd38e363394ee23f853b6ed4",
+  "collector_sha256": "b90aa20707ba81a376edb8ac4d288632b097f33f9def8bbd8b0e5d3175436775",
+  "tools": {
+    "launcher": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "meter": "dfa6bcd57398cda092ea6510d033d738d9104883c0d030a69f9041e661aefcf0",
+    "runtime": "fd1c5645b9fc70a7dcb71459b4b94782d2e016a2aa4ceffcfcab2ade962cdf5b",
+    "probe": "695416e64ded846bd10b8f6821dc2f2248877c82252662c08dbb46ba5b15c133",
+    "production_reader": "671a6c0bfc58f19c9c73b04bab78e7fcba88214a9eb31acb6da49adaa2cac59b"
+  },
+  "control": {
+    "tiny_rust_stdout_sha256": "ef84fab92578f849a17fe0520eaf696f1fa1e4b750a42fcac9332852e1601d23",
+    "two_client_instructions_agree": true
+  },
+  "started_at": "2026-11-21T08:03:56Z",
+  "finished_at": "2026-11-21T08:17:27Z",
+  "elapsed_seconds": 811,
+  "collector_exit": 0,
+  "triplets": 45,
+  "affinity_observer_polls": 3234,
+  "vm_lifetime_cap_seconds": 7200,
+  "cleanup": {
+    "instance_http": 404,
+    "boot_disk_http": 404,
+    "disposable_ssh_key_removed": true,
+    "started_at": "2026-11-21T08:18:06.674786+00:00",
+    "verified_at": "2026-11-21T08:19:55.381132+00:00"
+  }
+}
