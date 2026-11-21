@@ -1,0 +1,107 @@
+{
+  "schema": 1,
+  "pairs": 524288,
+  "source_elf_sha256": "5b7aece7ce2817e5b68bc9961e7663f3d1fbd66dd4b079eae22f65ff47d4d35f",
+  "source_input_sha256": "91f53e183337f40e73b97e53d1d40e98c6e8ced0f05f6e590bb91fac5d9d1639",
+  "source_oracle_sha256": "68b080a7f31f5781682d90e46d7233a83af1c3605d091ab00979b78353cc5ab7",
+  "divisions": 9525462,
+  "gcd_checksum": 5324962,
+  "inner_branch_taken": 9001174,
+  "inner_branch_fallthrough": 524288,
+  "record_format": "little-endian u32 a, b, trip_count",
+  "trip_length_histogram": {
+    "4": 3,
+    "5": 11,
+    "6": 48,
+    "7": 167,
+    "8": 543,
+    "9": 1358,
+    "10": 3081,
+    "11": 6173,
+    "12": 11530,
+    "13": 19631,
+    "14": 29103,
+    "15": 40323,
+    "16": 51431,
+    "17": 58475,
+    "18": 61972,
+    "19": 59985,
+    "20": 53108,
+    "21": 43185,
+    "22": 32413,
+    "23": 22248,
+    "24": 13948,
+    "25": 7867,
+    "26": 4234,
+    "27": 2050,
+    "28": 933,
+    "29": 307,
+    "30": 106,
+    "31": 39,
+    "32": 14,
+    "33": 1,
+    "34": 1
+  },
+  "orders": {
+    "original": {
+      "same_length_as_preceding_pair": 44200,
+      "adjacent_pair_transitions": 524287,
+      "sum_absolute_length_change": 1975670
+    },
+    "grouped": {
+      "same_length_as_preceding_pair": 524257,
+      "adjacent_pair_transitions": 524287,
+      "sum_absolute_length_change": 30
+    }
+  },
+  "code": {
+    "function_vaddr": 4198496,
+    "changed_file_offset": 4203,
+    "remainder_machine_code": "89f889d731d2f7f7ffc985d275f2",
+    "counted_machine_code": "89f889d731d2f7f7ffc985c975f2"
+  },
+  "assembly_sha256": "d9bd2d31e3cd4ed28a7d352642680bff0fc3e2f3b49ceaf3a941b3df59abae26",
+  "archive_sha256": "0133ec8ef58cfd99711405372de408144f941a558ea3632b9a2becb59a895a91",
+  "cases": [
+    {
+      "workload_id": "loop_remainder_original",
+      "binary_sha256": "40890397894292cf96c87cd24c2b3532076cb2a18a2969ca1b97bc90b23afe72",
+      "elf_member": "bin/remainder/Main",
+      "input_file": "loop_original.bin",
+      "input_sha256": "3867752fe00db0fffa5695525322ac386f5183e92f42c1838d762e704fba4ffe",
+      "input_size": 6291456,
+      "expected_sha256": "c1eb0829646ab6b2997dc36fa0e1d6df0c356bfdddcaf8fda1262faf3de8151e",
+      "stdout_hex": "a240510000000000d658910000000000"
+    },
+    {
+      "workload_id": "loop_remainder_grouped",
+      "binary_sha256": "40890397894292cf96c87cd24c2b3532076cb2a18a2969ca1b97bc90b23afe72",
+      "elf_member": "bin/remainder/Main",
+      "input_file": "loop_grouped.bin",
+      "input_sha256": "c83a5b049e08b12402e2bceeec801872be45119282d66863d0d9ce3239e62ae9",
+      "input_size": 6291456,
+      "expected_sha256": "c1eb0829646ab6b2997dc36fa0e1d6df0c356bfdddcaf8fda1262faf3de8151e",
+      "stdout_hex": "a240510000000000d658910000000000"
+    },
+    {
+      "workload_id": "loop_counted_original",
+      "binary_sha256": "d35968b80659a9e0beea5a53f72c94dc5479041ad5462566383dd6acc3bd5615",
+      "elf_member": "bin/counted/Main",
+      "input_file": "loop_original.bin",
+      "input_sha256": "3867752fe00db0fffa5695525322ac386f5183e92f42c1838d762e704fba4ffe",
+      "input_size": 6291456,
+      "expected_sha256": "c1eb0829646ab6b2997dc36fa0e1d6df0c356bfdddcaf8fda1262faf3de8151e",
+      "stdout_hex": "a240510000000000d658910000000000"
+    },
+    {
+      "workload_id": "loop_counted_grouped",
+      "binary_sha256": "d35968b80659a9e0beea5a53f72c94dc5479041ad5462566383dd6acc3bd5615",
+      "elf_member": "bin/counted/Main",
+      "input_file": "loop_grouped.bin",
+      "input_sha256": "c83a5b049e08b12402e2bceeec801872be45119282d66863d0d9ce3239e62ae9",
+      "input_size": 6291456,
+      "expected_sha256": "c1eb0829646ab6b2997dc36fa0e1d6df0c356bfdddcaf8fda1262faf3de8151e",
+      "stdout_hex": "a240510000000000d658910000000000"
+    }
+  ]
+}

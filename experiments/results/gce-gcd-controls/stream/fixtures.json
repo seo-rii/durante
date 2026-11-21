@@ -1,0 +1,87 @@
+{
+  "source_sha256": "e9bb952e85fecf5263e38ecc337f0a78d8154ac7541e23b4cd455da9623efcc8",
+  "elf_archive_sha256": "59dc138eaabd472c9f52c1d1fbf9e8f3e359dcffff513ff7bebe0b0f3d11a695",
+  "input": {
+    "filename": "stream.bin",
+    "size_bytes": 114305544,
+    "sha256": "c6b5252ce302889a78995f12ea2575b84ce598ce23b6d7c8cafa98feff21f221",
+    "layout": "little-endian u32 dividend, u32 divisor, u32 previous remainder (initial 0)",
+    "original_binary_sha256": "5b7aece7ce2817e5b68bc9961e7663f3d1fbd66dd4b079eae22f65ff47d4d35f",
+    "original_input_sha256": "91f53e183337f40e73b97e53d1d40e98c6e8ced0f05f6e590bb91fac5d9d1639",
+    "original_checksum": 5324962,
+    "pairs": 524288,
+    "divisions": 9525462,
+    "sum_remainders": 410372533060349
+  },
+  "cases": {
+    "stream_independent": {
+      "binary_sha256": "fde610bea664cbb616edc87e044b305008908d1c4d24cc2fe7517f5a3d95023f",
+      "stdin_filename": "stream.bin",
+      "input_sha256": "c6b5252ce302889a78995f12ea2575b84ce598ce23b6d7c8cafa98feff21f221",
+      "stdout_hex": "fd020f4d3b750100",
+      "expected_sha256": "96a3ab95eef3f8761d4230c8bace7578555f4071c9264cfc94663a2018370f2a",
+      "hot_loop": [
+        "mov (%rsi),%eax",
+        "mov 0x4(%rsi),%ecx",
+        "xor 0x8(%rsi),%edx",
+        "or %edx,%r15d",
+        "mov $0x0,%ebx",
+        "add %edx,%ebx",
+        "xor %edx,%edx",
+        "div %ecx",
+        "add %rdx,%r12",
+        "add $0xc,%rsi",
+        "dec %r13",
+        "jne 401060 <hot_begin>"
+      ],
+      "hot_hex": "8b068b4e043356084109d7bb0000000001d331d2f7f14901d44883c60c49ffcd75de",
+      "route_modrm_file_offset": 4209
+    },
+    "stream_dividend": {
+      "binary_sha256": "273183bafd80cd7601b821ff8347ead746327cb18ff941c4f9077dad03509fe9",
+      "stdin_filename": "stream.bin",
+      "input_sha256": "c6b5252ce302889a78995f12ea2575b84ce598ce23b6d7c8cafa98feff21f221",
+      "stdout_hex": "fd020f4d3b750100",
+      "expected_sha256": "96a3ab95eef3f8761d4230c8bace7578555f4071c9264cfc94663a2018370f2a",
+      "hot_loop": [
+        "mov (%rsi),%eax",
+        "mov 0x4(%rsi),%ecx",
+        "xor 0x8(%rsi),%edx",
+        "or %edx,%r15d",
+        "mov $0x0,%ebx",
+        "add %edx,%eax",
+        "xor %edx,%edx",
+        "div %ecx",
+        "add %rdx,%r12",
+        "add $0xc,%rsi",
+        "dec %r13",
+        "jne 401060 <hot_begin>"
+      ],
+      "hot_hex": "8b068b4e043356084109d7bb0000000001d031d2f7f14901d44883c60c49ffcd75de",
+      "route_modrm_file_offset": 4209
+    },
+    "stream_divisor": {
+      "binary_sha256": "7746ee30978d9ed1ba726034ff99c839c0b553458241064c025dca59a19ce4b8",
+      "stdin_filename": "stream.bin",
+      "input_sha256": "c6b5252ce302889a78995f12ea2575b84ce598ce23b6d7c8cafa98feff21f221",
+      "stdout_hex": "fd020f4d3b750100",
+      "expected_sha256": "96a3ab95eef3f8761d4230c8bace7578555f4071c9264cfc94663a2018370f2a",
+      "hot_loop": [
+        "mov (%rsi),%eax",
+        "mov 0x4(%rsi),%ecx",
+        "xor 0x8(%rsi),%edx",
+        "or %edx,%r15d",
+        "mov $0x0,%ebx",
+        "add %edx,%ecx",
+        "xor %edx,%edx",
+        "div %ecx",
+        "add %rdx,%r12",
+        "add $0xc,%rsi",
+        "dec %r13",
+        "jne 401060 <hot_begin>"
+      ],
+      "hot_hex": "8b068b4e043356084109d7bb0000000001d131d2f7f14901d44883c60c49ffcd75de",
+      "route_modrm_file_offset": 4209
+    }
+  }
+}
