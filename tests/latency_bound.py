@@ -78,16 +78,46 @@ def oracle(sdk, client, binary, output, debug):
     return json.loads(result_path.read_text())
 
 
-def production(sdk, runner, client, binary, output, latency):
-    report = output / (binary.name + ("-latency" if latency else "-plain") + ".report.json")
+def production(sdk, runner, client, binary, output, latency, operand_bytes=False):
+    mode = "operand-bytes" if operand_bytes else ("latency" if latency else "plain")
+    report = output / f"{binary.name}-{mode}.report.json"
     command = [str(runner), "run", "--drrun", str(sdk / "bin64/drrun"), "--client", str(client),
                "--report", str(report), "--timeout-ms", "120000"]
     if latency:
         command.append("--latency-bound")
+    if operand_bytes:
+        command.append("--memory-operand-bytes")
     process = run(command + ["--", str(binary)])
     if not report.exists():
         raise AssertionError(f"durante run wrote no report: {command}\n{process.stderr[-4000:]}")
     return process.returncode, json.loads(report.read_text())
+
+
+def memory_operand_fixture(sdk, runner, client, output):
+    binary = output / "memory-operand-bytes"
+    result = run(["gcc", "-static", "-nostdlib", "-no-pie",
+                  str(ROOT / "tests/latency_bound/memory_operand_bytes.S"), "-o", str(binary)])
+    if result.returncode or result.stderr:
+        raise AssertionError(result.stdout + result.stderr)
+    if run([str(binary)]).returncode:
+        raise AssertionError("native XMM sentinel changed")
+    observed = {}
+    for enabled in (False, True):
+        code, report = production(sdk, runner, client, binary, output, True, enabled)
+        m = report.get("measurement", {})
+        if report["execution"]["exit_code"] != 0:
+            raise AssertionError(f"instrumented XMM sentinel changed: {report['execution']}")
+        if code or m.get("valid") is not True or m.get("rep_bytes") != 11:
+            raise AssertionError(f"operand fixture failed: {code}, {m}")
+        if enabled:
+            if m.get("memory_operand_bytes") != {"version": 1, "bytes": 623}:
+                raise AssertionError(f"wrong operand bytes: {m}")
+        elif "memory_operand_bytes" in m:
+            raise AssertionError(f"unrequested operand bytes: {m}")
+        observed[enabled] = (m["instructions"], m["latency_bound"])
+    if observed[True] != observed[False]:
+        raise AssertionError(f"operand mode changed instruction or latency totals: {observed}")
+    return {"bytes": 623, "rep_bytes": 11, "instructions": observed[True][0]}
 
 
 def replay_fixtures(output):
@@ -160,6 +190,9 @@ def main():
                     and type(bound) is int and bound >= 4 * m_on["instructions"]):
                 failures.append(f"replay case {case}: {entry}")
     summary = {"kernels": rows, "replay": replay, "failures": failures, "passed": not failures}
+    if args.client:
+        summary["memory_operand_bytes"] = memory_operand_fixture(
+            sdk, args.runner_bin.resolve(), args.client.resolve(), output)
     (output / "result.json").write_text(json.dumps(summary, indent=2) + "\n")
     print(json.dumps(summary, indent=2))
     return 0 if not failures else 1

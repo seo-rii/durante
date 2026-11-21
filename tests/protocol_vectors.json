@@ -5720,7 +5720,8 @@
             "parent_segment": "",
             "rep_bytes_enabled": false,
             "sdk_version": "11.3.0",
-            "latency_bound_version": 1
+            "latency_bound_version": 1,
+            "memory_operand_bytes_version": 1
           },
           {
             "schema": 1,
@@ -5757,7 +5758,8 @@
             "app_exit_code": 0,
             "valid": true,
             "quality": "uninterrupted",
-            "latency_bound_x16": 407
+            "latency_bound_x16": 407,
+            "memory_operand_bytes": 0
           }
         ],
         "process-2.jsonl": [
@@ -5775,7 +5777,8 @@
             "parent_segment": "1-1",
             "rep_bytes_enabled": false,
             "sdk_version": "11.3.0",
-            "latency_bound_version": 1
+            "latency_bound_version": 1,
+            "memory_operand_bytes_version": 1
           },
           {
             "schema": 1,
@@ -5799,7 +5802,8 @@
             "app_exit_code": 0,
             "valid": true,
             "quality": "uninterrupted",
-            "latency_bound_x16": 134
+            "latency_bound_x16": 134,
+            "memory_operand_bytes": 16
           },
           {
             "schema": 1,
@@ -5815,7 +5819,8 @@
             "parent_segment": "",
             "rep_bytes_enabled": false,
             "sdk_version": "11.3.0",
-            "latency_bound_version": 1
+            "latency_bound_version": 1,
+            "memory_operand_bytes_version": 1
           },
           {
             "schema": 1,
@@ -5839,7 +5844,8 @@
             "app_exit_code": 0,
             "valid": true,
             "quality": "uninterrupted",
-            "latency_bound_x16": 121
+            "latency_bound_x16": 121,
+            "memory_operand_bytes": 48
           }
         ]
       },
@@ -5851,6 +5857,10 @@
         "latency_bound": {
           "version": 1,
           "cycles_x16": 662
+        },
+        "memory_operand_bytes": {
+          "version": 1,
+          "bytes": 64
         }
       }
     },
@@ -6026,7 +6036,8 @@
             "parent_segment": "",
             "rep_bytes_enabled": false,
             "sdk_version": "11.3.0",
-            "latency_bound_version": 1
+            "latency_bound_version": 1,
+            "memory_operand_bytes_version": 1
           },
           {
             "schema": 1,
@@ -6050,7 +6061,8 @@
             "app_exit_code": 0,
             "valid": true,
             "quality": "uninterrupted",
-            "latency_bound_x16": 407
+            "latency_bound_x16": 407,
+            "memory_operand_bytes": 18446744073709551615
           },
           {
             "schema": 1,
@@ -6086,7 +6098,8 @@
             "app_exit_code": 0,
             "valid": true,
             "quality": "uninterrupted",
-            "latency_bound_x16": 514
+            "latency_bound_x16": 514,
+            "memory_operand_bytes": 8
           }
         ]
       },
@@ -6098,6 +6111,10 @@
         "latency_bound": {
           "version": 1,
           "cycles_x16": 514
+        },
+        "memory_operand_bytes": {
+          "version": 1,
+          "bytes": 8
         }
       }
     },
@@ -6796,6 +6813,268 @@
       },
       "valid": false,
       "expected_reason": "latency bound aggregate overflow"
+    },
+    {
+      "name": "memory-operand-bytes-missing-counter",
+      "root_pid": 1,
+      "files": {
+        "process-1.jsonl": [
+          {
+            "schema": 1,
+            "client_version": 1,
+            "authority": "diagnostic_only",
+            "metric": "bb_entry_app_instructions",
+            "pid": 1,
+            "segment": "1-1",
+            "seq": 1,
+            "event": "start",
+            "origin": "initial",
+            "parent_pid": 0,
+            "parent_segment": "",
+            "rep_bytes_enabled": false,
+            "sdk_version": "11.3.0",
+            "latency_bound_version": 1,
+            "memory_operand_bytes_version": 1
+          },
+          {
+            "schema": 1,
+            "client_version": 1,
+            "authority": "diagnostic_only",
+            "metric": "bb_entry_app_instructions",
+            "pid": 1,
+            "segment": "1-1",
+            "seq": 2,
+            "event": "end",
+            "instructions": 100,
+            "rep_bytes": 0,
+            "rep_entries": 0,
+            "unsupported_rep_entries": 0,
+            "signals_observed": 0,
+            "threads_started": 1,
+            "threads_finished": 1,
+            "threads_complete": true,
+            "accounting_error": false,
+            "app_exit_seen": true,
+            "app_exit_code": 0,
+            "valid": true,
+            "quality": "uninterrupted",
+            "latency_bound_x16": 496
+          }
+        ]
+      },
+      "valid": false,
+      "expected_reason": "memory operand bytes capability mismatch"
+    },
+    {
+      "name": "memory-operand-bytes-requires-latency",
+      "root_pid": 1,
+      "files": {
+        "process-1.jsonl": [
+          {
+            "schema": 1,
+            "client_version": 1,
+            "authority": "diagnostic_only",
+            "metric": "bb_entry_app_instructions",
+            "pid": 1,
+            "segment": "1-1",
+            "seq": 1,
+            "event": "start",
+            "origin": "initial",
+            "parent_pid": 0,
+            "parent_segment": "",
+            "rep_bytes_enabled": false,
+            "sdk_version": "11.3.0",
+            "memory_operand_bytes_version": 1
+          },
+          {
+            "schema": 1,
+            "client_version": 1,
+            "authority": "diagnostic_only",
+            "metric": "bb_entry_app_instructions",
+            "pid": 1,
+            "segment": "1-1",
+            "seq": 2,
+            "event": "end",
+            "instructions": 100,
+            "rep_bytes": 0,
+            "rep_entries": 0,
+            "unsupported_rep_entries": 0,
+            "signals_observed": 0,
+            "threads_started": 1,
+            "threads_finished": 1,
+            "threads_complete": true,
+            "accounting_error": false,
+            "app_exit_seen": true,
+            "app_exit_code": 0,
+            "valid": true,
+            "quality": "uninterrupted",
+            "latency_bound_x16": 496
+          }
+        ]
+      },
+      "valid": false,
+      "expected_reason": "memory operand bytes require latency bound"
+    },
+    {
+      "name": "memory-operand-bytes-aggregate-overflow",
+      "root_pid": 1,
+      "files": {
+        "process-1.jsonl": [
+          {
+            "schema": 1,
+            "client_version": 1,
+            "authority": "diagnostic_only",
+            "metric": "bb_entry_app_instructions",
+            "pid": 1,
+            "segment": "1-1",
+            "seq": 1,
+            "event": "start",
+            "origin": "initial",
+            "parent_pid": 0,
+            "parent_segment": "",
+            "rep_bytes_enabled": false,
+            "sdk_version": "11.3.0",
+            "latency_bound_version": 1,
+            "memory_operand_bytes_version": 1
+          },
+          {
+            "schema": 1,
+            "client_version": 1,
+            "authority": "diagnostic_only",
+            "metric": "bb_entry_app_instructions",
+            "pid": 1,
+            "segment": "1-1",
+            "seq": 2,
+            "event": "spawn",
+            "child_pid": 2,
+            "syscall": 57,
+            "supported": true
+          },
+          {
+            "schema": 1,
+            "client_version": 1,
+            "authority": "diagnostic_only",
+            "metric": "bb_entry_app_instructions",
+            "pid": 1,
+            "segment": "1-1",
+            "seq": 3,
+            "event": "end",
+            "instructions": 100,
+            "rep_bytes": 0,
+            "rep_entries": 0,
+            "unsupported_rep_entries": 0,
+            "signals_observed": 0,
+            "threads_started": 1,
+            "threads_finished": 1,
+            "threads_complete": true,
+            "accounting_error": false,
+            "app_exit_seen": true,
+            "app_exit_code": 0,
+            "valid": true,
+            "quality": "uninterrupted",
+            "latency_bound_x16": 400,
+            "memory_operand_bytes": 18446744073709551615
+          }
+        ],
+        "process-2.jsonl": [
+          {
+            "schema": 1,
+            "client_version": 1,
+            "authority": "diagnostic_only",
+            "metric": "bb_entry_app_instructions",
+            "pid": 2,
+            "segment": "2-1",
+            "seq": 1,
+            "event": "start",
+            "origin": "fork",
+            "parent_pid": 1,
+            "parent_segment": "1-1",
+            "rep_bytes_enabled": false,
+            "sdk_version": "11.3.0",
+            "latency_bound_version": 1,
+            "memory_operand_bytes_version": 1
+          },
+          {
+            "schema": 1,
+            "client_version": 1,
+            "authority": "diagnostic_only",
+            "metric": "bb_entry_app_instructions",
+            "pid": 2,
+            "segment": "2-1",
+            "seq": 2,
+            "event": "end",
+            "instructions": 30,
+            "rep_bytes": 0,
+            "rep_entries": 0,
+            "unsupported_rep_entries": 0,
+            "signals_observed": 0,
+            "threads_started": 1,
+            "threads_finished": 1,
+            "threads_complete": true,
+            "accounting_error": false,
+            "app_exit_seen": true,
+            "app_exit_code": 0,
+            "valid": true,
+            "quality": "uninterrupted",
+            "latency_bound_x16": 120,
+            "memory_operand_bytes": 1
+          }
+        ]
+      },
+      "valid": false,
+      "expected_reason": "memory operand bytes aggregate overflow"
+    },
+    {
+      "name": "memory-operand-bytes-interrupted",
+      "root_pid": 1,
+      "files": {
+        "process-1.jsonl": [
+          {
+            "schema": 1,
+            "client_version": 1,
+            "authority": "diagnostic_only",
+            "metric": "bb_entry_app_instructions",
+            "pid": 1,
+            "segment": "1-1",
+            "seq": 1,
+            "event": "start",
+            "origin": "initial",
+            "parent_pid": 0,
+            "parent_segment": "",
+            "rep_bytes_enabled": false,
+            "sdk_version": "11.3.0",
+            "latency_bound_version": 1,
+            "memory_operand_bytes_version": 1
+          },
+          {
+            "schema": 1,
+            "client_version": 1,
+            "authority": "diagnostic_only",
+            "metric": "bb_entry_app_instructions",
+            "pid": 1,
+            "segment": "1-1",
+            "seq": 2,
+            "event": "end",
+            "instructions": 100,
+            "rep_bytes": 0,
+            "rep_entries": 0,
+            "unsupported_rep_entries": 0,
+            "signals_observed": 1,
+            "threads_started": 1,
+            "threads_finished": 1,
+            "threads_complete": true,
+            "accounting_error": false,
+            "app_exit_seen": true,
+            "app_exit_code": 0,
+            "valid": true,
+            "quality": "signals_observed",
+            "latency_bound_x16": 496,
+            "memory_operand_bytes": 16
+          }
+        ]
+      },
+      "valid": false,
+      "expected_reason": "memory operand bytes interrupted by signal"
     }
   ]
 }

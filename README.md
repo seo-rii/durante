@@ -43,7 +43,8 @@ remaining host-visible inputs.
 
 `--latency-bound` on `run` and `isolate` also charges a static per-block
 latency bound (sixteenths of a cycle) at block entry, beside the instruction
-count, as an additional diagnostic input for time models. See
+count, as an additional diagnostic input for time models. Add
+`--memory-operand-bytes` to record nominal memory operand widths beside it. See
 [Static latency bound](docs/LATENCY_BOUND.md) for the model and its limits.
 
 New clients also report versioned `rep_breakdown` counters for MOVS and STOS

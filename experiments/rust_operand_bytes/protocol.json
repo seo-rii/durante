@@ -1,0 +1,209 @@
+{
+  "version": 1,
+  "purpose": "Measure the #51 latency bound with a new fixed-width memory-operand byte counter on the exact prior GCE Rust ELFs. Compare prediction accuracy, counter parity and marginal diagnostic CPU cost; evaluate on all rows regardless of outcome.",
+  "durante_base": "48a9ec99d5c9b8870b7baec8bb2c7259ba669626",
+  "image_manifest_sha256": "856be473011809c36a32d7ecfb6501c45db07b3204b7e475be515ca4baa6cf95",
+  "prior_dataset_sha256": [
+    "27c0b57e23a4a2e210b958d1b0bc4d0f3a992651b53dae69da3d004ab2a5e3c6",
+    "bc4b453e1d494d1f6cd2091bb55bada48cd42e69119d9f0c01aeac4ec7b39142"
+  ],
+  "cases": [
+    {
+      "workload_id": "integer",
+      "scale": 1,
+      "source_sha256": "dcb8ad3d0654e5a531975b07146828161c9f20dfd1a96a39d503dbd10dd297b9",
+      "binary_sha256": "a03a2f96186d6d388e9840671a7226b79368268949e7349f8ac659976c68e107",
+      "input_sha256": "3d774ad476a1349fb0abba3be4d4145919d139a4a12407b2508a87533a65cadb",
+      "expected_sha256": "c4d223d801ae0e29ddc438ee8791c7fedf6b3740217e28fdb4a3d4ad30db0d04"
+    },
+    {
+      "workload_id": "integer",
+      "scale": 2,
+      "source_sha256": "dcb8ad3d0654e5a531975b07146828161c9f20dfd1a96a39d503dbd10dd297b9",
+      "binary_sha256": "a03a2f96186d6d388e9840671a7226b79368268949e7349f8ac659976c68e107",
+      "input_sha256": "85e082854b029851e5f6988ab36de4714d2a9b493f92049d7793b83fcc26e510",
+      "expected_sha256": "6ac139dfcaba453c5d42166b29d8416b74fb8c5a27393d8c3b4ffedb152496ec"
+    },
+    {
+      "workload_id": "integer",
+      "scale": 4,
+      "source_sha256": "dcb8ad3d0654e5a531975b07146828161c9f20dfd1a96a39d503dbd10dd297b9",
+      "binary_sha256": "a03a2f96186d6d388e9840671a7226b79368268949e7349f8ac659976c68e107",
+      "input_sha256": "9d00dbad197fd0a6db92c2c50027859e0618fe8cd8f426f4aacfee51e97c05d9",
+      "expected_sha256": "f14621e84b1895779bd4ebee5aae0248631e51744cbf9cb5285a9cdd04c71729"
+    },
+    {
+      "workload_id": "copy",
+      "scale": 1,
+      "source_sha256": "6c5b252b1f0135c454c594891969b456db3f9e3e0d419bbb7a48a86702ad2c98",
+      "binary_sha256": "4897fdbb017ed34559428973ccb1146e488d1edc116d5d2ef04ae4d8b0630bf0",
+      "input_sha256": "ae208c367d26f9d3a72185dd18ff434842fa3d5995a937a37e36fa34a879f49c",
+      "expected_sha256": "2a5d6d9ea5639753996ce01ecf3a53a436345fb7d9efda247f2da803e40bd284"
+    },
+    {
+      "workload_id": "copy",
+      "scale": 2,
+      "source_sha256": "6c5b252b1f0135c454c594891969b456db3f9e3e0d419bbb7a48a86702ad2c98",
+      "binary_sha256": "4897fdbb017ed34559428973ccb1146e488d1edc116d5d2ef04ae4d8b0630bf0",
+      "input_sha256": "ae82e52ba812584bc32f2f607185327397dc1e53df1b3b742ecd6786762b3f5b",
+      "expected_sha256": "ba4a82ddaac0a90847e7d302ac45547c326725451d8c4e415dc8f1985a5d9724"
+    },
+    {
+      "workload_id": "copy",
+      "scale": 4,
+      "source_sha256": "6c5b252b1f0135c454c594891969b456db3f9e3e0d419bbb7a48a86702ad2c98",
+      "binary_sha256": "4897fdbb017ed34559428973ccb1146e488d1edc116d5d2ef04ae4d8b0630bf0",
+      "input_sha256": "79e42bbb8fbed399ac348468bb3c5ff423314c8507b3b502bb8ab093d77a2736",
+      "expected_sha256": "21a53e96ef95fe955197fcb1763096581ac65d059c108ade3f3cf6f70842c361"
+    },
+    {
+      "workload_id": "branch",
+      "scale": 1,
+      "source_sha256": "468db446e268202968ba0dae4f552eb218ef65dc64f1fb775f41ed9fde7527ce",
+      "binary_sha256": "02506b1b0a7ee5952d57e0af0ff5029f48d7fc99cc6cb6b9d83d502f400d9773",
+      "input_sha256": "16c3402cf255887d19eed335f65b177e4c9f57e5111da11ad7fca6806199710e",
+      "expected_sha256": "e35976992cf6245cbcdcd50a983e687be0a6915b46c393238b18c81fc94d91a5"
+    },
+    {
+      "workload_id": "branch",
+      "scale": 2,
+      "source_sha256": "468db446e268202968ba0dae4f552eb218ef65dc64f1fb775f41ed9fde7527ce",
+      "binary_sha256": "02506b1b0a7ee5952d57e0af0ff5029f48d7fc99cc6cb6b9d83d502f400d9773",
+      "input_sha256": "74db0aaabfe610dc5e07497dfd7eb0c9eff50eca7a956c2b0ae27d2627c93ca8",
+      "expected_sha256": "fd7bfcfd4768728c1614baf2f17003dd5be277c1e3c64563a3fceedc5249138c"
+    },
+    {
+      "workload_id": "branch",
+      "scale": 4,
+      "source_sha256": "468db446e268202968ba0dae4f552eb218ef65dc64f1fb775f41ed9fde7527ce",
+      "binary_sha256": "02506b1b0a7ee5952d57e0af0ff5029f48d7fc99cc6cb6b9d83d502f400d9773",
+      "input_sha256": "2e9c029bf0c9d96273badeb75b2a3867c2590eaecb27bac3fdffc4a0833932e9",
+      "expected_sha256": "d3c90322a73b8e2660dbdda6cc368db9e0bdb70f1d80e436f21875e2c760e63d"
+    },
+    {
+      "workload_id": "sort",
+      "scale": 1,
+      "source_sha256": "e3f307e0c849aae0598a54a74f89465adfb6393158c06b9f93ca7cda0379f1f5",
+      "binary_sha256": "5f5eb86127c1357c1356fe9d5823bb94403876d23d7fad1ac29610fb462d3ba1",
+      "input_sha256": "ef801656107acf2762ce10512091bba7ae297ce0f4bc9be76b789f7ba54a4136",
+      "expected_sha256": "ae623b09f4edbec8846d384b18c43c9978e4275da018ef20dd7a5efdf61de461"
+    },
+    {
+      "workload_id": "sort",
+      "scale": 2,
+      "source_sha256": "e3f307e0c849aae0598a54a74f89465adfb6393158c06b9f93ca7cda0379f1f5",
+      "binary_sha256": "5f5eb86127c1357c1356fe9d5823bb94403876d23d7fad1ac29610fb462d3ba1",
+      "input_sha256": "3ea66b35931dd842ef0fd34c124f898dc005c6776ff7ccb143da1f8fd8dec3d0",
+      "expected_sha256": "35436ad819bf1b6685e049bb7354fa3d6e0f574f00b2549731431d4c9ccc4c8c"
+    },
+    {
+      "workload_id": "sort",
+      "scale": 4,
+      "source_sha256": "e3f307e0c849aae0598a54a74f89465adfb6393158c06b9f93ca7cda0379f1f5",
+      "binary_sha256": "5f5eb86127c1357c1356fe9d5823bb94403876d23d7fad1ac29610fb462d3ba1",
+      "input_sha256": "22ee405617f143f8b43cdb9268b81b558e106454ba7a8b8c1354e9574481ba1e",
+      "expected_sha256": "6b1f26bd4106fabf69b3b5e6f82492dac987009772489138ef8423d806d912bd"
+    },
+    {
+      "workload_id": "fill",
+      "scale": 1,
+      "source_sha256": "ab2e488cda2708649d80fde97a8de3e64d54cb8f0db406bbdf5a876c7633e2da",
+      "binary_sha256": "51c5ed31575f8f4640b5d38e9e5cac92b57d316a34f0ae836fd2bd725d02bd68",
+      "input_sha256": "ae82e52ba812584bc32f2f607185327397dc1e53df1b3b742ecd6786762b3f5b",
+      "expected_sha256": "6fd369bd5bac7fadfd9ffbaae3de091a69931cec1693fce66b6c0656038344df"
+    },
+    {
+      "workload_id": "fill",
+      "scale": 2,
+      "source_sha256": "ab2e488cda2708649d80fde97a8de3e64d54cb8f0db406bbdf5a876c7633e2da",
+      "binary_sha256": "51c5ed31575f8f4640b5d38e9e5cac92b57d316a34f0ae836fd2bd725d02bd68",
+      "input_sha256": "79e42bbb8fbed399ac348468bb3c5ff423314c8507b3b502bb8ab093d77a2736",
+      "expected_sha256": "6f8387ca9ab3b67b13b5b91fe6d10fec5fe4ccaad71446f595ba56c9ba4c19ab"
+    },
+    {
+      "workload_id": "fill",
+      "scale": 4,
+      "source_sha256": "ab2e488cda2708649d80fde97a8de3e64d54cb8f0db406bbdf5a876c7633e2da",
+      "binary_sha256": "51c5ed31575f8f4640b5d38e9e5cac92b57d316a34f0ae836fd2bd725d02bd68",
+      "input_sha256": "8c157de8ada046ef0089506f18e7638580a786951bd5a66f589532600cbe5bbd",
+      "expected_sha256": "16178a3084dbdd6d48a1dd5a7eca77636e2aa8865f8f332f3c624f3114a46a42"
+    },
+    {
+      "workload_id": "gcd",
+      "scale": 1,
+      "source_sha256": "f7d2917ea9f107ee3148de54e90f76d603b2478d2c09051f752930e6f07aa90f",
+      "binary_sha256": "5b7aece7ce2817e5b68bc9961e7663f3d1fbd66dd4b079eae22f65ff47d4d35f",
+      "input_sha256": "91f53e183337f40e73b97e53d1d40e98c6e8ced0f05f6e590bb91fac5d9d1639",
+      "expected_sha256": "88be510b9393faa06cb4a4ed03034f2888e0bdd2c8a056190f552c7656fc539f"
+    },
+    {
+      "workload_id": "lower_bound",
+      "scale": 1,
+      "source_sha256": "ad92435b2c52c3839b74f36526ae6199da59a5cee2764738ccaf6394888889af",
+      "binary_sha256": "8d333262ce67d8496cc459d521e091eefe79c4fdf5af7ee3ba2cd00e76aa8872",
+      "input_sha256": "1abdba68ac5fbaa67f12476bb845df80182b2005eb9690e83f91b078e38c7d95",
+      "expected_sha256": "13a70b629c17a244366c5c8946bb9bce1dae359e5a8a24d4e171ebca5fc66dab"
+    },
+    {
+      "workload_id": "rolling_window",
+      "scale": 1,
+      "source_sha256": "2f2fd3bb19ec77d4f07b9028f9f8105808fcb1228ecd8f0c0d6b84f60288a95e",
+      "binary_sha256": "0033365e488c3c5faeaf4b7aa269c5b8a0498a525749f9c75c38669069341fb0",
+      "input_sha256": "029dd4bd28eff5b4ce7a9b38c6631515d6fdc1c3a75f4fc58f1717c49f7d0f60",
+      "expected_sha256": "b21b47a808cabaab0114eaff7f5b6a3cad8d646fe23c230843d7d1ec746daa05"
+    }
+  ],
+  "repetitions": 3,
+  "round_rotations": [
+    0,
+    6,
+    12
+  ],
+  "order": "Rotate the 18 canonical cases left by the round offset. For each case bracket the two diagnostic modes with a native control on each side. Latency-only goes first if canonical case index plus round index is even (both zero-based); bytes goes first otherwise.",
+  "platform": "One temporary private Seoul N2D Compute Engine VM with one thread per core, matching the prior machine family and container image. Pin the container and workloads to guest CPU 1, housekeeping and observer to CPU 0. Compare both modes in the same candidate binary with x86-64-v2 CPUID, REP and latency enabled. Archive the actual build identities, guest placement and teardown receipts.",
+  "features": {
+    "latency_cycles": "production latency_bound.cycles_x16 / 16",
+    "memory_bytes": "sum of the decoded nominal source/read and destination/write memory operand sizes at basic-block entry under memory_operand_bytes v1 (no repetition expansion)",
+    "instructions": "ordinary instruction count",
+    "rep_bytes": "the existing requested repeated string-byte count"
+  },
+  "models": {
+    "instruction_rep": [
+      "instructions",
+      "rep_bytes"
+    ],
+    "latency": [
+      "latency_cycles"
+    ],
+    "latency_memory": [
+      "latency_cycles",
+      "memory_bytes"
+    ],
+    "instruction_memory": [
+      "instructions",
+      "memory_bytes"
+    ]
+  },
+  "train": [
+    "integer",
+    "copy"
+  ],
+  "validation": [
+    "branch",
+    "sort",
+    "fill"
+  ],
+  "transfer": [
+    "gcd",
+    "lower_bound",
+    "rolling_window"
+  ],
+  "fit": "Fit nonnegative coefficients with no intercept by minimizing the summed squared relative errors on the six training case medians. Each feature is the median of three observations from the enabled mode. The native target is the median of the six wait4 observations. Score all three predictions against that target, with a case passing only if all three absolute errors are at most 20%. Recompute leave-one-program-out on the original five families: omit all scales of one family together. Transfer families are excluded from every fit. All programs have prior native timing data; this is a registered feature comparison, not blind algorithm selection.",
+  "sensitivity": "Repeat the complete fit and scoring using the minimum of six native controls in place of their median. Keep the median primary. Report target shifts, pass counts and any quality-gate changes; retain short and high-spread observations.",
+  "runtime_cost": "Report paired operand-enabled/latency-only wait4 CPU ratios by workload and mode order, plus the ratio of summed CPU times. Report instruction/latency changes between separate runs; do not assume identical dynamic startup paths. Do not equate instrumented CPU with native or production live-clock cost.",
+  "thresholds": {
+    "max_error_ppm": 200000,
+    "min_native_ns": 20000000,
+    "max_native_spread_ppm": 100000
+  }
+}

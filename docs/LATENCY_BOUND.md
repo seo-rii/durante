@@ -64,7 +64,44 @@ measurement without the object (or with it when it was not requested) is
 reported as unavailable (`client latency bound does not match the request`).
 Combined instruction and REP counters are unchanged by the option.
 
+## Memory operand bytes
+
+Run `durante run --latency-bound --memory-operand-bytes -- PROGRAM` to
+collect two inputs for a time model in one diagnostic pass. The same option
+pair is available on `isolate`. The memory metric sums **nominal decoded
+operand widths**. A 16-byte SIMD load contributes 16 bytes, its 16-byte
+store contributes another 16, and an 8-byte read-modify-write contributes
+16. Implicit stack operands contribute their width when exposed by the
+decoder. The client computes block constants while translating code and
+charges them at block entry in the same callback as the latency bound.
+
+Address calculations, NOPs, prefetches and cache-line management instructions
+contribute zero. Emulated instructions use the original application operands.
+For example, a virtualized CPUID has no memory operand. Operands without a fixed
+decoded width, including XSAVE's variable-sized area, also contribute zero.
+Predicated and masked operations contribute their nominal width on block
+entry. String operations contribute one decoded element width for each
+source or destination memory operand. Use `rep_breakdown` separately for the
+requested repetition count times element size. The memory metric describes
+the program's decoded references. Cache-line fills, cache hits and misses,
+DRAM traffic and actual active lanes are outside its scope.
+
+An observed application signal or a thread stopped by a sibling before its
+own exit syscall invalidates the byte measurement. On an internal replay the write checkpoint records the
+byte widths in the unexecuted suffix. The client retains any completed
+write and rolls back the remaining bytes. Overflow or an inconsistent
+checkpoint invalidates the measurement.
+
 ## Evidence
+
+The hand-counted fixture in `tests/latency_bound/memory_operand_bytes.S`
+must report exactly 623 bytes. Across its block and store callbacks it
+checks an application XMM register against a sentinel. The fixture covers
+scalar, SIMD and stack operands, read-modify-write, address-only instructions,
+fixed and variable save areas, and REP with zero and nonzero repeat counts.
+The pinned Rust comparison measures the runtime cost of enabling this counter
+and tests its contribution to estimated native CPU time.
+[Measurements and archived receipts](GCE_RUST_OPERAND_BYTES.md)
 
 `tests/latency_bound.py` builds five libc-free loop fixtures in
 `tests/latency_bound/kernels.S`. They cover a dependent multiply chain (6 cycles per

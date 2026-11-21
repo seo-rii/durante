@@ -1,0 +1,141 @@
+{
+  "schema": 1,
+  "target": "compute_engine",
+  "zone": "asia-northeast3-a",
+  "machine_type": "n2d-standard-4",
+  "cpu_platform": "AMD Milan",
+  "cpu_model": "AMD EPYC 7B13",
+  "threads_per_core": 1,
+  "online_cpus": [
+    0,
+    1
+  ],
+  "topology": [
+    {
+      "cpu": 0,
+      "core_id": 0,
+      "physical_package_id": 0,
+      "thread_siblings_list": "0"
+    },
+    {
+      "cpu": 1,
+      "core_id": 1,
+      "physical_package_id": 0,
+      "thread_siblings_list": "1"
+    }
+  ],
+  "benchmark_cpu": 1,
+  "observer_cpus": [
+    0
+  ],
+  "housekeeping_slice_effective": {
+    "system.slice": "0",
+    "user.slice": "0",
+    "init.scope": "0"
+  },
+  "private_ipv4_only": true,
+  "service_account_attached": false,
+  "boot_image": "debian-12-bookworm-v20261117",
+  "kernel": "6.1.0-56-cloud-amd64",
+  "guest_id_sha256": "50e4b7f6e7c35923b29517e7b9633d842107b2099599b7f39621d47e6dab7e0c",
+  "guest_boot_id_sha256": "1852b0d97cfade6cdd94b58f6bdbe3522cea7c9ac504339a9dbc9fe75bebc3ec",
+  "clock_ticks_per_second": 100,
+  "benchmark_steal_ticks_before": 0,
+  "benchmark_steal_ticks_after": 0,
+  "docker_version": "27.5.1",
+  "docker_package_sha256": "4f798b3ee1e0140eab5bf30b0edc4e84f4cdb53255a429dc3bbae9524845d640",
+  "docker_pid_namespace": "host",
+  "network_mode": "none",
+  "image_manifest_sha256": "856be473011809c36a32d7ecfb6501c45db07b3204b7e475be515ca4baa6cf95",
+  "image_config_digest": "sha256:23de5e0567295587df1b06740beb848b570518e9189926c41f65d1b676808cab",
+  "base_image": "asia.gcr.io/hancomac/aonohako@sha256:7af8d4b78ae6d7a9951bee0992a84df8282473bf3faf29cfbfdc56772f18ae51",
+  "layer_sha256": "b3a4896c90ebe13e244f8d9ccf2293d702ac9b0389cdc1c3817c88f21816853c",
+  "installed_software_sha256": {
+    "aonohako": "082f83a6456e42469cf31aba5cd44ea4ad53dda29dd616cea7be7f71a40f4864",
+    "durante-reference": "0f103605e5d024eaf3f278b20f4c07674b08d41e3089f25a20ba93acd8a5d361",
+    "libdurante.so": "dfa6bcd57398cda092ea6510d033d738d9104883c0d030a69f9041e661aefcf0",
+    "UPSTREAM.json": "4930e4cd05c2009f495839488507a77ab6101a30e2eb917281c39fbdc048df27"
+  },
+  "container_id_sha256": "e790301bae1ea67e4dade2cf9917450203e650ed8c16551ab0ad2334b9b580a7",
+  "capture_script_sha256": "277c453c5697bce67a7a4c910f7630ba34c20731aa9278da70cd94ec42a37955",
+  "trace_raw_sha256": "312702369a46227e451d3b7473d2da5f2b816e8a88077227dd38356e34a744ed",
+  "dataset_sha256": "8af63dbff437cdd7cb3d7d50a96116feb92f94de4c147870b455b06fda14ea19",
+  "protocol_sha256": "79e31d877ca3585c56f584d8abae7f447e45f9d010e46df42eeb1ef67f0e3e7d",
+  "collector_sha256": "1fea28282d1c823b3d9ca8dfc9b5e6443f9f373c2468be2f0348bdebd81c8b04",
+  "tools": {
+    "launcher": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "runtime": "fd1c5645b9fc70a7dcb71459b4b94782d2e016a2aa4ceffcfcab2ade962cdf5b",
+    "meter": "e84abc998e86f82d5a6a4aed6e3b70217e0a5eb06c09e554196a4fe6cc0f461b",
+    "production_reader": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a"
+  },
+  "control": {
+    "freestanding_stdout_sha256": "2af5679d0c0f15e8e5045eee3fb64a5d86ec820ee832cb5466f3295a1748f3a0",
+    "two_modes_instructions_agree": true,
+    "hand_counted_operand_bytes": 48
+  },
+  "started_at": "2026-11-21T08:59:30Z",
+  "finished_at": "2026-11-21T09:21:48Z",
+  "elapsed_seconds": 1338,
+  "collector_exit": 0,
+  "samples": 54,
+  "measured_execs": 216,
+  "loader_reexecs": 108,
+  "affinity_observer_polls": 5333,
+  "vm_lifetime_cap_seconds": 7200,
+  "cleanup": {
+    "instance_http": 404,
+    "boot_disk_http": 404,
+    "disposable_ssh_key_removed": true,
+    "started_at": "2026-11-21T09:22:05.357798+00:00",
+    "verified_at": "2026-11-21T09:23:58.410795+00:00"
+  },
+  "placement_sha256": "8c9ef0f8523d7700a08eb3601103afa43df3cb29ae9e47dcd72faa9632039b8a",
+  "shared_collector_sha256": "b90aa20707ba81a376edb8ac4d288632b097f33f9def8bbd8b0e5d3175436775",
+  "fresh_guest_against_prior_corpus": true,
+  "frozen_head": "bb80522675261cb6ba1bb7af3431423f5e98196f",
+  "client_commit": "5863d426b04f476e5853b351365c12dd24e60c1e",
+  "collector_commit": "70ac559de0495351b71fa879c6df27b57e9df9fa",
+  "measured_client_source_sha256": {
+    "durante.c": "7f93cb42be0d14d2a512b761feff00ac12ddb3aeb33a28b709dc5651d04f0ea8",
+    "latency_bound.h": "51ea8177b786753196b24e80de74141af62df27395258cc94ab95b6eba4cfed5"
+  },
+  "client_build": {
+    "compiler": "GCC 12.2.0 (Debian 12.2.0-14+deb12u1)",
+    "linker": "GNU ld 2.40",
+    "cmake": "4.0.3",
+    "cmake_command": "cmake -S client -B build -DCMAKE_BUILD_TYPE=Release -DDynamoRIO_DIR=$SDK/cmake",
+    "build_command": "cmake --build build -j2",
+    "flags": [
+      "-O3",
+      "-DNDEBUG",
+      "-std=gnu17",
+      "-fPIC",
+      "-fno-stack-protector"
+    ],
+    "sdk_tag": "release_11.3.0-1",
+    "sdk_asset_sha256": "ae02049df5c4daeb82d4087aaa0d38bf58cdd26b38fb6042dccf27cbc32ceed9",
+    "gnu_build_id": "52bd19691a7425239a4b4dd3ac0100c5a96a9b26"
+  },
+  "measured_client_sha256": "e84abc998e86f82d5a6a4aed6e3b70217e0a5eb06c09e554196a4fe6cc0f461b",
+  "measured_reader_sha256": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a",
+  "original_binaries_sha256": {
+    "integer": "a03a2f96186d6d388e9840671a7226b79368268949e7349f8ac659976c68e107",
+    "copy": "4897fdbb017ed34559428973ccb1146e488d1edc116d5d2ef04ae4d8b0630bf0",
+    "branch": "02506b1b0a7ee5952d57e0af0ff5029f48d7fc99cc6cb6b9d83d502f400d9773",
+    "sort": "5f5eb86127c1357c1356fe9d5823bb94403876d23d7fad1ac29610fb462d3ba1",
+    "fill": "51c5ed31575f8f4640b5d38e9e5cac92b57d316a34f0ae836fd2bd725d02bd68",
+    "gcd": "5b7aece7ce2817e5b68bc9961e7663f3d1fbd66dd4b079eae22f65ff47d4d35f",
+    "lower_bound": "8d333262ce67d8496cc459d521e091eefe79c4fdf5af7ee3ba2cd00e76aa8872",
+    "rolling_window": "0033365e488c3c5faeaf4b7aa269c5b8a0498a525749f9c75c38669069341fb0"
+  },
+  "source_sha256": {
+    "integer": "dcb8ad3d0654e5a531975b07146828161c9f20dfd1a96a39d503dbd10dd297b9",
+    "copy": "6c5b252b1f0135c454c594891969b456db3f9e3e0d419bbb7a48a86702ad2c98",
+    "branch": "468db446e268202968ba0dae4f552eb218ef65dc64f1fb775f41ed9fde7527ce",
+    "sort": "e3f307e0c849aae0598a54a74f89465adfb6393158c06b9f93ca7cda0379f1f5",
+    "fill": "ab2e488cda2708649d80fde97a8de3e64d54cb8f0db406bbdf5a876c7633e2da",
+    "gcd": "f7d2917ea9f107ee3148de54e90f76d603b2478d2c09051f752930e6f07aa90f",
+    "lower_bound": "ad92435b2c52c3839b74f36526ae6199da59a5cee2764738ccaf6394888889af",
+    "rolling_window": "2f2fd3bb19ec77d4f07b9028f9f8105808fcb1228ecd8f0c0d6b84f60288a95e"
+  }
+}

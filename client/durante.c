@@ -97,6 +97,8 @@ typedef struct {
   size_t child_bytes;
   uint64_t child_sequence;
   bool child_exit_seen, child_policy_exit;
+  uint64_t memory_operand_bytes;
+  uint32_t write_suffix_bytes, write_operand_bytes;
 } thread_data_t;
 static int tls_index;
 /* In ordinary static code the generated accounting runs at every block and
@@ -115,8 +117,8 @@ static uint64_t total_rep_movs_bytes, total_rep_stos_bytes,
     total_rep_movs_entries, total_rep_stos_entries;
 static bool rep_bytes_enabled, accounting_error, app_exit_seen, report_written;
 static bool deny_avx, deny_simd;
-static bool latency_bound_enabled;
-static uint64_t total_latency_bound_x16;
+static bool latency_bound_enabled, memory_operand_bytes_enabled;
+static uint64_t total_latency_bound_x16, total_memory_operand_bytes;
 static app_pc cpu_policy_exit_pc;
 /* A replay callback must never do I/O or take a lock, even on a broken TLS
  * invariant.  This sticky process/shared-VM flag invalidates every snapshot. */
@@ -417,10 +419,10 @@ static void start_record(thread_data_t *d, const char *origin,
               ",\"origin\":\"%s\",\"parent_pid\":%d,"
               "\"parent_segment\":\"%s\",\"rep_bytes_enabled\":%s,"
               "\"rep_breakdown_version\":1,\"sdk_"
-              "version\":\"11.3.0\"%s%s%s",
+              "version\":\"11.3.0\"%s%s%s%s",
               origin, (int)parent, parent_segment,
               rep_bytes_enabled ? "true" : "false", policy_fields, cpuid_fields,
-              latency_fields);
+              latency_fields, memory_operand_bytes_enabled ? ",\"memory_operand_bytes_version\":1" : "");
   route_event(d, "start", fields);
 }
 static void open_stream(const char *origin, process_id_t parent,
@@ -436,6 +438,7 @@ static bool add_thread(thread_data_t *d) {
       d->counter_overflows || d->latency_error ||
       UINT64_MAX - total_instructions < d->instructions ||
       UINT64_MAX - total_latency_bound_x16 < d->latency_bound_x16 ||
+      UINT64_MAX - total_memory_operand_bytes < d->memory_operand_bytes ||
       UINT64_MAX - total_signals < d->signals ||
       UINT64_MAX - total_rep_bytes < d->rep_bytes ||
       UINT64_MAX - total_rep_entries < d->rep_entries ||
@@ -447,6 +450,7 @@ static bool add_thread(thread_data_t *d) {
     return false;
   total_instructions += d->instructions;
   total_latency_bound_x16 += d->latency_bound_x16;
+  total_memory_operand_bytes += d->memory_operand_bytes;
   total_signals += d->signals;
   total_rep_bytes += d->rep_bytes;
   total_rep_entries += d->rep_entries;
@@ -463,6 +467,7 @@ static void snapshot_event(const char *kind, void *ctx, bool is_exec) {
   bool child = d && d->child_pid;
   uint64_t instructions = child ? 0 : total_instructions,
            latency = child ? 0 : total_latency_bound_x16,
+           operand_bytes = child ? 0 : total_memory_operand_bytes,
            signals = child ? 0 : total_signals,
            bytes = child ? 0 : total_rep_bytes,
            entries = child ? 0 : total_rep_entries,
@@ -482,6 +487,7 @@ static void snapshot_event(const char *kind, void *ctx, bool is_exec) {
     if (d) {
       if (UINT64_MAX - instructions < d->instructions ||
           UINT64_MAX - latency < d->latency_bound_x16 ||
+          UINT64_MAX - operand_bytes < d->memory_operand_bytes ||
           UINT64_MAX - signals < d->signals ||
           UINT64_MAX - bytes < d->rep_bytes ||
           UINT64_MAX - entries < d->rep_entries ||
@@ -494,6 +500,7 @@ static void snapshot_event(const char *kind, void *ctx, bool is_exec) {
       else {
         instructions += d->instructions;
         latency += d->latency_bound_x16;
+        operand_bytes += d->memory_operand_bytes;
         signals += d->signals;
         bytes += d->rep_bytes;
         entries += d->rep_entries;
@@ -506,6 +513,10 @@ static void snapshot_event(const char *kind, void *ctx, bool is_exec) {
     }
     ++ended;
   }
+  /* An interrupted block may have charged operands after the last instruction
+   * that actually ran. Only the runtime's authenticated replay has a precise suffix. */
+  if (memory_operand_bytes_enabled && signals)
+    error = true;
   bool complete = started > 0 && started == ended;
   bool exit_seen = child ? d->child_exit_seen : app_exit_seen;
   int exit_code = child ? d->child_exit_code : app_exit_code;
@@ -534,6 +545,11 @@ static void snapshot_event(const char *kind, void *ctx, bool is_exec) {
     size_t used = strlen(fields);
     dr_snprintf(fields + used, sizeof(fields) - used, ",\"latency_bound_x16\":%llu",
                 (unsigned long long)latency);
+  }
+  if (memory_operand_bytes_enabled) {
+    size_t used = strlen(fields);
+    dr_snprintf(fields + used, sizeof(fields) - used, ",\"memory_operand_bytes\":%llu",
+                (unsigned long long)operand_bytes);
   }
   route_event(d, kind, fields);
 }
@@ -602,6 +618,9 @@ static void thread_exit(void *ctx) {
       (d->instructions != d->published_instructions ||
        d->rep_movs_bytes != d->published_movs || d->rep_stos_bytes != d->published_stos))
     invalidate_live_work();
+  if (memory_operand_bytes_enabled && d && !d->child_pid &&
+      d->pending_syscall != SYS_exit && d->pending_syscall != SYS_exit_group)
+    d->latency_error = true; /* Another thread may have stopped this one mid-block. */
   if (d && d->child_pid) {
     /* This callback can run in the parent after child exec. Its fd number
      * refers to the child's descriptor table, so NEVER close that number in the
@@ -649,6 +668,54 @@ static dr_emit_flags_t analyze_block(void *drcontext, void *tag,
     bound = durante_block_latency_bound(drcontext, tag, bb, count);
   *user_data = (void *)(ptr_uint_t)((uint64_t)count | bound << 32);
   return DR_EMIT_DEFAULT;
+}
+
+/* Version 1 sums fixed-size data operands from the decoded logical application
+ * stream. Read-modify-write has both a source and destination; REP, predicated
+ * and masked operations contribute nominal decoded widths once at block entry.
+ * XSAVE's runtime-selected area has no fixed width. FXSAVE's 512 bytes do.
+ * An address operand (LEA, NOP, prefetch, cache-line controls) carries no data. */
+static uint32_t fixed_memory_bytes(opnd_t operand) {
+  if (!opnd_is_memory_reference(operand))
+    return 0;
+  opnd_size_t size = opnd_get_size(operand);
+  if (size == OPSZ_0 || size == OPSZ_NA || size == OPSZ_xsave)
+    return 0;
+  uint width = opnd_size_in_bytes(size);
+  return width && opnd_size_from_bytes(width) == size ? width : 0;
+}
+
+static uint32_t instruction_memory_bytes(instr_t *ins) {
+  int op = instr_get_opcode(ins);
+  if (op == OP_lea || op == OP_nop_modrm || instr_is_prefetch(ins) ||
+      op == OP_clflush || op == OP_clflushopt || op == OP_clwb ||
+      op == OP_cldemote || op == OP_invlpg || op == OP_bndmk ||
+      op == OP_bndcl || op == OP_bndcu || op == OP_bndcn)
+    return 0;
+  uint32_t bytes = 0;
+  for (int i = 0; i < instr_num_srcs(ins); ++i)
+    bytes += fixed_memory_bytes(instr_get_src(ins, i));
+  for (int i = 0; i < instr_num_dsts(ins); ++i)
+    bytes += fixed_memory_bytes(instr_get_dst(ins, i));
+  return bytes;
+}
+
+static uint32_t suffix_memory_bytes(instr_t *start) {
+  uint64_t bytes = 0;
+  bool in_emulation = false;
+  for (instr_t *ins = start; ins; ins = instr_get_next(ins)) {
+    if (drmgr_is_emulation_start(ins)) {
+      emulated_instr_t logical = {.size = sizeof(logical)};
+      if (!drmgr_get_emulated_instr_data(ins, &logical) || !logical.instr)
+        return UINT32_MAX;
+      bytes += instruction_memory_bytes(logical.instr);
+      in_emulation = true;
+    } else if (drmgr_is_emulation_end(ins))
+      in_emulation = false;
+    else if (!in_emulation && instr_is_app(ins))
+      bytes += instruction_memory_bytes(ins);
+  }
+  return bytes < UINT32_MAX ? (uint32_t)bytes : UINT32_MAX;
 }
 
 /* Optional byte demand is deliberately separate from instruction count.  A
@@ -888,10 +955,11 @@ static void insert_charge(void *ctx, instrlist_t *bb, instr_t *where, int count,
 
 /* The bound is charged at the same point as the count, so a block's bound is
  * counted exactly when its instructions are. */
-static void count_block_latency(int instructions, app_pc first_pc, int bound_x16) {
+__attribute__((target("general-regs-only")))
+static thread_data_t *count_block_latency(int instructions, app_pc first_pc, int bound_x16) {
   thread_data_t *data = charge_block(instructions, first_pc);
   if (data == NULL)
-    return;
+    return NULL;
   data->block_instructions = (uint32_t)instructions;
   data->block_bound_x16 = (uint32_t)bound_x16;
   if (bound_x16 < 0)
@@ -900,17 +968,42 @@ static void count_block_latency(int instructions, app_pc first_pc, int bound_x16
     data->counter_overflows = 1;
   else
     data->latency_bound_x16 += (uint64_t)bound_x16;
+  return data;
+}
+
+/* Keep the incremental charge scalar even if the compiler coalesces adjacent
+ * counters. The standard clean call also preserves application XMM/YMM/ZMM,
+ * including across helpers. save_fpstate is only needed for x87/MMX. */
+__attribute__((target("general-regs-only")))
+static void count_block_memory(int instructions, app_pc pc, int bound_x16, uint32_t bytes) {
+  thread_data_t *d = count_block_latency(instructions, pc, bound_x16);
+  if (d != NULL) {
+    if (bytes == UINT32_MAX || UINT64_MAX - d->memory_operand_bytes < bytes)
+      counter_error(&d->latency_error);
+    else
+      d->memory_operand_bytes += bytes;
+  }
 }
 
 /* A fault can leave the middle of a BB whose entire length was charged at
  * entry. Save its unexecuted suffix at the write, not a whole-counter snapshot:
  * already executed prefixes and intervening signal work must remain charged.
  */
-static void before_write(app_pc pc, app_pc next_pc, int suffix) {
+__attribute__((target("general-regs-only")))
+static thread_data_t *before_write(app_pc pc, app_pc next_pc, int suffix) {
   thread_data_t *data = accounting_thread_data();
   if (data == NULL)
     fail("write checkpoint without thread state");
   record_write_checkpoint(data, pc, next_pc, suffix);
+  return data;
+}
+
+__attribute__((target("general-regs-only")))
+static void before_write_memory(app_pc pc, app_pc next_pc, int suffix,
+                                uint32_t suffix_bytes, uint32_t operand_bytes) {
+  thread_data_t *d = before_write(pc, next_pc, suffix);
+  d->write_suffix_bytes = suffix_bytes;
+  d->write_operand_bytes = operand_bytes;
 }
 
 /* The ordinary clock has no latency share at replay. Save its checkpoint
@@ -987,6 +1080,14 @@ static void code_replay(void *ctx, int reason, app_pc source_pc,
       counter_error(&d->latency_error);
     else
       d->latency_bound_x16 -= share;
+  }
+  if (memory_operand_bytes_enabled) {
+    uint32_t suffix = d->write_suffix_bytes;
+    uint32_t retain = completed ? d->write_operand_bytes : 0;
+    if (suffix == UINT32_MAX || retain > suffix || d->memory_operand_bytes < suffix - retain)
+      counter_error(&d->latency_error);
+    else
+      d->memory_operand_bytes -= suffix - retain;
   }
   d->instructions -= rollback;
 #ifdef DURANTE_TEST_COUNT_LOCATIONS
@@ -1133,7 +1234,13 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
     instr_t *first = instrlist_first_app(bb);
     uint64_t packed = (uint64_t)(ptr_uint_t)user_data;
     int count = (int)(uint32_t)packed;
-    if (latency_bound_enabled)
+    if (memory_operand_bytes_enabled)
+      dr_insert_clean_call(drcontext, bb, where, (void *)count_block_memory, false, 4,
+                           OPND_CREATE_INT32(count),
+                           OPND_CREATE_INTPTR(first ? instr_get_app_pc(first) : NULL),
+                           OPND_CREATE_INT32((int)(uint32_t)(packed >> 32)),
+                           OPND_CREATE_INT32((int)suffix_memory_bytes(where)));
+    else if (latency_bound_enabled)
       dr_insert_clean_call(drcontext, bb, where, (void *)count_block_latency, false, 3,
                            OPND_CREATE_INT32(count),
                            OPND_CREATE_INTPTR(first ? instr_get_app_pc(first) : NULL),
@@ -1157,7 +1264,8 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
   }
   bool checkpoint = instr_is_app(where) && instr_writes_memory(where);
 #ifdef DURANTE_L1D_PROBE
-  if (probe_l1d && probe_instrument(drcontext, bb, where, checkpoint))
+  if (probe_l1d && probe_instrument(drcontext, bb, where, checkpoint) &&
+      !memory_operand_bytes_enabled)
     checkpoint = false;
 #endif
   if (checkpoint) {
@@ -1169,7 +1277,13 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
     if (!inline_write && !latency_bound_enabled && static_text_site(pc))
       inline_write = select_inline_block(drcontext, bb, translating, &flags);
 #endif
-    if (!latency_bound_enabled && inline_write) {
+    if (memory_operand_bytes_enabled) {
+      dr_insert_clean_call(drcontext, bb, where, (void *)before_write_memory, false, 5,
+                           OPND_CREATE_INTPTR(pc), OPND_CREATE_INTPTR(next_pc),
+                           OPND_CREATE_INT32(suffix),
+                           OPND_CREATE_INT32((int)suffix_memory_bytes(where)),
+                           OPND_CREATE_INT32((int)instruction_memory_bytes(where)));
+    } else if (!latency_bound_enabled && inline_write) {
       insert_write_checkpoint(drcontext, bb, where, pc, next_pc, suffix);
       if (!cache_probe_enabled())
         flags = DR_EMIT_STORE_TRANSLATIONS;
@@ -1374,6 +1488,7 @@ static void post_syscall(void *ctx, int number) {
                 number, (long long)result);
     route_event(d, "exec_failed", fields);
   }
+  d->pending_syscall = -1;
   d->pending_spawn = false;
   d->pending_exec = false;
   d->pending_unsupported = false;
@@ -1404,7 +1519,7 @@ static void fork_init(void *ctx) {
    * other-thread counters must still be reset. DR restores surviving TLS. */
   owner_pid = dr_get_process_id();
   total_instructions = total_signals = total_rep_bytes = total_rep_entries =
-      total_unsupported_rep_entries = total_latency_bound_x16 = 0;
+      total_unsupported_rep_entries = total_latency_bound_x16 = total_memory_operand_bytes = 0;
   total_rep_movs_bytes = total_rep_stos_bytes = total_rep_movs_entries =
       total_rep_stos_entries = 0;
   threads_started = 1;
@@ -1482,7 +1597,7 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
   if (argc < 3 || strcmp(argv[1], "-outdir"))
     fail("usage: -c libdurante.so -outdir NEW_PRIVATE_DIRECTORY [-rep_bytes] "
          "[-disallow_cpu_feature avx|simd] [-cpuid_profile x86-64-v1|x86-64-v2] "
-         "[-latency_bound] [-live_work_v1 OWNER_FILE] -- program");
+         "[-latency_bound [-memory_operand_bytes]] [-live_work_v1 OWNER_FILE] -- program");
   if (strlen(argv[2]) >= sizeof(outdir) || argv[2][0] != '/')
     fail("report directory must be absolute");
   memcpy(outdir, argv[2], strlen(argv[2]) + 1);
@@ -1499,6 +1614,8 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
       live_path = argv[++i];
     } else if (strcmp(argv[i], "-latency_bound") == 0 && !latency_bound_enabled) {
       latency_bound_enabled = true;
+    } else if (strcmp(argv[i], "-memory_operand_bytes") == 0 && !memory_operand_bytes_enabled) {
+      memory_operand_bytes_enabled = true;
     } else if (strcmp(argv[i], "-disallow_cpu_feature") == 0 && i + 1 < argc) {
       const char *feature = argv[++i];
       if (strcmp(feature, "avx") == 0 && !deny_avx)
@@ -1516,6 +1633,8 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
       fail("unknown or duplicate client option");
     }
   }
+  if (memory_operand_bytes_enabled && !latency_bound_enabled)
+    fail("memory operand bytes require -latency_bound");
   if (live_path) {
     if (!rep_bytes_enabled)
       fail("live work requires -rep_bytes");

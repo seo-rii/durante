@@ -62,6 +62,8 @@ fn assert_invalid(result: &Value) {
         "unsupported_rep_entries",
         "signals_observed",
         "rep_breakdown",
+        "latency_bound",
+        "memory_operand_bytes",
         "processes",
         "segments",
     ] {

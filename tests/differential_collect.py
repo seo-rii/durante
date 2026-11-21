@@ -39,7 +39,7 @@ NUMBERS = (
 )
 FIELDS = ('extra', 'result', 'parent_pid', 'instructions', 'seq', 'schema', 'valid',
           'pid', 'supported', 'rep_bytes_enabled', 'parent_segment', 'rep_breakdown_version', 'rep_movs_bytes', 'rep_stos_bytes', 'rep_movs_entries', 'rep_stos_entries',
-          'latency_bound_version', 'latency_bound_x16')
+          'latency_bound_version', 'latency_bound_x16', 'memory_operand_bytes_version', 'memory_operand_bytes')
 
 
 def encode(rows):
@@ -117,7 +117,7 @@ def no_partial_totals(result):
         if result.get('complete') is not False:
             raise AssertionError('invalid result was marked complete')
         if any(key in result for key in ('instructions', 'rep_bytes', 'rep_entries',
-               'unsupported_rep_entries', 'signals_observed', 'rep_breakdown', 'latency_bound',
+               'unsupported_rep_entries', 'signals_observed', 'rep_breakdown', 'latency_bound', 'memory_operand_bytes',
                'processes', 'segments')):
             raise AssertionError('invalid result exposed partial totals')
 

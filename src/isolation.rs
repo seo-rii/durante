@@ -38,6 +38,8 @@ pub struct Options {
     pub disallowed_cpu_features: Vec<String>,
     pub cpuid_profile: Option<String>,
     pub latency_bound: bool,
+    /// Request the versioned static memory operand byte counter alongside the latency bound.
+    pub memory_operand_bytes: bool,
     pub work_budget: Option<u64>,
     pub command: Vec<OsString>,
 }
@@ -670,13 +672,22 @@ fn valid_completed_measurement(value: &Value, state: &str) -> bool {
     {
         return false;
     }
-    const FIELDS: [&str; 5] = [
-        "instructions",
-        "rep_bytes",
-        "rep_entries",
-        "unsupported_rep_entries",
-        "signals_observed",
-    ];
+    let latency = measurement.get("latency_bound").is_some();
+    let operand_bytes = measurement.get("memory_operand_bytes").is_some();
+    if operand_bytes && (!latency || measurement["signals_observed"].as_u64() != Some(0)) {
+        return false;
+    }
+    let read_counters = |row: &Value| {
+        Some([
+            row["instructions"].as_u64()?,
+            row["rep_bytes"].as_u64()?,
+            row["rep_entries"].as_u64()?,
+            row["unsupported_rep_entries"].as_u64()?,
+            row["signals_observed"].as_u64()?,
+            runner::counter_value(row, "latency_bound", "cycles_x16", latency)?,
+            runner::counter_value(row, "memory_operand_bytes", "bytes", operand_bytes)?,
+        ])
+    };
     let Some(rep) = measurement["rep_bytes_enabled"].as_bool() else {
         return false;
     };
@@ -716,7 +727,7 @@ fn valid_completed_measurement(value: &Value, state: &str) -> bool {
         }
         sums.insert(
             pid,
-            ([0_u64; 5], 0_u64, durante::report::RepBreakdown::default()),
+            ([0_u64; 7], 0_u64, durante::report::RepBreakdown::default()),
         );
     }
     if !measurement["root_pid"]
@@ -725,7 +736,7 @@ fn valid_completed_measurement(value: &Value, state: &str) -> bool {
     {
         return false;
     }
-    let mut totals = [0_u64; 5];
+    let mut totals = [0_u64; 7];
     let mut breakdown_totals = durante::report::RepBreakdown::default();
     for segment in segments {
         let Some(pid) = segment["pid"].as_u64() else {
@@ -735,10 +746,10 @@ fn valid_completed_measurement(value: &Value, state: &str) -> bool {
             return false;
         };
         *count += 1;
-        for (index, key) in FIELDS.iter().enumerate() {
-            let Some(value) = segment[key].as_u64() else {
-                return false;
-            };
+        let Some(counters) = read_counters(segment) else {
+            return false;
+        };
+        for (index, value) in counters.into_iter().enumerate() {
             let Some(sum) = sums[index].checked_add(value) else {
                 return false;
             };
@@ -765,10 +776,8 @@ fn valid_completed_measurement(value: &Value, state: &str) -> bool {
         if process["images"].as_u64() != Some(*count) {
             return false;
         }
-        for (index, key) in FIELDS.iter().enumerate() {
-            if process[key].as_u64() != Some(sums[index]) {
-                return false;
-            }
+        if read_counters(process) != Some(*sums) {
+            return false;
         }
         if read_breakdown(process) != Some(*breakdown) {
             return false;
@@ -789,11 +798,7 @@ fn valid_completed_measurement(value: &Value, state: &str) -> bool {
     {
         return false;
     }
-    expected_breakdown == breakdown_totals
-        && FIELDS
-            .iter()
-            .enumerate()
-            .all(|(index, key)| measurement[key].as_u64() == Some(totals[index]))
+    expected_breakdown == breakdown_totals && read_counters(measurement) == Some(totals)
 }
 
 fn cleanup_tree_bounded(root: &Path, depth: usize, entries: &mut usize) -> io::Result<()> {
@@ -885,6 +890,9 @@ pub fn run(options: Options) -> Result<i32, String> {
     }
     if options.latency_bound {
         result["latency_bound_version"] = json!(1);
+    }
+    if options.memory_operand_bytes {
+        result["memory_operand_bytes_version"] = json!(1);
     }
     if let Some(limit) = options.work_budget {
         result["work_budget"] = work_budget::unavailable(limit);
@@ -1103,6 +1111,9 @@ fn execute(
     if options.latency_bound {
         command.arg("--latency-bound");
     }
+    if options.memory_operand_bytes {
+        command.arg("--memory-operand-bytes");
+    }
     command
         .arg("--")
         .args(&options.command)
@@ -1241,11 +1252,24 @@ fn execute(
         runner::policy_matches(inner, &options.disallowed_cpu_features)
             && runner::cpuid_profile_matches(inner, options.cpuid_profile.as_deref())
             && inner.get("latency_bound_version") == options.latency_bound.then_some(&json!(1))
+            && inner.get("memory_operand_bytes_version")
+                == options.memory_operand_bytes.then_some(&json!(1))
     };
     let measurement_options_match = |measurement: &Value| {
         runner::policy_matches(measurement, &options.disallowed_cpu_features)
             && runner::cpuid_profile_matches(measurement, options.cpuid_profile.as_deref())
-            && runner::latency_bound_matches(measurement, options.latency_bound)
+            && runner::counter_matches(
+                measurement,
+                "latency_bound",
+                "cycles_x16",
+                options.latency_bound,
+            )
+            && runner::counter_matches(
+                measurement,
+                "memory_operand_bytes",
+                "bytes",
+                options.memory_operand_bytes,
+            )
     };
     if !success {
         result["execution"]["state"] = json!("isolation_failed");
@@ -1693,6 +1717,60 @@ mod tests {
             "security":{"counter_integrity":"application_mutable"},
             "execution":{"state":"complete","cleanup_complete":true,"records_cleanup_complete":true},
             "measurement":measurement})
+    }
+
+    #[test]
+    fn inner_operand_bytes_reconcile_at_every_level() {
+        let mut inner = inner_rep_breakdown_fixture();
+        for (level, bytes) in [
+            ("/measurement", 24),
+            ("/measurement/processes/0", 8),
+            ("/measurement/processes/1", 16),
+            ("/measurement/segments/0", 8),
+            ("/measurement/segments/1", 16),
+        ] {
+            let row = inner.pointer_mut(level).unwrap();
+            let cycles_x16 = 4 * row["instructions"].as_u64().unwrap();
+            row["latency_bound"] = json!({"version": 1, "cycles_x16": cycles_x16});
+            row["memory_operand_bytes"] = json!({"version": 1, "bytes": bytes});
+        }
+        assert!(valid_inner(&inner));
+        for level in [
+            "/measurement",
+            "/measurement/processes/0",
+            "/measurement/segments/1",
+        ] {
+            for invalid in [
+                json!(null),
+                json!({"version": 2, "bytes": 8}),
+                json!({"version": 1, "bytes": 9}),
+            ] {
+                let mut wrong = inner.clone();
+                wrong.pointer_mut(level).unwrap()["memory_operand_bytes"] = invalid;
+                assert!(!valid_inner(&wrong), "{level}");
+            }
+            let mut missing = inner.clone();
+            missing
+                .pointer_mut(level)
+                .unwrap()
+                .as_object_mut()
+                .unwrap()
+                .remove("memory_operand_bytes");
+            assert!(!valid_inner(&missing), "{level}");
+        }
+        let mut interrupted = inner.clone();
+        for level in [
+            "/measurement",
+            "/measurement/processes/0",
+            "/measurement/segments/0",
+        ] {
+            interrupted.pointer_mut(level).unwrap()["signals_observed"] = json!(1);
+        }
+        interrupted["measurement"]["quality"] = json!("signals_observed");
+        assert!(!valid_inner(&interrupted));
+        let mut overflow = inner;
+        overflow["measurement"]["segments"][0]["memory_operand_bytes"]["bytes"] = json!(u64::MAX);
+        assert!(!valid_inner(&overflow));
     }
 
     #[test]
