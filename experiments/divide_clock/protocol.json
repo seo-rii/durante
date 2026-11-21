@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "base_commit": "2f926b25cc827e0473263f787b29778fad21dc98",
+  "reference": "experiments/results/gce-rust-operand-bytes/evaluation.json",
+  "reference_sha256": "47a796dab8be0f9abb827b4252ed68e20e029d74d0546e5a4bbddf847e5a45ae",
+  "train": [
+    "div_small_serial",
+    "div_small_parallel",
+    "div_large_serial",
+    "div_large_parallel"
+  ],
+  "assembly_validation": [
+    "div_xor_serial",
+    "div_xor_parallel",
+    "div_mov_serial",
+    "div_mov_parallel"
+  ],
+  "rust_validation": [
+    "integer",
+    "copy",
+    "branch",
+    "sort",
+    "fill",
+    "gcd",
+    "lower_bound",
+    "rolling_window"
+  ],
+  "fresh_anchors": [
+    "div_large_serial",
+    "gcd"
+  ],
+  "fresh_holdouts": [
+    "floor_groups",
+    "batch_quotients"
+  ],
+  "latency_cycles": [
+    1,
+    24
+  ],
+  "interval_cycles": [
+    0,
+    12
+  ],
+  "tolerance_ppm": 200000,
+  "native_floor_ns": 20000000,
+  "max_spread_ppm": 100000,
+  "model": "Keep both historical clock coefficients and all production counters fixed. Re-score main executable basic blocks containing unsigned 32-bit DIV. Keep v1 per-block issue and recurrence definitions. Compare v1 (L=20,I=0,existing dependencies), zero (same but break input dependencies of same-register 32/64-bit XOR), latency (zero plus fitted L), and latency_interval (zero plus fitted L,I). The latter adds a resource floor of 16*I*div32_count in block cycles_x16. Other instruction widths, signed division and library code keep their v1 costs. No intercept.",
+  "fit": "Only train on the four primary assembly GCE native medians (eight native controls for each ELF). Minimize sum of squared relative timing errors for median predictions. Search integer L=1..24, interval I=0..min(12,L). Break ties by smaller I, then proximity to L=20, then smaller L. No Rust, follow-up control or new guest timing enters training.",
+  "validation": "A case passes only if every measured prediction lies within 20% of its native median. Report median error, the full native range, duration and spread flags, and all failures. Earlier data and this hypothesis are known. The newly compiled floor-grouping and batched-quotient workloads are the prospective test. Freeze their ELFs, expected outputs and selected coefficients before measuring native times on the fresh GCE guest.",
+  "acquisition": "Historic data combine the exact archived binaries and pinned GCE wait4 measurements with two local diagnostic observations per binary; compare the new production receipts to the GCE production receipts, and validate original v1 block replay. Fresh data use three rotated five-run blocks per case. Each uses native before and after the baseline, sampled and fast diagnostic modes. The three instrumented modes rotate so each occupies every slot once per case, with independent guest placement and cleanup receipts. All clock validation uses uninstrumented GCE child user plus system CPU time.",
+  "fast": "The fast experimental meter computes the trained latency_interval cost once at translation time and uses the normal single production accounting path per block entry. It reports a distinct experimental latency version. Compare its whole-process predicted CPU time and corrected cycle totals to the independent diagnostic replay, and its measured process CPU cost to the ordinary meter. Report every pair. The fast binary, client versions and fitted coefficients must be frozen before measuring the fresh workloads."
+}
