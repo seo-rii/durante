@@ -1,8 +1,11 @@
 """Replay the pinned GCD study and check the online probe against the input oracle."""
 import json
+import os
+import platform
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -17,6 +20,24 @@ class GcdControlStudy(unittest.TestCase):
             capture_output=True, text=True, timeout=120,
         )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_live_probe_preserves_state_and_records_partial_trips(self):
+        sdk = Path(os.environ.get("DURANTE_TEST_SDK", ROOT / "toolkit/sdk/DynamoRIO-Linux-11.3.0-1")).resolve()
+        launcher = sdk / "bin64/drrun"
+        if os.environ.get("DURANTE_TEST_BUNDLE"):
+            launcher = Path(os.environ["DURANTE_TEST_BUNDLE"]) / "dynamorio/bin64/drrun"
+        if platform.machine() != "x86_64" or not (sdk / "cmake").is_dir() or not launcher.is_file():
+            self.skipTest("requires an x86-64 DynamoRIO SDK and launcher")
+        with tempfile.TemporaryDirectory(prefix="durante-trip-probe-") as tmp:
+            build = Path(tmp) / "build"
+            for command in (
+                ["cmake", "-S", STUDY / "trip_probe", "-B", build,
+                 "-DCMAKE_BUILD_TYPE=Release", f"-DDynamoRIO_DIR={sdk}/cmake"],
+                ["cmake", "--build", build, "--target", "trip_probe"],
+            ):
+                result = subprocess.run(command, capture_output=True, text=True, timeout=60)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.run_script("trip_probe/check.py", launcher, build / "libtrip_probe.so")
 
     def test_archived_inputs_and_calibration(self):
         self.run_script("stream/fixtures.py", "--verify")

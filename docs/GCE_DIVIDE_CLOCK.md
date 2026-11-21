@@ -46,6 +46,8 @@ Across 12 matched comparisons the ordinary meter consumed **12.335 s** of child 
 
 Each round rotated the four cases. Two native processes bracketed the ordinary, descriptor-recording and fast diagnostic runs. Within each case each diagnostic occupied each slot once. On a Seoul AMD EPYC 7B13 guest, scheduler evidence places all 60 measured processes and all 36 same-PID loader executions on CPU 1. The CPU 0 observer polled 171 times in 43 seconds. The trace reported zero dropped events and CPU 1 accumulated zero guest steal ticks. After export, both the temporary VM and its boot disk returned HTTP 404. [Acquisition protocol](../experiments/divide_clock/fresh/protocol.json) · [Platform and cleanup evidence](../experiments/results/divide-clock/fresh/platform.json)
 
+The subsequent GCD experiment replays the same numerical operands and compares the native cost of changing their dependency path or the order of Euclidean loop lengths. [Matched GCD controls and online probe](GCE_GCD_CONTROLS.md)
+
 ## Reproduction
 
 Run from the repository root. The historical verifier reads the previously published native receipts. The fresh archive includes the new Rust ELFs and records the paths to the preserved control ELFs. The test compares the distinct clients only in their registered single-threaded, uninterrupted scope.
