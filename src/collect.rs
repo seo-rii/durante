@@ -410,6 +410,27 @@ fn validate_field_types(event: &Event) -> Result<(), Error> {
             "latency bound outside terminal",
         )?;
     }
+    if event.contains_key("memory_operand_bytes_version") {
+        require(
+            uint(event, "memory_operand_bytes_version")? == 1,
+            "unsupported memory operand bytes capability",
+        )?;
+        require(
+            text(event, "event")? == "start",
+            "memory operand bytes capability outside start",
+        )?;
+        require(
+            event.contains_key("latency_bound_version"),
+            "memory operand bytes require latency bound",
+        )?;
+    }
+    if event.contains_key("memory_operand_bytes") {
+        uint(event, "memory_operand_bytes")?;
+        require(
+            matches!(text(event, "event")?, "end" | "exec_attempt"),
+            "memory operand bytes outside terminal",
+        )?;
+    }
     for field in REP_BREAKDOWN_FIELDS {
         if event.contains_key(field) {
             uint(event, field)?;
@@ -505,6 +526,7 @@ struct Terminal {
     counters: [u64; 5],
     rep_breakdown: Option<RepBreakdown>,
     latency_bound_x16: Option<u64>,
+    memory_operand_bytes: Option<u64>,
     threads: u64,
     exit_code: Option<u8>,
 }
@@ -514,6 +536,7 @@ fn terminal(
     rep_enabled: bool,
     breakdown_enabled: bool,
     latency_enabled: bool,
+    operand_bytes_enabled: bool,
 ) -> Result<Terminal, Error> {
     let mut counters = [0; 5];
     for (index, field) in FIELDS.iter().enumerate() {
@@ -592,6 +615,19 @@ fn terminal(
     } else {
         None
     };
+    require(
+        event.contains_key("memory_operand_bytes") == operand_bytes_enabled,
+        "memory operand bytes capability mismatch",
+    )?;
+    let memory_operand_bytes = if operand_bytes_enabled {
+        require(
+            counters[4] == 0,
+            "memory operand bytes interrupted by signal",
+        )?;
+        Some(uint(event, "memory_operand_bytes")?)
+    } else {
+        None
+    };
     let code =
         u8::try_from(uint(event, "app_exit_code")?).map_err(|_| "invalid application exit code")?;
     if !is_exec {
@@ -601,12 +637,16 @@ fn terminal(
         counters,
         rep_breakdown,
         latency_bound_x16,
+        memory_operand_bytes,
         threads,
         exit_code: if is_exec { None } else { Some(code) },
     })
 }
 fn latency_json(cycles_x16: u64) -> Value {
     json!({"version": 1, "cycles_x16": cycles_x16})
+}
+fn operand_bytes_json(bytes: u64) -> Value {
+    json!({"version": 1, "bytes": bytes})
 }
 fn add_counters(target: &mut [u64; 5], source: &[u64; 5]) -> Result<(), Error> {
     for (a, b) in target.iter_mut().zip(source) {
@@ -659,6 +699,8 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
     let mut breakdown_mode = None;
     let mut latency_mode = None;
     let mut latency_total = 0u64;
+    let mut operand_bytes_mode = None;
+    let mut operand_bytes_total = 0u64;
     let mut totals = [0u64; 5];
     let mut breakdown_totals = RepBreakdown::default();
     let mut all_segments = Vec::new();
@@ -717,6 +759,12 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
                     "mixed latency bound capabilities",
                 )?;
                 latency_mode = Some(latency);
+                let operand_bytes = record.contains_key("memory_operand_bytes_version");
+                require(
+                    operand_bytes_mode.is_none_or(|previous| previous == operand_bytes),
+                    "mixed memory operand bytes capabilities",
+                )?;
+                operand_bytes_mode = Some(operand_bytes);
                 let parent = uint(&record, "parent_pid")?;
                 let parent_segment = text(&record, "parent_segment")?;
                 let origin = text(&record, "origin")?;
@@ -728,7 +776,7 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
                     )?;
                     selected.push((
                         previous_segment.clone(),
-                        terminal(&checkpoint, true, mode, detailed, latency)?,
+                        terminal(&checkpoint, true, mode, detailed, latency, operand_bytes)?,
                     ));
                 } else {
                     if process == root_pid {
@@ -816,6 +864,7 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
                             rep_mode.ok_or("missing REP mode")?,
                             breakdown_mode.ok_or("missing REP breakdown capability")?,
                             latency_mode.ok_or("missing latency bound capability")?,
+                            operand_bytes_mode.ok_or("missing memory operand bytes capability")?,
                         )?,
                     ));
                     ended = true;
@@ -831,6 +880,7 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
         let mut process_totals = [0u64; 5];
         let mut process_breakdown = RepBreakdown::default();
         let mut process_latency = 0u64;
+        let mut process_operand_bytes = 0u64;
         let exit_code = selected.last().ok_or("missing terminal image")?.1.exit_code;
         let images = selected.len();
         for (segment, values) in selected {
@@ -856,6 +906,14 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
                     .ok_or("latency bound aggregate overflow")?;
                 row["latency_bound"] = latency_json(bound);
             }
+            if let Some(bytes) = values.memory_operand_bytes {
+                operand_bytes_total = operand_bytes_total
+                    .checked_add(bytes)
+                    .ok_or("memory operand bytes aggregate overflow")?;
+                // The checked tree total also bounds each process subtotal.
+                process_operand_bytes += bytes;
+                row["memory_operand_bytes"] = operand_bytes_json(bytes);
+            }
             all_segments.push(row);
         }
         let mut row = json!({"pid": process, "parent_pid": parent_pid, "parent_segment": parent_segment, "images": images, "exit_code": exit_code});
@@ -865,6 +923,9 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
         }
         if latency_mode == Some(true) {
             row["latency_bound"] = latency_json(process_latency);
+        }
+        if operand_bytes_mode == Some(true) {
+            row["memory_operand_bytes"] = operand_bytes_json(process_operand_bytes);
         }
         processes.insert(process, row);
     }
@@ -916,6 +977,9 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
     }
     if latency_mode == Some(true) {
         result["latency_bound"] = latency_json(latency_total);
+    }
+    if operand_bytes_mode == Some(true) {
+        result["memory_operand_bytes"] = operand_bytes_json(operand_bytes_total);
     }
     if !policy.is_empty() {
         result["disallowed_cpu_features"] = json!(policy.split(',').collect::<Vec<_>>());

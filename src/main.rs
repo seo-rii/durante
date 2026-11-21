@@ -75,6 +75,9 @@ enum Command {
         /// Also count the static per-block latency bound (diagnostic, version 1).
         #[arg(long = "latency-bound")]
         latency_bound: bool,
+        /// Also count statically sized application memory operand bytes (diagnostic, version 1).
+        #[arg(long, requires = "latency_bound")]
+        memory_operand_bytes: bool,
         /// Stop after more than this many software-work units (instructions + MOVS/STOS bytes).
         #[arg(long)]
         work_budget: Option<u64>,
@@ -117,6 +120,9 @@ enum Command {
         /// Forward the latency-bound counter request into the isolated run.
         #[arg(long = "latency-bound")]
         latency_bound: bool,
+        /// Also count statically sized application memory operand bytes (diagnostic, version 1).
+        #[arg(long, requires = "latency_bound")]
+        memory_operand_bytes: bool,
         #[arg(required = true, last = true, num_args = 1..)]
         command: Vec<OsString>,
     },
@@ -249,6 +255,7 @@ fn main() {
             disallowed_cpu_features,
             cpuid_profile,
             latency_bound,
+            memory_operand_bytes,
             work_budget,
             command,
         } => {
@@ -265,6 +272,7 @@ fn main() {
                     disallowed_cpu_features,
                     cpuid_profile,
                     latency_bound,
+                    memory_operand_bytes,
                     work_budget,
                     command,
                 })
@@ -282,6 +290,7 @@ fn main() {
                     disallowed_cpu_features,
                     cpuid_profile,
                     latency_bound,
+                    memory_operand_bytes,
                     work_budget,
                     command,
                 );
@@ -300,6 +309,7 @@ fn main() {
             disallowed_cpu_features,
             cpuid_profile,
             latency_bound,
+            memory_operand_bytes,
             work_budget,
             command,
         } => {
@@ -317,6 +327,7 @@ fn main() {
                     disallowed_cpu_features,
                     cpuid_profile,
                     latency_bound,
+                    memory_operand_bytes,
                     work_budget,
                     command,
                 })
@@ -336,6 +347,7 @@ fn main() {
                     disallowed_cpu_features,
                     cpuid_profile,
                     latency_bound,
+                    memory_operand_bytes,
                     work_budget,
                 );
                 Err("durante isolate requires Linux x86-64".to_owned())

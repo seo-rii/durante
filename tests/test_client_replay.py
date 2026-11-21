@@ -575,6 +575,21 @@ int main(int argc, char **argv) {
         assert(!state.replay_error && !state.latency_error);
         snapshot(true);
         assert(strstr(record, "\"latency_bound_x16\":1045"));
+    } else if (!strcmp(test, "operand-bytes-replay")) {
+        latency_bound_enabled = memory_operand_bytes_enabled = true;
+        /* The prefix charges 4 + 0 + 32 bytes. The remaining three
+         * instructions charge a 1-byte store, a 16-byte load and a 2-byte load. */
+        count_block_memory(6, START, 24, 55);
+        before_write_memory(WRITE, NEXT, 3, 19, 1);
+        code_replay(CTX, DR_DURANTE_REPLAY_RETRY, WRITE, WRITE);
+        assert(state.instructions == 3 && state.memory_operand_bytes == 36);
+        count_block_memory(3, WRITE, 12, 19);
+        before_write_memory(WRITE, NEXT, 3, 19, 1);
+        code_replay(CTX, DR_DURANTE_REPLAY_AFTER_WRITE, NULL, NEXT);
+        assert(state.instructions == 4 && state.memory_operand_bytes == 37);
+        count_block_memory(2, NEXT, 8, 18);
+        assert(state.instructions == 6 && state.memory_operand_bytes == 55);
+        snapshot(true);
     } else if (!strcmp(test, "latency-invalid")) {
         latency_bound_enabled = true;
         state.instructions = 1;
@@ -884,6 +899,9 @@ class ClientReplayStateTests(unittest.TestCase):
 
     def test_latency_bound_replay_returns_proportional_share(self):
         self.run_case("latency-replay")
+
+    def test_operand_bytes_replay_keeps_only_the_completed_prefix(self):
+        self.run_case("operand-bytes-replay")
 
     def test_unanalyzable_overflowing_or_underflowing_latency_bound_is_invalid(self):
         self.run_case("latency-invalid")

@@ -35,6 +35,8 @@ pub struct Options {
     pub cpuid_profile: Option<String>,
     /// Also charge the static per-block latency bound (version 1).
     pub latency_bound: bool,
+    /// Request the versioned static memory operand byte counter alongside the latency bound.
+    pub memory_operand_bytes: bool,
     pub work_budget: Option<u64>,
     pub command: Vec<OsString>,
 }
@@ -423,6 +425,9 @@ pub fn run(options: Options) -> Result<i32, String> {
     if options.latency_bound {
         result["latency_bound_version"] = json!(1);
     }
+    if options.memory_operand_bytes {
+        result["memory_operand_bytes_version"] = json!(1);
+    }
     if let Some(limit) = options.work_budget {
         result["work_budget"] = work_budget::unavailable(limit);
     }
@@ -495,17 +500,24 @@ pub(crate) fn cpuid_profile_matches(report: &Value, expected: Option<&str>) -> b
     }
 }
 
-/// A requested latency bound must be reported as version 1 with a counter;
-/// an unrequested one must be absent.
-pub(crate) fn latency_bound_matches(report: &Value, requested: bool) -> bool {
-    match report.get("latency_bound") {
-        None => !requested,
-        Some(value) => {
-            requested
-                && value.as_object().is_some_and(|fields| fields.len() == 2)
-                && value["version"] == 1
-                && value["cycles_x16"].is_u64()
+/// Each optional counter must match the version and units requested by the caller.
+pub(crate) fn counter_matches(report: &Value, name: &str, unit: &str, requested: bool) -> bool {
+    counter_value(report, name, unit, requested).is_some()
+}
+
+/// An absent and unrequested field contributes zero only to local validation sums.
+pub(crate) fn counter_value(
+    report: &Value,
+    name: &str,
+    unit: &str,
+    requested: bool,
+) -> Option<u64> {
+    match report.get(name) {
+        None => (!requested).then_some(0),
+        Some(value) if requested && value.as_object()?.len() == 2 && value["version"] == 1 => {
+            value[unit].as_u64()
         }
+        Some(_) => None,
     }
 }
 
@@ -556,6 +568,9 @@ fn execute(
     }
     if options.latency_bound {
         command.arg("-latency_bound");
+    }
+    if options.memory_operand_bytes {
+        command.arg("-memory_operand_bytes");
     }
     command
         .arg("--")
@@ -730,11 +745,30 @@ fn execute(
         }
         if measurement["valid"] == true
             && measurement["complete"] == true
-            && !latency_bound_matches(&measurement, options.latency_bound)
+            && !counter_matches(
+                &measurement,
+                "latency_bound",
+                "cycles_x16",
+                options.latency_bound,
+            )
         {
             measurement = invalid_measurement(
                 Some(root_pid),
                 "client latency bound does not match the request",
+            );
+        }
+        if measurement["valid"] == true
+            && measurement["complete"] == true
+            && !counter_matches(
+                &measurement,
+                "memory_operand_bytes",
+                "bytes",
+                options.memory_operand_bytes,
+            )
+        {
+            measurement = invalid_measurement(
+                Some(root_pid),
+                "client memory operand bytes do not match the request",
             );
         }
         if measurement["valid"] == true && measurement["complete"] == true {

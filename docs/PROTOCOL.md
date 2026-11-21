@@ -82,6 +82,16 @@ outside `start`, the counter outside a terminal, a missing or unadvertised
 counter, a counter below `4 * instructions`, or an aggregate overflow is
 unavailable. See [Static latency bound](LATENCY_BOUND.md).
 
+The optional memory operand metric (`-memory_operand_bytes`, CLI
+`--memory-operand-bytes`) requires the latency bound. A participating image
+adds `memory_operand_bytes_version: 1` to its start and
+`memory_operand_bytes` (an unsigned 64-bit integer) to every end and exec
+checkpoint. Collectors require matching capabilities throughout the tree
+and a checked sum at each level. A successful measurement includes
+`"memory_operand_bytes": {"version": 1, "bytes": N}` on the tree, each
+process and each selected image segment. The option and the resulting
+field are additive to schema 1. [Counter semantics](LATENCY_BOUND.md#memory-operand-bytes)
+
 An executed forbidden instruction produces `cpu_feature_violation` with
 `feature: "avx"` or `"simd"` in its live image, with the normal next sequence
 number, before process exit 126. The feature must belong to the announced

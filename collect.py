@@ -76,7 +76,8 @@ def parse_integer(raw):
 UINT_FIELDS = ('schema', 'client_version', 'pid', 'seq', 'parent_pid', 'child_pid',
                'syscall', *FIELDS, 'threads_started', 'threads_finished', 'app_exit_code',
                'rep_breakdown_version', 'cpu_policy_version', 'cpuid_profile_version',
-               'latency_bound_version', 'latency_bound_x16', *REP_BREAKDOWN_RAW_FIELDS)
+               'latency_bound_version', 'latency_bound_x16', 'memory_operand_bytes_version',
+               'memory_operand_bytes', *REP_BREAKDOWN_RAW_FIELDS)
 TEXT_FIELDS = ('authority', 'metric', 'segment', 'event', 'origin', 'parent_segment',
                'sdk_version', 'quality', 'cpu_policy', 'cpuid_profile', 'feature')
 BOOL_FIELDS = ('rep_bytes_enabled', 'supported', 'valid', 'accounting_error',
@@ -99,6 +100,8 @@ def validate_field_types(record):
                 require(value == 1, 'unsupported REP breakdown capability')
             elif key == 'latency_bound_version':
                 require(value == 1, 'unsupported latency bound capability')
+            elif key == 'memory_operand_bytes_version':
+                require(value == 1, 'unsupported memory operand bytes capability')
         elif key in TEXT_FIELDS:
             require(type(value) is str, 'invalid string field')
         elif key in BOOL_FIELDS:
@@ -118,6 +121,11 @@ def validate_field_types(record):
         require(record.get('event') == 'start', 'latency bound capability outside start')
     if 'latency_bound_x16' in record:
         require(record.get('event') in ('end', 'exec_attempt'), 'latency bound outside terminal')
+    if 'memory_operand_bytes_version' in record:
+        require(record.get('event') == 'start', 'memory operand bytes capability outside start')
+        require('latency_bound_version' in record, 'memory operand bytes require latency bound')
+    if 'memory_operand_bytes' in record:
+        require(record.get('event') in ('end', 'exec_attempt'), 'memory operand bytes outside terminal')
 
 
 def cpu_policy(record):
@@ -216,7 +224,8 @@ def load_records(directory):
         os.close(root)
 
 
-def terminal(record, is_exec, rep_enabled, rep_breakdown_version, latency_bound_version=None):
+def terminal(record, is_exec, rep_enabled, rep_breakdown_version, latency_bound_version=None,
+             operand_bytes_enabled=False):
     values = {key: uint(record.get(key), key) for key in FIELDS}
     require(record.get('valid') is True and record.get('accounting_error') is False,
             'invalid terminal accounting')
@@ -259,6 +268,12 @@ def terminal(record, is_exec, rep_enabled, rep_breakdown_version, latency_bound_
         require(values['instructions'] <= U64_MAX // 4 and bound >= 4 * values['instructions'],
                 'latency bound below issue cost')
         result['latency_bound'] = {'version': latency_bound_version, 'cycles_x16': bound}
+    require(('memory_operand_bytes' in record) == operand_bytes_enabled,
+            'memory operand bytes capability mismatch')
+    if operand_bytes_enabled:
+        require(values['signals_observed'] == 0, 'memory operand bytes interrupted by signal')
+        result['memory_operand_bytes'] = {
+            'version': 1, 'bytes': uint(record['memory_operand_bytes'], 'memory_operand_bytes')}
     return result
 
 
@@ -301,6 +316,8 @@ def aggregate(streams, root_pid):
     latency_bound_version = None; latency_mode_set = False
     total_breakdown = empty_rep_breakdown()
     total_latency = {'version': 1, 'cycles_x16': 0}
+    operand_bytes_enabled = None
+    total_operand_bytes = 0
     total = {field: 0 for field in FIELDS}; images = 0; all_segments = []
     for process, records in streams.items():
         require(pid(process) and 0 < len(records) <= MAX_EVENTS, 'invalid process stream')
@@ -330,6 +347,10 @@ def aggregate(streams, root_pid):
                 if not latency_mode_set:
                     latency_bound_version = version; latency_mode_set = True
                 require(latency_bound_version == version, 'mixed latency bound capabilities')
+                operand_bytes = 'memory_operand_bytes_version' in record
+                require(operand_bytes_enabled is None or operand_bytes_enabled == operand_bytes,
+                        'mixed memory operand bytes capabilities')
+                operand_bytes_enabled = operand_bytes
                 origin = record.get('origin'); parent = record.get('parent_pid'); parent_segment = record.get('parent_segment')
                 if state is None:
                     first = record
@@ -341,7 +362,7 @@ def aggregate(streams, root_pid):
                     require(pending_exec is not None, 'exec image without checkpoint')
                     require(origin == 'initial' and type(parent) is int and parent == 0 and parent_segment == '', 'invalid exec origin')
                     summaries.append((state, terminal(pending_exec, True, rep_mode, rep_breakdown_version,
-                                                      latency_bound_version)))
+                                                      latency_bound_version, operand_bytes_enabled)))
                 state = segment; segments.add(segment); sequence = 1; pending_exec = None
                 continue
             require(state is not None and not ended and segment == state, 'event outside live segment')
@@ -369,7 +390,7 @@ def aggregate(streams, root_pid):
             elif event == 'end':
                 require(pending_exec is None, 'exec outcome missing')
                 summaries.append((state, terminal(record, False, rep_mode, rep_breakdown_version,
-                                                  latency_bound_version)))
+                                                  latency_bound_version, operand_bytes_enabled)))
                 ended = True
             else:
                 raise Invalid('unsupported or interrupted lifecycle event')
@@ -377,6 +398,7 @@ def aggregate(streams, root_pid):
         process_totals = {field: 0 for field in FIELDS}
         process_breakdown = empty_rep_breakdown()
         process_latency = {'version': 1, 'cycles_x16': 0}
+        process_operand_bytes = 0
         for segment, values in summaries:
             images += 1
             for field in FIELDS:
@@ -388,6 +410,11 @@ def aggregate(streams, root_pid):
             if latency_bound_version is not None:
                 add_latency_bound(total_latency, values['latency_bound'])
                 add_latency_bound(process_latency, values['latency_bound'])
+            if operand_bytes_enabled:
+                count = values['memory_operand_bytes']['bytes']
+                require(total_operand_bytes <= U64_MAX - count, 'memory operand bytes aggregate overflow')
+                total_operand_bytes += count
+                process_operand_bytes += count
             all_segments.append({'pid': process, 'segment': segment, **values})
         processes[process] = {'pid': process, 'parent_pid': first['parent_pid'],
             'parent_segment': first['parent_segment'], 'images': len(summaries),
@@ -396,6 +423,8 @@ def aggregate(streams, root_pid):
             processes[process]['rep_breakdown'] = process_breakdown
         if latency_bound_version is not None:
             processes[process]['latency_bound'] = process_latency
+        if operand_bytes_enabled:
+            processes[process]['memory_operand_bytes'] = {'version': 1, 'bytes': process_operand_bytes}
     require(set(spawn_edges) == set(processes) - {root_pid}, 'missing or unannounced child process')
     for child, (parent, parent_segment) in spawn_edges.items():
         require(parent in processes and processes[child]['parent_pid'] == parent and
@@ -419,6 +448,8 @@ def aggregate(streams, root_pid):
         result['rep_breakdown'] = total_breakdown
     if latency_bound_version is not None:
         result['latency_bound'] = total_latency
+    if operand_bytes_enabled:
+        result['memory_operand_bytes'] = {'version': 1, 'bytes': total_operand_bytes}
     if policy:
         result['disallowed_cpu_features'] = policy.split(',')
     if cpuid:
