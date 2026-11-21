@@ -99,6 +99,9 @@ must report exactly 623 bytes. Across its block and store callbacks it
 checks an application XMM register against a sentinel. The fixture covers
 scalar, SIMD and stack operands, read-modify-write, address-only instructions,
 fixed and variable save areas, and REP with zero and nonzero repeat counts.
+The pinned Rust comparison measures the runtime cost of enabling this counter
+and tests its contribution to estimated native CPU time.
+[Measurements and archived receipts](GCE_RUST_OPERAND_BYTES.md)
 
 `tests/latency_bound.py` builds five libc-free loop fixtures in
 `tests/latency_bound/kernels.S`. They cover a dependent multiply chain (6 cycles per

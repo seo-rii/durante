@@ -18,6 +18,10 @@ to test which counters distinguish two observed native time differences.
 The CPU-pinned Rust study tests scalar multiplies and loop recurrence against
 matched native controls from Compute Engine. [Measurements and replay](GCE_RUST_INSTRUCTION_MIX.md)
 
+A second comparison reuses those Rust executables to measure the cost and
+predictive accuracy of the production latency and memory operand counters.
+[Pinned Rust memory operand study](GCE_RUST_OPERAND_BYTES.md)
+
 ## Method
 
 The fixed corpus in `experiments/time_features/work.c` has 18 kernels, each
