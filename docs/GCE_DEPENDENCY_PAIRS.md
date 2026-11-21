@@ -43,6 +43,8 @@ For four chains the native medians differed by 0.04%, while the estimate fell by
 
 The two controls identify missing information relevant to the Rust errors. Actual binary search also branches and GCD uses changing divisors. These results do not apportion the original Rust program times. A candidate grading clock would need an affordable order-sensitive measure of memory work and separate tests of divide latency and throughput before being applied to verdicts.
 
+The next pinned GCE experiment tested a per-instruction load-address sampler against these exact four locality controls and the original eight Rust executables. [Address-sampling study](GCE_ACCESS_SAMPLE.md)
+
 ## Collection and verification
 
 Each study used its own temporary Seoul AMD EPYC 7B13 VM. Each round rotated the order of the four pairs and reversed which variant ran first. For each of 32 triplets on each VM, a native child ran before and after the diagnostic child. The measured time is the reaped child's user plus system CPU time from `wait4`. Tables use the median of eight native observations and the median of four diagnostic predictions per case. Every child used the frozen ELF, empty input and an eight-byte expected checksum. Only the diagnostic used the x86-64-v2 CPUID profile. Both guests reported a 32 KiB L1 data cache, 512 KiB L2 and 32 MiB shared L3. These identifiers give the scale of the working sets. No hardware cache-miss counts or DRAM accesses were observed. [First protocol](../experiments/dependency_pairs/protocol.json) · [Follow-up protocol](../experiments/dependency_pairs/followup/protocol.json)

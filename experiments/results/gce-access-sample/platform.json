@@ -1,0 +1,306 @@
+{
+  "schema": 1,
+  "target": "compute_engine",
+  "zone": "asia-northeast3-a",
+  "machine_type": "n2d-standard-4",
+  "cpu_platform": "AMD Milan",
+  "cpu_model": "AMD EPYC 7B13",
+  "threads_per_core": 1,
+  "online_cpus": [
+    0,
+    1
+  ],
+  "topology": [
+    {
+      "cpu": 0,
+      "core_id": 0,
+      "physical_package_id": 0,
+      "thread_siblings_list": "0"
+    },
+    {
+      "cpu": 1,
+      "core_id": 1,
+      "physical_package_id": 0,
+      "thread_siblings_list": "1"
+    }
+  ],
+  "benchmark_cpu": 1,
+  "observer_cpus": [
+    0
+  ],
+  "housekeeping_slice_effective": {
+    "system.slice": "0",
+    "user.slice": "0",
+    "init.scope": "0"
+  },
+  "private_ipv4_only": true,
+  "service_account_attached": false,
+  "boot_image": "debian-12-bookworm-v20261117",
+  "kernel": "6.1.0-56-cloud-amd64",
+  "guest_id_sha256": "fb3780978f5a0a44d96f97a2252b91737abd5b4989a7ac9c9d4293f474e69dac",
+  "guest_boot_id_sha256": "8870437a639ba87fbba444c12e396e57684b4adaafe13674784e09e4ea48e305",
+  "clock_ticks_per_second": 100,
+  "benchmark_steal_ticks_before": 0,
+  "benchmark_steal_ticks_after": 0,
+  "docker_version": "27.5.1",
+  "docker_package_sha256": "4f798b3ee1e0140eab5bf30b0edc4e84f4cdb53255a429dc3bbae9524845d640",
+  "docker_pid_namespace": "host",
+  "network_mode": "none",
+  "image_manifest_sha256": "856be473011809c36a32d7ecfb6501c45db07b3204b7e475be515ca4baa6cf95",
+  "image_config_digest": "sha256:23de5e0567295587df1b06740beb848b570518e9189926c41f65d1b676808cab",
+  "base_image": "asia.gcr.io/hancomac/aonohako@sha256:7af8d4b78ae6d7a9951bee0992a84df8282473bf3faf29cfbfdc56772f18ae51",
+  "layer_sha256": "b3a4896c90ebe13e244f8d9ccf2293d702ac9b0389cdc1c3817c88f21816853c",
+  "installed_software_sha256": {
+    "aonohako": "082f83a6456e42469cf31aba5cd44ea4ad53dda29dd616cea7be7f71a40f4864",
+    "durante-reference": "0f103605e5d024eaf3f278b20f4c07674b08d41e3089f25a20ba93acd8a5d361",
+    "libdurante.so": "dfa6bcd57398cda092ea6510d033d738d9104883c0d030a69f9041e661aefcf0",
+    "UPSTREAM.json": "4930e4cd05c2009f495839488507a77ab6101a30e2eb917281c39fbdc048df27"
+  },
+  "container_id_sha256": "bde80ddfd5bc382f67dfb6cb3512a5a68bfe5bd6bf8e2afe247c69d6198b766a",
+  "capture_script_sha256": "277c453c5697bce67a7a4c910f7630ba34c20731aa9278da70cd94ec42a37955",
+  "trace_raw_sha256": "3818c3f6a68789976b7dbf8b84dd15073c9494ad06b6f9ee316debce5c0ab164",
+  "dataset_sha256": "cda2629600b1b51f3eaf832042d14ac79656d1aad69b4ef6799be710dac9638b",
+  "protocol_sha256": "b65bddb8cf936bcc9c9c170c99d98901f5b2e5644d05cf7059b5726e4dd07f0a",
+  "collector_sha256": "95fca37ac2c38959f8ea072be15c74745718e92f40a4901ada31e54c53acabe9",
+  "tools": {
+    "launcher": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "runtime": "fd1c5645b9fc70a7dcb71459b4b94782d2e016a2aa4ceffcfcab2ade962cdf5b",
+    "meter": "849c432a4832b554ebbf867f7fdce788a635f7193cd1343e0df3eac4089b9ea4",
+    "production_reader": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a",
+    "sampler": "b9fa92fc3b7b1336e9467c360ae0c985fe37d4316532b5728d36b8b9bae21dbc"
+  },
+  "control": {
+    "freestanding_stdout_sha256": "2af5679d0c0f15e8e5045eee3fb64a5d86ec820ee832cb5466f3295a1748f3a0",
+    "two_modes_instructions_agree": true,
+    "hand_counted_operand_bytes": 48
+  },
+  "started_at": "2026-11-21T12:14:31Z",
+  "finished_at": "2026-11-21T12:18:34Z",
+  "elapsed_seconds": 243,
+  "collector_exit": 0,
+  "samples": 36,
+  "measured_execs": 144,
+  "loader_reexecs": 72,
+  "affinity_observer_polls": 969,
+  "vm_lifetime_cap_seconds": 7200,
+  "cleanup": {
+    "instance_http": 404,
+    "boot_disk_http": 404,
+    "disposable_ssh_key_removed": true,
+    "started_at": "2026-11-21T12:18:45.584512+00:00",
+    "verified_at": "2026-11-21T12:20:35.052134+00:00"
+  },
+  "placement_sha256": "1813061e6f61bb2b1cd727e7f92a853816543cfc53900c24486bdfe912fa17c9",
+  "fresh_guest_against_prior_corpus": true,
+  "client_release_rebuild_byte_identical": true,
+  "sampler_release_rebuild_byte_identical": true,
+  "guest_reported_cpu1_caches": [
+    {
+      "level": "1",
+      "type": "Data",
+      "size": "32K",
+      "coherency_line_size": "64",
+      "ways_of_associativity": "8",
+      "shared_cpu_list": "1"
+    },
+    {
+      "level": "1",
+      "type": "Instruction",
+      "size": "32K",
+      "coherency_line_size": "64",
+      "ways_of_associativity": "8",
+      "shared_cpu_list": "1"
+    },
+    {
+      "level": "2",
+      "type": "Unified",
+      "size": "512K",
+      "coherency_line_size": "64",
+      "ways_of_associativity": "8",
+      "shared_cpu_list": "1"
+    },
+    {
+      "level": "3",
+      "type": "Unified",
+      "size": "32768K",
+      "coherency_line_size": "64",
+      "ways_of_associativity": "16",
+      "shared_cpu_list": "0-1"
+    }
+  ],
+  "frozen_head": "7f818a4959428bfa7e5034c193835a8c1bfb3be5",
+  "client_commit": "caaa53fac348855601eb5dcf3e1c0dd5c905f45d",
+  "collector_commit": "7f818a4959428bfa7e5034c193835a8c1bfb3be5",
+  "measured_client_source_sha256": {
+    "durante.c": "b6af8e090846cf64a983bff4c0e4aafd6dc1cb3783d7713aad6f91694f467fd4",
+    "latency_bound.h": "51ea8177b786753196b24e80de74141af62df27395258cc94ab95b6eba4cfed5"
+  },
+  "client_build": {
+    "compiler": "GCC 12.2.0 (Debian 12.2.0-14+deb12u1)",
+    "linker": "GNU ld 2.40",
+    "cmake": "4.0.3",
+    "cmake_command": "cmake -S client -B build -DCMAKE_BUILD_TYPE=Release -DDynamoRIO_DIR=$SDK/cmake",
+    "build_command": "cmake --build build -j2",
+    "flags": [
+      "-O3",
+      "-DNDEBUG",
+      "-std=gnu17",
+      "-fPIC",
+      "-fno-stack-protector"
+    ],
+    "sdk_tag": "release_11.3.0-1",
+    "sdk_asset_sha256": "ae02049df5c4daeb82d4087aaa0d38bf58cdd26b38fb6042dccf27cbc32ceed9",
+    "gnu_build_id": "62ad4ed88f8cdc977705b07e5adc94dfc1251d08"
+  },
+  "measured_client_sha256": "849c432a4832b554ebbf867f7fdce788a635f7193cd1343e0df3eac4089b9ea4",
+  "measured_reader_sha256": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a",
+  "original_binaries_sha256": {
+    "load_adjacent_serial": "5ef2e012d770b6650df5bd62e07ea3c98c8703d155dadb22d5f46958b15b36b1",
+    "load_adjacent_parallel": "b1934516b7d0f7b48227fe87858a4c4e07925aafc24fe8655ee22034349ea5f1",
+    "load_scattered_serial": "bfb84e8e48cc85c1ae86fe76ce4102cab65372ee854f9e7b28ab66c5cc3efc64",
+    "load_scattered_parallel": "d0fddd0066acbcddba73863212d6fcc9b1c4da81a0cae4e4f9d914aa04d0edfc",
+    "integer": "a03a2f96186d6d388e9840671a7226b79368268949e7349f8ac659976c68e107",
+    "copy": "4897fdbb017ed34559428973ccb1146e488d1edc116d5d2ef04ae4d8b0630bf0",
+    "branch": "02506b1b0a7ee5952d57e0af0ff5029f48d7fc99cc6cb6b9d83d502f400d9773",
+    "sort": "5f5eb86127c1357c1356fe9d5823bb94403876d23d7fad1ac29610fb462d3ba1",
+    "fill": "51c5ed31575f8f4640b5d38e9e5cac92b57d316a34f0ae836fd2bd725d02bd68",
+    "gcd": "5b7aece7ce2817e5b68bc9961e7663f3d1fbd66dd4b079eae22f65ff47d4d35f",
+    "lower_bound": "8d333262ce67d8496cc459d521e091eefe79c4fdf5af7ee3ba2cd00e76aa8872",
+    "rolling_window": "0033365e488c3c5faeaf4b7aa269c5b8a0498a525749f9c75c38669069341fb0"
+  },
+  "study_sources_sha256": {
+    "collect.py": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a",
+    "experiments/access_sample/CMakeLists.txt": "3af1a4a55ca945f45056a520cd3d15abe7e2d9b92a8d6d42e6cea8ae11b3b96d",
+    "experiments/access_sample/check_locality.py": "75a31b206a1f82a7d6bbb7b1e6dc25ab12a10c899dfa9c213df1e35a85ce5a55",
+    "experiments/access_sample/collect.py": "95fca37ac2c38959f8ea072be15c74745718e92f40a4901ada31e54c53acabe9",
+    "experiments/access_sample/control.S": "8ab7fc37f08b5d39838fb777fd6e12cc42016052e83cb200cee01d6e69754c10",
+    "experiments/access_sample/fixtures.py": "fb2c46db2fb1b27bc22966082b3e7800f32ff090cd1199afc57cc7f0863996f2",
+    "experiments/access_sample/probe.c": "813817d50ac688895401cdda7f0d08a7a2f78cfca79e73fa61dbbd83ee79b503",
+    "experiments/access_sample/score.py": "01436e0b7da0873adcfa7ecb1fc33e5aacd8c4e8a0c824a1ea0c5cf7229559a1",
+    "experiments/access_sample/study.py": "c603fbebb2745b464299cf3f6c231792e3136d6d16f401afcfe02a2b561f13d8",
+    "experiments/dependency_pairs/followup/locality.py": "4d0320a563fa280d06e43e00b068c1a4fbab07d2cde62cf1aeab901afd6599b7",
+    "experiments/dependency_pairs/study.py": "d766889ee3e9a786652c5c83a90fddcf2a05ca2b6282ccf0fbe5ba9cb8bb0c75",
+    "experiments/rust_instruction_mix/collect.py": "b90aa20707ba81a376edb8ac4d288632b097f33f9def8bbd8b0e5d3175436775",
+    "experiments/rust_operand_bytes/collect.py": "1fea28282d1c823b3d9ca8dfc9b5e6443f9f373c2468be2f0348bdebd81c8b04"
+  },
+  "fixture_manifest_sha256": "9c02f8c8e4ffbde99456896297747d68c7c3377eae6574cb36def0429961b45f",
+  "fixture_archives_sha256": {
+    "experiments/results/gce-dependency-pairs/followup/samples.tar.xz": "6b88583625b6fa288cea3bf65859791dcf5d460cf62e74125b53f11d04f12b92",
+    "experiments/results/gce-rust-instruction-mix/samples.tar.xz": "0e7b806d1e5b04e4d84cfdcdebaf652b8c5b605956a14d934dd861884793f9cb",
+    "experiments/results/gce-rust-instruction-mix/holdout/samples.tar.xz": "805336fd1c4efda0b4b6651c251236532d1e27e047d20267534df37ad90e0c38"
+  },
+  "joint_control": {
+    "executable_sha256": "421e78454b162628e0bb3a219294fdcc181eb2cd38b128879462d6c0d1d40f50",
+    "meter_sha256": "849c432a4832b554ebbf867f7fdce788a635f7193cd1343e0df3eac4089b9ea4",
+    "sampler_sha256": "b9fa92fc3b7b1336e9467c360ae0c985fe37d4316532b5728d36b8b9bae21dbc",
+    "native": {
+      "pid": 1792,
+      "user_ns": 1130000,
+      "system_ns": 0,
+      "cpu_time_ns": 1130000,
+      "wall_ns": 2215652,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0
+    },
+    "baseline": {
+      "pid": 1793,
+      "user_ns": 3360000,
+      "system_ns": 6721000,
+      "cpu_time_ns": 10081000,
+      "wall_ns": 10813563,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "production": {
+        "complete": true,
+        "valid": true,
+        "quality": "uninterrupted",
+        "cpuid_profile": "x86-64-v2",
+        "signals_observed": 0,
+        "process_count": 1,
+        "image_count": 1,
+        "unsupported_rep_entries": 0,
+        "instructions": 24614,
+        "rep_bytes": 0,
+        "latency_bound": {
+          "version": 1,
+          "cycles_x16": 98456
+        },
+        "threads": 1,
+        "rep_movs_bytes": 0,
+        "rep_stos_bytes": 0,
+        "memory_operand_bytes": {
+          "version": 1,
+          "bytes": 16404
+        }
+      }
+    },
+    "sampled": {
+      "pid": 1794,
+      "user_ns": 3511000,
+      "system_ns": 7022000,
+      "cpu_time_ns": 10533000,
+      "wall_ns": 11105039,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "production": {
+        "complete": true,
+        "valid": true,
+        "quality": "uninterrupted",
+        "cpuid_profile": "x86-64-v2",
+        "signals_observed": 0,
+        "process_count": 1,
+        "image_count": 1,
+        "unsupported_rep_entries": 0,
+        "instructions": 24614,
+        "rep_bytes": 0,
+        "latency_bound": {
+          "version": 1,
+          "cycles_x16": 98456
+        },
+        "threads": 1,
+        "rep_movs_bytes": 0,
+        "rep_stos_bytes": 0,
+        "memory_operand_bytes": {
+          "version": 1,
+          "bytes": 16404
+        }
+      },
+      "sample": {
+        "schema": 1,
+        "pid": 1794,
+        "threads": 1,
+        "period": 1024,
+        "line_bytes": 64,
+        "loads": 4101,
+        "pairs": 6,
+        "near_pairs": 3,
+        "far_pairs": 3,
+        "sites": [
+          {
+            "offset": 4118,
+            "loads": 2050,
+            "pairs": 3,
+            "near_pairs": 3,
+            "far_pairs": 0
+          },
+          {
+            "offset": 4126,
+            "loads": 2050,
+            "pairs": 3,
+            "near_pairs": 0,
+            "far_pairs": 3
+          },
+          {
+            "offset": 4160,
+            "loads": 1,
+            "pairs": 0,
+            "near_pairs": 0,
+            "far_pairs": 0
+          }
+        ]
+      },
+      "sample_sha256": "59566c02e2897b5426376581c37df5851c6c50af70469be0015722581a64bf37"
+    }
+  },
+  "measured_sampler_sha256": "b9fa92fc3b7b1336e9467c360ae0c985fe37d4316532b5728d36b8b9bae21dbc"
+}

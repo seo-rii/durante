@@ -1,0 +1,225 @@
+{
+  "schema": 1,
+  "base_commit": "caaa53fac348855601eb5dcf3e1c0dd5c905f45d",
+  "purpose": "Evaluate an opt-in main-module load sampler on four matched memory controls and the eight preserved optimized Rust executables. Measure marginal CPU cost and transfer to native process CPU time. Retain every registered observation.",
+  "platform": "Independent private Seoul N2D VM, one thread per core. CPU 1 hosts children, CPU 0 hosts the observer and system services. Fresh instance, production runtime, x86-64-v2 CPUID, REP, latency and operand bytes enabled. Capture placement and verify deletion of VM and boot disk.",
+  "image_manifest_sha256": "856be473011809c36a32d7ecfb6501c45db07b3204b7e475be515ca4baa6cf95",
+  "tool_sha256": {
+    "launcher": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "runtime": "fd1c5645b9fc70a7dcb71459b4b94782d2e016a2aa4ceffcfcab2ade962cdf5b",
+    "meter": "849c432a4832b554ebbf867f7fdce788a635f7193cd1343e0df3eac4089b9ea4",
+    "production_reader": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a",
+    "sampler": "b9fa92fc3b7b1336e9467c360ae0c985fe37d4316532b5728d36b8b9bae21dbc"
+  },
+  "sources_sha256": {
+    "collect.py": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a",
+    "experiments/access_sample/CMakeLists.txt": "3af1a4a55ca945f45056a520cd3d15abe7e2d9b92a8d6d42e6cea8ae11b3b96d",
+    "experiments/access_sample/check_locality.py": "75a31b206a1f82a7d6bbb7b1e6dc25ab12a10c899dfa9c213df1e35a85ce5a55",
+    "experiments/access_sample/collect.py": "95fca37ac2c38959f8ea072be15c74745718e92f40a4901ada31e54c53acabe9",
+    "experiments/access_sample/control.S": "8ab7fc37f08b5d39838fb777fd6e12cc42016052e83cb200cee01d6e69754c10",
+    "experiments/access_sample/fixtures.py": "fb2c46db2fb1b27bc22966082b3e7800f32ff090cd1199afc57cc7f0863996f2",
+    "experiments/access_sample/probe.c": "813817d50ac688895401cdda7f0d08a7a2f78cfca79e73fa61dbbd83ee79b503",
+    "experiments/access_sample/score.py": "01436e0b7da0873adcfa7ecb1fc33e5aacd8c4e8a0c824a1ea0c5cf7229559a1",
+    "experiments/access_sample/study.py": "c603fbebb2745b464299cf3f6c231792e3136d6d16f401afcfe02a2b561f13d8",
+    "experiments/dependency_pairs/followup/locality.py": "4d0320a563fa280d06e43e00b068c1a4fbab07d2cde62cf1aeab901afd6599b7",
+    "experiments/dependency_pairs/study.py": "d766889ee3e9a786652c5c83a90fddcf2a05ca2b6282ccf0fbe5ba9cb8bb0c75",
+    "experiments/rust_instruction_mix/collect.py": "b90aa20707ba81a376edb8ac4d288632b097f33f9def8bbd8b0e5d3175436775",
+    "experiments/rust_operand_bytes/collect.py": "1fea28282d1c823b3d9ca8dfc9b5e6443f9f373c2468be2f0348bdebd81c8b04"
+  },
+  "fixture_manifest_sha256": "9c02f8c8e4ffbde99456896297747d68c7c3377eae6574cb36def0429961b45f",
+  "cases": [
+    {
+      "workload_id": "load_adjacent_serial",
+      "archive": "experiments/results/gce-dependency-pairs/followup/samples.tar.xz",
+      "binary_sha256": "5ef2e012d770b6650df5bd62e07ea3c98c8703d155dadb22d5f46958b15b36b1",
+      "stdin_hex": "",
+      "stdout_hex": "ea09aa41783fd74f",
+      "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected_sha256": "b7bea07f3d0de453086bc5c877c40effb9697007985b97398e264eac589ea8d9"
+    },
+    {
+      "workload_id": "load_adjacent_parallel",
+      "archive": "experiments/results/gce-dependency-pairs/followup/samples.tar.xz",
+      "binary_sha256": "b1934516b7d0f7b48227fe87858a4c4e07925aafc24fe8655ee22034349ea5f1",
+      "stdin_hex": "",
+      "stdout_hex": "0a089ac17b5fd74b",
+      "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected_sha256": "df4a0a4950d368cb97a7275f309f391b360b8287e87bf18103ec60b3973e5e1f"
+    },
+    {
+      "workload_id": "load_scattered_serial",
+      "archive": "experiments/results/gce-dependency-pairs/followup/samples.tar.xz",
+      "binary_sha256": "bfb84e8e48cc85c1ae86fe76ce4102cab65372ee854f9e7b28ab66c5cc3efc64",
+      "stdin_hex": "",
+      "stdout_hex": "74ffa7952c2cd775",
+      "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected_sha256": "756908cf728a56d4aec5ba476d103acba28f0cbac39b9d5612d3140e7396952a"
+    },
+    {
+      "workload_id": "load_scattered_parallel",
+      "archive": "experiments/results/gce-dependency-pairs/followup/samples.tar.xz",
+      "binary_sha256": "d0fddd0066acbcddba73863212d6fcc9b1c4da81a0cae4e4f9d914aa04d0edfc",
+      "stdin_hex": "",
+      "stdout_hex": "449419f157e33d07",
+      "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected_sha256": "3227b46c72b50e7231bf3c7f0175b77fb222a2a502054be065c9b704aaf223ed"
+    },
+    {
+      "workload_id": "integer",
+      "archive": "experiments/results/gce-rust-instruction-mix/samples.tar.xz",
+      "binary_sha256": "a03a2f96186d6d388e9840671a7226b79368268949e7349f8ac659976c68e107",
+      "stdin_hex": "3236383433353435362038313938353532393231363438363839350a",
+      "stdout_hex": "31373037353439363933323931353030363935390a",
+      "input_sha256": "3d774ad476a1349fb0abba3be4d4145919d139a4a12407b2508a87533a65cadb",
+      "expected_sha256": "c4d223d801ae0e29ddc438ee8791c7fedf6b3740217e28fdb4a3d4ad30db0d04"
+    },
+    {
+      "workload_id": "copy",
+      "archive": "experiments/results/gce-rust-instruction-mix/samples.tar.xz",
+      "binary_sha256": "4897fdbb017ed34559428973ccb1146e488d1edc116d5d2ef04ae4d8b0630bf0",
+      "stdin_hex": "32363231343420383139320a",
+      "stdout_hex": "343338353232353831343233370a",
+      "input_sha256": "ae208c367d26f9d3a72185dd18ff434842fa3d5995a937a37e36fa34a879f49c",
+      "expected_sha256": "2a5d6d9ea5639753996ce01ecf3a53a436345fb7d9efda247f2da803e40bd284"
+    },
+    {
+      "workload_id": "branch",
+      "archive": "experiments/results/gce-rust-instruction-mix/samples.tar.xz",
+      "binary_sha256": "02506b1b0a7ee5952d57e0af0ff5029f48d7fc99cc6cb6b9d83d502f400d9773",
+      "stdin_hex": "36373130383836342034343235370a",
+      "stdout_hex": "373432383136333330313736343534363536300a",
+      "input_sha256": "16c3402cf255887d19eed335f65b177e4c9f57e5111da11ad7fca6806199710e",
+      "expected_sha256": "e35976992cf6245cbcdcd50a983e687be0a6915b46c393238b18c81fc94d91a5"
+    },
+    {
+      "workload_id": "sort",
+      "archive": "experiments/results/gce-rust-instruction-mix/samples.tar.xz",
+      "binary_sha256": "5f5eb86127c1357c1356fe9d5823bb94403876d23d7fad1ac29610fb462d3ba1",
+      "stdin_hex": "323039373135320a",
+      "stdout_hex": "333037343435393534343634313836333638300a",
+      "input_sha256": "ef801656107acf2762ce10512091bba7ae297ce0f4bc9be76b789f7ba54a4136",
+      "expected_sha256": "ae623b09f4edbec8846d384b18c43c9978e4275da018ef20dd7a5efdf61de461"
+    },
+    {
+      "workload_id": "fill",
+      "archive": "experiments/results/gce-rust-instruction-mix/samples.tar.xz",
+      "binary_sha256": "51c5ed31575f8f4640b5d38e9e5cac92b57d316a34f0ae836fd2bd725d02bd68",
+      "stdin_hex": "3236323134342031363338340a",
+      "stdout_hex": "363935373831343933313435360a",
+      "input_sha256": "ae82e52ba812584bc32f2f607185327397dc1e53df1b3b742ecd6786762b3f5b",
+      "expected_sha256": "6fd369bd5bac7fadfd9ffbaae3de091a69931cec1693fce66b6c0656038344df"
+    },
+    {
+      "workload_id": "gcd",
+      "archive": "experiments/results/gce-rust-instruction-mix/holdout/samples.tar.xz",
+      "binary_sha256": "5b7aece7ce2817e5b68bc9961e7663f3d1fbd66dd4b079eae22f65ff47d4d35f",
+      "stdin_hex": "35323432383820313438363838353532310a",
+      "stdout_hex": "353332343936320a",
+      "input_sha256": "91f53e183337f40e73b97e53d1d40e98c6e8ced0f05f6e590bb91fac5d9d1639",
+      "expected_sha256": "88be510b9393faa06cb4a4ed03034f2888e0bdd2c8a056190f552c7656fc539f"
+    },
+    {
+      "workload_id": "lower_bound",
+      "archive": "experiments/results/gce-rust-instruction-mix/holdout/samples.tar.xz",
+      "binary_sha256": "8d333262ce67d8496cc459d521e091eefe79c4fdf5af7ee3ba2cd00e76aa8872",
+      "stdin_hex": "323632313434203532343238382031353438353836330a",
+      "stdout_hex": "36383734323134373634370a",
+      "input_sha256": "1abdba68ac5fbaa67f12476bb845df80182b2005eb9690e83f91b078e38c7d95",
+      "expected_sha256": "13a70b629c17a244366c5c8946bb9bce1dae359e5a8a24d4e171ebca5fc66dab"
+    },
+    {
+      "workload_id": "rolling_window",
+      "archive": "experiments/results/gce-rust-instruction-mix/holdout/samples.tar.xz",
+      "binary_sha256": "0033365e488c3c5faeaf4b7aa269c5b8a0498a525749f9c75c38669069341fb0",
+      "stdin_hex": "313034383537362031362033323435323834330a",
+      "stdout_hex": "3134393530333538383231363739330a",
+      "input_sha256": "029dd4bd28eff5b4ce7a9b38c6631515d6fdc1c3a75f4fc58f1717c49f7d0f60",
+      "expected_sha256": "b21b47a808cabaab0114eaff7f5b6a3cad8d646fe23c230843d7d1ec746daa05"
+    }
+  ],
+  "archives_sha256": {
+    "experiments/results/gce-dependency-pairs/followup/samples.tar.xz": "6b88583625b6fa288cea3bf65859791dcf5d460cf62e74125b53f11d04f12b92",
+    "experiments/results/gce-rust-instruction-mix/samples.tar.xz": "0e7b806d1e5b04e4d84cfdcdebaf652b8c5b605956a14d934dd861884793f9cb",
+    "experiments/results/gce-rust-instruction-mix/holdout/samples.tar.xz": "805336fd1c4efda0b4b6651c251236532d1e27e047d20267534df37ad90e0c38"
+  },
+  "rounds": [
+    [
+      "load_adjacent_serial",
+      "load_adjacent_parallel",
+      "load_scattered_serial",
+      "load_scattered_parallel",
+      "integer",
+      "copy",
+      "branch",
+      "sort",
+      "fill",
+      "gcd",
+      "lower_bound",
+      "rolling_window"
+    ],
+    [
+      "integer",
+      "copy",
+      "branch",
+      "sort",
+      "fill",
+      "gcd",
+      "lower_bound",
+      "rolling_window",
+      "load_adjacent_serial",
+      "load_adjacent_parallel",
+      "load_scattered_serial",
+      "load_scattered_parallel"
+    ],
+    [
+      "fill",
+      "gcd",
+      "lower_bound",
+      "rolling_window",
+      "load_adjacent_serial",
+      "load_adjacent_parallel",
+      "load_scattered_serial",
+      "load_scattered_parallel",
+      "integer",
+      "copy",
+      "branch",
+      "sort"
+    ]
+  ],
+  "train_controls": [
+    "load_adjacent_serial",
+    "load_adjacent_parallel",
+    "load_scattered_serial",
+    "load_scattered_parallel"
+  ],
+  "rust_evaluation": [
+    "integer",
+    "copy",
+    "branch",
+    "sort",
+    "fill",
+    "gcd",
+    "lower_bound",
+    "rolling_window"
+  ],
+  "period": 1024,
+  "line_bytes": 64,
+  "ordering": "Each round runs the explicitly ordered cases. For a case, native-before and native-after bracket baseline and sampled diagnostics. Baseline goes first when zero-based canonical case index plus round index is even. Both use the identical production client with x86-64-v2 CPUID, REP, latency and operand bytes.",
+  "signal": "For each eligible main-module static load PC, compare consecutive visits at 1 and 2, 1025 and 1026, etc. A far pair has 64-byte line numbers differing by more than one. Unpaired sites contribute zero to F. For each paired site, estimate its far visits as site loads times its far-pair fraction, then sum over sites to form F. Report total counted loads, unpaired loads, pairs, near/far, weighted far fraction (F / covered loads), site counts and spread. Separation tests minimum scattered weighted fraction against maximum adjacent fraction for each chain count. Eligibility is restricted to selected scalar integer memory reads from the main executable. The fixed phase may alias periodic behavior. It measures distance between visits to one instruction, not global reuse or cache misses.",
+  "clock": {
+    "evaluation": "experiments/results/gce-rust-operand-bytes/evaluation.json",
+    "sha256": "47a796dab8be0f9abb827b4252ed68e20e029d74d0546e5a4bbddf847e5a45ae",
+    "coefficients_ns": {
+      "latency_cycles": "38594630777421673993327230336214834941202136156398653722895070246982136060000/120823800691208141759480149677879410517507322737589887557123968840459227316181",
+      "memory_bytes": "16867383511564202169546073663118301058947456345479598942320717815109839185000/4953775828339533812138686136793055831217800232241185389842082722458828319963421"
+    }
+  },
+  "fit": "Freeze the two prior weights from #69 in B=a*(latency_x16/16)+b*operand_bytes. Score B, B+c*F, and B+c*G. Let G=F*min(1,cycles/(5*eligible_loads)), or zero at zero eligible loads. The factor is an experimental proxy using the version 1 single-dependent-load cost of five model cycles. It includes work from other instructions. Train the single nonnegative coefficient independently for F and G on the four synthetic control cases, minimizing the sum of squared relative errors against their six-native medians with fixed baseline and no intercept. Use the component medians of the three sampled observations. Evaluate all eight Rust cases at scale 1 without adjusting coefficients. Repeat by training on one two-case lane group and testing the other (both directions). All algorithms and earlier native results were known before this study.",
+  "thresholds": {
+    "min_native_ns": 20000000,
+    "max_spread_ppm": 100000,
+    "max_error_ppm": 200000
+  },
+  "scoring": "Compute signed errors of all three predictions against the case median of its six wait4 user+system CPU observations. A case passes for a model only when all three absolute errors for that model are at most 20%. Report raw native range and (max-min)/median; keep any case below the duration floor or above the spread bound.",
+  "measurement_cost": "For each matched pair compute sampled diagnostic CPU divided by baseline diagnostic CPU. Report paired median and pooled totals overall, separately for native-language corpus and controls, by individual case, and by whichever diagnostic ran first. Report production counter drift across paired runs. The comparison includes loading the additional DSO. Final guest cleanup and CPU placement are verified independently."
+}
