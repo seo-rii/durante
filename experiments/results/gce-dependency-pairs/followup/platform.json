@@ -1,0 +1,184 @@
+{
+  "schema": 1,
+  "target": "compute_engine",
+  "zone": "asia-northeast3-a",
+  "machine_type": "n2d-standard-4",
+  "cpu_platform": "AMD Milan",
+  "cpu_model": "AMD EPYC 7B13",
+  "threads_per_core": 1,
+  "online_cpus": [
+    0,
+    1
+  ],
+  "topology": [
+    {
+      "cpu": 0,
+      "core_id": 0,
+      "physical_package_id": 0,
+      "thread_siblings_list": "0"
+    },
+    {
+      "cpu": 1,
+      "core_id": 1,
+      "physical_package_id": 0,
+      "thread_siblings_list": "1"
+    }
+  ],
+  "benchmark_cpu": 1,
+  "observer_cpus": [
+    0
+  ],
+  "housekeeping_slice_effective": {
+    "system.slice": "0",
+    "user.slice": "0",
+    "init.scope": "0"
+  },
+  "private_ipv4_only": true,
+  "service_account_attached": false,
+  "boot_image": "debian-12-bookworm-v20261117",
+  "kernel": "6.1.0-56-cloud-amd64",
+  "guest_id_sha256": "7a00103441321c83a984a71d6e3df6559288c5801e6c045304ce191ad243b9b9",
+  "guest_boot_id_sha256": "4a582050c0e6e95cbd66cf1e9a7b17bf5ea21b3554bd472959b85c7d8129b94f",
+  "clock_ticks_per_second": 100,
+  "benchmark_steal_ticks_before": 0,
+  "benchmark_steal_ticks_after": 0,
+  "docker_version": "27.5.1",
+  "docker_package_sha256": "4f798b3ee1e0140eab5bf30b0edc4e84f4cdb53255a429dc3bbae9524845d640",
+  "docker_pid_namespace": "host",
+  "network_mode": "none",
+  "image_manifest_sha256": "856be473011809c36a32d7ecfb6501c45db07b3204b7e475be515ca4baa6cf95",
+  "image_config_digest": "sha256:23de5e0567295587df1b06740beb848b570518e9189926c41f65d1b676808cab",
+  "base_image": "asia.gcr.io/hancomac/aonohako@sha256:7af8d4b78ae6d7a9951bee0992a84df8282473bf3faf29cfbfdc56772f18ae51",
+  "layer_sha256": "b3a4896c90ebe13e244f8d9ccf2293d702ac9b0389cdc1c3817c88f21816853c",
+  "installed_software_sha256": {
+    "aonohako": "082f83a6456e42469cf31aba5cd44ea4ad53dda29dd616cea7be7f71a40f4864",
+    "durante-reference": "0f103605e5d024eaf3f278b20f4c07674b08d41e3089f25a20ba93acd8a5d361",
+    "libdurante.so": "dfa6bcd57398cda092ea6510d033d738d9104883c0d030a69f9041e661aefcf0",
+    "UPSTREAM.json": "4930e4cd05c2009f495839488507a77ab6101a30e2eb917281c39fbdc048df27"
+  },
+  "container_id_sha256": "667d3767e5fd6071e8d0fc60070cc1c9083d4b52390ff53407336179f86fefca",
+  "capture_script_sha256": "277c453c5697bce67a7a4c910f7630ba34c20731aa9278da70cd94ec42a37955",
+  "trace_raw_sha256": "b6b6206751539fad235056a94d011bb0b4861d2190f6f4588aab67e5780d3d4d",
+  "dataset_sha256": "ec9bae87e4423ad1a818a3e6637fdec3d4b535268919dfd9b5b38f8a91f8f7a8",
+  "protocol_sha256": "137c891a58e4241b0d6e32db6f0f684c32fee7e3ce19248237056c7a978986a8",
+  "collector_sha256": "4a43dc60e55f1baa67431d5c1b13660a46dc8e0d606c5bcdf10e260e173da7c3",
+  "tools": {
+    "launcher": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "runtime": "fd1c5645b9fc70a7dcb71459b4b94782d2e016a2aa4ceffcfcab2ade962cdf5b",
+    "meter": "849c432a4832b554ebbf867f7fdce788a635f7193cd1343e0df3eac4089b9ea4",
+    "production_reader": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a"
+  },
+  "control": {
+    "freestanding_stdout_sha256": "2af5679d0c0f15e8e5045eee3fb64a5d86ec820ee832cb5466f3295a1748f3a0",
+    "two_modes_instructions_agree": true,
+    "hand_counted_operand_bytes": 48
+  },
+  "started_at": "2026-11-21T10:45:12Z",
+  "finished_at": "2026-11-21T10:45:52Z",
+  "elapsed_seconds": 40,
+  "collector_exit": 0,
+  "samples": 32,
+  "measured_execs": 96,
+  "loader_reexecs": 32,
+  "affinity_observer_polls": 159,
+  "vm_lifetime_cap_seconds": 7200,
+  "cleanup": {
+    "instance_http": 404,
+    "boot_disk_http": 404,
+    "disposable_ssh_key_removed": true,
+    "started_at": "2026-11-21T10:46:01.162083+00:00",
+    "verified_at": "2026-11-21T10:47:53.027090+00:00"
+  },
+  "placement_sha256": "5936e2091db29458cc5b39a464704be46211514bc749dbfb3561453ab2f7fb71",
+  "fresh_guest_against_prior_corpus": true,
+  "primary_guest_id_sha256": "5e3bb68cccb27987702e68235e739d4569411bbabb297df7c7f9ab3a9acd06bd",
+  "primary_dataset_sha256": "1683bc9c5b549a6d87772e10ad84c6372a2043aeeace65bca565e57416dc7fbf",
+  "client_release_rebuild_byte_identical": true,
+  "guest_reported_cpu1_caches": [
+    {
+      "level": "1",
+      "type": "Data",
+      "size": "32K",
+      "coherency_line_size": "64",
+      "ways_of_associativity": "8",
+      "shared_cpu_list": "1"
+    },
+    {
+      "level": "1",
+      "type": "Instruction",
+      "size": "32K",
+      "coherency_line_size": "64",
+      "ways_of_associativity": "8",
+      "shared_cpu_list": "1"
+    },
+    {
+      "level": "2",
+      "type": "Unified",
+      "size": "512K",
+      "coherency_line_size": "64",
+      "ways_of_associativity": "8",
+      "shared_cpu_list": "1"
+    },
+    {
+      "level": "3",
+      "type": "Unified",
+      "size": "32768K",
+      "coherency_line_size": "64",
+      "ways_of_associativity": "16",
+      "shared_cpu_list": "0-1"
+    }
+  ],
+  "frozen_head": "3827cbd4a46f365e1c64979182091901f9890b49",
+  "client_commit": "3bebcf79baa2bb72e2ee5ed3897fe843d201eda5",
+  "collector_commit": "3827cbd4a46f365e1c64979182091901f9890b49",
+  "measured_client_source_sha256": {
+    "durante.c": "b6af8e090846cf64a983bff4c0e4aafd6dc1cb3783d7713aad6f91694f467fd4",
+    "latency_bound.h": "51ea8177b786753196b24e80de74141af62df27395258cc94ab95b6eba4cfed5"
+  },
+  "client_build": {
+    "compiler": "GCC 12.2.0 (Debian 12.2.0-14+deb12u1)",
+    "linker": "GNU ld 2.40",
+    "cmake": "4.0.3",
+    "cmake_command": "cmake -S client -B build -DCMAKE_BUILD_TYPE=Release -DDynamoRIO_DIR=$SDK/cmake",
+    "build_command": "cmake --build build -j2",
+    "flags": [
+      "-O3",
+      "-DNDEBUG",
+      "-std=gnu17",
+      "-fPIC",
+      "-fno-stack-protector"
+    ],
+    "sdk_tag": "release_11.3.0-1",
+    "sdk_asset_sha256": "ae02049df5c4daeb82d4087aaa0d38bf58cdd26b38fb6042dccf27cbc32ceed9",
+    "gnu_build_id": "62ad4ed88f8cdc977705b07e5adc94dfc1251d08"
+  },
+  "measured_client_sha256": "849c432a4832b554ebbf867f7fdce788a635f7193cd1343e0df3eac4089b9ea4",
+  "measured_reader_sha256": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a",
+  "original_binaries_sha256": {
+    "div_xor_serial": "02ecd2992aca22b68bdf5dbbbe9a349fae1ab3f53dbc49cfcae7c9345f1646d9",
+    "div_xor_parallel": "08188224dfac48d8ca2d9ce39c76f242d4597fb4a9d68ac938746e5842f1ce2a",
+    "div_mov_parallel": "18dc1c1545e03ecf2695140dd3f355833ef5b16fd645e89b2b56110da60c1590",
+    "div_mov_serial": "3c73137ff00654d69e7b7f799d075fdcda8ce2e1f955088ea0b2ac1306d96a50",
+    "load_adjacent_serial": "5ef2e012d770b6650df5bd62e07ea3c98c8703d155dadb22d5f46958b15b36b1",
+    "load_adjacent_parallel": "b1934516b7d0f7b48227fe87858a4c4e07925aafc24fe8655ee22034349ea5f1",
+    "load_scattered_parallel": "d0fddd0066acbcddba73863212d6fcc9b1c4da81a0cae4e4f9d914aa04d0edfc",
+    "load_scattered_serial": "bfb84e8e48cc85c1ae86fe76ce4102cab65372ee854f9e7b28ab66c5cc3efc64"
+  },
+  "study_sources_sha256": {
+    "collect.py": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a",
+    "experiments/rust_instruction_mix/collect.py": "b90aa20707ba81a376edb8ac4d288632b097f33f9def8bbd8b0e5d3175436775",
+    "experiments/rust_operand_bytes/collect.py": "1fea28282d1c823b3d9ca8dfc9b5e6443f9f373c2468be2f0348bdebd81c8b04",
+    "experiments/dependency_pairs/kernels.S": "50a6f0993981ec090dab4b287100aa10911f978c4887eea46efd355146542fe0",
+    "experiments/dependency_pairs/fixtures.py": "6fa1f1dd70a02769af4d080533d2c48868ca4138aeeb7039bec7f2b733da17ca",
+    "experiments/dependency_pairs/collect.py": "4a43dc60e55f1baa67431d5c1b13660a46dc8e0d606c5bcdf10e260e173da7c3",
+    "experiments/dependency_pairs/study.py": "d766889ee3e9a786652c5c83a90fddcf2a05ca2b6282ccf0fbe5ba9cb8bb0c75",
+    "experiments/dependency_pairs/zeroing_control.py": "06d647705bce36d615046dbaaf32c7a02e5ef4988759edd3153d917489343057",
+    "experiments/dependency_pairs/followup/locality.S": "53bb3d2f92b66990f4981077ac70ec586ae995d098e4d6cfb679345a4423dc59",
+    "experiments/dependency_pairs/followup/locality.py": "4d0320a563fa280d06e43e00b068c1a4fbab07d2cde62cf1aeab901afd6599b7"
+  },
+  "fixture_manifest_sha256": "33ca1df55af2869165cab77adf3188bfcb615b33e4f24c74775ea7043353f0e2",
+  "workload_build": {
+    "compiler": "gcc (Debian 12.2.0-14+deb12u1) 12.2.0",
+    "linker": "GNU ld (GNU Binutils for Debian) 2.40"
+  }
+}

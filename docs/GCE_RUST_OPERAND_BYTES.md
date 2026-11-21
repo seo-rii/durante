@@ -27,6 +27,11 @@ Using the minimum of six native controls lowered the targets by 0.06–4.58%. Af
 
 After the registered comparison, we allowed the fit to see all 18 program/scale cases and to minimize the **largest** relative error. Against the case medians, the smallest attainable maximum error was 43.02%. We then allowed each case to use any native time and any value of either feature inside its observed ranges, even if those values never occurred together. The lower bound was still 41.35%. At the optimum, the model overestimates fill/2 and GCD and underestimates binary search. This establishes a limitation of the nonnegative two-term model on the observed cases. Determining whether divide latency, data-dependent memory accesses or another cost explains each miss requires a separate experiment. [Exact minimax calculation](../experiments/rust_operand_bytes/model_limit.py) · [Coefficient witnesses](../experiments/results/gce-rust-operand-bytes/model-limit.json)
 
+Subsequent pinned comparisons isolated divide dependencies and access order.
+With the same 16 MiB table, the same initialization code and identical counters,
+scrambled serial loads consumed 11.35 times the native CPU of adjacent loads.
+[Controlled divide and memory experiments](GCE_DEPENDENCY_PAIRS.md)
+
 ## Cost and placement
 
 Across 54 matched pairs, latency-only consumed 660.670 CPU seconds and latency with bytes consumed 666.374 seconds (+0.86%). The median increase across pairs was 0.84%. When latency-only ran first the median increase was 0.98%, and when bytes ran first it was 0.78% (27 pairs each). Both modes already instrumented every block for latency. The ratio measures the marginal cost for these executables. It does not measure the cost of enabling latency on an ordinary judge run.

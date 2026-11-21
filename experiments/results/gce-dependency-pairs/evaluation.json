@@ -1,0 +1,740 @@
+{
+  "cases": {
+    "div_small_serial": {
+      "native_min_ns": 115789000,
+      "native_median_ns": "116061500",
+      "native_max_ns": 121812000,
+      "native_spread_ppm": 51895,
+      "duration_pass": true,
+      "spread_pass": true,
+      "features": {
+        "instructions": {
+          "min": "184549420",
+          "median": "184549420",
+          "max": "184549420"
+        },
+        "latency_cycles": {
+          "min": "771751601",
+          "median": "771751601",
+          "max": "771751601"
+        },
+        "memory_bytes": {
+          "min": "8",
+          "median": "8",
+          "max": "8"
+        },
+        "rep_bytes": {
+          "min": "0",
+          "median": "0",
+          "max": "0"
+        }
+      },
+      "predicted_ns": {
+        "min": "1221204191926580181906978103840020842283709475647726194364280905081318828351776827940000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "median": "1221204191926580181906978103840020842283709475647726194364280905081318828351776827940000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "max": "1221204191926580181906978103840020842283709475647726194364280905081318828351776827940000/4953775828339533812138686136793055831217800232241185389842082722458828319963421"
+      },
+      "errors_ppm": [
+        1124045,
+        1124045,
+        1124045,
+        1124045
+      ],
+      "accuracy_pass": false,
+      "round_native_midpoints_ns": [
+        "116508000",
+        "116808000",
+        "118921000",
+        "116029500"
+      ],
+      "expected_counts": {
+        "instructions": 184549420,
+        "memory_bytes": 8
+      },
+      "matches_expected_counts": true
+    },
+    "div_small_parallel": {
+      "native_min_ns": 63889000,
+      "native_median_ns": "64000500",
+      "native_max_ns": 66804000,
+      "native_spread_ppm": 45547,
+      "duration_pass": true,
+      "spread_pass": true,
+      "features": {
+        "instructions": {
+          "min": "184549420",
+          "median": "184549420",
+          "max": "184549420"
+        },
+        "latency_cycles": {
+          "min": "704642769",
+          "median": "704642769",
+          "max": "704642769"
+        },
+        "memory_bytes": {
+          "min": "8",
+          "median": "8",
+          "max": "8"
+        },
+        "rep_bytes": {
+          "min": "0",
+          "median": "0",
+          "max": "0"
+        }
+      },
+      "predicted_ns": {
+        "min": "1115012527615875340866722488752028702450658050279929992277927372345168998641857869220000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "median": "1115012527615875340866722488752028702450658050279929992277927372345168998641857869220000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "max": "1115012527615875340866722488752028702450658050279929992277927372345168998641857869220000/4953775828339533812138686136793055831217800232241185389842082722458828319963421"
+      },
+      "errors_ppm": [
+        2516900,
+        2516900,
+        2516900,
+        2516900
+      ],
+      "accuracy_pass": false,
+      "round_native_midpoints_ns": [
+        "64079000",
+        "65346500",
+        "63951500",
+        "64193000"
+      ],
+      "expected_counts": {
+        "instructions": 184549420,
+        "memory_bytes": 8
+      },
+      "matches_expected_counts": true
+    },
+    "div_large_parallel": {
+      "native_min_ns": 63896000,
+      "native_median_ns": "63986000",
+      "native_max_ns": 64490000,
+      "native_spread_ppm": 9283,
+      "duration_pass": true,
+      "spread_pass": true,
+      "features": {
+        "instructions": {
+          "min": "184549420",
+          "median": "184549420",
+          "max": "184549420"
+        },
+        "latency_cycles": {
+          "min": "704642769",
+          "median": "704642769",
+          "max": "704642769"
+        },
+        "memory_bytes": {
+          "min": "8",
+          "median": "8",
+          "max": "8"
+        },
+        "rep_bytes": {
+          "min": "0",
+          "median": "0",
+          "max": "0"
+        }
+      },
+      "predicted_ns": {
+        "min": "1115012527615875340866722488752028702450658050279929992277927372345168998641857869220000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "median": "1115012527615875340866722488752028702450658050279929992277927372345168998641857869220000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "max": "1115012527615875340866722488752028702450658050279929992277927372345168998641857869220000/4953775828339533812138686136793055831217800232241185389842082722458828319963421"
+      },
+      "errors_ppm": [
+        2517697,
+        2517697,
+        2517697,
+        2517697
+      ],
+      "accuracy_pass": false,
+      "round_native_midpoints_ns": [
+        "64063000",
+        "63973000",
+        "63934000",
+        "64389500"
+      ],
+      "expected_counts": {
+        "instructions": 184549420,
+        "memory_bytes": 8
+      },
+      "matches_expected_counts": true
+    },
+    "div_large_serial": {
+      "native_min_ns": 136623000,
+      "native_median_ns": "136714500",
+      "native_max_ns": 138309000,
+      "native_spread_ppm": 12332,
+      "duration_pass": true,
+      "spread_pass": true,
+      "features": {
+        "instructions": {
+          "min": "184549420",
+          "median": "184549420",
+          "max": "184549420"
+        },
+        "latency_cycles": {
+          "min": "771751601",
+          "median": "771751601",
+          "max": "771751601"
+        },
+        "memory_bytes": {
+          "min": "8",
+          "median": "8",
+          "max": "8"
+        },
+        "rep_bytes": {
+          "min": "0",
+          "median": "0",
+          "max": "0"
+        }
+      },
+      "predicted_ns": {
+        "min": "1221204191926580181906978103840020842283709475647726194364280905081318828351776827940000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "median": "1221204191926580181906978103840020842283709475647726194364280905081318828351776827940000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "max": "1221204191926580181906978103840020842283709475647726194364280905081318828351776827940000/4953775828339533812138686136793055831217800232241185389842082722458828319963421"
+      },
+      "errors_ppm": [
+        803173,
+        803173,
+        803173,
+        803173
+      ],
+      "accuracy_pass": false,
+      "round_native_midpoints_ns": [
+        "137540500",
+        "136673500",
+        "136678000",
+        "137177500"
+      ],
+      "expected_counts": {
+        "instructions": 184549420,
+        "memory_bytes": 8
+      },
+      "matches_expected_counts": true
+    },
+    "load_l1_serial": {
+      "native_min_ns": 111968000,
+      "native_median_ns": "112075500",
+      "native_max_ns": 112941000,
+      "native_spread_ppm": 8682,
+      "duration_pass": true,
+      "spread_pass": true,
+      "features": {
+        "instructions": {
+          "min": "107026462",
+          "median": "107026462",
+          "max": "107026462"
+        },
+        "latency_cycles": {
+          "min": "713105275/2",
+          "median": "713105275/2",
+          "max": "713105275/2"
+        },
+        "memory_bytes": {
+          "min": "285245448",
+          "median": "285245448",
+          "max": "285245448"
+        },
+        "rep_bytes": {
+          "min": "0",
+          "median": "0",
+          "max": "0"
+        }
+      },
+      "predicted_ns": {
+        "min": "569013057644507249820039978193521038623982283348846922915407288037532125378184468130000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "median": "569013057644507249820039978193521038623982283348846922915407288037532125378184468130000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "max": "569013057644507249820039978193521038623982283348846922915407288037532125378184468130000/4953775828339533812138686136793055831217800232241185389842082722458828319963421"
+      },
+      "errors_ppm": [
+        24885,
+        24885,
+        24885,
+        24885
+      ],
+      "accuracy_pass": true,
+      "round_native_midpoints_ns": [
+        "112110500",
+        "112058500",
+        "112018000",
+        "112517000"
+      ],
+      "expected_counts": {
+        "instructions": 107026462,
+        "memory_bytes": 285245448
+      },
+      "matches_expected_counts": true
+    },
+    "load_l1_parallel": {
+      "native_min_ns": 29004000,
+      "native_median_ns": "29102500",
+      "native_max_ns": 29342000,
+      "native_spread_ppm": 11614,
+      "duration_pass": true,
+      "spread_pass": true,
+      "features": {
+        "instructions": {
+          "min": "107026462",
+          "median": "107026462",
+          "max": "107026462"
+        },
+        "latency_cycles": {
+          "min": "178300915/2",
+          "median": "178300915/2",
+          "max": "178300915/2"
+        },
+        "memory_bytes": {
+          "min": "285245448",
+          "median": "285245448",
+          "max": "285245448"
+        },
+        "rep_bytes": {
+          "min": "0",
+          "median": "0",
+          "max": "0"
+        }
+      },
+      "predicted_ns": {
+        "min": "145881232991223583212374697537615866347659739164856263778149722530389499634659425330000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "median": "145881232991223583212374697537615866347659739164856263778149722530389499634659425330000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "max": "145881232991223583212374697537615866347659739164856263778149722530389499634659425330000/4953775828339533812138686136793055831217800232241185389842082722458828319963421"
+      },
+      "errors_ppm": [
+        11889,
+        11889,
+        11889,
+        11889
+      ],
+      "accuracy_pass": true,
+      "round_native_midpoints_ns": [
+        "29055500",
+        "29104000",
+        "29118000",
+        "29225500"
+      ],
+      "expected_counts": {
+        "instructions": 107026462,
+        "memory_bytes": 285245448
+      },
+      "matches_expected_counts": true
+    },
+    "load_large_parallel": {
+      "native_min_ns": 290828000,
+      "native_median_ns": "300128500",
+      "native_max_ns": 312932000,
+      "native_spread_ppm": 73648,
+      "duration_pass": true,
+      "spread_pass": true,
+      "features": {
+        "instructions": {
+          "min": "174069790",
+          "median": "174069790",
+          "max": "174069790"
+        },
+        "latency_cycles": {
+          "min": "211822579/2",
+          "median": "211822579/2",
+          "max": "211822579/2"
+        },
+        "memory_bytes": {
+          "min": "302006280",
+          "median": "302006280",
+          "max": "302006280"
+        },
+        "rep_bytes": {
+          "min": "0",
+          "median": "0",
+          "max": "0"
+        }
+      },
+      "predicted_ns": {
+        "min": "172685947397598637771550494770857631726480153745989647258549709639360472380401105970000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "median": "172685947397598637771550494770857631726480153745989647258549709639360472380401105970000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "max": "172685947397598637771550494770857631726480153745989647258549709639360472380401105970000/4953775828339533812138686136793055831217800232241185389842082722458828319963421"
+      },
+      "errors_ppm": [
+        -883852,
+        -883852,
+        -883852,
+        -883852
+      ],
+      "accuracy_pass": false,
+      "round_native_midpoints_ns": [
+        "298154000",
+        "291798000",
+        "309031500",
+        "305560500"
+      ],
+      "expected_counts": {
+        "instructions": 174069790,
+        "memory_bytes": 302006280
+      },
+      "matches_expected_counts": true
+    },
+    "load_large_serial": {
+      "native_min_ns": 1373607000,
+      "native_median_ns": "1554254500",
+      "native_max_ns": 1704002000,
+      "native_spread_ppm": 212575,
+      "duration_pass": true,
+      "spread_pass": false,
+      "features": {
+        "instructions": {
+          "min": "174069790",
+          "median": "174069790",
+          "max": "174069790"
+        },
+        "latency_cycles": {
+          "min": "746626939/2",
+          "median": "746626939/2",
+          "max": "746626939/2"
+        },
+        "memory_bytes": {
+          "min": "302006280",
+          "median": "302006280",
+          "max": "302006280"
+        },
+        "rep_bytes": {
+          "min": "0",
+          "median": "0",
+          "max": "0"
+        }
+      },
+      "predicted_ns": {
+        "min": "595817772050882304379215775426762804002802697929980306395807275146503098123926148770000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "median": "595817772050882304379215775426762804002802697929980306395807275146503098123926148770000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "max": "595817772050882304379215775426762804002802697929980306395807275146503098123926148770000/4953775828339533812138686136793055831217800232241185389842082722458828319963421"
+      },
+      "errors_ppm": [
+        -922615,
+        -922615,
+        -922615,
+        -922615
+      ],
+      "accuracy_pass": false,
+      "round_native_midpoints_ns": [
+        "1600441000",
+        "1593012000",
+        "1550236000",
+        "1485945500"
+      ],
+      "expected_counts": {
+        "instructions": 174069790,
+        "memory_bytes": 302006280
+      },
+      "matches_expected_counts": true
+    }
+  },
+  "comparisons": {
+    "div_small_serial_over_parallel": {
+      "numerator": "div_small_serial",
+      "denominator": "div_small_parallel",
+      "native_median_ratio": "232123/128001",
+      "native_ratio_range": [
+        "115789/66804",
+        "121812/63889"
+      ],
+      "round_native_ratios": [
+        "116508/64079",
+        "233616/130693",
+        "237842/127903",
+        "232059/128386"
+      ],
+      "predicted_median_ratio": "6784467732925445455038767243555671346020608198042923302023782806007326824176537933/6194514042310418560370680493066826124725878057110722179321818735250938881343654829",
+      "feature_median_ratios": {
+        "instructions": "1",
+        "latency_cycles": "771751601/704642769",
+        "memory_bytes": "1"
+      },
+      "optimistic_minimax": {
+        "worst_error_fraction": "10011262542179/44381991844315",
+        "worst_error_ppm_floor": 225570,
+        "coefficients_ns": {
+          "latency_cycles": "1031355780800/8876398368863",
+          "memory_bytes": "0"
+        },
+        "limiting_overpredictions": [
+          "div_small_parallel"
+        ],
+        "limiting_underpredictions": [
+          "div_small_serial"
+        ]
+      }
+    },
+    "div_large_serial_over_parallel": {
+      "numerator": "div_large_serial",
+      "denominator": "div_large_parallel",
+      "native_median_ratio": "21033/9844",
+      "native_ratio_range": [
+        "136623/64490",
+        "138309/63896"
+      ],
+      "round_native_ratios": [
+        "275081/128126",
+        "273347/127946",
+        "68339/31967",
+        "274355/128779"
+      ],
+      "predicted_median_ratio": "6784467732925445455038767243555671346020608198042923302023782806007326824176537933/6194514042310418560370680493066826124725878057110722179321818735250938881343654829",
+      "feature_median_ratios": {
+        "instructions": "1",
+        "latency_cycles": "771751601/704642769",
+        "memory_bytes": "1"
+      },
+      "optimistic_minimax": {
+        "worst_error_fraction": "46500148280597/146040669777577",
+        "worst_error_ppm_floor": 318405,
+        "coefficients_ns": {
+          "latency_cycles": "17621634540000/146040669777577",
+          "memory_bytes": "0"
+        },
+        "limiting_overpredictions": [
+          "div_large_parallel"
+        ],
+        "limiting_underpredictions": [
+          "div_large_serial"
+        ]
+      }
+    },
+    "load_l1_serial_over_parallel": {
+      "numerator": "load_l1_serial",
+      "denominator": "load_l1_parallel",
+      "native_median_ratio": "224151/58205",
+      "native_ratio_range": [
+        "55984/14671",
+        "37647/9668"
+      ],
+      "round_native_ratios": [
+        "224221/58111",
+        "224117/58208",
+        "56009/14559",
+        "225034/58451"
+      ],
+      "predicted_median_ratio": "2107455769053730554889036956272300143051786234625358973760767733472341205104386919/540300862930457715601387768657836542028369404314282458437591564927368517165405279",
+      "feature_median_ratios": {
+        "instructions": "1",
+        "latency_cycles": "142621055/35660183",
+        "memory_bytes": "1"
+      },
+      "optimistic_minimax": {
+        "worst_error_fraction": "0",
+        "worst_error_ppm_floor": 0,
+        "coefficients_ns": {
+          "latency_cycles": "936041283200/3007057845081",
+          "memory_bytes": "550358646356893000/107218695272755555161"
+        },
+        "limiting_overpredictions": [],
+        "limiting_underpredictions": []
+      }
+    },
+    "load_large_serial_over_parallel": {
+      "numerator": "load_large_serial",
+      "denominator": "load_large_parallel",
+      "native_median_ratio": "3108509/600257",
+      "native_ratio_range": [
+        "1373607/312932",
+        "852001/145414"
+      ],
+      "round_native_ratios": [
+        "1600441/298154",
+        "265502/48633",
+        "3100472/618063",
+        "2971891/611121"
+      ],
+      "predicted_median_ratio": "735577496359113956023723179539213338275065059172815193081243549563584071757933517/213192527651356342927840117001058804600592782402456354640184826715259842444939637",
+      "feature_median_ratios": {
+        "instructions": "1",
+        "latency_cycles": "746626939/211822579",
+        "memory_bytes": "1"
+      },
+      "optimistic_minimax": {
+        "worst_error_fraction": "57317515997305/524604438547601",
+        "worst_error_ppm_floor": 109258,
+        "coefficients_ns": {
+          "latency_cycles": "1719382342896000/524604438547601",
+          "memory_bytes": "0"
+        },
+        "limiting_overpredictions": [
+          "load_large_parallel"
+        ],
+        "limiting_underpredictions": [
+          "load_large_serial"
+        ]
+      }
+    },
+    "div_large_over_small_serial": {
+      "numerator": "div_large_serial",
+      "denominator": "div_small_serial",
+      "native_median_ratio": "14391/12217",
+      "native_ratio_range": [
+        "45541/40604",
+        "138309/115789"
+      ],
+      "round_native_ratios": [
+        "275081/233016",
+        "273347/233616",
+        "136678/118921",
+        "274355/232059"
+      ],
+      "predicted_median_ratio": "1",
+      "feature_median_ratios": {
+        "instructions": "1",
+        "latency_cycles": "1",
+        "memory_bytes": "1"
+      },
+      "optimistic_minimax": {
+        "worst_error_fraction": "4937/86145",
+        "worst_error_ppm_floor": 57310,
+        "coefficients_ns": {
+          "latency_cycles": "0",
+          "memory_bytes": "92457338200/5743"
+        },
+        "limiting_overpredictions": [
+          "div_small_serial"
+        ],
+        "limiting_underpredictions": [
+          "div_large_serial"
+        ]
+      }
+    },
+    "div_large_over_small_parallel": {
+      "numerator": "div_large_parallel",
+      "denominator": "div_small_parallel",
+      "native_median_ratio": "127972/128001",
+      "native_ratio_range": [
+        "15974/16701",
+        "64490/63889"
+      ],
+      "round_native_ratios": [
+        "64063/64079",
+        "127946/130693",
+        "127868/127903",
+        "128779/128386"
+      ],
+      "predicted_median_ratio": "1",
+      "feature_median_ratios": {
+        "instructions": "1",
+        "latency_cycles": "1",
+        "memory_bytes": "1"
+      },
+      "optimistic_minimax": {
+        "worst_error_fraction": "0",
+        "worst_error_ppm_floor": 0,
+        "coefficients_ns": {
+          "latency_cycles": "0",
+          "memory_bytes": "515081630000/64193"
+        },
+        "limiting_overpredictions": [],
+        "limiting_underpredictions": []
+      }
+    },
+    "load_large_over_l1_serial": {
+      "numerator": "load_large_serial",
+      "denominator": "load_l1_serial",
+      "native_median_ratio": "3108509/224151",
+      "native_ratio_range": [
+        "152623/12549",
+        "852001/55984"
+      ],
+      "round_native_ratios": [
+        "3200882/224221",
+        "3186024/224117",
+        "775118/56009",
+        "2971891/225034"
+      ],
+      "predicted_median_ratio": "2206732489077341868071169538617640014825195177518445579243730648690752215273800551/2107455769053730554889036956272300143051786234625358973760767733472341205104386919",
+      "feature_median_ratios": {
+        "instructions": "87034895/53513231",
+        "latency_cycles": "746626939/713105275",
+        "memory_bytes": "12583595/11885227"
+      },
+      "optimistic_minimax": {
+        "worst_error_fraction": "828023733383/985935267038",
+        "worst_error_ppm_floor": 839835,
+        "coefficients_ns": {
+          "latency_cycles": "0",
+          "memory_bytes": "718224760125/985935267038"
+        },
+        "limiting_overpredictions": [
+          "load_l1_serial"
+        ],
+        "limiting_underpredictions": [
+          "load_large_serial"
+        ]
+      }
+    },
+    "load_large_over_l1_parallel": {
+      "numerator": "load_large_parallel",
+      "denominator": "load_l1_parallel",
+      "native_median_ratio": "85751/8315",
+      "native_ratio_range": [
+        "145414/14671",
+        "78233/7251"
+      ],
+      "round_native_ratios": [
+        "596308/58111",
+        "145899/14552",
+        "206021/19412",
+        "611121/58451"
+      ],
+      "predicted_median_ratio": "639577582954069028783520351003176413801778347207369063920554480145779527334818911/540300862930457715601387768657836542028369404314282458437591564927368517165405279",
+      "feature_median_ratios": {
+        "instructions": "87034895/53513231",
+        "latency_cycles": "211822579/178300915",
+        "memory_bytes": "12583595/11885227"
+      },
+      "optimistic_minimax": {
+        "worst_error_fraction": "22819800197301/29035098310319",
+        "worst_error_ppm_floor": 785938,
+        "coefficients_ns": {
+          "latency_cycles": "17066950352000/29035098310319",
+          "memory_bytes": "0"
+        },
+        "limiting_overpredictions": [
+          "load_l1_parallel"
+        ],
+        "limiting_underpredictions": [
+          "load_large_parallel"
+        ]
+      }
+    }
+  },
+  "coefficients_ns": {
+    "latency_cycles": "38594630777421673993327230336214834941202136156398653722895070246982136060000/120823800691208141759480149677879410517507322737589887557123968840459227316181",
+    "memory_bytes": "16867383511564202169546073663118301058947456345479598942320717815109839185000/4953775828339533812138686136793055831217800232241185389842082722458828319963421"
+  },
+  "accuracy_passes": 2,
+  "optimistic_minimax": {
+    "worst_error_fraction": "66178646551228289801159/71866206993126505718923",
+    "worst_error_ppm_floor": 920859,
+    "coefficients_ns": {
+      "latency_cycles": "12634079159994724944000/71866206993126505718923",
+      "memory_bytes": "10251445469144569780500/71866206993126505718923"
+    },
+    "limiting_overpredictions": [
+      "div_large_parallel",
+      "load_l1_parallel"
+    ],
+    "limiting_underpredictions": [
+      "load_large_serial"
+    ]
+  },
+  "median_minimax": {
+    "worst_error_fraction": "75278775773793485155332/80920803016322166944335",
+    "worst_error_ppm_floor": 930277,
+    "coefficients_ns": {
+      "latency_cycles": "2836781017598727208600/16184160603264433388867",
+      "memory_bytes": "2300682893988289239875/16184160603264433388867"
+    },
+    "limiting_overpredictions": [
+      "div_large_parallel",
+      "load_l1_parallel"
+    ],
+    "limiting_underpredictions": [
+      "load_large_serial"
+    ]
+  },
+  "schema": 1,
+  "dataset_sha256": "1683bc9c5b549a6d87772e10ad84c6372a2043aeeace65bca565e57416dc7fbf",
+  "protocol_sha256": "fd9c645d37b77bedce6655bdf6d013a8748859d7992a7b938013247f99369464"
+}
