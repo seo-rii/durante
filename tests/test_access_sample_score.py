@@ -1,4 +1,5 @@
 from fractions import Fraction
+import json
 from pathlib import Path
 import runpy
 import subprocess
@@ -39,6 +40,17 @@ class SampleClock(unittest.TestCase):
         check = subprocess.run([sys.executable, STUDY / "check_locality.py", RESULT / "dataset.json.gz"],
                                capture_output=True, text=True, timeout=60)
         self.assertEqual(check.returncode, 0, check.stdout + check.stderr)
+
+    def test_search_phase_and_timing_bounds(self):
+        dataset = RESULT / "dataset.json.gz"
+        search = subprocess.run([sys.executable, STUDY / "check_search_phase.py", "--dataset", dataset],
+                                check=True, capture_output=True, text=True, timeout=90)
+        inner = json.loads(search.stdout)["sites"]["0x1535a"]
+        self.assertEqual(inner["full"]["pairs"], 9_437_183)
+        self.assertEqual((inner["full"]["far_min"], inner["full"]["far_max"]), (6_815_644, 6_815_650))
+        self.assertEqual(inner["period_1024"]["far_max"], 6144)
+        subprocess.run([sys.executable, STUDY / "check_penalty.py", dataset], check=True,
+                       capture_output=True, text=True, timeout=60)
 
     def test_archived_scores_replay(self):
         check = subprocess.run([sys.executable, STUDY / "score.py", RESULT / "dataset.json.gz",
