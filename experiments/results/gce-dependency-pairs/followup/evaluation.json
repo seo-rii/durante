@@ -1,0 +1,732 @@
+{
+  "cases": {
+    "div_xor_serial": {
+      "native_min_ns": 136399000,
+      "native_median_ns": "136536500",
+      "native_max_ns": 137029000,
+      "native_spread_ppm": 4614,
+      "duration_pass": true,
+      "spread_pass": true,
+      "features": {
+        "instructions": {
+          "min": "184549420",
+          "median": "184549420",
+          "max": "184549420"
+        },
+        "latency_cycles": {
+          "min": "771751601",
+          "median": "771751601",
+          "max": "771751601"
+        },
+        "memory_bytes": {
+          "min": "8",
+          "median": "8",
+          "max": "8"
+        },
+        "rep_bytes": {
+          "min": "0",
+          "median": "0",
+          "max": "0"
+        }
+      },
+      "predicted_ns": {
+        "min": "1221204191926580181906978103840020842283709475647726194364280905081318828351776827940000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "median": "1221204191926580181906978103840020842283709475647726194364280905081318828351776827940000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "max": "1221204191926580181906978103840020842283709475647726194364280905081318828351776827940000/4953775828339533812138686136793055831217800232241185389842082722458828319963421"
+      },
+      "errors_ppm": [
+        805524,
+        805524,
+        805524,
+        805524
+      ],
+      "accuracy_pass": false,
+      "round_native_midpoints_ns": [
+        "136958000",
+        "136462000",
+        "136563500",
+        "136483500"
+      ],
+      "expected_counts": {
+        "instructions": 184549420,
+        "memory_bytes": 8
+      },
+      "matches_expected_counts": true
+    },
+    "div_xor_parallel": {
+      "native_min_ns": 63626000,
+      "native_median_ns": "63803000",
+      "native_max_ns": 63965000,
+      "native_spread_ppm": 5313,
+      "duration_pass": true,
+      "spread_pass": true,
+      "features": {
+        "instructions": {
+          "min": "184549420",
+          "median": "184549420",
+          "max": "184549420"
+        },
+        "latency_cycles": {
+          "min": "704642769",
+          "median": "704642769",
+          "max": "704642769"
+        },
+        "memory_bytes": {
+          "min": "8",
+          "median": "8",
+          "max": "8"
+        },
+        "rep_bytes": {
+          "min": "0",
+          "median": "0",
+          "max": "0"
+        }
+      },
+      "predicted_ns": {
+        "min": "1115012527615875340866722488752028702450658050279929992277927372345168998641857869220000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "median": "1115012527615875340866722488752028702450658050279929992277927372345168998641857869220000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "max": "1115012527615875340866722488752028702450658050279929992277927372345168998641857869220000/4953775828339533812138686136793055831217800232241185389842082722458828319963421"
+      },
+      "errors_ppm": [
+        2527787,
+        2527787,
+        2527787,
+        2527787
+      ],
+      "accuracy_pass": false,
+      "round_native_midpoints_ns": [
+        "63928000",
+        "63676500",
+        "63805500",
+        "63803000"
+      ],
+      "expected_counts": {
+        "instructions": 184549420,
+        "memory_bytes": 8
+      },
+      "matches_expected_counts": true
+    },
+    "div_mov_parallel": {
+      "native_min_ns": 63774000,
+      "native_median_ns": "63827000",
+      "native_max_ns": 63932000,
+      "native_spread_ppm": 2475,
+      "duration_pass": true,
+      "spread_pass": true,
+      "features": {
+        "instructions": {
+          "min": "184549420",
+          "median": "184549420",
+          "max": "184549420"
+        },
+        "latency_cycles": {
+          "min": "192937925",
+          "median": "192937925",
+          "max": "192937925"
+        },
+        "memory_bytes": {
+          "min": "8",
+          "median": "8",
+          "max": "8"
+        },
+        "rep_bytes": {
+          "min": "0",
+          "median": "0",
+          "max": "0"
+        }
+      },
+      "predicted_ns": {
+        "min": "305301087246750927934773423706088636223640931850483951369481685232026547103725808980000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "median": "305301087246750927934773423706088636223640931850483951369481685232026547103725808980000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "max": "305301087246750927934773423706088636223640931850483951369481685232026547103725808980000/4953775828339533812138686136793055831217800232241185389842082722458828319963421"
+      },
+      "errors_ppm": [
+        -34422,
+        -34422,
+        -34422,
+        -34422
+      ],
+      "accuracy_pass": true,
+      "round_native_midpoints_ns": [
+        "63854000",
+        "63828500",
+        "63837500",
+        "63827000"
+      ],
+      "expected_counts": {
+        "instructions": 184549420,
+        "memory_bytes": 8
+      },
+      "matches_expected_counts": true
+    },
+    "div_mov_serial": {
+      "native_min_ns": 136454000,
+      "native_median_ns": "136604500",
+      "native_max_ns": 141526000,
+      "native_spread_ppm": 37129,
+      "duration_pass": true,
+      "spread_pass": true,
+      "features": {
+        "instructions": {
+          "min": "184549420",
+          "median": "184549420",
+          "max": "184549420"
+        },
+        "latency_cycles": {
+          "min": "771751601",
+          "median": "771751601",
+          "max": "771751601"
+        },
+        "memory_bytes": {
+          "min": "8",
+          "median": "8",
+          "max": "8"
+        },
+        "rep_bytes": {
+          "min": "0",
+          "median": "0",
+          "max": "0"
+        }
+      },
+      "predicted_ns": {
+        "min": "1221204191926580181906978103840020842283709475647726194364280905081318828351776827940000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "median": "1221204191926580181906978103840020842283709475647726194364280905081318828351776827940000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "max": "1221204191926580181906978103840020842283709475647726194364280905081318828351776827940000/4953775828339533812138686136793055831217800232241185389842082722458828319963421"
+      },
+      "errors_ppm": [
+        804625,
+        804625,
+        804625,
+        804625
+      ],
+      "accuracy_pass": false,
+      "round_native_midpoints_ns": [
+        "136740500",
+        "139084500",
+        "136513000",
+        "136520000"
+      ],
+      "expected_counts": {
+        "instructions": 184549420,
+        "memory_bytes": 8
+      },
+      "matches_expected_counts": true
+    },
+    "load_adjacent_serial": {
+      "native_min_ns": 115812000,
+      "native_median_ns": "116700500",
+      "native_max_ns": 117524000,
+      "native_spread_ppm": 14670,
+      "duration_pass": true,
+      "spread_pass": true,
+      "features": {
+        "instructions": {
+          "min": "143654958",
+          "median": "143654958",
+          "max": "143654958"
+        },
+        "latency_cycles": {
+          "min": "711982979/2",
+          "median": "711982979/2",
+          "max": "711982979/2"
+        },
+        "memory_bytes": {
+          "min": "293601288",
+          "median": "293601288",
+          "max": "293601288"
+        },
+        "rep_bytes": {
+          "min": "0",
+          "median": "0",
+          "max": "0"
+        }
+      },
+      "predicted_ns": {
+        "min": "568266049507617485124858046923081311478601665314181212706122389146243237977722386450000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "median": "568266049507617485124858046923081311478601665314181212706122389146243237977722386450000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "max": "568266049507617485124858046923081311478601665314181212706122389146243237977722386450000/4953775828339533812138686136793055831217800232241185389842082722458828319963421"
+      },
+      "errors_ppm": [
+        -17025,
+        -17025,
+        -17025,
+        -17025
+      ],
+      "accuracy_pass": true,
+      "round_native_midpoints_ns": [
+        "116645500",
+        "116771000",
+        "116412500",
+        "116779500"
+      ],
+      "expected_counts": {
+        "instructions": 143654958,
+        "memory_bytes": 293601288
+      },
+      "matches_expected_counts": true
+    },
+    "load_adjacent_parallel": {
+      "native_min_ns": 34186000,
+      "native_median_ns": "36337500",
+      "native_max_ns": 37494000,
+      "native_spread_ppm": 91035,
+      "duration_pass": true,
+      "spread_pass": true,
+      "features": {
+        "instructions": {
+          "min": "143654958",
+          "median": "143654958",
+          "max": "143654958"
+        },
+        "latency_cycles": {
+          "min": "192937979/2",
+          "median": "192937979/2",
+          "max": "192937979/2"
+        },
+        "memory_bytes": {
+          "min": "293601288",
+          "median": "293601288",
+          "max": "293601288"
+        },
+        "rep_bytes": {
+          "min": "0",
+          "median": "0",
+          "max": "0"
+        }
+      },
+      "predicted_ns": {
+        "min": "157602871804347413178594135390938416936448278707573458663320918551173960346837036450000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "median": "157602871804347413178594135390938416936448278707573458663320918551173960346837036450000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "max": "157602871804347413178594135390938416936448278707573458663320918551173960346837036450000/4953775828339533812138686136793055831217800232241185389842082722458828319963421"
+      },
+      "errors_ppm": [
+        -124467,
+        -124467,
+        -124467,
+        -124467
+      ],
+      "accuracy_pass": true,
+      "round_native_midpoints_ns": [
+        "36807500",
+        "36510000",
+        "34430500",
+        "36837500"
+      ],
+      "expected_counts": {
+        "instructions": 143654958,
+        "memory_bytes": 293601288
+      },
+      "matches_expected_counts": true
+    },
+    "load_scattered_parallel": {
+      "native_min_ns": 271275000,
+      "native_median_ns": "280314000",
+      "native_max_ns": 296935000,
+      "native_spread_ppm": 91540,
+      "duration_pass": true,
+      "spread_pass": true,
+      "features": {
+        "instructions": {
+          "min": "143654958",
+          "median": "143654958",
+          "max": "143654958"
+        },
+        "latency_cycles": {
+          "min": "192937979/2",
+          "median": "192937979/2",
+          "max": "192937979/2"
+        },
+        "memory_bytes": {
+          "min": "293601288",
+          "median": "293601288",
+          "max": "293601288"
+        },
+        "rep_bytes": {
+          "min": "0",
+          "median": "0",
+          "max": "0"
+        }
+      },
+      "predicted_ns": {
+        "min": "157602871804347413178594135390938416936448278707573458663320918551173960346837036450000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "median": "157602871804347413178594135390938416936448278707573458663320918551173960346837036450000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "max": "157602871804347413178594135390938416936448278707573458663320918551173960346837036450000/4953775828339533812138686136793055831217800232241185389842082722458828319963421"
+      },
+      "errors_ppm": [
+        -886503,
+        -886503,
+        -886503,
+        -886503
+      ],
+      "accuracy_pass": false,
+      "round_native_midpoints_ns": [
+        "290732500",
+        "274351500",
+        "283444000",
+        "277646500"
+      ],
+      "expected_counts": {
+        "instructions": 143654958,
+        "memory_bytes": 293601288
+      },
+      "matches_expected_counts": true
+    },
+    "load_scattered_serial": {
+      "native_min_ns": 1106125000,
+      "native_median_ns": "1324762000",
+      "native_max_ns": 1642564000,
+      "native_spread_ppm": 404932,
+      "duration_pass": true,
+      "spread_pass": false,
+      "features": {
+        "instructions": {
+          "min": "143654958",
+          "median": "143654958",
+          "max": "143654958"
+        },
+        "latency_cycles": {
+          "min": "711982979/2",
+          "median": "711982979/2",
+          "max": "711982979/2"
+        },
+        "memory_bytes": {
+          "min": "293601288",
+          "median": "293601288",
+          "max": "293601288"
+        },
+        "rep_bytes": {
+          "min": "0",
+          "median": "0",
+          "max": "0"
+        }
+      },
+      "predicted_ns": {
+        "min": "568266049507617485124858046923081311478601665314181212706122389146243237977722386450000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "median": "568266049507617485124858046923081311478601665314181212706122389146243237977722386450000/4953775828339533812138686136793055831217800232241185389842082722458828319963421",
+        "max": "568266049507617485124858046923081311478601665314181212706122389146243237977722386450000/4953775828339533812138686136793055831217800232241185389842082722458828319963421"
+      },
+      "errors_ppm": [
+        -913408,
+        -913408,
+        -913408,
+        -913408
+      ],
+      "accuracy_pass": false,
+      "round_native_midpoints_ns": [
+        "1324762000",
+        "1442608000",
+        "1382696000",
+        "1257452500"
+      ],
+      "expected_counts": {
+        "instructions": 143654958,
+        "memory_bytes": 293601288
+      },
+      "matches_expected_counts": true
+    }
+  },
+  "comparisons": {
+    "div_xor_serial_over_parallel": {
+      "numerator": "div_xor_serial",
+      "denominator": "div_xor_parallel",
+      "native_median_ratio": "273073/127606",
+      "native_ratio_range": [
+        "136399/63965",
+        "137029/63626"
+      ],
+      "round_native_ratios": [
+        "68479/31964",
+        "272924/127353",
+        "273127/127611",
+        "272967/127606"
+      ],
+      "predicted_median_ratio": "6784467732925445455038767243555671346020608198042923302023782806007326824176537933/6194514042310418560370680493066826124725878057110722179321818735250938881343654829",
+      "feature_median_ratios": {
+        "instructions": "1",
+        "latency_cycles": "771751601/704642769",
+        "memory_bytes": "1"
+      },
+      "optimistic_minimax": {
+        "worst_error_fraction": "23373738945433/72738830103398",
+        "worst_error_ppm_floor": 321337,
+        "coefficients_ns": {
+          "latency_cycles": "4362381017500/36369415051699",
+          "memory_bytes": "0"
+        },
+        "limiting_overpredictions": [
+          "div_xor_parallel"
+        ],
+        "limiting_underpredictions": [
+          "div_xor_serial"
+        ]
+      }
+    },
+    "div_mov_serial_over_parallel": {
+      "numerator": "div_mov_serial",
+      "denominator": "div_mov_parallel",
+      "native_median_ratio": "273209/127654",
+      "native_ratio_range": [
+        "68227/31966",
+        "70763/31887"
+      ],
+      "round_native_ratios": [
+        "273481/127708",
+        "278169/127657",
+        "273026/127675",
+        "136520/63827"
+      ],
+      "predicted_median_ratio": "6784467732925445455038767243555671346020608198042923302023782806007326824176537933/1696117151370838488526519020589381312353560732502688618719342695733480817242921161",
+      "feature_median_ratios": {
+        "instructions": "1",
+        "latency_cycles": "771751601/192937925",
+        "memory_bytes": "1"
+      },
+      "optimistic_minimax": {
+        "worst_error_fraction": "0",
+        "worst_error_ppm_floor": 0,
+        "coefficients_ns": {
+          "latency_cycles": "50506280000/401728148409",
+          "memory_bytes": "1988366416591588000/401728148409"
+        },
+        "limiting_overpredictions": [],
+        "limiting_underpredictions": []
+      }
+    },
+    "load_adjacent_serial_over_parallel": {
+      "numerator": "load_adjacent_serial",
+      "denominator": "load_adjacent_parallel",
+      "native_median_ratio": "233401/72675",
+      "native_ratio_range": [
+        "6434/2083",
+        "58762/17093"
+      ],
+      "round_native_ratios": [
+        "233291/73615",
+        "116771/36510",
+        "232825/68861",
+        "233559/73675"
+      ],
+      "predicted_median_ratio": "420937814450087026018413368091171341836001233566060157560090658626846842946461027/116742868003220306058217878067361790323295021264869228639496976704573303960620027",
+      "feature_median_ratios": {
+        "instructions": "1",
+        "latency_cycles": "711982979/192937979",
+        "memory_bytes": "1"
+      },
+      "optimistic_minimax": {
+        "worst_error_fraction": "0",
+        "worst_error_ppm_floor": 0,
+        "coefficients_ns": {
+          "latency_cycles": "308947812/1009265701",
+          "memory_bytes": "1293313386111671/49386951624637148"
+        },
+        "limiting_overpredictions": [],
+        "limiting_underpredictions": []
+      }
+    },
+    "load_scattered_serial_over_parallel": {
+      "numerator": "load_scattered_serial",
+      "denominator": "load_scattered_parallel",
+      "native_median_ratio": "662381/140157",
+      "native_ratio_range": [
+        "221225/59387",
+        "1642564/271275"
+      ],
+      "round_native_ratios": [
+        "2649524/581465",
+        "2885216/548703",
+        "49382/10123",
+        "2514905/555293"
+      ],
+      "predicted_median_ratio": "420937814450087026018413368091171341836001233566060157560090658626846842946461027/116742868003220306058217878067361790323295021264869228639496976704573303960620027",
+      "feature_median_ratios": {
+        "instructions": "1",
+        "latency_cycles": "711982979/192937979",
+        "memory_bytes": "1"
+      },
+      "optimistic_minimax": {
+        "worst_error_fraction": "200085615201/42482618789074",
+        "worst_error_ppm_floor": 4709,
+        "coefficients_ns": {
+          "latency_cycles": "65689445375000/21241309394537",
+          "memory_bytes": "0"
+        },
+        "limiting_overpredictions": [
+          "load_scattered_parallel"
+        ],
+        "limiting_underpredictions": [
+          "load_scattered_serial"
+        ]
+      }
+    },
+    "div_mov_over_div_xor_serial": {
+      "numerator": "div_mov_serial",
+      "denominator": "div_xor_serial",
+      "native_median_ratio": "273209/273073",
+      "native_ratio_range": [
+        "136454/137029",
+        "141526/136399"
+      ],
+      "round_native_ratios": [
+        "273481/273916",
+        "278169/272924",
+        "273026/273127",
+        "273040/272967"
+      ],
+      "predicted_median_ratio": "1",
+      "feature_median_ratios": {
+        "instructions": "1",
+        "latency_cycles": "1",
+        "memory_bytes": "1"
+      },
+      "optimistic_minimax": {
+        "worst_error_fraction": "0",
+        "worst_error_ppm_floor": 0,
+        "coefficients_ns": {
+          "latency_cycles": "0",
+          "memory_bytes": "4674538791500/273483"
+        },
+        "limiting_overpredictions": [],
+        "limiting_underpredictions": []
+      }
+    },
+    "div_mov_over_div_xor_parallel": {
+      "numerator": "div_mov_parallel",
+      "denominator": "div_xor_parallel",
+      "native_median_ratio": "63827/63803",
+      "native_ratio_range": [
+        "63774/63965",
+        "31966/31813"
+      ],
+      "round_native_ratios": [
+        "31927/31964",
+        "127657/127353",
+        "127675/127611",
+        "63827/63803"
+      ],
+      "predicted_median_ratio": "1696117151370838488526519020589381312353560732502688618719342695733480817242921161/6194514042310418560370680493066826124725878057110722179321818735250938881343654829",
+      "feature_median_ratios": {
+        "instructions": "1",
+        "latency_cycles": "192937925/704642769",
+        "memory_bytes": "1"
+      },
+      "optimistic_minimax": {
+        "worst_error_fraction": "0",
+        "worst_error_ppm_floor": 0,
+        "coefficients_ns": {
+          "latency_cycles": "0",
+          "memory_bytes": "509649921000/63853"
+        },
+        "limiting_overpredictions": [],
+        "limiting_underpredictions": []
+      }
+    },
+    "load_scattered_over_load_adjacent_serial": {
+      "numerator": "load_scattered_serial",
+      "denominator": "load_adjacent_serial",
+      "native_median_ratio": "2649524/233401",
+      "native_ratio_range": [
+        "1106125/117524",
+        "410641/28953"
+      ],
+      "round_native_ratios": [
+        "2649524/233291",
+        "1442608/116771",
+        "2765392/232825",
+        "2514905/233559"
+      ],
+      "predicted_median_ratio": "1",
+      "feature_median_ratios": {
+        "instructions": "1",
+        "latency_cycles": "1",
+        "memory_bytes": "1"
+      },
+      "optimistic_minimax": {
+        "worst_error_fraction": "988601/1223649",
+        "worst_error_ppm_floor": 807912,
+        "coefficients_ns": {
+          "latency_cycles": "0",
+          "memory_bytes": "32499058625000/44908115307489"
+        },
+        "limiting_overpredictions": [
+          "load_adjacent_serial"
+        ],
+        "limiting_underpredictions": [
+          "load_scattered_serial"
+        ]
+      }
+    },
+    "load_scattered_over_load_adjacent_parallel": {
+      "numerator": "load_scattered_parallel",
+      "denominator": "load_adjacent_parallel",
+      "native_median_ratio": "62292/8075",
+      "native_ratio_range": [
+        "90425/12498",
+        "296935/34186"
+      ],
+      "round_native_ratios": [
+        "116293/14723",
+        "182901/24340",
+        "566888/68861",
+        "555293/73675"
+      ],
+      "predicted_median_ratio": "1",
+      "feature_median_ratios": {
+        "instructions": "1",
+        "latency_cycles": "1",
+        "memory_bytes": "1"
+      },
+      "optimistic_minimax": {
+        "worst_error_fraction": "77927/102923",
+        "worst_error_ppm_floor": 757138,
+        "coefficients_ns": {
+          "latency_cycles": "0",
+          "memory_bytes": "282532912500/1259096890201"
+        },
+        "limiting_overpredictions": [
+          "load_adjacent_parallel"
+        ],
+        "limiting_underpredictions": [
+          "load_scattered_parallel"
+        ]
+      }
+    }
+  },
+  "coefficients_ns": {
+    "latency_cycles": "38594630777421673993327230336214834941202136156398653722895070246982136060000/120823800691208141759480149677879410517507322737589887557123968840459227316181",
+    "memory_bytes": "16867383511564202169546073663118301058947456345479598942320717815109839185000/4953775828339533812138686136793055831217800232241185389842082722458828319963421"
+  },
+  "accuracy_passes": 3,
+  "optimistic_minimax": {
+    "worst_error_fraction": "54052198797205764083209/60367596608234503794541",
+    "worst_error_ppm_floor": 895384,
+    "coefficients_ns": {
+      "latency_cycles": "10386627728973739500000/60367596608234503794541",
+      "memory_bytes": "11199093675654450406250/60367596608234503794541"
+    },
+    "limiting_overpredictions": [
+      "div_xor_parallel",
+      "load_adjacent_parallel"
+    ],
+    "limiting_underpredictions": [
+      "load_scattered_serial"
+    ]
+  },
+  "median_minimax": {
+    "worst_error_fraction": "130846451321635281928511/143225641797861809547161",
+    "worst_error_ppm_floor": 913568,
+    "coefficients_ns": {
+      "latency_cycles": "24816293192062659768000/143225641797861809547161",
+      "memory_bytes": "25766548940874235378000/143225641797861809547161"
+    },
+    "limiting_overpredictions": [
+      "div_xor_parallel",
+      "load_adjacent_parallel"
+    ],
+    "limiting_underpredictions": [
+      "load_scattered_serial"
+    ]
+  },
+  "schema": 1,
+  "dataset_sha256": "ec9bae87e4423ad1a818a3e6637fdec3d4b535268919dfd9b5b38f8a91f8f7a8",
+  "protocol_sha256": "137c891a58e4241b0d6e32db6f0f684c32fee7e3ce19248237056c7a978986a8"
+}
