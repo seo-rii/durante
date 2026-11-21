@@ -71,6 +71,10 @@ typedef struct {
   uint64_t rep_movs_bytes, rep_stos_bytes, rep_movs_entries, rep_stos_entries;
   uint64_t published_instructions, published_movs, published_stos;
   uint64_t fast_until; /* Exclusive pre-charge threshold; zero forces the callback. */
+  /* Flat inline accounting (no live clock): the value of instructions before
+   * the most recent block entry, and its value just after a RETRY rollback. */
+  uint64_t entry_base, restart_base;
+  byte *raw_tls_base; /* This thread's runtime segment base, for state restoration. */
   bool pending_stdin_read, received_stdin;
   bool rep_error;
   bool replay_error;
@@ -106,6 +110,15 @@ static int tls_index;
 static bool raw_tls_enabled;
 static reg_id_t raw_tls_register;
 static uint raw_tls_offset;
+/* Client-owned raw TLS slots: the accounting pointer and two scratch spills.
+ * Private spill slots let restore_state() recognize exactly this client's
+ * sequences; the runtime's shared spill slots are also used by its mangling. */
+enum { RAW_TLS_STATE, RAW_TLS_SPILL_R10, RAW_TLS_SPILL_R11, RAW_TLS_SLOTS };
+/* Without a live clock nothing is published between syscalls. Every block and
+ * store then uses flag-free inline accounting, including shared libraries and
+ * generated code. Restart validation moves from block entry to the callbacks
+ * that consume restart state (see settle_restart). */
+static bool flat_inline;
 static void *state_lock;
 static int report_file = -1;
 static process_id_t owner_pid;
@@ -319,6 +332,36 @@ static void publish_live_work(thread_data_t *d, bool flush) {
   d->published_stos = d->rep_stos_bytes;
 }
 
+/* Flat inline blocks cannot run a callback at entry. Reconstruct what
+ * charge_block() would have decided for those entries from two counter values:
+ * no entry since the retry leaves the instruction count at restart_base, and
+ * exactly one entry leaves entry_base at restart_base (every block charges at
+ * least one instruction). Call before reading restart state. A non-REP retry
+ * needs no first-block check for its counts: its unexecuted suffix was already
+ * returned and the resumed block charges itself. */
+static void settle_restart(thread_data_t *d) {
+  if (!flat_inline || !d->restart_pc || d->instructions == d->restart_base)
+    return;
+  bool one_entry = d->entry_base == d->restart_base;
+  if (d->restart_rep && one_entry) {
+    d->restart_entered = true;
+    return;
+  }
+  /* A REP restart must observe its REP in the first resumed block. */
+  if (d->restart_rep)
+    counter_error(&d->replay_error);
+  d->restart_pc = NULL;
+}
+
+/* The inline counter is never checked at entry. An increment below its prior
+ * value can only come from an overflowing (or rewritten) final entry. */
+static void check_flat_counter(thread_data_t *d) {
+  if (flat_inline && d->instructions < d->entry_base) {
+    d->counter_overflows = 1;
+    invalidate_live_work();
+  }
+}
+
 /* Caller holds state_lock, except before application execution/fork resume. */
 static void write_event(int fd, size_t *bytes, uint64_t *sequence,
                         process_id_t process, const char *image,
@@ -434,6 +477,10 @@ static void open_stream(const char *origin, process_id_t parent,
 }
 
 static bool add_thread(thread_data_t *d) {
+  if (d) {
+    settle_restart(d);
+    check_flat_counter(d);
+  }
   if (!d || d->rep_error || d->replay_error || d->cpuid_error || d->restart_pc ||
       d->counter_overflows || d->latency_error ||
       UINT64_MAX - total_instructions < d->instructions ||
@@ -464,6 +511,10 @@ static bool add_thread(thread_data_t *d) {
 
 static void snapshot_event(const char *kind, void *ctx, bool is_exec) {
   thread_data_t *d = ctx ? drmgr_get_tls_field(ctx, tls_index) : NULL;
+  if (d) {
+    settle_restart(d);
+    check_flat_counter(d);
+  }
   bool child = d && d->child_pid;
   uint64_t instructions = child ? 0 : total_instructions,
            latency = child ? 0 : total_latency_bound_x16,
@@ -578,7 +629,8 @@ static bool probe_partial_block;
 static void set_raw_accounting_state(thread_data_t *d) {
   if (raw_tls_enabled) {
     byte *base = dr_get_dr_segment_base(raw_tls_register);
-    *(thread_data_t **)(base + raw_tls_offset) = d;
+    *(thread_data_t **)(base + raw_tls_offset + RAW_TLS_STATE * sizeof(void *)) = d;
+    d->raw_tls_base = base;
   }
 }
 
@@ -730,6 +782,7 @@ static void observe_rep(app_pc pc, int opcode, int bytes, int count_reg) {
   thread_data_t *data = drmgr_get_tls_field(drcontext, tls_index);
   if (data == NULL)
     fail("REP observation without thread state");
+  settle_restart(data);
   data->fast_until = 0;
   uint64_t repeats = 0;
   if (bytes != 0) {
@@ -906,6 +959,108 @@ static void charge_boundary(int count, app_pc first_pc) {
     d->fast_until = d->published_instructions + LIVE_WORK_BATCH;
 }
 
+static opnd_t raw_slot(uint slot) {
+  return opnd_create_far_base_disp(raw_tls_register, DR_REG_NULL, DR_REG_NULL, 0,
+                                   (int)(raw_tls_offset + slot * sizeof(void *)), OPSZ_PTR);
+}
+
+static opnd_t state_field(size_t offset) {
+  return opnd_create_base_disp(DR_REG_R11, DR_REG_NULL, 0, (int)offset, OPSZ_8);
+}
+
+/* Flat inline block entry. Only MOV and LEA: the application's arithmetic flags
+ * are never read or written, so no flag save is needed even when a signal
+ * handler inspects them. The scratch registers are restored before the first
+ * application instruction; restore_state() recovers them if the runtime
+ * translates a thread in between. The order is fixed: restore_state() relies
+ * on the instructions store preceding the final r10 restore. */
+static void insert_flat_charge(void *ctx, instrlist_t *bb, instr_t *where, int count) {
+  opnd_t value = opnd_create_reg(DR_REG_R10), state = opnd_create_reg(DR_REG_R11);
+#define INSERT(i) instrlist_meta_preinsert(bb, where, (i))
+  INSERT(INSTR_CREATE_mov_st(ctx, raw_slot(RAW_TLS_SPILL_R10), value));
+  INSERT(INSTR_CREATE_mov_st(ctx, raw_slot(RAW_TLS_SPILL_R11), state));
+  INSERT(INSTR_CREATE_mov_ld(ctx, state, raw_slot(RAW_TLS_STATE)));
+  INSERT(INSTR_CREATE_mov_ld(ctx, value, state_field(offsetof(thread_data_t, instructions))));
+  INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, entry_base)), value));
+  INSERT(INSTR_CREATE_lea(ctx, value,
+                          opnd_create_base_disp(DR_REG_R10, DR_REG_NULL, 0, count, OPSZ_lea)));
+  INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, instructions)), value));
+  INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, write_pc)),
+                             OPND_CREATE_INT32(0)));
+  INSERT(INSTR_CREATE_mov_ld(ctx, state, raw_slot(RAW_TLS_SPILL_R11)));
+  INSERT(INSTR_CREATE_mov_ld(ctx, value, raw_slot(RAW_TLS_SPILL_R10)));
+#undef INSERT
+}
+
+static bool is_raw_slot(opnd_t opnd, uint slot) {
+  int offset = (int)(raw_tls_offset + slot * sizeof(void *));
+  if (!opnd_is_far_memory_reference(opnd) || opnd_get_segment(opnd) != raw_tls_register)
+    return false;
+  if (opnd_is_far_base_disp(opnd))
+    return opnd_get_base(opnd) == DR_REG_NULL && opnd_get_index(opnd) == DR_REG_NULL &&
+           opnd_get_disp(opnd) == offset;
+  return opnd_is_abs_addr(opnd) && opnd_get_addr(opnd) == (void *)(ptr_int_t)offset;
+}
+
+static bool is_reg(opnd_t opnd, reg_id_t reg) {
+  return opnd_is_reg(opnd) && opnd_get_reg(opnd) == reg;
+}
+
+/* The runtime can translate a thread stopped inside this client's inline
+ * sequences (synchronization, relocation). Recover r10/r11 from the private
+ * spill slots. If a relocated thread will re-enter a flat block whose charge
+ * has already been stored, return the counter to its pre-entry value: the
+ * re-entry charges the block again. Restoration is idempotent. */
+static bool restore_state(void *drcontext, bool restore_memory, dr_restore_state_info_t *info) {
+  if (!raw_tls_enabled || !info || !info->raw_mcontext || !info->mcontext ||
+      !info->fragment_info.cache_start_pc)
+    return true;
+  thread_data_t *d = drmgr_get_tls_field(drcontext, tls_index);
+  if (!d || !d->raw_tls_base)
+    return true;
+  byte *pc = info->fragment_info.cache_start_pc, *stop = info->raw_mcontext->pc;
+  bool spilled_r10 = false, spilled_r11 = false, charged = false;
+  instr_t ins;
+  instr_init(drcontext, &ins);
+  for (uint n = 0; pc != NULL && pc < stop && n < 4096; ++n) {
+    instr_reset(drcontext, &ins);
+    byte *next = decode(drcontext, pc, &ins);
+    if (next == NULL)
+      break;
+    int op = instr_get_opcode(&ins);
+    if (op == OP_mov_st && instr_num_dsts(&ins) == 1 && instr_num_srcs(&ins) == 1) {
+      opnd_t dst = instr_get_dst(&ins, 0), src = instr_get_src(&ins, 0);
+      if (is_raw_slot(dst, RAW_TLS_SPILL_R10) && is_reg(src, DR_REG_R10))
+        spilled_r10 = true;
+      else if (is_raw_slot(dst, RAW_TLS_SPILL_R11) && is_reg(src, DR_REG_R11))
+        spilled_r11 = true;
+      else if (flat_inline && spilled_r10 && spilled_r11 && is_reg(src, DR_REG_R10) &&
+               opnd_is_base_disp(dst) && opnd_get_base(dst) == DR_REG_R11 &&
+               opnd_get_index(dst) == DR_REG_NULL &&
+               opnd_get_disp(dst) == (int)offsetof(thread_data_t, instructions))
+        charged = true;
+    } else if (op == OP_mov_ld && instr_num_dsts(&ins) == 1 && instr_num_srcs(&ins) == 1) {
+      opnd_t dst = instr_get_dst(&ins, 0), src = instr_get_src(&ins, 0);
+      if (is_raw_slot(src, RAW_TLS_SPILL_R10) && is_reg(dst, DR_REG_R10)) {
+        spilled_r10 = false;
+        charged = false; /* The entry sequence is complete. */
+      } else if (is_raw_slot(src, RAW_TLS_SPILL_R11) && is_reg(dst, DR_REG_R11)) {
+        spilled_r11 = false;
+      }
+    }
+    pc = next;
+  }
+  instr_free(drcontext, &ins);
+  reg_t *slots = (reg_t *)(d->raw_tls_base + raw_tls_offset);
+  if (spilled_r10)
+    info->mcontext->r10 = slots[RAW_TLS_SPILL_R10];
+  if (spilled_r11)
+    info->mcontext->r11 = slots[RAW_TLS_SPILL_R11];
+  if (charged && restore_memory)
+    d->instructions = d->entry_base;
+  return true;
+}
+
 static void restore_charge_state(void *ctx, instrlist_t *bb, instr_t *where) {
   dr_restore_reg(ctx, bb, where, DR_REG_R11, SPILL_SLOT_2);
   dr_restore_reg(ctx, bb, where, DR_REG_R10, SPILL_SLOT_1);
@@ -915,7 +1070,9 @@ static void restore_charge_state(void *ctx, instrlist_t *bb, instr_t *where) {
 static void insert_read_accounting_state(void *ctx, instrlist_t *bb, instr_t *where,
                                          reg_id_t reg) {
   if (raw_tls_enabled)
-    dr_insert_read_raw_tls(ctx, bb, where, raw_tls_register, raw_tls_offset, reg);
+    instrlist_meta_preinsert(bb, where,
+                             INSTR_CREATE_mov_ld(ctx, opnd_create_reg(reg),
+                                                 raw_slot(RAW_TLS_STATE)));
   else if (!drmgr_insert_read_tls_field(ctx, tls_index, bb, where, reg))
     fail("cannot load accounting TLS");
 }
@@ -1013,7 +1170,11 @@ static void before_write_memory(app_pc pc, app_pc next_pc, int suffix,
 static void insert_write_checkpoint(void *ctx, instrlist_t *bb, instr_t *where,
                                     app_pc pc, app_pc next_pc, int suffix) {
   const reg_id_t data = DR_REG_R11;
-  dr_save_reg(ctx, bb, where, data, SPILL_SLOT_1);
+  if (raw_tls_enabled)
+    instrlist_meta_preinsert(bb, where, INSTR_CREATE_mov_st(ctx, raw_slot(RAW_TLS_SPILL_R11),
+                                                            opnd_create_reg(data)));
+  else
+    dr_save_reg(ctx, bb, where, data, SPILL_SLOT_1);
   insert_read_accounting_state(ctx, bb, where, data);
   opnd_t address = opnd_create_base_disp(data, DR_REG_NULL, 0,
                                          offsetof(thread_data_t, write_pc), OPSZ_PTR);
@@ -1026,7 +1187,11 @@ static void insert_write_checkpoint(void *ctx, instrlist_t *bb, instr_t *where,
   opnd_set_disp(&address, offsetof(thread_data_t, write_rep));
   opnd_set_size(&address, OPSZ_1);
   instrlist_meta_preinsert(bb, where, INSTR_CREATE_mov_st(ctx, address, OPND_CREATE_INT8(0)));
-  dr_restore_reg(ctx, bb, where, data, SPILL_SLOT_1);
+  if (raw_tls_enabled)
+    instrlist_meta_preinsert(bb, where, INSTR_CREATE_mov_ld(ctx, opnd_create_reg(data),
+                                                            raw_slot(RAW_TLS_SPILL_R11)));
+  else
+    dr_restore_reg(ctx, bb, where, data, SPILL_SLOT_1);
 }
 
 static void code_replay(void *ctx, int reason, app_pc source_pc,
@@ -1041,6 +1206,7 @@ static void code_replay(void *ctx, int reason, app_pc source_pc,
     __atomic_store_n(&replay_without_tls, 1, __ATOMIC_RELAXED);
     return;
   }
+  settle_restart(d);
   d->fast_until = 0;
   if (reason == DR_DURANTE_REPLAY_ENTRY) {
     /* Cache validation ran before client entry instrumentation. Nothing was
@@ -1095,6 +1261,7 @@ static void code_replay(void *ctx, int reason, app_pc source_pc,
 #endif
   if (retry) {
     d->restart_pc = target_pc;
+    d->restart_base = d->instructions;
     d->restart_entered = false;
     d->restart_rep = d->write_rep;
     d->restart_rep_opcode = d->write_rep_opcode;
@@ -1110,6 +1277,7 @@ static void kernel_xfer(void *ctx, const dr_kernel_xfer_info_t *info) {
   thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
   if (!d)
     return;
+  settle_restart(d);
   /* Signal handlers can call the same code at the same PC with another BB
    * suffix. PC equality cannot authenticate an interrupted TLS checkpoint.
    * An unrelated earlier signal does not make later JIT work invalid. */
@@ -1245,6 +1413,8 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
                            OPND_CREATE_INT32(count),
                            OPND_CREATE_INTPTR(first ? instr_get_app_pc(first) : NULL),
                            OPND_CREATE_INT32((int)(uint32_t)(packed >> 32)));
+    else if (flat_inline)
+      insert_flat_charge(drcontext, bb, where, count);
     else if (inline_block) {
       insert_charge(drcontext, bb, where, count, first ? instr_get_app_pc(first) : NULL);
       if (!cache_probe_enabled())
@@ -1272,7 +1442,7 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
     app_pc pc = instr_get_app_pc(where);
     app_pc next_pc = pc ? pc + instr_length(drcontext, where) : NULL;
     int suffix = (int)write_suffix(bb, where);
-    bool inline_write = cache_probe_enabled();
+    bool inline_write = cache_probe_enabled() || flat_inline;
 #ifndef DURANTE_TEST_COUNT_LOCATIONS
     if (!inline_write && !latency_bound_enabled && static_text_site(pc))
       inline_write = select_inline_block(drcontext, bb, translating, &flags);
@@ -1285,7 +1455,8 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
                            OPND_CREATE_INT32((int)instruction_memory_bytes(where)));
     } else if (!latency_bound_enabled && inline_write) {
       insert_write_checkpoint(drcontext, bb, where, pc, next_pc, suffix);
-      if (!cache_probe_enabled())
+      /* Flat layouts depend only on the block, so retranslation reproduces them. */
+      if (!cache_probe_enabled() && !flat_inline)
         flags = DR_EMIT_STORE_TRANSLATIONS;
     } else
       dr_insert_clean_call(drcontext, bb, where, (void *)before_write, false, 3,
@@ -1530,8 +1701,8 @@ static void fork_init(void *ctx) {
   thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
   if (!d)
     fail("fork without surviving TLS");
-  set_raw_accounting_state(d);
   memset(d, 0, sizeof(*d));
+  set_raw_accounting_state(d);
   open_stream("fork", parent, previous);
 }
 static void pre_detach(void) {
@@ -1567,8 +1738,10 @@ static void process_exit(void) {
   drmgr_unregister_signal_event(signal_event);
   drmgr_unregister_kernel_xfer_event(kernel_xfer);
   dr_unregister_durante_code_replay_event(code_replay);
-  if (raw_tls_enabled)
-    dr_raw_tls_cfree(raw_tls_offset, 1);
+  if (raw_tls_enabled) {
+    drmgr_unregister_restore_state_ex_event(restore_state);
+    dr_raw_tls_cfree(raw_tls_offset, RAW_TLS_SLOTS);
+  }
   drmgr_unregister_tls_field(tls_index);
 #ifdef DURANTE_L1D_PROBE
   if (probe_l1d) {
@@ -1673,8 +1846,14 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
     fail("test module lifetime registration failed");
 #endif
   state_lock = dr_mutex_create();
-  raw_tls_enabled = static_text_end != 0 &&
-                    dr_raw_tls_calloc(&raw_tls_register, &raw_tls_offset, 1, 0);
+#ifdef DURANTE_TEST_COUNT_LOCATIONS
+  const bool flat_candidate = false; /* The location profile needs entry callbacks. */
+#else
+  const bool flat_candidate = !live_work && !latency_bound_enabled && !cache_probe_enabled();
+#endif
+  raw_tls_enabled = (static_text_end != 0 || flat_candidate) &&
+                    dr_raw_tls_calloc(&raw_tls_register, &raw_tls_offset, RAW_TLS_SLOTS, 0);
+  flat_inline = flat_candidate && raw_tls_enabled;
   tls_index = drmgr_register_tls_field();
   if (!state_lock || tls_index < 0 ||
       (cpuid_profile != DURANTE_CPUID_NONE &&
@@ -1686,7 +1865,8 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
       !drmgr_register_pre_syscall_event(pre_syscall) ||
       !drmgr_register_post_syscall_event(post_syscall) ||
       !drmgr_register_signal_event(signal_event) ||
-      !drmgr_register_kernel_xfer_event(kernel_xfer))
+      !drmgr_register_kernel_xfer_event(kernel_xfer) ||
+      (raw_tls_enabled && !drmgr_register_restore_state_ex_event(restore_state)))
     fail("event registration failed");
   dr_register_durante_code_replay_event(code_replay);
   open_stream("initial", 0, "");

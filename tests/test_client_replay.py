@@ -180,6 +180,7 @@ static void reset(void) {
     total_rep_movs_bytes = total_rep_stos_bytes = 0;
     total_rep_movs_entries = total_rep_stos_entries = 0;
     rep_bytes_enabled = true;
+    flat_inline = false;
     latency_bound_enabled = false;
     total_latency_bound_x16 = 0;
     latency_bound_result = 0;
@@ -243,6 +244,13 @@ static void arm_rep(void) {
     code_replay(CTX, DR_DURANTE_REPLAY_RETRY, WRITE, WRITE);
     assert(state.instructions == 104 && state.restart_pc == WRITE);
     assert(!state.replay_error && !state.restart_entered);
+}
+
+/* The flat inline entry sequence: only these three stores, no callback. */
+static void flat_enter(uint64_t count) {
+    active->entry_base = active->instructions;
+    active->instructions += count;
+    active->write_pc = NULL;
 }
 
 static void enter_rep(void) {
@@ -796,6 +804,101 @@ int main(int argc, char **argv) {
         active = &parent_state;
         snapshot(true);
         assert(strstr(record, "\"instructions\":77") && add_thread(&parent_state));
+    } else if (!strcmp(test, "flat-prefix")) {
+        flat_inline = true;
+        state.instructions = 100;
+        flat_enter(10);
+        before_write(WRITE, NEXT, 4);
+        code_replay(CTX, DR_DURANTE_REPLAY_RETRY, WRITE, WRITE);
+        assert(state.instructions == 106 && state.restart_pc == WRITE);
+        assert(state.restart_base == 106);
+        /* A signal before the resumed entry still invalidates the retry. */
+        thread_data_t pending = state;
+        flat_enter(4);
+        kernel_xfer(CTX, NULL);
+        assert(state.instructions == 110 && !state.restart_pc && !state.replay_error);
+        snapshot(true);
+        state = pending;
+        kernel_xfer(CTX, NULL);
+        assert(state.replay_error && !state.restart_pc);
+        snapshot(false);
+    } else if (!strcmp(test, "flat-first-write")) {
+        /* A fault at the first instruction returns the whole entry charge. */
+        flat_inline = true;
+        state.instructions = 100;
+        flat_enter(4);
+        before_write(START, WRITE, 4);
+        code_replay(CTX, DR_DURANTE_REPLAY_RETRY, START, START);
+        assert(state.instructions == 100 && state.entry_base == 100);
+        assert(state.restart_base == 100 && state.restart_pc == START);
+        snapshot(false); /* Still pending: no block has been entered. */
+        flat_enter(4);
+        snapshot(true);
+        assert(!state.restart_pc && state.instructions == 104);
+    } else if (!strcmp(test, "flat-rep")) {
+        flat_inline = true;
+        state.instructions = 100;
+        flat_enter(7);
+        before_write(WRITE, NEXT, 3);
+        supplied_rcx = 10;
+        observe_rep(WRITE, OP_rep_movs, 1, DR_REG_RCX);
+        code_replay(CTX, DR_DURANTE_REPLAY_RETRY, WRITE, WRITE);
+        assert(state.instructions == 104 && state.restart_pc == WRITE);
+        code_replay(CTX, DR_DURANTE_REPLAY_ENTRY, NULL, WRITE);
+        assert(state.restart_pc == WRITE && !state.replay_error);
+        flat_enter(3);
+        before_write(WRITE, NEXT, 3);
+        supplied_rcx = 6;
+        observe_rep(WRITE, OP_rep_movs, 1, DR_REG_RCX);
+        assert(state.rep_bytes == 10 && state.rep_entries == 1 && !state.restart_pc);
+        assert(state.write_rep_request == 10);
+        code_replay(CTX, DR_DURANTE_REPLAY_RETRY, WRITE, WRITE);
+        assert(state.instructions == 104 && state.restart_rep_request == 10);
+        flat_enter(3);
+        before_write(WRITE, NEXT, 3);
+        supplied_rcx = 2;
+        observe_rep(WRITE, OP_rep_movs, 1, DR_REG_RCX);
+        assert(state.rep_bytes == 10 && state.rep_entries == 1);
+        code_replay(CTX, DR_DURANTE_REPLAY_AFTER_WRITE, NULL, NEXT);
+        assert(state.instructions == 105 && !state.restart_pc && !state.replay_error);
+        flat_enter(2);
+        flat_enter(3);
+        before_write(WRITE, NEXT, 3);
+        supplied_rcx = 4;
+        observe_rep(WRITE, OP_rep_movs, 1, DR_REG_RCX);
+        assert(state.instructions == 110 && state.rep_bytes == 14 && state.rep_entries == 2);
+        assert_rep_counts(&state, 14, 0, 2, 0);
+        snapshot(true);
+        assert_record_breakdown(14, 0, 2, 0);
+    } else if (!strcmp(test, "flat-rep-missed")) {
+        flat_inline = true;
+        state.instructions = 100;
+        flat_enter(7);
+        before_write(WRITE, NEXT, 3);
+        supplied_rcx = 10;
+        observe_rep(WRITE, OP_rep_movs, 1, DR_REG_RCX);
+        code_replay(CTX, DR_DURANTE_REPLAY_RETRY, WRITE, WRITE);
+        /* The resumed REP block must observe its REP before another entry. */
+        flat_enter(3);
+        flat_enter(2);
+        supplied_rcx = 6;
+        observe_rep(WRITE, OP_rep_movs, 1, DR_REG_RCX);
+        assert(state.replay_error && state.rep_bytes == 16 && state.rep_entries == 2);
+        assert(!add_thread(&state));
+        snapshot(false);
+    } else if (!strcmp(test, "flat-overflow")) {
+        flat_inline = true;
+        state.instructions = UINT64_MAX - 1;
+        flat_enter(5);
+        assert(state.instructions == 3);
+        snapshot(false);
+        assert(state.counter_overflows && !add_thread(&state));
+        reset();
+        flat_inline = true;
+        state.instructions = UINT64_MAX - 5;
+        flat_enter(5);
+        snapshot(true);
+        assert(add_thread(&state) && total_instructions == UINT64_MAX);
     } else if (!strcmp(test, "missing-tls")) {
         active = NULL;
         code_replay(CTX, DR_DURANTE_REPLAY_RETRY, WRITE, WRITE);
@@ -955,6 +1058,21 @@ class ClientReplayStateTests(unittest.TestCase):
 
     def test_vfork_child_error_does_not_modify_parent_tls(self):
         self.run_case("vfork-local")
+
+    def test_flat_entry_settles_non_rep_retry_and_rejects_pending_signal(self):
+        self.run_case("flat-prefix")
+
+    def test_flat_first_instruction_retry_waits_for_resumed_entry(self):
+        self.run_case("flat-first-write")
+
+    def test_flat_rep_retries_charge_original_request_once(self):
+        self.run_case("flat-rep")
+
+    def test_flat_rep_restart_must_observe_in_first_resumed_block(self):
+        self.run_case("flat-rep-missed")
+
+    def test_flat_counter_wrap_is_sticky_invalidity(self):
+        self.run_case("flat-overflow")
 
     def test_missing_tls_notification_never_logs_and_invalidates_snapshots(self):
         self.run_case("missing-tls")
