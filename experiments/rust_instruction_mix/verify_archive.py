@@ -3,7 +3,7 @@
 import argparse
 import gzip
 import hashlib
-import importlib.util
+import runpy
 import io
 import json
 from pathlib import Path
@@ -57,12 +57,20 @@ def main():
                 info.mode = 0o755 if name in binaries else 0o644
                 tar.addfile(info, io.BytesIO(data))
 
-    reader = Path(__file__).resolve().parents[2] / "collect.py"
-    require(hashlib.sha256(reader.read_bytes()).hexdigest() == dataset["tools"]["production_reader"],
+    root = Path(__file__).resolve().parents[2]
+    snapshot = root / "experiments/results/gce-rust-instruction-mix/collect.py.gz"
+    raw_reader = gzip.decompress(snapshot.read_bytes())
+    version = hashlib.sha256(raw_reader).hexdigest()
+    require(version == dataset["tools"]["production_reader"] ==
+            "671a6c0bfc58f19c9c73b04bab78e7fcba88214a9eb31acb6da49adaa2cac59b",
             "archived production reader digest mismatch")
-    spec = importlib.util.spec_from_file_location("production_record_reader", reader)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    with TemporaryDirectory() as tmp:
+        historical_reader = Path(tmp) / "collect.py"
+        historical_reader.write_bytes(raw_reader)
+        readers = [runpy.run_path(str(historical_reader))["collect"]]
+    current_reader = root / "collect.py"
+    if hashlib.sha256(current_reader.read_bytes()).hexdigest() != version:
+        readers.append(runpy.run_path(str(current_reader))["collect"])
     with tarfile.open(args.archive, "r:xz") as tar:
         members = tar.getmembers()
         require(len(names) == len(members) and set(names) == {m.name for m in members} and
@@ -91,10 +99,11 @@ def main():
                     (target / "records").mkdir()
                     for name in ("features.json", record):
                         (target / name).write_bytes(load(f"{folder}/{mode}/{name}"))
-                    reader = read_fast if mode == "fast" else feature_result
-                    production, features = reader(target, pid, module.collect)
-                require(production == row[mode]["production"] and features == row[mode]["features"],
-                        "replayed counters differ in " + folder)
+                    read_features = read_fast if mode == "fast" else feature_result
+                    for collect_records in readers:
+                        production, features = read_features(target, pid, collect_records)
+                        require(production == row[mode]["production"] and features == row[mode]["features"],
+                                "replayed counters differ in " + folder)
     nphases = sum(len(phases) for _, _, phases in layout)
     print(f"Verified {len(binaries)} ELFs, {nphases} child receipts and all raw counters.")
 
