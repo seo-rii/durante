@@ -1,0 +1,28 @@
+cmake_minimum_required(VERSION 3.16)
+project(durante_history_probe C)
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux" OR NOT CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|amd64|AMD64)$")
+  message(FATAL_ERROR "history_probe requires Linux x86-64")
+endif()
+
+set(previous "${CMAKE_CURRENT_SOURCE_DIR}/../../gcd_controls/trip_probe/probe.c")
+set(delta "${CMAKE_CURRENT_SOURCE_DIR}/history.patch")
+set(source "${CMAKE_CURRENT_BINARY_DIR}/history_probe.c")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${previous}")
+file(SHA256 "${previous}" previous_hash)
+if(NOT previous_hash STREQUAL "d4b7939235025449cd0d6c64c270b009efb3b22a7bc1ae8f57e89661989d8007")
+  message(FATAL_ERROR "The registered original loop-trip client source has changed")
+endif()
+find_program(PATCH_TOOL patch)
+if(NOT PATCH_TOOL)
+  message(FATAL_ERROR "GNU patch is required to build the history probe")
+endif()
+add_custom_command(OUTPUT "${source}"
+  COMMAND "${PATCH_TOOL}" --silent --batch --fuzz=0 --output "${source}" "${previous}" "${delta}"
+  DEPENDS "${previous}" "${delta}" VERBATIM)
+
+find_package(DynamoRIO 11.3 EXACT REQUIRED)
+add_library(history_probe SHARED "${source}")
+configure_DynamoRIO_client(history_probe)
+use_DynamoRIO_extension(history_probe drmgr)
+set_target_properties(history_probe PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES)
+target_compile_options(history_probe PRIVATE -Wall -Wextra -Werror)
