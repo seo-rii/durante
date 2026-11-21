@@ -1,0 +1,1129 @@
+{
+  "parameters_sha256": "31b2e97cb416bbc1362a15b3d931847e16745e7a0a8fda6ff67f85faf3c63f20",
+  "cases": {
+    "div_small_serial": {
+      "native_min_ns": 115789000,
+      "native_median_ns": "116061500",
+      "native_max_ns": 121812000,
+      "duration_pass": true,
+      "spread_pass": true,
+      "models": {
+        "v1": {
+          "estimates_ns": [
+            246519874,
+            246519874
+          ],
+          "cycles_x16": [
+            12348025616,
+            12348025616
+          ],
+          "signed_errors_ppm": [
+            1124045,
+            1124045
+          ],
+          "pass": false
+        },
+        "zero": {
+          "estimates_ns": [
+            246519874,
+            246519874
+          ],
+          "cycles_x16": [
+            12348025616,
+            12348025616
+          ],
+          "signed_errors_ppm": [
+            1124045,
+            1124045
+          ],
+          "pass": false
+        },
+        "latency": {
+          "estimates_ns": [
+            150055579,
+            150055579
+          ],
+          "cycles_x16": [
+            7516189712,
+            7516189712
+          ],
+          "signed_errors_ppm": [
+            292897,
+            292897
+          ],
+          "pass": false
+        },
+        "latency_interval": {
+          "estimates_ns": [
+            128619092,
+            128619092
+          ],
+          "cycles_x16": [
+            6442449536,
+            6442449536
+          ],
+          "signed_errors_ppm": [
+            108198,
+            108198
+          ],
+          "pass": true
+        }
+      }
+    },
+    "div_small_parallel": {
+      "native_min_ns": 63889000,
+      "native_median_ns": "64000500",
+      "native_max_ns": 66804000,
+      "duration_pass": true,
+      "spread_pass": true,
+      "models": {
+        "v1": {
+          "estimates_ns": [
+            225083364,
+            225083364
+          ],
+          "cycles_x16": [
+            11274284304,
+            11274284304
+          ],
+          "signed_errors_ppm": [
+            2516900,
+            2516900
+          ],
+          "pass": false
+        },
+        "zero": {
+          "estimates_ns": [
+            61629976,
+            61629976
+          ],
+          "cycles_x16": [
+            3087006800,
+            3087006800
+          ],
+          "signed_errors_ppm": [
+            -37039,
+            -37039
+          ],
+          "pass": true
+        },
+        "latency": {
+          "estimates_ns": [
+            37513903,
+            37513903
+          ],
+          "cycles_x16": [
+            1879047824,
+            1879047824
+          ],
+          "signed_errors_ppm": [
+            -413850,
+            -413850
+          ],
+          "pass": false
+        },
+        "latency_interval": {
+          "estimates_ns": [
+            64309563,
+            64309563
+          ],
+          "cycles_x16": [
+            3221225600,
+            3221225600
+          ],
+          "signed_errors_ppm": [
+            4829,
+            4829
+          ],
+          "pass": true
+        }
+      }
+    },
+    "div_large_serial": {
+      "native_min_ns": 136623000,
+      "native_median_ns": "136714500",
+      "native_max_ns": 138309000,
+      "duration_pass": true,
+      "spread_pass": true,
+      "models": {
+        "v1": {
+          "estimates_ns": [
+            246519874,
+            246519874
+          ],
+          "cycles_x16": [
+            12348025616,
+            12348025616
+          ],
+          "signed_errors_ppm": [
+            803173,
+            803173
+          ],
+          "pass": false
+        },
+        "zero": {
+          "estimates_ns": [
+            246519874,
+            246519874
+          ],
+          "cycles_x16": [
+            12348025616,
+            12348025616
+          ],
+          "signed_errors_ppm": [
+            803173,
+            803173
+          ],
+          "pass": false
+        },
+        "latency": {
+          "estimates_ns": [
+            150055579,
+            150055579
+          ],
+          "cycles_x16": [
+            7516189712,
+            7516189712
+          ],
+          "signed_errors_ppm": [
+            97584,
+            97584
+          ],
+          "pass": true
+        },
+        "latency_interval": {
+          "estimates_ns": [
+            128619092,
+            128619092
+          ],
+          "cycles_x16": [
+            6442449536,
+            6442449536
+          ],
+          "signed_errors_ppm": [
+            -59214,
+            -59214
+          ],
+          "pass": true
+        }
+      }
+    },
+    "div_large_parallel": {
+      "native_min_ns": 63896000,
+      "native_median_ns": "63986000",
+      "native_max_ns": 64490000,
+      "duration_pass": true,
+      "spread_pass": true,
+      "models": {
+        "v1": {
+          "estimates_ns": [
+            225083364,
+            225083364
+          ],
+          "cycles_x16": [
+            11274284304,
+            11274284304
+          ],
+          "signed_errors_ppm": [
+            2517697,
+            2517697
+          ],
+          "pass": false
+        },
+        "zero": {
+          "estimates_ns": [
+            61629976,
+            61629976
+          ],
+          "cycles_x16": [
+            3087006800,
+            3087006800
+          ],
+          "signed_errors_ppm": [
+            -36821,
+            -36821
+          ],
+          "pass": true
+        },
+        "latency": {
+          "estimates_ns": [
+            37513903,
+            37513903
+          ],
+          "cycles_x16": [
+            1879047824,
+            1879047824
+          ],
+          "signed_errors_ppm": [
+            -413717,
+            -413717
+          ],
+          "pass": false
+        },
+        "latency_interval": {
+          "estimates_ns": [
+            64309563,
+            64309563
+          ],
+          "cycles_x16": [
+            3221225600,
+            3221225600
+          ],
+          "signed_errors_ppm": [
+            5057,
+            5057
+          ],
+          "pass": true
+        }
+      }
+    },
+    "div_xor_serial": {
+      "native_min_ns": 136399000,
+      "native_median_ns": "136536500",
+      "native_max_ns": 137029000,
+      "duration_pass": true,
+      "spread_pass": true,
+      "models": {
+        "v1": {
+          "estimates_ns": [
+            246519874,
+            246519874
+          ],
+          "cycles_x16": [
+            12348025616,
+            12348025616
+          ],
+          "signed_errors_ppm": [
+            805524,
+            805524
+          ],
+          "pass": false
+        },
+        "zero": {
+          "estimates_ns": [
+            246519874,
+            246519874
+          ],
+          "cycles_x16": [
+            12348025616,
+            12348025616
+          ],
+          "signed_errors_ppm": [
+            805524,
+            805524
+          ],
+          "pass": false
+        },
+        "latency": {
+          "estimates_ns": [
+            150055579,
+            150055579
+          ],
+          "cycles_x16": [
+            7516189712,
+            7516189712
+          ],
+          "signed_errors_ppm": [
+            99014,
+            99014
+          ],
+          "pass": true
+        },
+        "latency_interval": {
+          "estimates_ns": [
+            128619092,
+            128619092
+          ],
+          "cycles_x16": [
+            6442449536,
+            6442449536
+          ],
+          "signed_errors_ppm": [
+            -57987,
+            -57987
+          ],
+          "pass": true
+        }
+      }
+    },
+    "div_xor_parallel": {
+      "native_min_ns": 63626000,
+      "native_median_ns": "63803000",
+      "native_max_ns": 63965000,
+      "duration_pass": true,
+      "spread_pass": true,
+      "models": {
+        "v1": {
+          "estimates_ns": [
+            225083364,
+            225083364
+          ],
+          "cycles_x16": [
+            11274284304,
+            11274284304
+          ],
+          "signed_errors_ppm": [
+            2527787,
+            2527787
+          ],
+          "pass": false
+        },
+        "zero": {
+          "estimates_ns": [
+            61629976,
+            61629976
+          ],
+          "cycles_x16": [
+            3087006800,
+            3087006800
+          ],
+          "signed_errors_ppm": [
+            -34058,
+            -34058
+          ],
+          "pass": true
+        },
+        "latency": {
+          "estimates_ns": [
+            37513903,
+            37513903
+          ],
+          "cycles_x16": [
+            1879047824,
+            1879047824
+          ],
+          "signed_errors_ppm": [
+            -412035,
+            -412035
+          ],
+          "pass": false
+        },
+        "latency_interval": {
+          "estimates_ns": [
+            64309563,
+            64309563
+          ],
+          "cycles_x16": [
+            3221225600,
+            3221225600
+          ],
+          "signed_errors_ppm": [
+            7939,
+            7939
+          ],
+          "pass": true
+        }
+      }
+    },
+    "div_mov_serial": {
+      "native_min_ns": 136454000,
+      "native_median_ns": "136604500",
+      "native_max_ns": 141526000,
+      "duration_pass": true,
+      "spread_pass": true,
+      "models": {
+        "v1": {
+          "estimates_ns": [
+            246519874,
+            246519874
+          ],
+          "cycles_x16": [
+            12348025616,
+            12348025616
+          ],
+          "signed_errors_ppm": [
+            804625,
+            804625
+          ],
+          "pass": false
+        },
+        "zero": {
+          "estimates_ns": [
+            246519874,
+            246519874
+          ],
+          "cycles_x16": [
+            12348025616,
+            12348025616
+          ],
+          "signed_errors_ppm": [
+            804625,
+            804625
+          ],
+          "pass": false
+        },
+        "latency": {
+          "estimates_ns": [
+            150055579,
+            150055579
+          ],
+          "cycles_x16": [
+            7516189712,
+            7516189712
+          ],
+          "signed_errors_ppm": [
+            98467,
+            98467
+          ],
+          "pass": true
+        },
+        "latency_interval": {
+          "estimates_ns": [
+            128619092,
+            128619092
+          ],
+          "cycles_x16": [
+            6442449536,
+            6442449536
+          ],
+          "signed_errors_ppm": [
+            -58456,
+            -58456
+          ],
+          "pass": true
+        }
+      }
+    },
+    "div_mov_parallel": {
+      "native_min_ns": 63774000,
+      "native_median_ns": "63827000",
+      "native_max_ns": 63932000,
+      "duration_pass": true,
+      "spread_pass": true,
+      "models": {
+        "v1": {
+          "estimates_ns": [
+            61629976,
+            61629976
+          ],
+          "cycles_x16": [
+            3087006800,
+            3087006800
+          ],
+          "signed_errors_ppm": [
+            -34422,
+            -34422
+          ],
+          "pass": true
+        },
+        "zero": {
+          "estimates_ns": [
+            61629976,
+            61629976
+          ],
+          "cycles_x16": [
+            3087006800,
+            3087006800
+          ],
+          "signed_errors_ppm": [
+            -34422,
+            -34422
+          ],
+          "pass": true
+        },
+        "latency": {
+          "estimates_ns": [
+            37513903,
+            37513903
+          ],
+          "cycles_x16": [
+            1879047824,
+            1879047824
+          ],
+          "signed_errors_ppm": [
+            -412257,
+            -412257
+          ],
+          "pass": false
+        },
+        "latency_interval": {
+          "estimates_ns": [
+            64309563,
+            64309563
+          ],
+          "cycles_x16": [
+            3221225600,
+            3221225600
+          ],
+          "signed_errors_ppm": [
+            7560,
+            7560
+          ],
+          "pass": true
+        }
+      }
+    },
+    "integer": {
+      "native_min_ns": 43729000,
+      "native_median_ns": "43795500",
+      "native_max_ns": 44072000,
+      "duration_pass": true,
+      "spread_pass": true,
+      "models": {
+        "v1": {
+          "estimates_ns": [
+            42930168,
+            42930201
+          ],
+          "cycles_x16": [
+            2150117760,
+            2150119344
+          ],
+          "signed_errors_ppm": [
+            -19758,
+            -19758
+          ],
+          "pass": true
+        },
+        "zero": {
+          "estimates_ns": [
+            42930168,
+            42930201
+          ],
+          "cycles_x16": [
+            2150117760,
+            2150119344
+          ],
+          "signed_errors_ppm": [
+            -19758,
+            -19758
+          ],
+          "pass": true
+        },
+        "latency": {
+          "estimates_ns": [
+            42930168,
+            42930201
+          ],
+          "cycles_x16": [
+            2150117760,
+            2150119344
+          ],
+          "signed_errors_ppm": [
+            -19758,
+            -19758
+          ],
+          "pass": true
+        },
+        "latency_interval": {
+          "estimates_ns": [
+            42930168,
+            42930201
+          ],
+          "cycles_x16": [
+            2150117760,
+            2150119344
+          ],
+          "signed_errors_ppm": [
+            -19758,
+            -19758
+          ],
+          "pass": true
+        }
+      }
+    },
+    "copy": {
+      "native_min_ns": 52454000,
+      "native_median_ns": "56086500",
+      "native_max_ns": 57557000,
+      "duration_pass": true,
+      "spread_pass": true,
+      "models": {
+        "v1": {
+          "estimates_ns": [
+            50585093,
+            50584945
+          ],
+          "cycles_x16": [
+            1800390356,
+            1800383760
+          ],
+          "signed_errors_ppm": [
+            -98088,
+            -98091
+          ],
+          "pass": true
+        },
+        "zero": {
+          "estimates_ns": [
+            50585093,
+            50584945
+          ],
+          "cycles_x16": [
+            1800390356,
+            1800383760
+          ],
+          "signed_errors_ppm": [
+            -98088,
+            -98091
+          ],
+          "pass": true
+        },
+        "latency": {
+          "estimates_ns": [
+            50585093,
+            50584945
+          ],
+          "cycles_x16": [
+            1800390356,
+            1800383760
+          ],
+          "signed_errors_ppm": [
+            -98088,
+            -98091
+          ],
+          "pass": true
+        },
+        "latency_interval": {
+          "estimates_ns": [
+            50585093,
+            50584945
+          ],
+          "cycles_x16": [
+            1800390356,
+            1800383760
+          ],
+          "signed_errors_ppm": [
+            -98088,
+            -98091
+          ],
+          "pass": true
+        }
+      }
+    },
+    "branch": {
+      "native_min_ns": 56050000,
+      "native_median_ns": "57930000",
+      "native_max_ns": 61638000,
+      "duration_pass": true,
+      "spread_pass": true,
+      "models": {
+        "v1": {
+          "estimates_ns": [
+            64366531,
+            64366674
+          ],
+          "cycles_x16": [
+            3223851948,
+            3223858884
+          ],
+          "signed_errors_ppm": [
+            111109,
+            111111
+          ],
+          "pass": true
+        },
+        "zero": {
+          "estimates_ns": [
+            64366531,
+            64366674
+          ],
+          "cycles_x16": [
+            3223851948,
+            3223858884
+          ],
+          "signed_errors_ppm": [
+            111109,
+            111111
+          ],
+          "pass": true
+        },
+        "latency": {
+          "estimates_ns": [
+            64366531,
+            64366674
+          ],
+          "cycles_x16": [
+            3223851948,
+            3223858884
+          ],
+          "signed_errors_ppm": [
+            111109,
+            111111
+          ],
+          "pass": true
+        },
+        "latency_interval": {
+          "estimates_ns": [
+            64366531,
+            64366674
+          ],
+          "cycles_x16": [
+            3223851948,
+            3223858884
+          ],
+          "signed_errors_ppm": [
+            111109,
+            111111
+          ],
+          "pass": true
+        }
+      }
+    },
+    "sort": {
+      "native_min_ns": 40285000,
+      "native_median_ns": "40359000",
+      "native_max_ns": 40562000,
+      "duration_pass": true,
+      "spread_pass": true,
+      "models": {
+        "v1": {
+          "estimates_ns": [
+            36741999,
+            36741770
+          ],
+          "cycles_x16": [
+            1713858852,
+            1713848300
+          ],
+          "signed_errors_ppm": [
+            -89621,
+            -89626
+          ],
+          "pass": true
+        },
+        "zero": {
+          "estimates_ns": [
+            36741999,
+            36741770
+          ],
+          "cycles_x16": [
+            1713858852,
+            1713848300
+          ],
+          "signed_errors_ppm": [
+            -89621,
+            -89626
+          ],
+          "pass": true
+        },
+        "latency": {
+          "estimates_ns": [
+            36741999,
+            36741770
+          ],
+          "cycles_x16": [
+            1713858852,
+            1713848300
+          ],
+          "signed_errors_ppm": [
+            -89621,
+            -89626
+          ],
+          "pass": true
+        },
+        "latency_interval": {
+          "estimates_ns": [
+            36741999,
+            36741770
+          ],
+          "cycles_x16": [
+            1713858852,
+            1713848300
+          ],
+          "signed_errors_ppm": [
+            -89621,
+            -89626
+          ],
+          "pass": true
+        }
+      }
+    },
+    "fill": {
+      "native_min_ns": 46364000,
+      "native_median_ns": "46566000",
+      "native_max_ns": 51901000,
+      "duration_pass": true,
+      "spread_pass": false,
+      "models": {
+        "v1": {
+          "estimates_ns": [
+            52372428,
+            52372638
+          ],
+          "cycles_x16": [
+            1889931220,
+            1889940772
+          ],
+          "signed_errors_ppm": [
+            124692,
+            124697
+          ],
+          "pass": true
+        },
+        "zero": {
+          "estimates_ns": [
+            52372428,
+            52372638
+          ],
+          "cycles_x16": [
+            1889931220,
+            1889940772
+          ],
+          "signed_errors_ppm": [
+            124692,
+            124697
+          ],
+          "pass": true
+        },
+        "latency": {
+          "estimates_ns": [
+            52372428,
+            52372638
+          ],
+          "cycles_x16": [
+            1889931220,
+            1889940772
+          ],
+          "signed_errors_ppm": [
+            124692,
+            124697
+          ],
+          "pass": true
+        },
+        "latency_interval": {
+          "estimates_ns": [
+            52372428,
+            52372638
+          ],
+          "cycles_x16": [
+            1889931220,
+            1889940772
+          ],
+          "signed_errors_ppm": [
+            124692,
+            124697
+          ],
+          "pass": true
+        }
+      }
+    },
+    "gcd": {
+      "native_min_ns": 39210000,
+      "native_median_ns": "39346000",
+      "native_max_ns": 39412000,
+      "duration_pass": true,
+      "spread_pass": true,
+      "models": {
+        "v1": {
+          "estimates_ns": [
+            62027869,
+            62028015
+          ],
+          "cycles_x16": [
+            3106710512,
+            3106717084
+          ],
+          "signed_errors_ppm": [
+            576472,
+            576476
+          ],
+          "pass": false
+        },
+        "zero": {
+          "estimates_ns": [
+            62027869,
+            62028015
+          ],
+          "cycles_x16": [
+            3106710512,
+            3106717084
+          ],
+          "signed_errors_ppm": [
+            576472,
+            576476
+          ],
+          "pass": false
+        },
+        "latency": {
+          "estimates_ns": [
+            36150742,
+            36150887
+          ],
+          "cycles_x16": [
+            1810541456,
+            1810548028
+          ],
+          "signed_errors_ppm": [
+            -81209,
+            -81206
+          ],
+          "pass": true
+        },
+        "latency_interval": {
+          "estimates_ns": [
+            30400269,
+            30400414
+          ],
+          "cycles_x16": [
+            1522503888,
+            1522510460
+          ],
+          "signed_errors_ppm": [
+            -227361,
+            -227357
+          ],
+          "pass": false
+        }
+      }
+    },
+    "lower_bound": {
+      "native_min_ns": 33800000,
+      "native_median_ns": "34454500",
+      "native_max_ns": 36050000,
+      "duration_pass": true,
+      "spread_pass": true,
+      "models": {
+        "v1": {
+          "estimates_ns": [
+            21671013,
+            21671173
+          ],
+          "cycles_x16": [
+            1077568896,
+            1077576628
+          ],
+          "signed_errors_ppm": [
+            -371025,
+            -371021
+          ],
+          "pass": false
+        },
+        "zero": {
+          "estimates_ns": [
+            21671013,
+            21671173
+          ],
+          "cycles_x16": [
+            1077568896,
+            1077576628
+          ],
+          "signed_errors_ppm": [
+            -371025,
+            -371021
+          ],
+          "pass": false
+        },
+        "latency": {
+          "estimates_ns": [
+            21671013,
+            21671173
+          ],
+          "cycles_x16": [
+            1077568896,
+            1077576628
+          ],
+          "signed_errors_ppm": [
+            -371025,
+            -371021
+          ],
+          "pass": false
+        },
+        "latency_interval": {
+          "estimates_ns": [
+            22047827,
+            22047986
+          ],
+          "cycles_x16": [
+            1096443264,
+            1096450996
+          ],
+          "signed_errors_ppm": [
+            -360089,
+            -360084
+          ],
+          "pass": false
+        }
+      }
+    },
+    "rolling_window": {
+      "native_min_ns": 16075000,
+      "native_median_ns": "16379500",
+      "native_max_ns": 16885000,
+      "duration_pass": false,
+      "spread_pass": true,
+      "models": {
+        "v1": {
+          "estimates_ns": [
+            20073862,
+            20073764
+          ],
+          "cycles_x16": [
+            958770852,
+            958766100
+          ],
+          "signed_errors_ppm": [
+            225548,
+            225542
+          ],
+          "pass": false
+        },
+        "zero": {
+          "estimates_ns": [
+            20073862,
+            20073764
+          ],
+          "cycles_x16": [
+            958770852,
+            958766100
+          ],
+          "signed_errors_ppm": [
+            225548,
+            225542
+          ],
+          "pass": false
+        },
+        "latency": {
+          "estimates_ns": [
+            20073862,
+            20073764
+          ],
+          "cycles_x16": [
+            958770852,
+            958766100
+          ],
+          "signed_errors_ppm": [
+            225548,
+            225542
+          ],
+          "pass": false
+        },
+        "latency_interval": {
+          "estimates_ns": [
+            20073862,
+            20073764
+          ],
+          "cycles_x16": [
+            958770852,
+            958766100
+          ],
+          "signed_errors_ppm": [
+            225548,
+            225542
+          ],
+          "pass": false
+        }
+      }
+    }
+  },
+  "passed": {
+    "train": {
+      "v1": 0,
+      "zero": 2,
+      "latency": 1,
+      "latency_interval": 4
+    },
+    "assembly_validation": {
+      "v1": 1,
+      "zero": 2,
+      "latency": 2,
+      "latency_interval": 4
+    },
+    "rust_validation": {
+      "v1": 5,
+      "zero": 5,
+      "latency": 6,
+      "latency_interval": 5
+    }
+  }
+}

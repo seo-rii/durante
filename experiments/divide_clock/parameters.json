@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "protocol_sha256": "8079fc19932643ad8045f99fd87fc6ece0e741081bfedfa97a9a8fa8b615c40a",
+  "observations_sha256": "33223ce938af053add7d3b35077509cd55608c998568b8d40bfc8452493df3cd",
+  "receipts_sha256": "2dff881ca9927c04c6cedb6a0562926c3ea1e56cdccef4fd37345ed266b5b741",
+  "training": [
+    "div_small_serial",
+    "div_small_parallel",
+    "div_large_serial",
+    "div_large_parallel"
+  ],
+  "parameter_order": [
+    "latency_cycles",
+    "interval_cycles",
+    "break_zero_input"
+  ],
+  "models": {
+    "v1": [
+      20,
+      0,
+      false
+    ],
+    "zero": [
+      20,
+      0,
+      true
+    ],
+    "latency": [
+      11,
+      0,
+      true
+    ],
+    "latency_interval": [
+      9,
+      6,
+      true
+    ]
+  }
+}

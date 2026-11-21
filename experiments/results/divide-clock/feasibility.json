@@ -1,0 +1,151 @@
+{
+  "schema": 1,
+  "protocol_sha256": "8079fc19932643ad8045f99fd87fc6ece0e741081bfedfa97a9a8fa8b615c40a",
+  "grid_size": 246,
+  "parameter_order": [
+    "latency_cycles",
+    "interval_cycles"
+  ],
+  "workloads": [
+    "div_small_serial",
+    "div_small_parallel",
+    "div_large_serial",
+    "div_large_parallel",
+    "div_xor_serial",
+    "div_xor_parallel",
+    "div_mov_serial",
+    "div_mov_parallel",
+    "gcd"
+  ],
+  "median": {
+    "passing_parameters": [],
+    "minimax_parameters": [
+      10,
+      5
+    ],
+    "minimax_worst_error_ppm": 200547,
+    "minimax_limiting_cases": [
+      "div_small_serial"
+    ],
+    "minimax_signed_errors_ppm": {
+      "div_small_serial": 200547,
+      "div_small_parallel": -162642,
+      "div_large_serial": 19185,
+      "div_large_parallel": -162453,
+      "div_xor_serial": 20514,
+      "div_xor_parallel": -160050,
+      "div_mov_serial": 20006,
+      "div_mov_parallel": -160366,
+      "gcd": -154285
+    }
+  },
+  "favorable_ranges": {
+    "passing_parameters": [
+      [
+        10,
+        5
+      ],
+      [
+        10,
+        6
+      ],
+      [
+        10,
+        7
+      ]
+    ],
+    "minimax_parameters": [
+      10,
+      6
+    ],
+    "minimax_worst_error_ppm": 151348,
+    "minimax_limiting_cases": [
+      "gcd"
+    ],
+    "minimax_signed_errors_ppm": {
+      "div_small_serial": 143872,
+      "div_small_parallel": 0,
+      "div_large_serial": 7435,
+      "div_large_parallel": 0,
+      "div_xor_serial": 16846,
+      "div_xor_parallel": 5387,
+      "div_mov_serial": 0,
+      "div_mov_parallel": 5906,
+      "gcd": -151348
+    }
+  },
+  "rust": {
+    "integer": {
+      "median_prediction_min_ns": 42930184,
+      "median_prediction_max_ns": 42930184,
+      "prediction_unchanged_over_grid": true,
+      "best_error_to_median_ppm": 19758,
+      "best_error_with_favorable_ranges_ppm": 18267,
+      "median_feasible": true,
+      "favorable_ranges_feasible": true
+    },
+    "copy": {
+      "median_prediction_min_ns": 50585019,
+      "median_prediction_max_ns": 50585019,
+      "prediction_unchanged_over_grid": true,
+      "best_error_to_median_ppm": 98091,
+      "best_error_with_favorable_ranges_ppm": 35629,
+      "median_feasible": true,
+      "favorable_ranges_feasible": true
+    },
+    "branch": {
+      "median_prediction_min_ns": 64366602,
+      "median_prediction_max_ns": 64366602,
+      "prediction_unchanged_over_grid": true,
+      "best_error_to_median_ppm": 111111,
+      "best_error_with_favorable_ranges_ppm": 44267,
+      "median_feasible": true,
+      "favorable_ranges_feasible": true
+    },
+    "sort": {
+      "median_prediction_min_ns": 36741884,
+      "median_prediction_max_ns": 36741884,
+      "prediction_unchanged_over_grid": true,
+      "best_error_to_median_ppm": 89626,
+      "best_error_with_favorable_ranges_ppm": 87948,
+      "median_feasible": true,
+      "favorable_ranges_feasible": true
+    },
+    "fill": {
+      "median_prediction_min_ns": 52372533,
+      "median_prediction_max_ns": 52372533,
+      "prediction_unchanged_over_grid": true,
+      "best_error_to_median_ppm": 124697,
+      "best_error_with_favorable_ranges_ppm": 9083,
+      "median_feasible": true,
+      "favorable_ranges_feasible": true
+    },
+    "gcd": {
+      "median_prediction_min_ns": 7398451,
+      "median_prediction_max_ns": 74156910,
+      "prediction_unchanged_over_grid": false,
+      "best_error_to_median_ppm": 685,
+      "best_error_with_favorable_ranges_ppm": 0,
+      "median_feasible": true,
+      "favorable_ranges_feasible": true
+    },
+    "lower_bound": {
+      "median_prediction_min_ns": 21671093,
+      "median_prediction_max_ns": 23052743,
+      "prediction_unchanged_over_grid": false,
+      "best_error_to_median_ppm": 330924,
+      "best_error_with_favorable_ranges_ppm": 317964,
+      "median_feasible": false,
+      "favorable_ranges_feasible": false
+    },
+    "rolling_window": {
+      "median_prediction_min_ns": 20073813,
+      "median_prediction_max_ns": 20073813,
+      "prediction_unchanged_over_grid": true,
+      "best_error_to_median_ppm": 225548,
+      "best_error_with_favorable_ranges_ppm": 188852,
+      "median_feasible": false,
+      "favorable_ranges_feasible": true
+    }
+  }
+}

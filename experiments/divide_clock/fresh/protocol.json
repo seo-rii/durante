@@ -1,0 +1,87 @@
+{
+  "schema": 1,
+  "platform": "Independent private Seoul N2D VM, one thread per core. CPU 1 hosts children, CPU 0 hosts the observer and system services. Fresh instance, production runtime, x86-64-v2 CPUID, REP, latency and operand bytes enabled. Capture placement and verify deletion of VM and boot disk.",
+  "image_manifest_sha256": "856be473011809c36a32d7ecfb6501c45db07b3204b7e475be515ca4baa6cf95",
+  "ordering": "3 rounds, rotate cases by round. Within each case native-before and native-after bracket the three diagnostics. Rotate [baseline,sampled,fast] left by (zero-based case index + zero-based round index) modulo 3, so each diagnostic occupies each slot once per case.",
+  "tool_sha256": {
+    "launcher": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "runtime": "fd1c5645b9fc70a7dcb71459b4b94782d2e016a2aa4ceffcfcab2ade962cdf5b",
+    "meter": "849c432a4832b554ebbf867f7fdce788a635f7193cd1343e0df3eac4089b9ea4",
+    "production_reader": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a",
+    "sampler": "4bb12b7da18b3c969c8b9ecedc1bf0a335000d6be74375011e8ef91b38b90f7e",
+    "fast": "22817e062bfd5625ac71304c78f6e2c1b8ee55623679a1c5746454a46544cc2f"
+  },
+  "sources_sha256": {
+    "client/cpu_policy.h": "b53e1987b92ab82aa303723fbda68d26aaf6b826172ab0e4b9be6e4c337bd363",
+    "client/cpuid_emulation.h": "5fade2d6c5760276a6b5ff198863cd1196095fdb9859270a6ea8f898f6c24527",
+    "client/cpuid_profile.h": "75cda24c23e45ea450b2d47265928335fc0780cc09ceebeddd13a20136edc216",
+    "client/durante.c": "b6af8e090846cf64a983bff4c0e4aafd6dc1cb3783d7713aad6f91694f467fd4",
+    "client/durante_runtime.h": "425c6811b9947cb806d8ffd77a7c7d512bb0bfe303e6d500bc485b77be2d8456",
+    "client/latency_bound.h": "51ea8177b786753196b24e80de74141af62df27395258cc94ab95b6eba4cfed5",
+    "collect.py": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a",
+    "experiments/divide_clock/CMakeLists.txt": "702de9005af514da3bf23c5c9033bed97602207a3f4d25b1b92147b146424822",
+    "experiments/divide_clock/fast/CMakeLists.txt": "87fdd5885e5376f843d0f84dcd06a845bad04615807a85358638ac682899d42d",
+    "experiments/divide_clock/fast/fast.c": "36fc2892e482cb5581c37015f9e916c21a2dfdcbb74db1457e45681c410411a3",
+    "experiments/divide_clock/fast_reader.py": "0aa63c93c17690e72679e90acd87574092cb7dba07734b0e10da9b8386a71695",
+    "experiments/divide_clock/fresh/collect.py": "3cecc0d52f11487bc5b5532c45e5bb6ef1794188c1f73da5fa8896fbf83f7eeb",
+    "experiments/divide_clock/fresh/fixtures.py": "05b8d9f5f8de601fe5126e38ff5d53b9aa6541c770481f1306c5effa399363ee",
+    "experiments/divide_clock/fresh/holdouts.rs": "b7dbff581623fe9773005293f5522e907ba5c62d565e78c11ba1ca5b5d692914",
+    "experiments/divide_clock/fresh/placement.py": "b601a598bed32ee1a60879038046dc1e84893ec3f4d4425a16e7bdac59685073",
+    "experiments/divide_clock/fresh/study.py": "4cf7b69e29ce940c4ec82f2cf35c19bce423a96ba788a7c37983b5c62ca09b1a",
+    "experiments/divide_clock/fresh/verify.py": "a1cb05c74ecc1290a9e72b48d6de926b9944cd1f0972f9ab06819f2e2e9a5935",
+    "experiments/divide_clock/parameters.json": "31b2e97cb416bbc1362a15b3d931847e16745e7a0a8fda6ff67f85faf3c63f20",
+    "experiments/divide_clock/probe.c": "099eff10b2f4a94f1e4054f704bed2dfaf84408370a4f2bbe69505444ccaa785",
+    "experiments/divide_clock/protocol.json": "8079fc19932643ad8045f99fd87fc6ece0e741081bfedfa97a9a8fa8b615c40a",
+    "experiments/divide_clock/replay.py": "7fd77dcede0e4ffbe646e5fb7aefeb2e17d09667a43c9535b7abbb49ba473a1c",
+    "experiments/results/divide-clock/fresh/fixtures.json": "29148bf80e4f0fef4c3e566388201ab2107b8528d80ea9350b2dfbd4a46e0ad5",
+    "experiments/rust_instruction_mix/collect.py": "b90aa20707ba81a376edb8ac4d288632b097f33f9def8bbd8b0e5d3175436775",
+    "experiments/rust_operand_bytes/collect.py": "1fea28282d1c823b3d9ca8dfc9b5e6443f9f373c2468be2f0348bdebd81c8b04"
+  },
+  "cases": [
+    {
+      "workload_id": "div_large_serial",
+      "binary_sha256": "02ecd2992aca22b68bdf5dbbbe9a349fae1ab3f53dbc49cfcae7c9345f1646d9",
+      "binary_archive": "experiments/results/gce-dependency-pairs/samples.tar.xz",
+      "archive_member": "bin/div_large_serial/Main",
+      "stdin_hex": "",
+      "stdout_hex": "e26992b579647748",
+      "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected_sha256": "8273d1649ebe7e1b7125a8b2ddf50cdfbbb3b9900d6b433b7003ca44972c4092"
+    },
+    {
+      "workload_id": "gcd",
+      "binary_sha256": "5b7aece7ce2817e5b68bc9961e7663f3d1fbd66dd4b079eae22f65ff47d4d35f",
+      "binary_archive": "experiments/results/gce-rust-instruction-mix/holdout/samples.tar.xz",
+      "archive_member": "bin/gcd/Main",
+      "stdin_hex": "35323432383820313438363838353532310a",
+      "stdout_hex": "353332343936320a",
+      "input_sha256": "91f53e183337f40e73b97e53d1d40e98c6e8ced0f05f6e590bb91fac5d9d1639",
+      "expected_sha256": "88be510b9393faa06cb4a4ed03034f2888e0bdd2c8a056190f552c7656fc539f"
+    },
+    {
+      "workload_id": "floor_groups",
+      "binary_sha256": "d9c0c42498a2f0905158334435994296ac2b56935bdb9de0a3a5d2e0c712e735",
+      "binary_archive": "experiments/results/divide-clock/fresh/holdouts.tar.xz",
+      "archive_member": "floor_groups/Main",
+      "stdin_hex": "",
+      "stdout_hex": "313030393639303930373835320a",
+      "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected_sha256": "52d8dfbf6f2f7ac8704d39e4a87ba7d1044aa02ee0c592db1fde3a70beb3e8bc"
+    },
+    {
+      "workload_id": "batch_quotients",
+      "binary_sha256": "a72e92c6a7547d550d6ab9f105300500117e198f51809d52150c6a14272a9a47",
+      "binary_archive": "experiments/results/divide-clock/fresh/holdouts.tar.xz",
+      "archive_member": "batch_quotients/Main",
+      "stdin_hex": "",
+      "stdout_hex": "393834333435353731333238300a",
+      "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected_sha256": "3419f99b50d585d1956e98fcde79e88945128f3cec3cc98c62c9a2ba4d840a9d"
+    }
+  ],
+  "archives_sha256": {
+    "experiments/results/divide-clock/fresh/holdouts.tar.xz": "d5141e8ca55abfd426a3422938c3c8fb6f33f18bf98a8143a8625a3c2ba04415",
+    "experiments/results/gce-dependency-pairs/samples.tar.xz": "1ab2184ff072abdb8abd100dd3fea908ebc47d707faaaf82c87b302b0d73ea55",
+    "experiments/results/gce-rust-instruction-mix/holdout/samples.tar.xz": "805336fd1c4efda0b4b6651c251236532d1e27e047d20267534df37ad90e0c38"
+  }
+}

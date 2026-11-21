@@ -1,0 +1,603 @@
+{
+  "schema": 1,
+  "max_absolute_local_minus_gce_median_ppm": {
+    "instructions": 1385,
+    "latency_x16": 437,
+    "operand_bytes": 66461,
+    "baseline_ns": 430
+  },
+  "cases": {
+    "div_small_serial": {
+      "gce_native_ns": {
+        "min": 115789000,
+        "median": 116061500,
+        "max": 121812000
+      },
+      "gce_native_spread_ppm": 51895,
+      "local_minus_gce_median_ppm": {
+        "instructions": [
+          0,
+          0
+        ],
+        "latency_x16": [
+          0,
+          0
+        ],
+        "operand_bytes": [
+          0,
+          0
+        ],
+        "baseline_ns": [
+          0,
+          0
+        ]
+      },
+      "shape_counts": [
+        3,
+        3
+      ],
+      "executed_divider_block_entries": [
+        8388608,
+        8388608
+      ],
+      "shapes_with_changed_membership": 0,
+      "shared_shapes_with_changed_counts": 0,
+      "sum_absolute_block_entry_deltas": 0
+    },
+    "div_small_parallel": {
+      "gce_native_ns": {
+        "min": 63889000,
+        "median": 64000500,
+        "max": 66804000
+      },
+      "gce_native_spread_ppm": 45547,
+      "local_minus_gce_median_ppm": {
+        "instructions": [
+          0,
+          0
+        ],
+        "latency_x16": [
+          0,
+          0
+        ],
+        "operand_bytes": [
+          0,
+          0
+        ],
+        "baseline_ns": [
+          0,
+          0
+        ]
+      },
+      "shape_counts": [
+        3,
+        3
+      ],
+      "executed_divider_block_entries": [
+        8388608,
+        8388608
+      ],
+      "shapes_with_changed_membership": 0,
+      "shared_shapes_with_changed_counts": 0,
+      "sum_absolute_block_entry_deltas": 0
+    },
+    "div_large_serial": {
+      "gce_native_ns": {
+        "min": 136623000,
+        "median": 136714500,
+        "max": 138309000
+      },
+      "gce_native_spread_ppm": 12332,
+      "local_minus_gce_median_ppm": {
+        "instructions": [
+          0,
+          0
+        ],
+        "latency_x16": [
+          0,
+          0
+        ],
+        "operand_bytes": [
+          0,
+          0
+        ],
+        "baseline_ns": [
+          0,
+          0
+        ]
+      },
+      "shape_counts": [
+        3,
+        3
+      ],
+      "executed_divider_block_entries": [
+        8388608,
+        8388608
+      ],
+      "shapes_with_changed_membership": 0,
+      "shared_shapes_with_changed_counts": 0,
+      "sum_absolute_block_entry_deltas": 0
+    },
+    "div_large_parallel": {
+      "gce_native_ns": {
+        "min": 63896000,
+        "median": 63986000,
+        "max": 64490000
+      },
+      "gce_native_spread_ppm": 9283,
+      "local_minus_gce_median_ppm": {
+        "instructions": [
+          0,
+          0
+        ],
+        "latency_x16": [
+          0,
+          0
+        ],
+        "operand_bytes": [
+          0,
+          0
+        ],
+        "baseline_ns": [
+          0,
+          0
+        ]
+      },
+      "shape_counts": [
+        3,
+        3
+      ],
+      "executed_divider_block_entries": [
+        8388608,
+        8388608
+      ],
+      "shapes_with_changed_membership": 0,
+      "shared_shapes_with_changed_counts": 0,
+      "sum_absolute_block_entry_deltas": 0
+    },
+    "div_xor_serial": {
+      "gce_native_ns": {
+        "min": 136399000,
+        "median": 136536500,
+        "max": 137029000
+      },
+      "gce_native_spread_ppm": 4614,
+      "local_minus_gce_median_ppm": {
+        "instructions": [
+          0,
+          0
+        ],
+        "latency_x16": [
+          0,
+          0
+        ],
+        "operand_bytes": [
+          0,
+          0
+        ],
+        "baseline_ns": [
+          0,
+          0
+        ]
+      },
+      "shape_counts": [
+        3,
+        3
+      ],
+      "executed_divider_block_entries": [
+        8388608,
+        8388608
+      ],
+      "shapes_with_changed_membership": 0,
+      "shared_shapes_with_changed_counts": 0,
+      "sum_absolute_block_entry_deltas": 0
+    },
+    "div_xor_parallel": {
+      "gce_native_ns": {
+        "min": 63626000,
+        "median": 63803000,
+        "max": 63965000
+      },
+      "gce_native_spread_ppm": 5313,
+      "local_minus_gce_median_ppm": {
+        "instructions": [
+          0,
+          0
+        ],
+        "latency_x16": [
+          0,
+          0
+        ],
+        "operand_bytes": [
+          0,
+          0
+        ],
+        "baseline_ns": [
+          0,
+          0
+        ]
+      },
+      "shape_counts": [
+        3,
+        3
+      ],
+      "executed_divider_block_entries": [
+        8388608,
+        8388608
+      ],
+      "shapes_with_changed_membership": 0,
+      "shared_shapes_with_changed_counts": 0,
+      "sum_absolute_block_entry_deltas": 0
+    },
+    "div_mov_serial": {
+      "gce_native_ns": {
+        "min": 136454000,
+        "median": 136604500,
+        "max": 141526000
+      },
+      "gce_native_spread_ppm": 37129,
+      "local_minus_gce_median_ppm": {
+        "instructions": [
+          0,
+          0
+        ],
+        "latency_x16": [
+          0,
+          0
+        ],
+        "operand_bytes": [
+          0,
+          0
+        ],
+        "baseline_ns": [
+          0,
+          0
+        ]
+      },
+      "shape_counts": [
+        3,
+        3
+      ],
+      "executed_divider_block_entries": [
+        8388608,
+        8388608
+      ],
+      "shapes_with_changed_membership": 0,
+      "shared_shapes_with_changed_counts": 0,
+      "sum_absolute_block_entry_deltas": 0
+    },
+    "div_mov_parallel": {
+      "gce_native_ns": {
+        "min": 63774000,
+        "median": 63827000,
+        "max": 63932000
+      },
+      "gce_native_spread_ppm": 2475,
+      "local_minus_gce_median_ppm": {
+        "instructions": [
+          0,
+          0
+        ],
+        "latency_x16": [
+          0,
+          0
+        ],
+        "operand_bytes": [
+          0,
+          0
+        ],
+        "baseline_ns": [
+          0,
+          0
+        ]
+      },
+      "shape_counts": [
+        3,
+        3
+      ],
+      "executed_divider_block_entries": [
+        8388608,
+        8388608
+      ],
+      "shapes_with_changed_membership": 0,
+      "shared_shapes_with_changed_counts": 0,
+      "sum_absolute_block_entry_deltas": 0
+    },
+    "integer": {
+      "gce_native_ns": {
+        "min": 43729000,
+        "median": 43795500,
+        "max": 44072000
+      },
+      "gce_native_spread_ppm": 7832,
+      "local_minus_gce_median_ppm": {
+        "instructions": [
+          775,
+          778
+        ],
+        "latency_x16": [
+          194,
+          195
+        ],
+        "operand_bytes": [
+          66197,
+          66461
+        ],
+        "baseline_ns": [
+          201,
+          202
+        ]
+      },
+      "shape_counts": [
+        1,
+        1
+      ],
+      "executed_divider_block_entries": [
+        1,
+        1
+      ],
+      "shapes_with_changed_membership": 0,
+      "shared_shapes_with_changed_counts": 0,
+      "sum_absolute_block_entry_deltas": 0
+    },
+    "copy": {
+      "gce_native_ns": {
+        "min": 52454000,
+        "median": 56086500,
+        "max": 57557000
+      },
+      "gce_native_spread_ppm": 90984,
+      "local_minus_gce_median_ppm": {
+        "instructions": [
+          227,
+          224
+        ],
+        "latency_x16": [
+          227,
+          223
+        ],
+        "operand_bytes": [
+          18,
+          17
+        ],
+        "baseline_ns": [
+          167,
+          164
+        ]
+      },
+      "shape_counts": [
+        1,
+        1
+      ],
+      "executed_divider_block_entries": [
+        1,
+        1
+      ],
+      "shapes_with_changed_membership": 0,
+      "shared_shapes_with_changed_counts": 0,
+      "sum_absolute_block_entry_deltas": 0
+    },
+    "branch": {
+      "gce_native_ns": {
+        "min": 56050000,
+        "median": 57930000,
+        "max": 61638000
+      },
+      "gce_native_spread_ppm": 96461,
+      "local_minus_gce_median_ppm": {
+        "instructions": [
+          129,
+          131
+        ],
+        "latency_x16": [
+          128,
+          131
+        ],
+        "operand_bytes": [
+          63292,
+          64446
+        ],
+        "baseline_ns": [
+          133,
+          135
+        ]
+      },
+      "shape_counts": [
+        1,
+        1
+      ],
+      "executed_divider_block_entries": [
+        1,
+        1
+      ],
+      "shapes_with_changed_membership": 0,
+      "shared_shapes_with_changed_counts": 0,
+      "sum_absolute_block_entry_deltas": 0
+    },
+    "sort": {
+      "gce_native_ns": {
+        "min": 40285000,
+        "median": 40359000,
+        "max": 40562000
+      },
+      "gce_native_spread_ppm": 6863,
+      "local_minus_gce_median_ppm": {
+        "instructions": [
+          245,
+          239
+        ],
+        "latency_x16": [
+          243,
+          237
+        ],
+        "operand_bytes": [
+          107,
+          100
+        ],
+        "baseline_ns": [
+          233,
+          227
+        ]
+      },
+      "shape_counts": [
+        1,
+        1
+      ],
+      "executed_divider_block_entries": [
+        1,
+        1
+      ],
+      "shapes_with_changed_membership": 0,
+      "shared_shapes_with_changed_counts": 0,
+      "sum_absolute_block_entry_deltas": 0
+    },
+    "fill": {
+      "gce_native_ns": {
+        "min": 46364000,
+        "median": 46566000,
+        "max": 51901000
+      },
+      "gce_native_spread_ppm": 118906,
+      "local_minus_gce_median_ppm": {
+        "instructions": [
+          150,
+          155
+        ],
+        "latency_x16": [
+          150,
+          155
+        ],
+        "operand_bytes": [
+          -13,
+          -12
+        ],
+        "baseline_ns": [
+          104,
+          108
+        ]
+      },
+      "shape_counts": [
+        1,
+        1
+      ],
+      "executed_divider_block_entries": [
+        1,
+        1
+      ],
+      "shapes_with_changed_membership": 0,
+      "shared_shapes_with_changed_counts": 0,
+      "sum_absolute_block_entry_deltas": 0
+    },
+    "gcd": {
+      "gce_native_ns": {
+        "min": 39210000,
+        "median": 39346000,
+        "max": 39412000
+      },
+      "gce_native_spread_ppm": 5134,
+      "local_minus_gce_median_ppm": {
+        "instructions": [
+          1363,
+          1385
+        ],
+        "latency_x16": [
+          131,
+          133
+        ],
+        "operand_bytes": [
+          59083,
+          62433
+        ],
+        "baseline_ns": [
+          135,
+          137
+        ]
+      },
+      "shape_counts": [
+        4,
+        4
+      ],
+      "executed_divider_block_entries": [
+        9525463,
+        9525463
+      ],
+      "shapes_with_changed_membership": 0,
+      "shared_shapes_with_changed_counts": 0,
+      "sum_absolute_block_entry_deltas": 0
+    },
+    "lower_bound": {
+      "gce_native_ns": {
+        "min": 33800000,
+        "median": 34454500,
+        "max": 36050000
+      },
+      "gce_native_spread_ppm": 65304,
+      "local_minus_gce_median_ppm": {
+        "instructions": [
+          1154,
+          1175
+        ],
+        "latency_x16": [
+          390,
+          397
+        ],
+        "operand_bytes": [
+          1729,
+          1764
+        ],
+        "baseline_ns": [
+          400,
+          407
+        ]
+      },
+      "shape_counts": [
+        2,
+        2
+      ],
+      "executed_divider_block_entries": [
+        524289,
+        524289
+      ],
+      "shapes_with_changed_membership": 0,
+      "shared_shapes_with_changed_counts": 0,
+      "sum_absolute_block_entry_deltas": 0
+    },
+    "rolling_window": {
+      "gce_native_ns": {
+        "min": 16075000,
+        "median": 16379500,
+        "max": 16885000
+      },
+      "gce_native_spread_ppm": 49452,
+      "local_minus_gce_median_ppm": {
+        "instructions": [
+          487,
+          481
+        ],
+        "latency_x16": [
+          437,
+          432
+        ],
+        "operand_bytes": [
+          292,
+          288
+        ],
+        "baseline_ns": [
+          430,
+          425
+        ]
+      },
+      "shape_counts": [
+        1,
+        1
+      ],
+      "executed_divider_block_entries": [
+        1,
+        1
+      ],
+      "shapes_with_changed_membership": 0,
+      "shared_shapes_with_changed_counts": 0,
+      "sum_absolute_block_entry_deltas": 0
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "source_sha256": "b7dbff581623fe9773005293f5522e907ba5c62d565e78c11ba1ca5b5d692914",
+  "build": "rustc +1.94.0 --edition 2024 -O -C target-cpu=x86-64-v2 --cfg NAME --crate-name NAME experiments/divide_clock/fresh/holdouts.rs -o OUTPUT",
+  "rustc_commit": "4a4ef493e3a1488c6e321570238084b38948f6db",
+  "cases": {
+    "floor_groups": {
+      "stdout": "1009690907852\n",
+      "expected_sha256": "52d8dfbf6f2f7ac8704d39e4a87ba7d1044aa02ee0c592db1fde3a70beb3e8bc",
+      "source_divisions": 14572040,
+      "binary_sha256": "d9c0c42498a2f0905158334435994296ac2b56935bdb9de0a3a5d2e0c712e735",
+      "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "batch_quotients": {
+      "stdout": "9843455713280\n",
+      "expected_sha256": "3419f99b50d585d1956e98fcde79e88945128f3cec3cc98c62c9a2ba4d840a9d",
+      "source_divisions": 33554432,
+      "binary_sha256": "a72e92c6a7547d550d6ab9f105300500117e198f51809d52150c6a14272a9a47",
+      "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "archive_sha256": "d5141e8ca55abfd426a3422938c3c8fb6f33f18bf98a8143a8625a3c2ba04415"
+}

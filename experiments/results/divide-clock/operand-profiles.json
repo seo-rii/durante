@@ -1,0 +1,296 @@
+{
+  "gcd": {
+    "binary_sha256": "5b7aece7ce2817e5b68bc9961e7663f3d1fbd66dd4b079eae22f65ff47d4d35f",
+    "input_pairs": 524288,
+    "checksum": 5324962,
+    "hot_divisions": 9525462,
+    "operand_width_bits": 32,
+    "quotient_zero": 261939,
+    "quotient_at_most_three": 6621334,
+    "divisor_251": 1825,
+    "dividend_bits": [
+      0,
+      0,
+      200859,
+      264408,
+      287992,
+      297672,
+      302004,
+      303763,
+      305599,
+      305281,
+      306606,
+      305755,
+      307012,
+      306648,
+      306598,
+      307206,
+      306066,
+      306616,
+      305477,
+      306768,
+      305448,
+      306993,
+      306491,
+      306336,
+      308913,
+      309529,
+      314723,
+      322081,
+      337358,
+      366249,
+      419121,
+      589890,
+      0
+    ],
+    "divisor_bits": [
+      0,
+      317956,
+      316350,
+      312601,
+      310088,
+      308066,
+      307039,
+      306331,
+      306909,
+      305902,
+      306942,
+      305891,
+      307090,
+      306676,
+      306615,
+      307216,
+      306057,
+      306608,
+      305446,
+      306688,
+      305305,
+      306720,
+      305966,
+      305238,
+      306875,
+      305433,
+      306445,
+      305712,
+      304585,
+      300825,
+      288230,
+      327657,
+      0
+    ],
+    "quotient_bits": [
+      261939,
+      3781372,
+      2578023,
+      1425353,
+      745198,
+      375355,
+      184745,
+      90016,
+      43401,
+      20873,
+      9990,
+      4830,
+      2302,
+      1073,
+      532,
+      238,
+      119,
+      54,
+      28,
+      10,
+      8,
+      1,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "divisions_per_pair_histogram": {
+      "4": 3,
+      "5": 11,
+      "6": 48,
+      "7": 167,
+      "8": 543,
+      "9": 1358,
+      "10": 3081,
+      "11": 6173,
+      "12": 11530,
+      "13": 19631,
+      "14": 29103,
+      "15": 40323,
+      "16": 51431,
+      "17": 58475,
+      "18": 61972,
+      "19": 59985,
+      "20": 53108,
+      "21": 43185,
+      "22": 32413,
+      "23": 22248,
+      "24": 13948,
+      "25": 7867,
+      "26": 4234,
+      "27": 2050,
+      "28": 933,
+      "29": 307,
+      "30": 106,
+      "31": 39,
+      "32": 14,
+      "33": 1,
+      "34": 1
+    },
+    "inner_test_instructions": 9525462,
+    "inner_jne_taken": 9001174,
+    "inner_jne_fallthrough": 524288,
+    "outer_cmp_instructions": 524288,
+    "outer_jne_taken": 524287,
+    "outer_jne_fallthrough": 1
+  },
+  "controls": {
+    "div_small_serial": {
+      "binary_sha256": "b6dbb9b244c1345316dcd0bf64c30872fcbaa18e8a339192510fbf99f1b07759",
+      "streams": 1,
+      "zeroing": "xor",
+      "hot_divisions": 33554432,
+      "operand_width_bits": 32,
+      "divisor": 251,
+      "dividend_range": [
+        257,
+        507
+      ],
+      "quotient_bit_histogram": {
+        "1": 32752335,
+        "2": 802097
+      },
+      "hot_jne_taken": 8388604,
+      "hot_jne_fallthrough": 4
+    },
+    "div_small_parallel": {
+      "binary_sha256": "3fab38e887921f99ec2a5834aba2e4cfa4cf8f0e5ef589ac6cd6e0085b951f2d",
+      "streams": 4,
+      "zeroing": "xor",
+      "hot_divisions": 33554432,
+      "operand_width_bits": 32,
+      "divisor": 251,
+      "dividend_range": [
+        257,
+        507
+      ],
+      "quotient_bit_histogram": {
+        "1": 32752335,
+        "2": 802097
+      },
+      "hot_jne_taken": 8388604,
+      "hot_jne_fallthrough": 4
+    },
+    "div_large_serial": {
+      "binary_sha256": "02ecd2992aca22b68bdf5dbbbe9a349fae1ab3f53dbc49cfcae7c9345f1646d9",
+      "streams": 1,
+      "zeroing": "xor",
+      "hot_divisions": 33554432,
+      "operand_width_bits": 32,
+      "divisor": 251,
+      "dividend_range": [
+        1073741862,
+        1073742112
+      ],
+      "quotient_bit_histogram": {
+        "23": 33554432
+      },
+      "hot_jne_taken": 8388604,
+      "hot_jne_fallthrough": 4
+    },
+    "div_large_parallel": {
+      "binary_sha256": "08188224dfac48d8ca2d9ce39c76f242d4597fb4a9d68ac938746e5842f1ce2a",
+      "streams": 4,
+      "zeroing": "xor",
+      "hot_divisions": 33554432,
+      "operand_width_bits": 32,
+      "divisor": 251,
+      "dividend_range": [
+        1073741862,
+        1073742112
+      ],
+      "quotient_bit_histogram": {
+        "23": 33554432
+      },
+      "hot_jne_taken": 8388604,
+      "hot_jne_fallthrough": 4
+    },
+    "div_xor_serial": {
+      "binary_sha256": "02ecd2992aca22b68bdf5dbbbe9a349fae1ab3f53dbc49cfcae7c9345f1646d9",
+      "streams": 1,
+      "zeroing": "xor",
+      "hot_divisions": 33554432,
+      "operand_width_bits": 32,
+      "divisor": 251,
+      "dividend_range": [
+        1073741862,
+        1073742112
+      ],
+      "quotient_bit_histogram": {
+        "23": 33554432
+      },
+      "hot_jne_taken": 8388604,
+      "hot_jne_fallthrough": 4
+    },
+    "div_xor_parallel": {
+      "binary_sha256": "08188224dfac48d8ca2d9ce39c76f242d4597fb4a9d68ac938746e5842f1ce2a",
+      "streams": 4,
+      "zeroing": "xor",
+      "hot_divisions": 33554432,
+      "operand_width_bits": 32,
+      "divisor": 251,
+      "dividend_range": [
+        1073741862,
+        1073742112
+      ],
+      "quotient_bit_histogram": {
+        "23": 33554432
+      },
+      "hot_jne_taken": 8388604,
+      "hot_jne_fallthrough": 4
+    },
+    "div_mov_serial": {
+      "binary_sha256": "3c73137ff00654d69e7b7f799d075fdcda8ce2e1f955088ea0b2ac1306d96a50",
+      "streams": 1,
+      "zeroing": "mov",
+      "hot_divisions": 33554432,
+      "operand_width_bits": 32,
+      "divisor": 251,
+      "dividend_range": [
+        1073741862,
+        1073742112
+      ],
+      "quotient_bit_histogram": {
+        "23": 33554432
+      },
+      "hot_jne_taken": 8388604,
+      "hot_jne_fallthrough": 4
+    },
+    "div_mov_parallel": {
+      "binary_sha256": "18dc1c1545e03ecf2695140dd3f355833ef5b16fd645e89b2b56110da60c1590",
+      "streams": 4,
+      "zeroing": "mov",
+      "hot_divisions": 33554432,
+      "operand_width_bits": 32,
+      "divisor": 251,
+      "dividend_range": [
+        1073741862,
+        1073742112
+      ],
+      "quotient_bit_histogram": {
+        "23": 33554432
+      },
+      "hot_jne_taken": 8388604,
+      "hot_jne_fallthrough": 4
+    }
+  }
+}
