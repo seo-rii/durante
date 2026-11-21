@@ -9,10 +9,11 @@ import json
 from pathlib import Path
 import re
 
+from sample_layout import sample_layout
+
 
 LAUNCHER = "/opt/durante/dynamorio/bin64/drrun"
 LOADER = "/opt/durante/dynamorio/lib64/release/libdynamorio.so"
-PHASES = ("native_before", "metered", "native_after")
 TRACE_EVENTS = {"sched/sched_process_exec", "sched/sched_process_fork",
                 "sched/sched_process_exit", "cgroup/cgroup_attach_task"}
 ROW = re.compile(r"\[(\d+)\]\s+\S+\s+(\d+\.\d+):\s+(\w+):\s+(.*)$")
@@ -37,12 +38,11 @@ def field(details, key):
 
 
 def placement(dataset, receipt):
-    require(dataset["complete"] and len(dataset["samples"]) == 45, "incomplete dataset")
     expected = []
-    for row in dataset["samples"]:
-        for phase in PHASES:
+    for row, _, phases in sample_layout(dataset):
+        for phase in phases:
             pid = row[phase]["pid"]
-            paths = [LAUNCHER, LOADER] if phase == "metered" else ["/out/bin/" + row["workload_id"] + "/Main"]
+            paths = [LAUNCHER, LOADER] if phase in ("metered", "full", "fast") else ["/out/bin/" + row["workload_id"] + "/Main"]
             expected.append((pid, paths))
     require(len({pid for pid, _ in expected}) == len(expected), "duplicate child PID")
     children = {pid: [] for pid, _ in expected}
@@ -94,7 +94,7 @@ def reduce(dataset, folder):
     require(sha(raw) == stop["event_sha256"], "guest trace digest mismatch")
     group = first["path"]
     root = dataset["collector_pid"]
-    pids = {row[phase]["pid"] for row in dataset["samples"] for phase in PHASES}
+    pids = {row[phase]["pid"] for row, _, phases in sample_layout(dataset) for phase in phases}
     totals = Counter()
     events = []
     root_group = ""
@@ -189,7 +189,9 @@ def main():
                 platform["affinity_observer_polls"] == receipt["polls"] and
                 platform["cleanup"]["instance_http"] == platform["cleanup"]["boot_disk_http"] == 404,
                 "platform record disagrees with the measurement or cleanup")
-    print("Verified 90 native execs, 45 launcher execs and 45 same-PID loader execs on guest CPU 1.")
+    counts = Counter(event[4] for event in receipt["events"] if event[0] == "exec")
+    native = sum(n for name, n in counts.items() if name.endswith("/Main"))
+    print(f"Verified {native} native execs, {counts[LAUNCHER]} launches and {counts[LOADER]} same-PID loaders on guest CPU 1.")
 
 
 if __name__ == "__main__":
