@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "cases": [
+    {"workload_id":"gcd_seed_b","program":"gcd","split":"anchor","stdin":"1048576 271828183\n"},
+    {"workload_id":"fibonacci_alternating","program":"fibonacci","split":"anchor","stdin":"2097152 0\n"},
+    {"workload_id":"gcd_seed_d","program":"gcd","split":"prospective","stdin":"1572864 141421357\n"},
+    {"workload_id":"fibonacci_aabb","program":"fibonacci","split":"prospective","stdin":"2097152 1\n"},
+    {"workload_id":"fibonacci_runs32","program":"fibonacci","split":"prospective","stdin":"2097152 5\n"},
+    {"workload_id":"fibonacci_permuted","program":"permuted","split":"prospective","stdin":"2097152 3668339987\n"}
+  ]
+}
