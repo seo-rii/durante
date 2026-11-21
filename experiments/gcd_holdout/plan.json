@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "design": "Three previously unmeasured inputs to the archived xorshift32 Rust GCD executable test changes of seed and problem size. Two inputs to a new Rust executable use the same multiset of scaled Fibonacci operands in different orders. The Fibonacci cases alternate individual chains or runs of 256 chains. Both orders are deterministic.",
+  "cases": [
+    {"workload_id": "gcd_seed_a", "program": "gcd", "stdin": "786432 314159265\n"},
+    {"workload_id": "gcd_seed_b", "program": "gcd", "stdin": "1048576 271828183\n"},
+    {"workload_id": "gcd_seed_c", "program": "gcd", "stdin": "1310720 161803399\n"},
+    {"workload_id": "fibonacci_alternating", "program": "fibonacci", "stdin": "2097152 0\n"},
+    {"workload_id": "fibonacci_runs", "program": "fibonacci", "stdin": "2097152 8\n"}
+  ]
+}

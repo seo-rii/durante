@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "training_sha256": "4599a27af80b05fb280ffb56038ff88d07692ee869462d0241a1c9eaefdbb755",
+  "first_study_calibration_sha256": "bdf4d43d4b59f30fb9edb4bea8ba42dd17d34639878715b02565d1463ec5ada6",
+  "training_controls": [
+    "loop_counted_original",
+    "loop_counted_grouped",
+    "loop_remainder_original",
+    "loop_remainder_grouped"
+  ],
+  "baseline_coefficients_ns": {
+    "latency_cycles": "38594630777421673993327230336214834941202136156398653722895070246982136060000/120823800691208141759480149677879410517507322737589887557123968840459227316181",
+    "memory_bytes": "16867383511564202169546073663118301058947456345479598942320717815109839185000/4953775828339533812138686136793055831217800232241185389842082722458828319963421"
+  },
+  "ns_per_eligible_visit": "-10946185/9525462",
+  "ns_per_remainder_length_change": "6200500/160019",
+  "counted_mean_residual_ns": "-10946185",
+  "observed_interaction_ns": "18601500",
+  "training_divisions": 9525462,
+  "training_change_difference": 480057,
+  "scoring": "Report every case and repetition. Use only single-process complete receipts. For each phase compare the four estimates to the median of the eight native CPU observations. To pass, every estimate must be within 20 percent. Report the two native quality gates (minimum 20 ms and spread at most 10 percent), the two distinct paired baseline estimates, the number of eligible visits and qualifying length changes, the probe CPU overhead, and the alternating minus runs contrast. Report failures without changing these parameters."
+}
