@@ -94,10 +94,14 @@ work than its native control.
 The independent native `signal_context.c` regression also checks registers and
 flags that linear analysis would consider dead: a SIGSEGV handler inspects the
 saved state and resumes past a future clobber. The old client changes that state.
-Managed runtimes use clean calls for block entry and write checkpoints. The
-ordinary counter in eligible static executable text explicitly saves and
-restores its scratch registers and arithmetic flags at block entry. Its write
-checkpoints use flag-preserving moves.
+Without a live work clock, block entry and write checkpoints are inline for all
+code, managed runtimes included. These sequences use only flag-neutral MOV and
+LEA instructions and restore their scratch registers before the next application
+instruction. A restore-state handler recovers those registers when the runtime
+translates a thread inside a sequence. With a live clock, managed runtimes keep
+clean calls. The ordinary counter in eligible static executable text explicitly
+saves and restores its scratch registers and arithmetic flags at block entry.
+Its write checkpoints use flag-preserving moves.
 An earlier counter relied on drreg liveness analysis, which omitted a flag save
 needed by this regression. Both direct REP modes and the supervisor must preserve exact
 fixture output and record both handled signals. These tests do not establish all

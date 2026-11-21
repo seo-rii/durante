@@ -10,15 +10,27 @@ Values are exact lowercase spellings and duplicates are rejected. The earlier
 single-file `drmeter -o REPORT` interface is not used.
 
 Each application basic block adds its instruction count to thread-local state.
+Without `-live_work_v1`, nothing is published before a syscall, so every block
+does this inline, including dynamically linked executables, shared libraries and
+generated code. The entry sequence uses only MOV and LEA. It never reads or
+writes the application's arithmetic flags, so no flag save is needed even when
+a signal handler inspects them. Each memory write records its replay checkpoint
+with flag-neutral moves. Scratch registers are spilled to client-owned TLS slots.
+A restore-state handler recovers them if the runtime translates a thread inside
+one of these sequences. It also returns a stored entry charge when a relocated
+thread will enter the same block again. The layout depends only on the block, so
+no translations are stored. A retry's first-block checks move from block entry
+to the replay, REP, signal and snapshot callbacks.
+
 With `-live_work_v1`, the ordinary counter can update that state directly in the
 original executable text containing a fixed-address, statically linked program's
 entry point. Between live work publications this avoids a callback on each hot
 block. It saves and restores its scratch registers
 and arithmetic flags even when a signal handler is the only code that reads them.
 The checked callback handles publication boundaries, replay and additions near
-overflow. Dynamically linked executables, shared libraries and generated code
-use callbacks throughout. The optional latency model also uses the callback to
-charge each block's bound.
+overflow. In live runs, dynamically linked executables, shared libraries and
+generated code use callbacks throughout. The optional latency model also uses
+the callback to charge each block's bound.
 
 REP MOVS/STOS byte demand is read at the REP instruction after earlier register
 updates, with one clean call per REP entry. Conditional REP forms are separately
