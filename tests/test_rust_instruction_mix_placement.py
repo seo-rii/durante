@@ -2,15 +2,19 @@ import copy
 import gzip
 import json
 from pathlib import Path
+import sys
 import unittest
+from unittest.mock import patch
 
-from placement import LOADER, placement
+STUDY = Path(__file__).resolve().parents[1] / "experiments/rust_instruction_mix"
+with patch.object(sys, "path", [str(STUDY), *sys.path]):
+    from placement import LOADER, placement
 
 
 class PlacementTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        results = Path(__file__).resolve().parents[1] / "results/gce-rust-instruction-mix"
+        results = STUDY.parent / "results/gce-rust-instruction-mix"
         cls.dataset = json.loads(gzip.decompress((results / "dataset.json.gz").read_bytes()))
         cls.receipt = json.loads(gzip.decompress((results / "placement.json.gz").read_bytes()))
 

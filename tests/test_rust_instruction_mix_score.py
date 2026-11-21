@@ -1,9 +1,14 @@
 import copy
 import hashlib
 import json
+from pathlib import Path
+import sys
 import unittest
+from unittest.mock import patch
 
-from score import HERE, LATENCY, STATIC, fit, pair_bound, report, validate_corpus
+STUDY = Path(__file__).resolve().parents[1] / "experiments/rust_instruction_mix"
+with patch.object(sys, "path", [str(STUDY), *sys.path]):
+    from score import HERE, LATENCY, STATIC, fit, pair_bound, report, validate_corpus
 
 
 def synthetic(protocol):

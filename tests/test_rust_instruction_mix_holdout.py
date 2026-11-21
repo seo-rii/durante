@@ -1,8 +1,13 @@
 import copy
 import json
+from pathlib import Path
+import sys
 import unittest
+from unittest.mock import patch
 
-from score_holdout import HERE, LATENCY, RECURRENCE, STATIC, evaluate
+STUDY = Path(__file__).resolve().parents[1] / "experiments/rust_instruction_mix" / "holdout"
+with patch.object(sys, "path", [str(STUDY), *sys.path]):
+    from score_holdout import HERE, LATENCY, RECURRENCE, STATIC, evaluate
 
 
 def synthetic(plan, fixtures):
