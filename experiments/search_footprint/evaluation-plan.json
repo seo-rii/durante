@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "calibration": ["fit_16k", "fit_256k", "fit_512k", "fit_1m", "fit_8m"],
+  "repeats": ["archived", "prior_nonpower"],
+  "new": ["new_96k", "new_384k", "new_768k", "new_2m", "new_4m"],
+  "baseline": "experiments/gcd_controls/calibration.json",
+  "previous": "experiments/results/gce-search-order/evaluation.json",
+  "method": "For each of five registered anchors, subtract the median same-run fast-clock prediction from the median native wait4 CPU time and divide by measured queries. Interpolate this signed per-query residual linearly in observed byte span between the two bracketing anchors. Endpoint displacements up to 5 percent beyond the calibration span use the nearest coefficient. Do not use input size, seed, true table size or native measurements for inference. This calibration is specific to the archived executable and registered terminal instruction.",
+  "eligibility": "Require the registered ELF digest, terminal comparison PC, at least 256 complete endpoint pairs, and an observed span within [0.95*smallest_anchor,1.05*largest_anchor]. From the sampled element-index extrema, compute the theoretical width distribution for independent uniform indices over that inclusive interval. Require empirical and theoretical cumulative probabilities to differ by at most 1/12 at every width. Otherwise abstain. This checks a property of the samples and is not proof of independent uniform queries.",
+  "scoring": "Training medians use four instrumented and eight native observations. Score every one of four predictions against the median of all eight native wait4 user+system CPU times. All four must be within 20 percent and eligible to pass. Minimum duration 20 ms and spread at most 10 percent are separate quality gates. Report all cases, including failures or abstentions, plus four paired CPU overhead ratios per case. Compare with the earlier conditional-move suffix model using its original coefficients, and both plain and paired version-9001 estimates. Distinguish two previously observed input identities from five fresh holdouts. Include a predeclared transfer sensitivity in which one calibration size is omitted at a time and only the remaining supported span is scored."
+}
