@@ -2,6 +2,7 @@
 import argparse
 from fractions import Fraction
 import gzip
+import hashlib
 import json
 from math import ceil
 from pathlib import Path
@@ -127,7 +128,10 @@ def witnesses(cases, native, design):
 
 
 def evaluate(path):
-    data = json.loads(gzip.decompress(path.read_bytes()) if path.suffix == ".gz" else path.read_bytes())
+    raw = path.read_bytes()
+    if raw.startswith(b"\x1f\x8b"):
+        raw = gzip.decompress(raw)
+    data = json.loads(raw)
     source = evidence()
     cases = source["cases"]
     native = native_samples(data, cases)
@@ -142,7 +146,9 @@ def evaluate(path):
                             "overlap": max(fresh["min_ns"], historical["min_ns"]) <=
                                        min(fresh["max_ns"], historical["max_ns"])}
     design = json.loads((HERE / "design.json").read_bytes())
-    return {"schema": 1, "protocol_sha256": data["protocol_sha256"], "first_jobs_by_elf": first,
+    return {"schema": 1, "protocol_sha256": data["protocol_sha256"], "dataset_sha256": hashlib.sha256(raw).hexdigest(),
+            "transfer_plan_sha256": hashlib.sha256((HERE / "transfer-plan.json").read_bytes()).hexdigest(),
+            "first_jobs_by_elf": first,
             "within_elf": anchored_scores(source, native, first), "across_guests": across,
             "pair_bounds": witnesses(cases, native, design)}
 
