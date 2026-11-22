@@ -29,6 +29,8 @@ The full sampler passed both cost thresholds in diagnostic mode. With the live c
 
 All 259 runs had the expected output. Their 469 measured exec events were on CPU 1. The guest recorded zero CPU 1 steal ticks, trace overruns and dropped events. The canonical release reader reproduced all 210 metered reports. All 84 terminal live clocks reconciled to the instruction and REP counters of the corresponding process. Both the temporary VM and its boot disk returned HTTP 404 after deletion, and the temporary SSH key was removed. [Trial receipts](../experiments/results/gce-cpp20-locality/receipts.tar.xz) · [Kernel exec trace](../experiments/results/gce-cpp20-locality/exec-trace.txt) · [Teardown](../experiments/results/gce-cpp20-locality/cleanup.json)
 
+A second pinned guest compared an empty client, a countdown-only client, the complete sampler and a single-DSO build on the same inputs. [Live cost decomposition](GCE_LIVE_SAMPLER_COST.md)
+
 ## What was measured
 
 Aonohako's earlier test used one static C++20 executable for two inputs. Its native medians on a pinned Milan CPU were 18.28 and 210.07 ms, although both runs executed the same number of dependent loads and had nearly the same modeled cycles and nominal operand bytes. This follow-up keeps the executables, the two endpoints and the loop count. It adds three previously unmeasured intermediate ranges. Two more executables, a sort and a REP copy, serve as instrumentation cost controls. [Earlier corpus and results](https://github.com/seo-rii/aonohako/pull/154) · [Frozen plan](https://github.com/seo-rii/durante/commit/7662935e83035118da908167425cc0f619c205ae)
