@@ -1,0 +1,108 @@
+{
+  "schema": 1,
+  "arm": "live_span",
+  "dataset_sha256": "8695e2ab4fd6c944364e82196a84b3565d9d5e552c67f55188a5b80f945780d3",
+  "receipts_sha256": "b5efa70cde5a6fb294d36d887360a125152df9c8b9c7a696149b570225038ebe",
+  "by_elf": {
+    "ecf2c6d2ae86980640e884929410f95a0df1a2f2ae4625cd75b3698f896f95b2": {
+      "program": "cycle_walk",
+      "training_cases": [
+        "cycle_walk/32KiB",
+        "cycle_walk/128KiB",
+        "cycle_walk/2MiB",
+        "cycle_walk/16MiB",
+        "cycle_walk/64MiB"
+      ],
+      "offsets": [
+        6656
+      ],
+      "ranked_prefix": [
+        {
+          "offset": 6656,
+          "visits": 62927190
+        }
+      ],
+      "eligible_visits": 63511434,
+      "selected_visits": 62927190
+    },
+    "d96565357cdd163ea7de5eb145aaf915b0b0ba9e238a46718e9e1352e51c4b75": {
+      "program": "sort",
+      "training_cases": [
+        "sort/1"
+      ],
+      "offsets": [
+        6576,
+        6598,
+        6692,
+        8035,
+        8048,
+        8067,
+        8091,
+        8094,
+        8102
+      ],
+      "ranked_prefix": [
+        {
+          "offset": 8035,
+          "visits": 19057152
+        },
+        {
+          "offset": 8067,
+          "visits": 18085716
+        },
+        {
+          "offset": 8091,
+          "visits": 11476392
+        },
+        {
+          "offset": 8094,
+          "visits": 11476392
+        },
+        {
+          "offset": 6598,
+          "visits": 8456634
+        },
+        {
+          "offset": 8102,
+          "visits": 6088944
+        },
+        {
+          "offset": 8048,
+          "visits": 5715078
+        },
+        {
+          "offset": 6692,
+          "visits": 3145728
+        },
+        {
+          "offset": 6576,
+          "visits": 3145632
+        }
+      ],
+      "eligible_visits": 90982326,
+      "selected_visits": 86647668
+    },
+    "255445d9e1311d5872c4da62e12df42c199012cfbc9b8c5dc6e8a8646cab2100": {
+      "program": "rep_copy",
+      "training_cases": [
+        "rep_copy/1"
+      ],
+      "offsets": [
+        9227,
+        9380
+      ],
+      "ranked_prefix": [
+        {
+          "offset": 9227,
+          "visits": 25165824
+        },
+        {
+          "offset": 9380,
+          "visits": 25165824
+        }
+      ],
+      "eligible_visits": 50514210,
+      "selected_visits": 50331648
+    }
+  }
+}
