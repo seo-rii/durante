@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "purpose": "Locate the live-mode CPU cost of sparsely sampling effective addresses and test whether compiling the live meter and the complete sampler into one shared object reduces it.",
+  "scope": "Diagnostic measurements on one CPU-pinned AMD Milan Compute Engine guest, the seven frozen C++20 inputs, one application thread and the x86-64-v2 guest profile.",
+  "cases_sha256": "191e92e9baee86a53f3b05123d4149e3c624ed53bc7898d41b2d7c2bbd745d02",
+  "walk_oracle": "Use the existing cpp20_locality fixtures, including the exact frozen walk ELF, 2,097,573 visits at main-module offset 6656, and per-input independent LCG expectations. Keep both cost controls.",
+  "schedule": {
+    "arms": ["native", "live", "empty", "gate", "full", "fused"],
+    "repetitions": 6,
+    "warmup_per_case": 1,
+    "order": "All six arms occur once per input and repetition in the frozen six-period Williams design. Exclude only the seven native warmups from scores."
+  },
+  "implementations": {
+    "native": "Run the fixture executable directly.",
+    "live": "Run the unmodified v11 live clock alone.",
+    "empty": "Run the same v11 live clock with a second shared object registered for control/setup, without counting visits.",
+    "gate": "Run the same v11 live clock with a second shared object that counts eligible visits and executes the sparse pair cadence, without classifying addresses.",
+    "full": "Run the same v11 live clock with the complete #78 schema-2 address span sampler as a second shared object.",
+    "fused": "Run the v11 live clock and complete address span sampling in one experimental shared object."
+  },
+  "integrity": {
+    "per_run": "Validate stdout, normal completion and process identity for every execution. Each metered execution must emit the same live-clock contract and terminal clock as its own canonical v11 JSONL records, and keep the live budget. Validate every sidecar against its registered arm schema; the complete sampler must reconcile totals across its ordered sites.",
+    "signature": "For each input and matching repetition compare the complete ordered (main-module offset, loads, pairs) vectors from full and fused. Require the cadence-only gate control's ordered site/visit/pair signature to match full on the same input and repetition. Retain and report all mismatches. Validate the hot walk load's visits and pairs in every gate report. Validate visits, pairs, near and far counts against the independent oracle and its address span byte-for-byte in every full and fused walk report.",
+    "work": "Report per-input paired differences in instructions, REP MOVS bytes and REP STOS bytes for full versus fused, including how many pairs are exactly equal. Record signed ranges. A common stdout and the independent per-run terminal-clock reconciliation are required. Distinct processes can execute slightly different initialization paths. Except for the oracle-checked walk site, report cross-process near/far and byte-span differences descriptively because virtual addresses may differ.",
+    "gate": "Valid measurements, all exact site visit/pair signatures and all hot-site oracles are required to describe the instrumentations as equivalent on these inputs. A mismatch is a reported result."
+  },
+  "estimation": {
+    "measure": "Direct wait4 child user plus system CPU in nanoseconds, including executable and instrumented runtime startup. Compare arms within the same input and repetition. Preserve all six observations, including outliers. Native is a descriptive reference.",
+    "comparisons": [["live","empty"],["empty","gate"],["gate","full"],["live","full"],["full","fused"],["live","fused"]],
+    "direction": "Each pair is [base, candidate]. Signed paired CPU difference is candidate minus base. For every comparison report the total CPU of each arm, the sum, minimum, median and maximum of paired differences, and the minimum, median and maximum paired ratios. The pooled ratio divides the sum of candidate CPU by the sum of base CPU. Report every input separately, plus pools for the five pointer walks, two controls and all seven inputs.",
+    "interpretation": "Adjacent arms isolate changes to concrete implementations, including initialization, callbacks, record contents and emission. Differences are not pure marginal costs of a single operation. The full-versus-fused comparison measures the complete single-client configuration. No coefficient fitting or case weighting beyond summed CPU.",
+    "native": "Report the minimum, median and maximum native CPU on each input to document the collection environment."
+  },
+  "decision": {
+    "fused_vs_live": "Meet the live overhead target only if the unrounded pooled ratio across all seven cases is at most 1.05 AND every per-input pooled ratio is at most 1.10.",
+    "fused_vs_full": "Call the fusion a useful optimization only if the unrounded pooled ratio across all seven cases is at most 0.97 AND every per-input pooled ratio is at most 1.02. Report the two decision tests separately, with every per-input result even when a pooled gate fails.",
+    "conclusion": "An overhead pass applies only to this one-machine workload collection. Neither a cost pass nor an integrity pass establishes native time accuracy or qualifies the sampler for grading."
+  }
+}
