@@ -100,9 +100,11 @@ def verify(result, elf_archive=None):
 
 
 def verify_collection(result, protocol_bytes, cases, sampled_arms, live_arms, binary_sample_arms=(),
-                      extra_receipts_by_arm=None):
+                      extra_receipts_by_arm=None, schedule=None):
     """Replay every trial using the same CPU placement, wait4 and v11 record contract."""
     plan = json.loads(protocol_bytes)
+    if schedule is None:
+        schedule = plan["schedule"]
     by_id = {case["case_id"]: case for case in cases}
     reader = release_reader(plan["tools_sha256"]["production_reader.py"])
     data = read_compressed(result / "dataset.json.gz")
@@ -132,7 +134,7 @@ def verify_collection(result, protocol_bytes, cases, sampled_arms, live_arms, bi
         for entry in archive:
             require(entry.isfile() and entry.name not in contents, "duplicate or non-file receipt")
             contents[entry.name] = archive.extractfile(entry).read()
-        for i, (slot, row, observation) in enumerate(zip(plan["schedule"], data["rows"], placement, strict=True)):
+        for i, (slot, row, observation) in enumerate(zip(schedule, data["rows"], placement, strict=True)):
             require({k: row[k] for k in slot} == slot and row["sequence"] == i, f"wrong trial at {i}")
             pid = row["launcher_pid"]
             require(type(pid) is int and pid > 0 and pid not in pids and row["exit_code"] == 0, f"invalid pid/exit at {i}")

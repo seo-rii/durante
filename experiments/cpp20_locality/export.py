@@ -34,7 +34,8 @@ def parse_trace(text):
 
 
 def publish(root, out, *, sample_arms=("diag_near", "diag_span", "live_span"),
-            clock_arms=("live", "live_span"), binary_sample_arms=(), profile_arms=()):
+            clock_arms=("live", "live_span"), binary_sample_arms=(), profile_arms=(),
+            guard_arms=(), recovery_schedule=None):
     cleanup = json.loads((root / "cleanup.json").read_bytes())
     require((root / "ops.exit").read_text().strip() == "0" and cleanup["instance_http"] == cleanup["boot_disk_http"] == 404
             and cleanup["key_removed"] is True, "cleanup receipt is incomplete")
@@ -65,7 +66,8 @@ def publish(root, out, *, sample_arms=("diag_near", "diag_span", "live_span"),
         used_paths = set()
         pids = set()
         placement = []
-        for index, (row, expected) in enumerate(zip(rows, plan["schedule"], strict=True)):
+        schedule = recovery_schedule(plan, data["recovery"]) if recovery_schedule else plan["schedule"]
+        for index, (row, expected) in enumerate(zip(rows, schedule, strict=True)):
             require(row["sequence"] == index and all(row[k] == v for k, v in expected.items()), "schedule mismatch")
             prefix = f"runs/{index:03d}/"
             pid = row["launcher_pid"]
@@ -84,6 +86,8 @@ def publish(root, out, *, sample_arms=("diag_near", "diag_span", "live_span"),
                 names.add("sample.bin")
             if arm in profile_arms:
                 names.add("profile.json")
+            if arm in guard_arms:
+                names.add("guard.json")
             if arm in clock_arms:
                 names.add("clock.bin")
             require(set(row["receipts"]) == {prefix + name for name in names}, "receipt member set")
