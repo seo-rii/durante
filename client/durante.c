@@ -74,6 +74,8 @@ typedef struct {
   /* Flat inline accounting (no live clock): the value of instructions before
    * the most recent block entry, and its value just after a RETRY rollback. */
   uint64_t entry_base, restart_base;
+  /* Live flat runs: the sampler's list of threads that publish entry_base. */
+  void *sample_next, *sample_prev;
   byte *raw_tls_base; /* This thread's runtime segment base, for state restoration. */
   bool pending_stdin_read, received_stdin;
   bool rep_error;
@@ -145,6 +147,11 @@ typedef struct {
 _Static_assert(sizeof(live_work_t) == 48 && __atomic_always_lock_free(8, 0),
                "live work requires lock-free aligned 64-bit counters");
 static live_work_t *live_work;
+/* With a live clock, flat inline blocks have no publication check at entry.
+ * A client thread publishes each thread's completed-block count instead. */
+static void *sample_lock;
+static void *sample_head;
+static bool live_sampler;
 static int app_exit_code;
 static size_t file_bytes;
 #ifdef DURANTE_TEST_COUNT_LOCATIONS
@@ -300,13 +307,27 @@ static void add_live_delta(uint64_t *counter, uint64_t delta, uint64_t overflow_
 
 enum { LIVE_WORK_BATCH = 4096 };
 
+/* The owning thread and the sampler both advance published_instructions; the
+ * compare-and-swap winner adds the delta, so no interval is published twice. */
+static void publish_instruction_target(uint64_t *published, uint64_t target) {
+  uint64_t old = __atomic_load_n(published, __ATOMIC_ACQUIRE);
+  while (target > old) {
+    if (__atomic_compare_exchange_n(published, &old, target, false, __ATOMIC_ACQ_REL,
+                                    __ATOMIC_ACQUIRE)) {
+      add_live_delta(&live_work->instructions, target - old, 1);
+      return;
+    }
+  }
+}
+
 static bool invalid_thread_work(const thread_data_t *d) {
   return d->signals || d->rep_error || d->replay_error || d->cpuid_error ||
          d->counter_overflows || d->unsupported_rep_entries;
 }
 
 static void publish_live_work(thread_data_t *d, bool flush) {
-  if (invalid_thread_work(d) || d->instructions < d->published_instructions ||
+  uint64_t published = __atomic_load_n(&d->published_instructions, __ATOMIC_ACQUIRE);
+  if (invalid_thread_work(d) || d->instructions < published ||
       d->rep_movs_bytes < d->published_movs || d->rep_stos_bytes < d->published_stos) {
     invalidate_live_work();
     return;
@@ -316,7 +337,7 @@ static void publish_live_work(thread_data_t *d, bool flush) {
       invalidate_live_work();
     return;
   }
-  uint64_t instructions = d->instructions - d->published_instructions;
+  uint64_t instructions = d->instructions - published;
   uint64_t movs = d->rep_movs_bytes - d->published_movs;
   uint64_t stos = d->rep_stos_bytes - d->published_stos;
   /* Omit the current BB's speculative entry charge. Prior BBs have passed
@@ -324,10 +345,9 @@ static void publish_live_work(thread_data_t *d, bool flush) {
    * application syscall, including those that may block or replace the image. */
   if (!flush && (instructions | movs | stos) < LIVE_WORK_BATCH)
     return;
-  add_live_delta(&live_work->instructions, instructions, 1);
+  publish_instruction_target(&d->published_instructions, d->instructions);
   add_live_delta(&live_work->movs, movs, 2);
   add_live_delta(&live_work->stos, stos, 4);
-  d->published_instructions = d->instructions;
   d->published_movs = d->rep_movs_bytes;
   d->published_stos = d->rep_stos_bytes;
 }
@@ -634,6 +654,51 @@ static void set_raw_accounting_state(thread_data_t *d) {
   }
 }
 
+static void sample_attach(thread_data_t *d) {
+  if (!live_sampler)
+    return;
+  dr_mutex_lock(sample_lock);
+  d->sample_prev = NULL;
+  d->sample_next = sample_head;
+  if (sample_head)
+    ((thread_data_t *)sample_head)->sample_prev = d;
+  sample_head = d;
+  dr_mutex_unlock(sample_lock);
+}
+
+/* After this returns the sampler can no longer reach d, so it may be freed. */
+static void sample_detach(thread_data_t *d) {
+  if (!live_sampler)
+    return;
+  dr_mutex_lock(sample_lock);
+  if (d->sample_prev)
+    ((thread_data_t *)d->sample_prev)->sample_next = d->sample_next;
+  else if (sample_head == d)
+    sample_head = d->sample_next;
+  if (d->sample_next)
+    ((thread_data_t *)d->sample_next)->sample_prev = d->sample_prev;
+  d->sample_next = d->sample_prev = NULL;
+  dr_mutex_unlock(sample_lock);
+}
+
+/* entry_base counts only blocks before the latest entry, which replay can no
+ * longer correct, so a sampled sum stays a lower bound. A thread with pending
+ * restart or invalid work publishes nothing here; its own checkpoints decide. */
+static void sample_threads(void *arg) {
+  (void)arg;
+  for (;;) {
+    dr_sleep(1);
+    dr_mutex_lock(sample_lock);
+    for (thread_data_t *d = sample_head; d; d = d->sample_next) {
+      if (invalid_thread_work(d) || __atomic_load_n(&d->restart_pc, __ATOMIC_RELAXED))
+        continue;
+      publish_instruction_target(&d->published_instructions,
+                                 __atomic_load_n(&d->entry_base, __ATOMIC_RELAXED));
+    }
+    dr_mutex_unlock(sample_lock);
+  }
+}
+
 static void thread_init(void *ctx) {
   thread_data_t *d = dr_thread_alloc(ctx, sizeof(*d));
   if (!d)
@@ -647,6 +712,7 @@ static void thread_init(void *ctx) {
   if (!drmgr_set_tls_field(ctx, tls_index, d))
     fail("TLS init failed");
   set_raw_accounting_state(d);
+  sample_attach(d);
   process_id_t process = dr_get_process_id();
   if (process != owner_pid) {
     /* DR models CLONE_VM/vfork before exec as a separate drcontext sharing the
@@ -667,7 +733,7 @@ static void thread_exit(void *ctx) {
   /* Asynchronous thread termination can interrupt an arbitrary charged BB.
    * Only an explicit exit/exec checkpoint can attest to that final prefix. */
   if (live_work && d &&
-      (d->instructions != d->published_instructions ||
+      (d->instructions != __atomic_load_n(&d->published_instructions, __ATOMIC_ACQUIRE) ||
        d->rep_movs_bytes != d->published_movs || d->rep_stos_bytes != d->published_stos))
     invalidate_live_work();
   if (memory_operand_bytes_enabled && d && !d->child_pid &&
@@ -678,6 +744,7 @@ static void thread_exit(void *ctx) {
      * refers to the child's descriptor table, so NEVER close that number in the
      * parent. Exec/_exit checkpoints close it in child context before the
      * transition. */
+    sample_detach(d);
     drmgr_set_tls_field(ctx, tls_index, NULL);
     dr_thread_free(ctx, d, sizeof(*d));
     return;
@@ -690,6 +757,7 @@ static void thread_exit(void *ctx) {
   ++threads_ended;
   dr_mutex_unlock(state_lock);
   if (d) {
+    sample_detach(d);
     drmgr_set_tls_field(ctx, tls_index, NULL);
     dr_thread_free(ctx, d, sizeof(*d));
   }
@@ -1839,6 +1907,12 @@ static void fork_init(void *ctx) {
     fail("fork without surviving TLS");
   memset(d, 0, sizeof(*d));
   set_raw_accounting_state(d);
+  if (live_sampler) {
+    /* Client threads do not survive fork; DR synchronized them before it. */
+    sample_head = d;
+    if (!dr_create_client_thread(sample_threads, NULL))
+      fail("cannot start the live work sampler");
+  }
   open_stream("fork", parent, previous);
 }
 static void pre_detach(void) {
@@ -1991,11 +2065,14 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
 #ifdef DURANTE_TEST_COUNT_LOCATIONS
   const bool flat_candidate = false; /* The location profile needs entry callbacks. */
 #else
-  const bool flat_candidate = !live_work && !latency_bound_enabled && !cache_probe_enabled();
+  const bool flat_candidate = !latency_bound_enabled && !cache_probe_enabled();
 #endif
   raw_tls_enabled = (static_text_end != 0 || flat_candidate) &&
                     dr_raw_tls_calloc(&raw_tls_register, &raw_tls_offset, RAW_TLS_SLOTS, 0);
   flat_inline = flat_candidate && raw_tls_enabled;
+  live_sampler = flat_inline && live_work;
+  if (live_sampler && !(sample_lock = dr_mutex_create()))
+    fail("cannot create the live work sampler lock");
   tls_index = drmgr_register_tls_field();
   if (!state_lock || tls_index < 0 ||
       (cpuid_profile != DURANTE_CPUID_NONE &&
@@ -2016,6 +2093,8 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
   dr_register_fork_init_event(fork_init);
   dr_register_pre_detach_event(pre_detach);
   dr_register_exit_event(process_exit);
+  if (live_sampler && !dr_create_client_thread(sample_threads, NULL))
+    fail("cannot start the live work sampler");
   if (live_work)
     __atomic_store_n(&live_work->ready, 1, __ATOMIC_RELEASE);
 }
