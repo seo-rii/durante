@@ -1,0 +1,61 @@
+--- a/access_span.c
++++ b/gate.c
+@@ -25 +25 @@
+-    dr_fprintf(STDERR, "access_span: %s\n", why);
++    dr_fprintf(STDERR, "sampler_gate: %s\n", why);
+@@ -45,2 +45,2 @@
+-/* The arguments contain the original application's base and index values.
+- * No target memory is dereferenced and no address is written to the report. */
++/* Keep the same per-site layout and countdown updates as the full sampler.
++ * The gate control never materializes an application address. */
+@@ -48,8 +48 @@
+-static void observe(site_t *site, uintptr_t base, uintptr_t index, uint64_t spec) {
+-    uintptr_t address = base + index * (spec >> 32) + (int32_t)spec;
+-    /* Include both observations, even when the last pair never completes. */
+-    if (address < site->min_address)
+-        site->min_address = address;
+-    if (address > site->max_address)
+-        site->max_address = address;
+-    uint64_t line = address / LINE;
++static void observe(site_t *site) {
+@@ -57 +49,0 @@
+-        site->previous_line = line;
+@@ -61,3 +52,0 @@
+-        uint64_t prev = site->previous_line;
+-        if ((line > prev ? line - prev : prev - line) <= 1)
+-            ++site->near;
+@@ -119,4 +107,0 @@
+-}
+-
+-static opnd_t reg_arg(reg_id_t reg) {
+-    return reg == DR_REG_NULL ? OPND_CREATE_INTPTR(0) : opnd_create_reg(reg);
+@@ -157,4 +142 @@
+-    uint64_t spec = (uint64_t)opnd_get_scale(mem) << 32 | (uint32_t)opnd_get_disp(mem);
+-    dr_insert_clean_call(ctx, bb, where, (void *)observe, false, 4, OPND_CREATE_INTPTR(s),
+-                         reg_arg(opnd_get_base(mem)), reg_arg(opnd_get_index(mem)),
+-                         OPND_CREATE_INTPTR(spec));
++    dr_insert_clean_call(ctx, bb, where, (void *)observe, false, 1, OPND_CREATE_INTPTR(s));
+@@ -195 +177 @@
+-    uint64_t loads = 0, pairs = 0, near = 0;
++    uint64_t loads = 0, pairs = 0;
+@@ -201 +182,0 @@
+-        near += sites[i].near;
+@@ -204,4 +185,3 @@
+-    dr_fprintf(output, "{\"schema\":2,\"pid\":%u,\"threads\":1,\"period\":%d,\"line_bytes\":%d,"
+-               "\"loads\":%llu,\"pairs\":%llu,\"near_pairs\":%llu,\"far_pairs\":%llu,\"sites\":[",
+-               (unsigned)owner, PERIOD, LINE, (unsigned long long)loads, (unsigned long long)pairs,
+-               (unsigned long long)near, (unsigned long long)(pairs - near));
++    dr_fprintf(output, "{\"schema\":1,\"arm\":\"gate\",\"pid\":%u,\"threads\":1,\"period\":%d,"
++               "\"loads\":%llu,\"pairs\":%llu,\"sites\":[", (unsigned)owner, PERIOD,
++               (unsigned long long)loads, (unsigned long long)pairs);
+@@ -213,4 +193 @@
+-        if (s->min_address > s->max_address)
+-            fail("missing sampled address");
+-        dr_fprintf(output, "%s{\"offset\":%llu,\"loads\":%llu,\"pairs\":%llu,\"near_pairs\":%llu,"
+-                   "\"far_pairs\":%llu,\"sampled_address_span_bytes\":%llu}", comma ? "," : "",
++        dr_fprintf(output, "%s{\"offset\":%llu,\"loads\":%llu,\"pairs\":%llu}", comma ? "," : "",
+@@ -218,3 +195 @@
+-                   (unsigned long long)s->pairs, (unsigned long long)s->near,
+-                   (unsigned long long)(s->pairs - s->near),
+-                   (unsigned long long)(s->max_address - s->min_address));
++                   (unsigned long long)s->pairs);
