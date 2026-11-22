@@ -218,6 +218,19 @@ def costs(cases, rows):
     return results
 
 
+def work_differences(cases, rows):
+    result = {}
+    for arm in ("diag", "live"):
+        result[arm] = {}
+        for name in cases:
+            pairs = [(rows[name, rep, arm]["work"], rows[name, rep, arm + "_span"]["work"]) for rep in REPS]
+            differences = [on - off for off, on in pairs]
+            result[arm][name] = {"min_units": min(differences), "max_units": max(differences),
+                                 "equal_pairs": differences.count(0),
+                                 "max_abs_ppm": max(ppm(abs(D(on - off) / off)) for off, on in pairs)}
+    return result
+
+
 def evaluate(dataset, receipts):
     raw = dataset.read_bytes()
     raw = gzip.decompress(raw) if raw.startswith(b"\x1f\x8b") else raw
@@ -240,10 +253,7 @@ def evaluate(dataset, receipts):
                 "cases_sha256": sha(cases_raw), "analysis_plan_sha256": sha(plan_raw),
                 "protocol_sha256": data["protocol_sha256"], "feature": feature,
                 "timing": timing(cases, rows, spans, json.loads(plan_raw)), "cost": costs(cases, rows),
-                "descriptive_max_abs_paired_work_delta_ppm": {
-                    arm: {name: max(abs(ppm(D(rows[name, rep, arm + "_span"]["work"])
-                                            / rows[name, rep, arm]["work"] - 1)) for rep in REPS)
-                          for name in cases} for arm in ("diag", "live")}}
+                "descriptive_paired_work_differences": work_differences(cases, rows)}
 
 
 def main():
