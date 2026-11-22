@@ -5,7 +5,10 @@ if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux" OR NOT CMAKE_SYSTEM_PROCESSOR MATCHES 
 endif()
 
 find_package(DynamoRIO 11.3 EXACT REQUIRED)
-find_program(PATCH_TOOL patch REQUIRED)
+find_program(PATCH_TOOL patch)
+if(NOT PATCH_TOOL)
+  message(FATAL_ERROR "GNU patch is required for the gate control")
+endif()
 set(V11_OBJECT "" CACHE FILEPATH "Unstripped durante.c.o from the frozen v11 release build")
 set(SPAN_OBJECT "" CACHE FILEPATH "Unstripped access_span.c.o from the frozen full sampler build")
 

@@ -33,7 +33,7 @@ def parse_trace(text):
     return events, raw_lines
 
 
-def publish(root, out):
+def publish(root, out, *, sample_arms=("diag_near", "diag_span", "live_span"), clock_arms=("live", "live_span")):
     cleanup = json.loads((root / "cleanup.json").read_bytes())
     require((root / "ops.exit").read_text().strip() == "0" and cleanup["instance_http"] == cleanup["boot_disk_http"] == 404
             and cleanup["key_removed"] is True, "cleanup receipt is incomplete")
@@ -77,9 +77,9 @@ def publish(root, out):
             names = {"stdout", "stderr"}
             if not native:
                 names.update({"production.json", f"records/process-{pid}.jsonl"})
-            if arm in ("diag_near", "diag_span", "live_span"):
+            if arm in sample_arms:
                 names.add("sample.json")
-            if arm in ("live", "live_span"):
+            if arm in clock_arms:
                 names.add("clock.bin")
             require(set(row["receipts"]) == {prefix + name for name in names}, "receipt member set")
             for path, sha in sorted(row["receipts"].items()):
