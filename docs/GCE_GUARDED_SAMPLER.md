@@ -23,6 +23,8 @@ These are single-run CPU ratios. Both cost gates passed for the real inputs. If 
 
 The guarantee is specific to the fraction of eligible reads. High coverage of those reads can still describe mostly runtime code in an arithmetic-heavy workload. This study qualifies the recovery mechanism on these workloads. Native elapsed-time prediction and contest verdict accuracy require a separate comparison. [Which program work was sampled](GCE_FIRST_RUN_SAMPLER.md#which-work-was-sampled)
 
+The native-time follow-up reproduces the delivered samples, compares them with native CPU measurements on the same inputs, and tests timing later inputs after one native calibration. [Guarded timing and time-limit outcomes](GCE_GUARDED_NATIVE.md)
+
 ## How the guard decides
 
 The first-run study found that another input to the same ELF could move millions of reads outside its saved site list. The guarded client collects the usual address samples at the selected instructions and counts visits to all other eligible read instructions in the main executable. It preserves the original sampler's eligibility rules for integer instructions with an explicit base or index address. REP, SIMD, register-only work and implicit stack accesses have their existing treatment. [First-run results](GCE_FIRST_RUN_SAMPLER.md) · [Eligibility rules](../experiments/access_sample/probe.c)
