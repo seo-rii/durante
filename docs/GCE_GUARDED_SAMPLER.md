@@ -1,6 +1,6 @@
 # Detecting incomplete first-run profiles during sampling
 
-The guard identified both a completely different hot loop and a shift in frequency between two previously visited loops. It recovered the full diagnostic by rerunning each low-coverage input. Across eight real Aonohako inputs it used **3.36% less parent-plus-child CPU than Full** and **1.34% more than the ordinary v11 live clock**. The controlled workload with a frequency shift cost more. A fresh guarded run and its full rerun together used 59.71 ms of CPU for that input. [Evaluation and observed recoveries](../experiments/results/gce-guarded-sampler/evaluation.json)
+The guard identified both a completely different hot loop and a shift in frequency between two previously visited loops. It recovered the full diagnostic by rerunning each low-coverage input. Across eight real Aonohako inputs it used **3.35% less parent-plus-child CPU than Full** and **1.34% more than the ordinary v11 live clock**. The controlled workload with a frequency shift cost more. A fresh guarded run and its full rerun together used 59.71 ms of CPU for that input. [Evaluation and observed recoveries](../experiments/results/gce-guarded-sampler/evaluation.json)
 
 ## Decisions observed on the guest
 
@@ -16,10 +16,10 @@ Each audit used a fresh guarded execution. The last two rows link to an addition
 
 | Held-out population | Guarded vs Full | Guarded vs Profiled without the guard | Guarded vs Live |
 |---|---:|---:|---:|
-| Eight real inputs, 64 matched comparisons | −3.36% | +1.54% | +1.34% |
+| Eight real inputs, 64 matched comparisons | −3.35% | +1.54% | +1.34% |
 | Three control inputs, 24 matched comparisons | −12.84% | +8.18% | +10.45% |
 
-These are single-run CPU ratios. Both cost gates passed for the real inputs. If Full and Live can omit their ELF hash preflight, the estimated saving over Full becomes 3.17% and the overhead over Live becomes 1.54%. The controls passed the savings gate against Full and exceeded the overhead limit against Live. On the frequency-shift input Guarded alone used 20.13% more CPU than Live. For the full reporting policy, adding the matched Full cost to each rejected Guarded observation projects a **44.60% increase** versus always running Full on this mix of control inputs. The eight real inputs all passed the coverage threshold, so their pooled saving under the same calculation was 3.36%. The three fresh audits above supply directly observed rerun costs. [Paired CPU and delivery estimates](../experiments/results/gce-guarded-sampler/evaluation.json) · [Guest resource cleanup](../experiments/results/gce-guarded-sampler/cleanup.json)
+These are single-run CPU ratios. Both cost gates passed for the real inputs. If Full and Live can omit their ELF hash preflight, the estimated saving over Full becomes 3.17% and the overhead over Live becomes 1.54%. The controls passed the savings gate against Full and exceeded the overhead limit against Live. On the frequency-shift input Guarded alone used 20.13% more CPU than Live. For the full reporting policy, adding the matched Full cost to each rejected Guarded observation projects a **44.60% increase** versus always running Full on this mix of control inputs. The eight real inputs all passed the coverage threshold, so their pooled saving under the same calculation was 3.35%. The three fresh audits above supply directly observed rerun costs. [Paired CPU and delivery estimates](../experiments/results/gce-guarded-sampler/evaluation.json) · [Guest resource cleanup](../experiments/results/gce-guarded-sampler/cleanup.json)
 
 The guarantee is specific to the fraction of eligible reads. High coverage of those reads can still describe mostly runtime code in an arithmetic-heavy workload. This study qualifies the recovery mechanism on these workloads. Native elapsed-time prediction and contest verdict accuracy require a separate comparison. [Which program work was sampled](GCE_FIRST_RUN_SAMPLER.md#which-work-was-sampled)
 
