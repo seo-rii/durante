@@ -31,12 +31,13 @@ def materialize(out, release, elf_archive, study, sources):
         for name, expected in digests.items():
             target = staging / name
             target.parent.mkdir(parents=True, exist_ok=True)
-            if name.startswith("bin/"):
+            if name.startswith("bin/") and name not in sources:
                 target.write_bytes(elfs.extractfile(name).read())
-                target.chmod(0o755)
             else:
                 origin = release / name if name.startswith("dynamorio/") else sources.get(name, study / name)
                 shutil.copy2(origin, target)
+            if name.startswith("bin/"):
+                target.chmod(0o755)
             require(sha(target.read_bytes()) == expected, "payload differs from preregistration: " + name)
         (staging / "protocol.json").write_bytes(protocol)
         checks = {**digests, "protocol.json": sha(protocol)}

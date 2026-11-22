@@ -37,6 +37,8 @@ All six arms run with the release v11 live work clock, x86-64-v2 CPUID, a 5 ms o
 
 The registered gates require a saving of at least 3% over Full in aggregate, with at most 2% regression on any input, and a separate overhead comparison allowing 5% over Live pooled and 10% per input. We also required the selected sites to account for at least 90% of Full's eligible visits in each input and repetition. Accuracy at predicting native CPU time was outside these gates. [Evaluation plan](../experiments/live_sampler_fast/design.json)
 
+The follow-up measured first-run profile construction on five new executables and a control that changes its hot loop between inputs. [First-run costs and coverage](GCE_FIRST_RUN_SAMPLER.md)
+
 ## Offline verification and use
 
 The offline verifier rebuilds both manifests from the earlier receipts, verifies the schedule, raw process records, terminal clocks and CPU placement, and checks the original executable archive if provided. The scorer compares the binary and JSON reports, registered projections, cold and hot walk sites, coverage and cost. From the Durante checkout with Python 3.11 or later run the following.
