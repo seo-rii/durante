@@ -8,6 +8,8 @@ import sys
 import tempfile
 import unittest
 
+from registered_tree import registered_root
+
 ROOT = Path(__file__).resolve().parents[1]
 STUDY = ROOT / "experiments/search_order"
 DATA = ROOT / "experiments/results/gce-search-order"
@@ -41,10 +43,12 @@ class SearchOrderStudy(unittest.TestCase):
             self.assertEqual(inputs[f"cmov_{order}"]["oracle"], inputs[f"jcc_{order}"]["oracle"])
 
     def test_raw_wait4_records_placement_and_predictions(self):
-        dataset = DATA / "dataset.json.gz"
-        self.run_check(sys.executable, STUDY/"verify.py", dataset, DATA/"receipts.tar.xz")
-        self.run_check(sys.executable, STUDY/"placement.py", dataset, DATA/"placement.json.gz", "--platform", DATA/"platform.json")
-        self.run_check(sys.executable, STUDY/"score.py", "--verify")
+        root = registered_root(self, "experiments/search_order/protocol.json")
+        study, data = root / STUDY.relative_to(ROOT), root / DATA.relative_to(ROOT)
+        dataset = data / "dataset.json.gz"
+        self.run_check(sys.executable, study/"verify.py", dataset, data/"receipts.tar.xz")
+        self.run_check(sys.executable, study/"placement.py", dataset, data/"placement.json.gz", "--platform", data/"platform.json")
+        self.run_check(sys.executable, study/"score.py", "--verify")
 
 
 if __name__ == "__main__":
