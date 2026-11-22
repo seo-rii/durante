@@ -9,6 +9,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 from cpp20_locality.verify import read_compressed, require, sha, verify_collection, verify_elfs
 from first_run_sampler.prepare import control_binary
+from first_run_sampler.profile import calibration_sites
 from guarded_sampler.cases import manifest
 from guarded_sampler.export import GUARDED, SAMPLED
 from guarded_sampler.guard import decision
@@ -40,6 +41,9 @@ def verify_recovery(result, data):
             final = fallback if rerun else guarded
             sequence = final["sequence"]
             name = f"runs/{sequence:03d}/sample.json"
+            if rerun:
+                # The registered recovery controls each execute a known nonempty load loop.
+                calibration_sites(archive.extractfile(name).read(), final["launcher_pid"])
             require(recorded["fallback_sequence"] == (sequence if rerun else None)
                     and recorded["selected_sequence"] == sequence
                     and recorded["final_source"] == ("full" if rerun else "guarded")
