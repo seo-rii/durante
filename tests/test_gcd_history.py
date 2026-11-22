@@ -8,6 +8,8 @@ import sys
 import tempfile
 import unittest
 
+from registered_tree import registered_root
+
 ROOT = Path(__file__).resolve().parents[1]
 STUDY = ROOT / "experiments/gcd_history"
 DATA = ROOT / "experiments/results/gce-gcd-history"
@@ -32,10 +34,13 @@ class GcdHistoryStudy(unittest.TestCase):
             self.check_command(sys.executable, STUDY / "probe/check.py", launcher, Path(tmp) / "libhistory_probe.so")
 
     def test_pinned_timing_and_placement(self):
-        raw = DATA / "dataset.json.gz"
-        self.check_command(sys.executable, STUDY / "verify.py", raw, DATA / "receipts.tar.xz")
-        self.check_command(sys.executable, STUDY / "placement.py", raw, DATA / "placement.json.gz", "--platform", DATA / "platform.json")
-        self.check_command(sys.executable, STUDY / "score.py", "--verify")
+        root = registered_root(self, "experiments/gcd_history/protocol.json")
+        study, data = root / STUDY.relative_to(ROOT), root / DATA.relative_to(ROOT)
+        raw = data / "dataset.json.gz"
+        self.check_command(sys.executable, study / "verify.py", raw, data / "receipts.tar.xz")
+        self.check_command(sys.executable, study / "placement.py", raw, data / "placement.json.gz",
+                           "--platform", data / "platform.json")
+        self.check_command(sys.executable, study / "score.py", "--verify")
 
     def test_counters_match_source_oracles(self):
         self.check_command(sys.executable, STUDY / "fixtures.py")

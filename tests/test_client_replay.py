@@ -3,7 +3,8 @@
 No replay implementation is copied or extracted. The temporary C translation
 unit includes client/durante.c; section GC removes unrelated instrumentation.
 Requires SDK headers (DURANTE_TEST_SDK or the normal repository SDK directory),
-GCC and prlimit. No prepared runtime or client binary is loaded by these tests.
+GCC and prlimit. The flat-entry test uses the SDK to encode and execute the
+actual block instrumentation. No prepared runtime bundle is required.
 """
 import hashlib
 import json
@@ -180,6 +181,7 @@ static void reset(void) {
     total_rep_movs_bytes = total_rep_stos_bytes = 0;
     total_rep_movs_entries = total_rep_stos_entries = 0;
     rep_bytes_enabled = true;
+    flat_inline = false;
     latency_bound_enabled = false;
     total_latency_bound_x16 = 0;
     latency_bound_result = 0;
@@ -243,6 +245,14 @@ static void arm_rep(void) {
     code_replay(CTX, DR_DURANTE_REPLAY_RETRY, WRITE, WRITE);
     assert(state.instructions == 104 && state.restart_pc == WRITE);
     assert(!state.replay_error && !state.restart_entered);
+}
+
+/* Model the completed-entry latch and charge for state-callback tests. */
+static void flat_enter(uint64_t count) {
+    check_flat_counter(active);
+    active->entry_base = active->instructions;
+    active->instructions += count;
+    active->write_pc = NULL;
 }
 
 static void enter_rep(void) {
@@ -796,6 +806,110 @@ int main(int argc, char **argv) {
         active = &parent_state;
         snapshot(true);
         assert(strstr(record, "\"instructions\":77") && add_thread(&parent_state));
+    } else if (!strcmp(test, "flat-prefix")) {
+        flat_inline = true;
+        state.instructions = 100;
+        flat_enter(10);
+        before_write(WRITE, NEXT, 4);
+        code_replay(CTX, DR_DURANTE_REPLAY_RETRY, WRITE, WRITE);
+        assert(state.instructions == 106 && state.restart_pc == WRITE);
+        assert(state.restart_base == 106);
+        /* A signal before the resumed entry still invalidates the retry. */
+        thread_data_t pending = state;
+        flat_enter(4);
+        kernel_xfer(CTX, NULL);
+        assert(state.instructions == 110 && !state.restart_pc && !state.replay_error);
+        snapshot(true);
+        state = pending;
+        kernel_xfer(CTX, NULL);
+        assert(state.replay_error && !state.restart_pc);
+        snapshot(false);
+    } else if (!strcmp(test, "flat-first-write")) {
+        /* A fault at the first instruction returns the whole entry charge. */
+        flat_inline = true;
+        state.instructions = 100;
+        flat_enter(4);
+        before_write(START, WRITE, 4);
+        code_replay(CTX, DR_DURANTE_REPLAY_RETRY, START, START);
+        assert(state.instructions == 100 && state.entry_base == 100);
+        assert(state.restart_base == 100 && state.restart_pc == START);
+        snapshot(false); /* Still pending: no block has been entered. */
+        flat_enter(4);
+        snapshot(true);
+        assert(!state.restart_pc && state.instructions == 104);
+    } else if (!strcmp(test, "flat-rep")) {
+        flat_inline = true;
+        state.instructions = 100;
+        flat_enter(7);
+        before_write(WRITE, NEXT, 3);
+        supplied_rcx = 10;
+        observe_rep(WRITE, OP_rep_movs, 1, DR_REG_RCX);
+        code_replay(CTX, DR_DURANTE_REPLAY_RETRY, WRITE, WRITE);
+        assert(state.instructions == 104 && state.restart_pc == WRITE);
+        code_replay(CTX, DR_DURANTE_REPLAY_ENTRY, NULL, WRITE);
+        assert(state.restart_pc == WRITE && !state.replay_error);
+        flat_enter(3);
+        before_write(WRITE, NEXT, 3);
+        supplied_rcx = 6;
+        observe_rep(WRITE, OP_rep_movs, 1, DR_REG_RCX);
+        assert(state.rep_bytes == 10 && state.rep_entries == 1 && !state.restart_pc);
+        assert(state.write_rep_request == 10);
+        code_replay(CTX, DR_DURANTE_REPLAY_RETRY, WRITE, WRITE);
+        assert(state.instructions == 104 && state.restart_rep_request == 10);
+        flat_enter(3);
+        before_write(WRITE, NEXT, 3);
+        supplied_rcx = 2;
+        observe_rep(WRITE, OP_rep_movs, 1, DR_REG_RCX);
+        assert(state.rep_bytes == 10 && state.rep_entries == 1);
+        code_replay(CTX, DR_DURANTE_REPLAY_AFTER_WRITE, NULL, NEXT);
+        assert(state.instructions == 105 && !state.restart_pc && !state.replay_error);
+        flat_enter(2);
+        flat_enter(3);
+        before_write(WRITE, NEXT, 3);
+        supplied_rcx = 4;
+        observe_rep(WRITE, OP_rep_movs, 1, DR_REG_RCX);
+        assert(state.instructions == 110 && state.rep_bytes == 14 && state.rep_entries == 2);
+        assert_rep_counts(&state, 14, 0, 2, 0);
+        snapshot(true);
+        assert_record_breakdown(14, 0, 2, 0);
+    } else if (!strcmp(test, "flat-rep-missed")) {
+        flat_inline = true;
+        state.instructions = 100;
+        flat_enter(7);
+        before_write(WRITE, NEXT, 3);
+        supplied_rcx = 10;
+        observe_rep(WRITE, OP_rep_movs, 1, DR_REG_RCX);
+        code_replay(CTX, DR_DURANTE_REPLAY_RETRY, WRITE, WRITE);
+        /* The resumed REP block must observe its REP before another entry. */
+        flat_enter(3);
+        flat_enter(2);
+        supplied_rcx = 6;
+        observe_rep(WRITE, OP_rep_movs, 1, DR_REG_RCX);
+        assert(state.replay_error && state.rep_bytes == 16 && state.rep_entries == 2);
+        assert(!add_thread(&state));
+        snapshot(false);
+    } else if (!strcmp(test, "flat-overflow")) {
+        flat_inline = true;
+        state.instructions = UINT64_MAX - 1;
+        flat_enter(5);
+        assert(state.instructions == 3);
+        flat_enter(2);
+        assert(state.instructions == 5 && state.entry_base == 3);
+        snapshot(false);
+        assert(state.counter_overflows && !add_thread(&state));
+        reset();
+        flat_inline = true;
+        state.instructions = UINT64_MAX - 5;
+        flat_enter(5);
+        snapshot(true);
+        assert(add_thread(&state) && total_instructions == UINT64_MAX);
+        reset();
+        flat_inline = true;
+        state.instructions = UINT64_MAX - 1;
+        flat_enter(5);
+        before_write(START, NEXT, 2);
+        code_replay(CTX, DR_DURANTE_REPLAY_RETRY, START, START);
+        assert(state.counter_overflows && state.replay_error && !state.restart_pc);
     } else if (!strcmp(test, "missing-tls")) {
         active = NULL;
         code_replay(CTX, DR_DURANTE_REPLAY_RETRY, WRITE, WRITE);
@@ -813,6 +927,60 @@ int main(int argc, char **argv) {
     }
     assert(diagnostics == 0);
     puts("client-replay-ok");
+    return 0;
+}
+'''
+
+
+FLAT_ENTRY_HARNESS = r'''
+#include <asm/prctl.h>
+#include <assert.h>
+#include <stdio.h>
+#include <sys/mman.h>
+#include <sys/syscall.h>
+#include <unistd.h>
+#include CLIENT_SOURCE
+
+int main(void) {
+    void *ctx = dr_standalone_init();
+    raw_tls_register = DR_SEG_GS;
+    const size_t page = (size_t)sysconf(_SC_PAGESIZE);
+    byte *code = mmap(NULL, page, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    assert(code != MAP_FAILED);
+    instrlist_t *bb = instrlist_create(ctx);
+    instr_t *ret = INSTR_CREATE_ret(ctx);
+    instrlist_append(bb, ret);
+    insert_flat_charge(ctx, bb, ret, 5);
+    for (instr_t *ins = instrlist_first(bb); ins != ret; ins = instr_get_next(ins))
+        assert(!(instr_get_arith_flags(ins, DR_QUERY_DEFAULT) & (EFLAGS_READ_6 | EFLAGS_WRITE_6)));
+    byte *end = instrlist_encode(ctx, bb, code, true);
+    assert(end && end <= code + page);
+    instrlist_clear_and_destroy(ctx, bb);
+    dr_standalone_exit();
+    assert(mprotect(code, page, PROT_READ | PROT_EXEC) == 0);
+
+    /* The emitted sequence uses GS-relative raw TLS on x86-64 Linux. Execute
+     * it against an isolated slot array, with the same production layout. */
+    reg_t original_gs, slots[RAW_TLS_SLOTS] = {0};
+    assert(syscall(SYS_arch_prctl, ARCH_GET_GS, &original_gs) == 0);
+    assert(syscall(SYS_arch_prctl, ARCH_SET_GS, slots) == 0);
+    const uint64_t starts[] = {0, (UINT64_C(1) << 56) - 4, (UINT64_C(1) << 63) - 4,
+                               UINT64_MAX - 15, UINT64_MAX - 10, UINT64_MAX - 9,
+                               UINT64_MAX - 1, UINT64_MAX};
+    for (size_t i = 0; i < sizeof(starts) / sizeof(starts[0]); ++i) {
+        thread_data_t d = {.instructions = starts[i]};
+        slots[RAW_TLS_STATE] = (reg_t)&d;
+        for (int j = 0; j < 3; ++j) {
+            uint64_t before = d.instructions;
+            ((void (*)(void))code)();
+            assert(d.entry_base == before && d.instructions == before + 5);
+            /* The next entry latches the preceding charge before replacing its base. */
+            assert(d.counter_overflows == (before < starts[i]));
+        }
+    }
+    assert(syscall(SYS_arch_prctl, ARCH_SET_GS, original_gs) == 0);
+    assert(munmap(code, page) == 0);
+    puts("flat-charge-ok");
     return 0;
 }
 '''
@@ -846,11 +1014,14 @@ class ClientReplayStateTests(unittest.TestCase):
         cls.binary = cls.directory / "client-replay"
         compile_dir = cls.directory / "compile"
         compile_dir.mkdir(mode=0o700)
-        command = [compiler, "-std=gnu17", "-O2", "-Wall", "-Wextra", "-Werror",
-                   "-DLINUX", "-DX86_64", "-ffunction-sections", "-fdata-sections",
-                   "-Wl,--gc-sections", "-DCLIENT_SOURCE=" + json.dumps(str(cls.sources[0])),
-                   "-I" + str(sdk.resolve() / "include"), "-I" + str(sdk.resolve() / "ext/include"),
-                   str(source), "-o", str(cls.binary)]
+        cls.sdk_lib = sdk.resolve() / "lib64/release"
+        cls.compile_flags = [
+            compiler, "-std=gnu17", "-O2", "-Wall", "-Wextra", "-Werror", "-DLINUX", "-DX86_64",
+            "-ffunction-sections", "-fdata-sections", "-Wl,--gc-sections",
+            "-DCLIENT_SOURCE=" + json.dumps(str(cls.sources[0])),
+            "-I" + str(sdk.resolve() / "include"), "-I" + str(sdk.resolve() / "ext/include"),
+        ]
+        command = [*cls.compile_flags, str(source), "-o", str(cls.binary)]
         row = run_process(command, compile_dir, 30000, cls.limiter)
         if row["exit_code"] != 0 or not row["infrastructure_ok"] or row.get("stderr"):
             raise RuntimeError("actual-client harness compilation failed: " + str(row)[:12000])
@@ -955,6 +1126,40 @@ class ClientReplayStateTests(unittest.TestCase):
 
     def test_vfork_child_error_does_not_modify_parent_tls(self):
         self.run_case("vfork-local")
+
+    def test_emitted_flat_entry_latches_wrap_and_preserves_flags(self):
+        if not (self.sdk_lib / "libdynamorio.so").is_file():
+            self.skipTest("encoding flat instrumentation requires the SDK standalone library")
+        build = self.directory / "flat-entry"
+        build.mkdir()
+        source, binary = build / "emit.c", build / "emit"
+        source.write_text(FLAT_ENTRY_HARNESS)
+        command = [*self.compile_flags, str(source), "-L" + str(self.sdk_lib),
+                   "-Wl,-rpath," + str(self.sdk_lib), "-ldynamorio", "-o", str(binary)]
+        row = run_process(command, build, 30000, self.limiter)
+        self.assertTrue(row["infrastructure_ok"], row)
+        self.assertEqual(row["exit_code"], 0, row)
+        # Bound the standalone encoder's default virtual-address reservation.
+        row = run_process(["env", "DYNAMORIO_OPTIONS=-vm_size 32M -vmheap_size 32M",
+                           str(binary)], build, 5000, self.limiter)
+        self.assertTrue(row["infrastructure_ok"], row)
+        self.assertEqual(row["exit_code"], 0, row)
+        self.assertEqual(row["stdout"], "flat-charge-ok\n")
+
+    def test_flat_entry_settles_non_rep_retry_and_rejects_pending_signal(self):
+        self.run_case("flat-prefix")
+
+    def test_flat_first_instruction_retry_waits_for_resumed_entry(self):
+        self.run_case("flat-first-write")
+
+    def test_flat_rep_retries_charge_original_request_once(self):
+        self.run_case("flat-rep")
+
+    def test_flat_rep_restart_must_observe_in_first_resumed_block(self):
+        self.run_case("flat-rep-missed")
+
+    def test_flat_counter_wrap_is_sticky_invalidity(self):
+        self.run_case("flat-overflow")
 
     def test_missing_tls_notification_never_logs_and_invalidates_snapshots(self):
         self.run_case("missing-tls")

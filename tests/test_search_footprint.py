@@ -10,6 +10,8 @@ import tarfile
 import tempfile
 import unittest
 
+from registered_tree import registered_root
+
 ROOT = Path(__file__).resolve().parents[1]
 STUDY = ROOT / "experiments/search_footprint"
 DATA = ROOT / "experiments/results/gce-search-footprint"
@@ -23,17 +25,19 @@ class FootprintStudy(unittest.TestCase):
 
     def test_registered_inputs_placement_and_scores(self):
         self.checked(sys.executable, STUDY / "fixtures.py")
-        raw = DATA / "dataset.json.gz"
-        self.checked(sys.executable, STUDY / "verify.py", raw, DATA / "receipts.tar.xz")
+        root = registered_root(self, "experiments/search_footprint/protocol.json")
+        study, data = root / STUDY.relative_to(ROOT), root / DATA.relative_to(ROOT)
+        raw = data / "dataset.json.gz"
+        self.checked(sys.executable, study / "verify.py", raw, data / "receipts.tar.xz")
         self.checked(
             sys.executable,
-            STUDY / "placement.py",
+            study / "placement.py",
             raw,
-            DATA / "placement.json.gz",
+            data / "placement.json.gz",
             "--platform",
-            DATA / "platform.json",
+            data / "platform.json",
         )
-        self.checked(sys.executable, STUDY / "score.py", "--verify")
+        self.checked(sys.executable, study / "score.py", "--verify")
 
     def test_nonuniform_and_out_of_range_samples_abstain(self):
         # Run isolated so this evaluator's "model" never collides with another study.
