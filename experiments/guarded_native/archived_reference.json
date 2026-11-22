@@ -1,0 +1,1024 @@
+{
+  "aonohako_commit": "b938afaa6c171a8a56e24d376d6662f93fcea4c6",
+  "source_sha256": {
+    "measurements.json.gz": "1a4448aac68a206896e16746c3776859b1bf66ebb391d623505c42c3b6a05fd0",
+    "evaluation.json.gz": "5525cb0be2d5eee45c3dd23db952238544ee77213bf1c1be0d10ec44ef967f22",
+    "placement.json.gz": "63dbe0c2cc976e8b9ee4d1060437f4236ab531c484a4b908e09427e0832dfaa9",
+    "reports.tar.xz": "f2c114fd8cb27c27c4a07b2da6086ae28b314cb47d56c212ca37db467bc4f154",
+    "corpus/elfs.tar.xz": "051251cd87b3119d1d2ddcbfd65e474f8294dc503efadf0871f783d8b5f18999",
+    "corpus/cases.json": "809861a02942a7c54dfcc322764b9c39ebee3eb8388756854855ea1d5b0f9e58",
+    "protocol.json": "a934f7f00ba3212be94018a10b37f503449b94bbb37faafd332e7c0c5ed2989e"
+  },
+  "reference_weights": {
+    "instructions": "95633317467381144678337970515148139745945867664488000/383874947239330729548061365718852662568127281838390067",
+    "movs_bytes": "106995566354242282912516310350996812416658714139328077952625/4293568604548570230043605275946790928053724081930364830875648",
+    "stos_bytes": "0"
+  },
+  "combined_reference_weights": {
+    "instructions": "13782217852693151212305797026351388300668170663136504971454197166784000/55322298183173126659864988137406223017901908707743599086783598807934711",
+    "rep_bytes": "459542817960885545626656308979268091547044680582681098656691173060000/18440766061057708886621662712468741005967302902581199695594532935978237"
+  },
+  "cases": {
+    "integer/1": {
+      "case_id": "integer/1",
+      "program": "integer",
+      "binary_sha256": "13b1e1ba33375676c1c6071b2d0bb41c0148e2ee7d90f1c4085d3eb95124f29d",
+      "stdin_sha256": "58102257e583a6dd723fbceb404fc82fc66f15117d61e6b80dece1b24e3aa2fd",
+      "stdout_sha256": "5a0aaf31936f601967d7515250dac04090be2675b773801836150ae751bedf8d",
+      "native": [
+        {
+          "rep": 1,
+          "sequence": 35,
+          "pid": 1105,
+          "cpu_ns": 42132000
+        },
+        {
+          "rep": 2,
+          "sequence": 53,
+          "pid": 1124,
+          "cpu_ns": 42073000
+        },
+        {
+          "rep": 3,
+          "sequence": 97,
+          "pid": 1209,
+          "cpu_ns": 42179000
+        },
+        {
+          "rep": 4,
+          "sequence": 106,
+          "pid": 1218,
+          "cpu_ns": 42195000
+        },
+        {
+          "rep": 5,
+          "sequence": 133,
+          "pid": 1246,
+          "cpu_ns": 42139000
+        },
+        {
+          "rep": 6,
+          "sequence": 181,
+          "pid": 1332,
+          "cpu_ns": 42125000
+        },
+        {
+          "rep": 7,
+          "sequence": 190,
+          "pid": 1341,
+          "cpu_ns": 42023000
+        }
+      ],
+      "metered": [
+        {
+          "rep": 1,
+          "sequence": 77,
+          "pid": 1180,
+          "instructions": 167922419,
+          "rep_bytes": 3624,
+          "movs_bytes": 0,
+          "stos_bytes": 3624,
+          "cycles_x16": 2148085568,
+          "memory_operand_bytes": 238409,
+          "report_sha256": "b9e9385c24dfe59ab05c200052ed923670b7baead0459b5eaaf575c02383b6fe"
+        },
+        {
+          "rep": 2,
+          "sequence": 151,
+          "pid": 1274,
+          "instructions": 167922419,
+          "rep_bytes": 3624,
+          "movs_bytes": 0,
+          "stos_bytes": 3624,
+          "cycles_x16": 2148085568,
+          "memory_operand_bytes": 238409,
+          "report_sha256": "ed2feee5ee77a5e8d1323b8ff298c0a8371516375474581743b793a1c29399c7"
+        }
+      ]
+    },
+    "integer/2": {
+      "case_id": "integer/2",
+      "program": "integer",
+      "binary_sha256": "13b1e1ba33375676c1c6071b2d0bb41c0148e2ee7d90f1c4085d3eb95124f29d",
+      "stdin_sha256": "9902ec78038acf436285ea163ff7b72ec7d4674a2510e8c881a63abe151a4f49",
+      "stdout_sha256": "e38d7255181f8787ee1acc901a9ed5f9364fa2bfa006853fbfd327f1d1b6198d",
+      "native": [
+        {
+          "rep": 1,
+          "sequence": 37,
+          "pid": 1107,
+          "cpu_ns": 83884000
+        },
+        {
+          "rep": 2,
+          "sequence": 61,
+          "pid": 1134,
+          "cpu_ns": 83776000
+        },
+        {
+          "rep": 3,
+          "sequence": 95,
+          "pid": 1207,
+          "cpu_ns": 83729000
+        },
+        {
+          "rep": 4,
+          "sequence": 114,
+          "pid": 1226,
+          "cpu_ns": 83702000
+        },
+        {
+          "rep": 5,
+          "sequence": 128,
+          "pid": 1240,
+          "cpu_ns": 83678000
+        },
+        {
+          "rep": 6,
+          "sequence": 174,
+          "pid": 1325,
+          "cpu_ns": 83748000
+        },
+        {
+          "rep": 7,
+          "sequence": 193,
+          "pid": 1344,
+          "cpu_ns": 83670000
+        }
+      ],
+      "metered": [
+        {
+          "rep": 1,
+          "sequence": 79,
+          "pid": 1184,
+          "instructions": 335694579,
+          "rep_bytes": 3624,
+          "movs_bytes": 0,
+          "stos_bytes": 3624,
+          "cycles_x16": 4295569216,
+          "memory_operand_bytes": 238409,
+          "report_sha256": "8040dcefdfb75dfe288c55dfe2639d77ecb1134118394e07d9a95f59f65ae7e0"
+        },
+        {
+          "rep": 2,
+          "sequence": 158,
+          "pid": 1291,
+          "instructions": 335694579,
+          "rep_bytes": 3624,
+          "movs_bytes": 0,
+          "stos_bytes": 3624,
+          "cycles_x16": 4295569216,
+          "memory_operand_bytes": 238409,
+          "report_sha256": "eea5be0dba2c9dc757975d3e2efbaca37ed63093a5153504cb7f8ef14719214e"
+        }
+      ]
+    },
+    "integer/4": {
+      "case_id": "integer/4",
+      "program": "integer",
+      "binary_sha256": "13b1e1ba33375676c1c6071b2d0bb41c0148e2ee7d90f1c4085d3eb95124f29d",
+      "stdin_sha256": "09294a6f2c1c6a3a71c766b169af994547992af1099ead8ad61253f648dc08bf",
+      "stdout_sha256": "04dc0373990fa65f8d3823b64a8a60836cd19812708bb3a1d01f133c060cad77",
+      "native": [
+        {
+          "rep": 1,
+          "sequence": 22,
+          "pid": 1092,
+          "cpu_ns": 166906000
+        },
+        {
+          "rep": 2,
+          "sequence": 51,
+          "pid": 1122,
+          "cpu_ns": 166930000
+        },
+        {
+          "rep": 3,
+          "sequence": 87,
+          "pid": 1199,
+          "cpu_ns": 166816000
+        },
+        {
+          "rep": 4,
+          "sequence": 109,
+          "pid": 1221,
+          "cpu_ns": 166901000
+        },
+        {
+          "rep": 5,
+          "sequence": 129,
+          "pid": 1241,
+          "cpu_ns": 166814000
+        },
+        {
+          "rep": 6,
+          "sequence": 168,
+          "pid": 1319,
+          "cpu_ns": 166789000
+        },
+        {
+          "rep": 7,
+          "sequence": 200,
+          "pid": 1351,
+          "cpu_ns": 166772000
+        }
+      ],
+      "metered": [
+        {
+          "rep": 1,
+          "sequence": 76,
+          "pid": 1175,
+          "instructions": 671238948,
+          "rep_bytes": 3624,
+          "movs_bytes": 0,
+          "stos_bytes": 3624,
+          "cycles_x16": 8590536708,
+          "memory_operand_bytes": 238460,
+          "report_sha256": "3c42ba02cae166eee35a8b87dfd98a819ed7eb0f625adfcec123474eaa1d5319"
+        },
+        {
+          "rep": 2,
+          "sequence": 155,
+          "pid": 1285,
+          "instructions": 671238964,
+          "rep_bytes": 3624,
+          "movs_bytes": 0,
+          "stos_bytes": 3624,
+          "cycles_x16": 8590536772,
+          "memory_operand_bytes": 238508,
+          "report_sha256": "18503e2e7b250650177339168ea628bccaaa28c2b5a627429b99dcfdd2b4e3f2"
+        }
+      ]
+    },
+    "branch/1": {
+      "case_id": "branch/1",
+      "program": "branch",
+      "binary_sha256": "d383e4da2a1953bc72d54fccac0fe98fe575fef2474e469edcf2567d18ece37c",
+      "stdin_sha256": "54e11706f19c1b6db05caecff1822a1481b450adfd659b2a93dcd33929d53b7f",
+      "stdout_sha256": "99760e423569984bd0ca4a2e2262681cb542e5c0fec8cadee71b971bbfa560be",
+      "native": [
+        {
+          "rep": 1,
+          "sequence": 23,
+          "pid": 1093,
+          "cpu_ns": 32325000
+        },
+        {
+          "rep": 2,
+          "sequence": 57,
+          "pid": 1130,
+          "cpu_ns": 32512000
+        },
+        {
+          "rep": 3,
+          "sequence": 91,
+          "pid": 1203,
+          "cpu_ns": 32354000
+        },
+        {
+          "rep": 4,
+          "sequence": 117,
+          "pid": 1229,
+          "cpu_ns": 32412000
+        },
+        {
+          "rep": 5,
+          "sequence": 138,
+          "pid": 1251,
+          "cpu_ns": 32352000
+        },
+        {
+          "rep": 6,
+          "sequence": 188,
+          "pid": 1339,
+          "cpu_ns": 32314000
+        },
+        {
+          "rep": 7,
+          "sequence": 198,
+          "pid": 1349,
+          "cpu_ns": 32297000
+        }
+      ],
+      "metered": [
+        {
+          "rep": 1,
+          "sequence": 80,
+          "pid": 1186,
+          "instructions": 229438604,
+          "rep_bytes": 3624,
+          "movs_bytes": 0,
+          "stos_bytes": 3624,
+          "cycles_x16": 917755384,
+          "memory_operand_bytes": 268673670,
+          "report_sha256": "35826d795b50d0069710cec7fbbfa4922c33967c10e6c2ccd4680cd79b6215c1"
+        },
+        {
+          "rep": 2,
+          "sequence": 148,
+          "pid": 1268,
+          "instructions": 229438604,
+          "rep_bytes": 3624,
+          "movs_bytes": 0,
+          "stos_bytes": 3624,
+          "cycles_x16": 917755384,
+          "memory_operand_bytes": 268673670,
+          "report_sha256": "53e237d5e0fd9e5526df5a5ab2e86182edb01f371e806b56e22c6196531f8f37"
+        }
+      ]
+    },
+    "branch/2": {
+      "case_id": "branch/2",
+      "program": "branch",
+      "binary_sha256": "d383e4da2a1953bc72d54fccac0fe98fe575fef2474e469edcf2567d18ece37c",
+      "stdin_sha256": "ae7a13222abd483670b1f3b55d2f9f42790bfcbfdad8356a1c717f37feb59661",
+      "stdout_sha256": "875dae9442036ac9f7d91f17b8007467cda85c61daa09872b262292cb15c6a71",
+      "native": [
+        {
+          "rep": 1,
+          "sequence": 41,
+          "pid": 1111,
+          "cpu_ns": 64274000
+        },
+        {
+          "rep": 2,
+          "sequence": 52,
+          "pid": 1123,
+          "cpu_ns": 64286000
+        },
+        {
+          "rep": 3,
+          "sequence": 104,
+          "pid": 1216,
+          "cpu_ns": 64279000
+        },
+        {
+          "rep": 4,
+          "sequence": 112,
+          "pid": 1224,
+          "cpu_ns": 64262000
+        },
+        {
+          "rep": 5,
+          "sequence": 144,
+          "pid": 1259,
+          "cpu_ns": 64183000
+        },
+        {
+          "rep": 6,
+          "sequence": 178,
+          "pid": 1329,
+          "cpu_ns": 64197000
+        },
+        {
+          "rep": 7,
+          "sequence": 199,
+          "pid": 1350,
+          "cpu_ns": 64133000
+        }
+      ],
+      "metered": [
+        {
+          "rep": 1,
+          "sequence": 64,
+          "pid": 1139,
+          "instructions": 458727308,
+          "rep_bytes": 3624,
+          "movs_bytes": 0,
+          "stos_bytes": 3624,
+          "cycles_x16": 1834910200,
+          "memory_operand_bytes": 537109126,
+          "report_sha256": "83d6d050b087d9c042b45b20cb13a1c392451a2c8ec2ff3b46c10c930274ceee"
+        },
+        {
+          "rep": 2,
+          "sequence": 161,
+          "pid": 1298,
+          "instructions": 458727308,
+          "rep_bytes": 3624,
+          "movs_bytes": 0,
+          "stos_bytes": 3624,
+          "cycles_x16": 1834910200,
+          "memory_operand_bytes": 537109126,
+          "report_sha256": "35153601d44928b998e6ed022738dd435a25879b25f463274395b285e02b9ab1"
+        }
+      ]
+    },
+    "branch/4": {
+      "case_id": "branch/4",
+      "program": "branch",
+      "binary_sha256": "d383e4da2a1953bc72d54fccac0fe98fe575fef2474e469edcf2567d18ece37c",
+      "stdin_sha256": "16c3402cf255887d19eed335f65b177e4c9f57e5111da11ad7fca6806199710e",
+      "stdout_sha256": "e35976992cf6245cbcdcd50a983e687be0a6915b46c393238b18c81fc94d91a5",
+      "native": [
+        {
+          "rep": 1,
+          "sequence": 34,
+          "pid": 1104,
+          "cpu_ns": 128065000
+        },
+        {
+          "rep": 2,
+          "sequence": 54,
+          "pid": 1125,
+          "cpu_ns": 128293000
+        },
+        {
+          "rep": 3,
+          "sequence": 88,
+          "pid": 1200,
+          "cpu_ns": 128042000
+        },
+        {
+          "rep": 4,
+          "sequence": 120,
+          "pid": 1232,
+          "cpu_ns": 127860000
+        },
+        {
+          "rep": 5,
+          "sequence": 130,
+          "pid": 1242,
+          "cpu_ns": 127842000
+        },
+        {
+          "rep": 6,
+          "sequence": 169,
+          "pid": 1320,
+          "cpu_ns": 127847000
+        },
+        {
+          "rep": 7,
+          "sequence": 207,
+          "pid": 1358,
+          "cpu_ns": 127815000
+        }
+      ],
+      "metered": [
+        {
+          "rep": 1,
+          "sequence": 70,
+          "pid": 1154,
+          "instructions": 917304791,
+          "rep_bytes": 3624,
+          "movs_bytes": 0,
+          "stos_bytes": 3624,
+          "cycles_x16": 3669220092,
+          "memory_operand_bytes": 1073979988,
+          "report_sha256": "ce3f530fc5a7ab7380c2731e5941c9a8a01455c99296c3a0fa44b07538bd9a9a"
+        },
+        {
+          "rep": 2,
+          "sequence": 163,
+          "pid": 1304,
+          "instructions": 917304807,
+          "rep_bytes": 3624,
+          "movs_bytes": 0,
+          "stos_bytes": 3624,
+          "cycles_x16": 3669220156,
+          "memory_operand_bytes": 1073980036,
+          "report_sha256": "a9f8541a89cd9a12a8f3b132d70c705381705f8f2be44577190712b370525f90"
+        }
+      ]
+    },
+    "rep_fill/1": {
+      "case_id": "rep_fill/1",
+      "program": "rep_fill",
+      "binary_sha256": "316549bd773f5dba0b5978f423ba8fc93f9fb881339478e030f22b1b2f9d1bc7",
+      "stdin_sha256": "b61d14fabac7a8c4a193c44ce1394bbc7399ff3de0c728f96d280c832632a60b",
+      "stdout_sha256": "6a3078dfb84c2caf0f5c45b5ba1d46e5b20a09f51280b1d188b9ce0c057cddda",
+      "native": [
+        {
+          "rep": 1,
+          "sequence": 38,
+          "pid": 1108,
+          "cpu_ns": 33426000
+        },
+        {
+          "rep": 2,
+          "sequence": 42,
+          "pid": 1112,
+          "cpu_ns": 33153000
+        },
+        {
+          "rep": 3,
+          "sequence": 92,
+          "pid": 1204,
+          "cpu_ns": 43982000
+        },
+        {
+          "rep": 4,
+          "sequence": 119,
+          "pid": 1231,
+          "cpu_ns": 32790000
+        },
+        {
+          "rep": 5,
+          "sequence": 127,
+          "pid": 1239,
+          "cpu_ns": 32409000
+        },
+        {
+          "rep": 6,
+          "sequence": 185,
+          "pid": 1336,
+          "cpu_ns": 32528000
+        },
+        {
+          "rep": 7,
+          "sequence": 194,
+          "pid": 1345,
+          "cpu_ns": 32495000
+        }
+      ],
+      "metered": [
+        {
+          "rep": 1,
+          "sequence": 68,
+          "pid": 1150,
+          "instructions": 25800386,
+          "rep_bytes": 2147487272,
+          "movs_bytes": 0,
+          "stos_bytes": 2147487272,
+          "cycles_x16": 103202396,
+          "memory_operand_bytes": 8664959,
+          "report_sha256": "e96a7c81c97e40da49f92481b085a18b073a803f35c1a93ed88e581744979a51"
+        },
+        {
+          "rep": 2,
+          "sequence": 157,
+          "pid": 1289,
+          "instructions": 25800386,
+          "rep_bytes": 2147487272,
+          "movs_bytes": 0,
+          "stos_bytes": 2147487272,
+          "cycles_x16": 103202396,
+          "memory_operand_bytes": 8664959,
+          "report_sha256": "3948b1e7ff1fb64464380e17092c72c1f085516c8d6e7a64f38ec586788ddb82"
+        }
+      ]
+    },
+    "rep_fill/2": {
+      "case_id": "rep_fill/2",
+      "program": "rep_fill",
+      "binary_sha256": "316549bd773f5dba0b5978f423ba8fc93f9fb881339478e030f22b1b2f9d1bc7",
+      "stdin_sha256": "034ae8e96eee99a30067d2f7c7b8055992ffb028e1a8309df36a17183c72b95e",
+      "stdout_sha256": "2eeb559b1920bcd118e23727ff5bf06499ed939972f79f592afcf0d7dd1945b0",
+      "native": [
+        {
+          "rep": 1,
+          "sequence": 24,
+          "pid": 1094,
+          "cpu_ns": 63907000
+        },
+        {
+          "rep": 2,
+          "sequence": 56,
+          "pid": 1129,
+          "cpu_ns": 66570000
+        },
+        {
+          "rep": 3,
+          "sequence": 94,
+          "pid": 1206,
+          "cpu_ns": 79616000
+        },
+        {
+          "rep": 4,
+          "sequence": 107,
+          "pid": 1219,
+          "cpu_ns": 67331000
+        },
+        {
+          "rep": 5,
+          "sequence": 141,
+          "pid": 1254,
+          "cpu_ns": 61806000
+        },
+        {
+          "rep": 6,
+          "sequence": 186,
+          "pid": 1337,
+          "cpu_ns": 61612000
+        },
+        {
+          "rep": 7,
+          "sequence": 196,
+          "pid": 1347,
+          "cpu_ns": 59704000
+        }
+      ],
+      "metered": [
+        {
+          "rep": 1,
+          "sequence": 73,
+          "pid": 1169,
+          "instructions": 25807091,
+          "rep_bytes": 4294970920,
+          "movs_bytes": 0,
+          "stos_bytes": 4294970920,
+          "cycles_x16": 103229216,
+          "memory_operand_bytes": 8674226,
+          "report_sha256": "be93a7a9dd10cf0510f917fabd612e63c5c4fae8fa62b56e24a08798fe168280"
+        },
+        {
+          "rep": 2,
+          "sequence": 153,
+          "pid": 1279,
+          "instructions": 25807091,
+          "rep_bytes": 4294970920,
+          "movs_bytes": 0,
+          "stos_bytes": 4294970920,
+          "cycles_x16": 103229216,
+          "memory_operand_bytes": 8674226,
+          "report_sha256": "d6885506e245f9cd79145d557356eddef41ae3a0c124803189f669f49088bf75"
+        }
+      ]
+    },
+    "rep_fill/4": {
+      "case_id": "rep_fill/4",
+      "program": "rep_fill",
+      "binary_sha256": "316549bd773f5dba0b5978f423ba8fc93f9fb881339478e030f22b1b2f9d1bc7",
+      "stdin_sha256": "0fe76953bddd45fec27d8d55ede03f2eab50c90d933c2432900985db384855bd",
+      "stdout_sha256": "1558eb8d9fd38f4c06b28fed097f88d4eb10300d5da2d0a094a9752b5f82e4aa",
+      "native": [
+        {
+          "rep": 1,
+          "sequence": 29,
+          "pid": 1099,
+          "cpu_ns": 116848000
+        },
+        {
+          "rep": 2,
+          "sequence": 45,
+          "pid": 1115,
+          "cpu_ns": 124154000
+        },
+        {
+          "rep": 3,
+          "sequence": 98,
+          "pid": 1210,
+          "cpu_ns": 155134000
+        },
+        {
+          "rep": 4,
+          "sequence": 113,
+          "pid": 1225,
+          "cpu_ns": 120886000
+        },
+        {
+          "rep": 5,
+          "sequence": 140,
+          "pid": 1253,
+          "cpu_ns": 121861000
+        },
+        {
+          "rep": 6,
+          "sequence": 184,
+          "pid": 1335,
+          "cpu_ns": 120631000
+        },
+        {
+          "rep": 7,
+          "sequence": 205,
+          "pid": 1356,
+          "cpu_ns": 125088000
+        }
+      ],
+      "metered": [
+        {
+          "rep": 1,
+          "sequence": 83,
+          "pid": 1195,
+          "instructions": 25820403,
+          "rep_bytes": 8589938216,
+          "movs_bytes": 0,
+          "stos_bytes": 8589938216,
+          "cycles_x16": 103282464,
+          "memory_operand_bytes": 8692658,
+          "report_sha256": "7e222e2976df07cd88a42beed6894e9633282f83403348fd6460b9146a987e0a"
+        },
+        {
+          "rep": 2,
+          "sequence": 159,
+          "pid": 1293,
+          "instructions": 25820403,
+          "rep_bytes": 8589938216,
+          "movs_bytes": 0,
+          "stos_bytes": 8589938216,
+          "cycles_x16": 103282464,
+          "memory_operand_bytes": 8692658,
+          "report_sha256": "b00004a443939a1a1c450c262661dd075c05b7ec07908a67fa8b2d5ebbdb0534"
+        }
+      ]
+    },
+    "mod_inverse/1": {
+      "case_id": "mod_inverse/1",
+      "program": "mod_inverse",
+      "binary_sha256": "5b79d00a4ec728e4583f44b467b083a0d16132ad389787f431d3f12391e59e37",
+      "stdin_sha256": "921cab4dd8bd56be04bea95b10a9d25eaeade78e2c888f18e721499bddcf8d71",
+      "stdout_sha256": "9d6a6341100f30a662defb3bbcb876f2354bc2c195730ad09a8406f79dd5f03c",
+      "native": [
+        {
+          "rep": 1,
+          "sequence": 31,
+          "pid": 1101,
+          "cpu_ns": 14268000
+        },
+        {
+          "rep": 2,
+          "sequence": 44,
+          "pid": 1114,
+          "cpu_ns": 14235000
+        },
+        {
+          "rep": 3,
+          "sequence": 86,
+          "pid": 1198,
+          "cpu_ns": 14316000
+        },
+        {
+          "rep": 4,
+          "sequence": 124,
+          "pid": 1236,
+          "cpu_ns": 14263000
+        },
+        {
+          "rep": 5,
+          "sequence": 146,
+          "pid": 1261,
+          "cpu_ns": 14240000
+        },
+        {
+          "rep": 6,
+          "sequence": 177,
+          "pid": 1328,
+          "cpu_ns": 14200000
+        },
+        {
+          "rep": 7,
+          "sequence": 189,
+          "pid": 1340,
+          "cpu_ns": 14226000
+        }
+      ],
+      "metered": [
+        {
+          "rep": 1,
+          "sequence": 66,
+          "pid": 1144,
+          "instructions": 44286947,
+          "rep_bytes": 3624,
+          "movs_bytes": 0,
+          "stos_bytes": 3624,
+          "cycles_x16": 1016263132,
+          "memory_operand_bytes": 236203,
+          "report_sha256": "5a1d16cc3f30c348c765b3811becabef83cf01fb8f7cd5fa359bbe6e53574fa2"
+        },
+        {
+          "rep": 2,
+          "sequence": 156,
+          "pid": 1287,
+          "instructions": 44286947,
+          "rep_bytes": 3624,
+          "movs_bytes": 0,
+          "stos_bytes": 3624,
+          "cycles_x16": 1016263132,
+          "memory_operand_bytes": 236203,
+          "report_sha256": "a8e9dbfa1e1ba4279a43f1aa6d52d5ccf07a3c816aa21d2190d065ef11700541"
+        }
+      ]
+    },
+    "mod_inverse/2": {
+      "case_id": "mod_inverse/2",
+      "program": "mod_inverse",
+      "binary_sha256": "5b79d00a4ec728e4583f44b467b083a0d16132ad389787f431d3f12391e59e37",
+      "stdin_sha256": "4f6635fab154104736e0968c922ca1ecddf0a43758e4bbf89005b1208689251e",
+      "stdout_sha256": "48d035ab5ce12a1e22e791cc798c7d9fed138e8c6b1a037b0b22fdb4eade9980",
+      "native": [
+        {
+          "rep": 1,
+          "sequence": 32,
+          "pid": 1102,
+          "cpu_ns": 28014000
+        },
+        {
+          "rep": 2,
+          "sequence": 62,
+          "pid": 1135,
+          "cpu_ns": 28080000
+        },
+        {
+          "rep": 3,
+          "sequence": 89,
+          "pid": 1201,
+          "cpu_ns": 28071000
+        },
+        {
+          "rep": 4,
+          "sequence": 121,
+          "pid": 1233,
+          "cpu_ns": 28098000
+        },
+        {
+          "rep": 5,
+          "sequence": 135,
+          "pid": 1248,
+          "cpu_ns": 28088000
+        },
+        {
+          "rep": 6,
+          "sequence": 175,
+          "pid": 1326,
+          "cpu_ns": 28075000
+        },
+        {
+          "rep": 7,
+          "sequence": 206,
+          "pid": 1357,
+          "cpu_ns": 28056000
+        }
+      ],
+      "metered": [
+        {
+          "rep": 1,
+          "sequence": 74,
+          "pid": 1171,
+          "instructions": 88408639,
+          "rep_bytes": 3624,
+          "movs_bytes": 0,
+          "stos_bytes": 3624,
+          "cycles_x16": 2031469548,
+          "memory_operand_bytes": 236203,
+          "report_sha256": "21de14adcf91729a4be3e2e245ca704da9aea02d56857a4b3f614eb4e9b85623"
+        },
+        {
+          "rep": 2,
+          "sequence": 162,
+          "pid": 1302,
+          "instructions": 88408639,
+          "rep_bytes": 3624,
+          "movs_bytes": 0,
+          "stos_bytes": 3624,
+          "cycles_x16": 2031469548,
+          "memory_operand_bytes": 236203,
+          "report_sha256": "41e9cdd722406df6b2d77c1628e8cd6828fb781e7eb02f03ff044ca66bc07208"
+        }
+      ]
+    },
+    "branch_scan/1": {
+      "case_id": "branch_scan/1",
+      "program": "branch_scan",
+      "binary_sha256": "a5fdcae80f726045fbaa3db32933536ef60ad51922292469366946b62a06f028",
+      "stdin_sha256": "a76479d0c1f84c0d90fcbd7fe3c2f738f37da07eb4b88b59ea7a2637aac3b1ad",
+      "stdout_sha256": "df3749412f4fea855ded23ecfbc88633f5a831f374bd766dae9bba83d3320ef3",
+      "native": [
+        {
+          "rep": 1,
+          "sequence": 39,
+          "pid": 1109,
+          "cpu_ns": 48545000
+        },
+        {
+          "rep": 2,
+          "sequence": 59,
+          "pid": 1132,
+          "cpu_ns": 48862000
+        },
+        {
+          "rep": 3,
+          "sequence": 93,
+          "pid": 1205,
+          "cpu_ns": 48626000
+        },
+        {
+          "rep": 4,
+          "sequence": 125,
+          "pid": 1237,
+          "cpu_ns": 48547000
+        },
+        {
+          "rep": 5,
+          "sequence": 142,
+          "pid": 1255,
+          "cpu_ns": 48524000
+        },
+        {
+          "rep": 6,
+          "sequence": 182,
+          "pid": 1333,
+          "cpu_ns": 48526000
+        },
+        {
+          "rep": 7,
+          "sequence": 191,
+          "pid": 1342,
+          "cpu_ns": 48547000
+        }
+      ],
+      "metered": [
+        {
+          "rep": 1,
+          "sequence": 71,
+          "pid": 1165,
+          "instructions": 136599050,
+          "rep_bytes": 3624,
+          "movs_bytes": 0,
+          "stos_bytes": 3624,
+          "cycles_x16": 546397176,
+          "memory_operand_bytes": 144970956,
+          "report_sha256": "3f1b801cc4e46480829ea0db0866c46667f714956a7185a06cd05d85833582be"
+        },
+        {
+          "rep": 2,
+          "sequence": 160,
+          "pid": 1295,
+          "instructions": 136599050,
+          "rep_bytes": 3624,
+          "movs_bytes": 0,
+          "stos_bytes": 3624,
+          "cycles_x16": 546397176,
+          "memory_operand_bytes": 144970956,
+          "report_sha256": "4402e1e2e2b1718967af08f71aad312d95e2f64d0555c4fab9ef19bbf527ce46"
+        }
+      ]
+    },
+    "branch_scan/2": {
+      "case_id": "branch_scan/2",
+      "program": "branch_scan",
+      "binary_sha256": "a5fdcae80f726045fbaa3db32933536ef60ad51922292469366946b62a06f028",
+      "stdin_sha256": "14fb998c9a2e5b4748208a92be159b1c24955fe98d336dd122578abe58091147",
+      "stdout_sha256": "31164ff7ed39a7e61ef88c7c49387d07490f3d88afb8256c1efb2b13f6d59403",
+      "native": [
+        {
+          "rep": 1,
+          "sequence": 33,
+          "pid": 1103,
+          "cpu_ns": 94034000
+        },
+        {
+          "rep": 2,
+          "sequence": 46,
+          "pid": 1116,
+          "cpu_ns": 94465000
+        },
+        {
+          "rep": 3,
+          "sequence": 101,
+          "pid": 1213,
+          "cpu_ns": 94196000
+        },
+        {
+          "rep": 4,
+          "sequence": 115,
+          "pid": 1227,
+          "cpu_ns": 94767000
+        },
+        {
+          "rep": 5,
+          "sequence": 139,
+          "pid": 1252,
+          "cpu_ns": 94260000
+        },
+        {
+          "rep": 6,
+          "sequence": 179,
+          "pid": 1330,
+          "cpu_ns": 94213000
+        },
+        {
+          "rep": 7,
+          "sequence": 202,
+          "pid": 1353,
+          "cpu_ns": 94144000
+        }
+      ],
+      "metered": [
+        {
+          "rep": 1,
+          "sequence": 72,
+          "pid": 1167,
+          "instructions": 254039647,
+          "rep_bytes": 3624,
+          "movs_bytes": 0,
+          "stos_bytes": 3624,
+          "cycles_x16": 1016159564,
+          "memory_operand_bytes": 287577342,
+          "report_sha256": "353880d31208dd73d5d5d57ae30f0e488de0368084bd9f586a9387c7ba61e434"
+        },
+        {
+          "rep": 2,
+          "sequence": 150,
+          "pid": 1272,
+          "instructions": 254039647,
+          "rep_bytes": 3624,
+          "movs_bytes": 0,
+          "stos_bytes": 3624,
+          "cycles_x16": 1016159564,
+          "memory_operand_bytes": 287577342,
+          "report_sha256": "6655cbe1bcc983371bff9b9d936fd9b81ce8705eea6a7a88f42b0b3148d30cbd"
+        }
+      ]
+    }
+  }
+}
