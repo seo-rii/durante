@@ -10,12 +10,15 @@ Values are exact lowercase spellings and duplicates are rejected. The earlier
 single-file `drmeter -o REPORT` interface is not used.
 
 Each application basic block adds its instruction count to thread-local state.
-Without `-live_work_v1`, nothing is published before a syscall, so every block
-does this inline, including dynamically linked executables, shared libraries and
-generated code. The entry sequence uses only MOV and LEA. It never reads or
-writes the application's arithmetic flags, so no flag save is needed even when
-a signal handler inspects them. Each memory write records its replay checkpoint
-with flag-neutral moves. Scratch registers are spilled to client-owned TLS slots.
+For ordinary instruction counting, the client can charge every block inline,
+including dynamically linked executables, shared libraries and generated code.
+This path requires client-owned raw TLS slots and runs with the live clock,
+latency model, cache probe and count-location profiling disabled. It also
+supports `-rep_bytes`. With `-latency_bound` or its `-memory_operand_bytes`
+extension, a callback charges each block, even when the live clock is off.
+The inline entry preserves application flags, including values a signal handler
+may inspect. Each memory write records its replay checkpoint with flag-neutral
+moves. Scratch registers spill to client-owned TLS slots.
 A restore-state handler recovers them if the runtime translates a thread inside
 one of these sequences. It also returns a stored entry charge when a relocated
 thread will enter the same block again. The layout depends only on the block, so
@@ -29,8 +32,7 @@ block. It saves and restores its scratch registers
 and arithmetic flags even when a signal handler is the only code that reads them.
 The checked callback handles publication boundaries, replay and additions near
 overflow. In live runs, dynamically linked executables, shared libraries and
-generated code use callbacks throughout. The optional latency model also uses
-the callback to charge each block's bound.
+generated code use callbacks throughout.
 
 REP MOVS/STOS byte demand is read at the REP instruction after earlier register
 updates, with one clean call per REP entry. Conditional REP forms are separately
