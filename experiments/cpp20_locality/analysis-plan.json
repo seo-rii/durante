@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "question": "Does sparse per-site address span distinguish identical-ELF dependency walks that consecutive near/far pairs cannot separate, and how much CPU does the sampler add to a v11 run?",
+  "walk_load_site": {
+    "elf_offset": 6656,
+    "dword_bytes": 4,
+    "instruction": "mov (%r12,%rsi,4),%ecx",
+    "period": 1024,
+    "line_bytes": 64,
+    "pair_visits": "1 and 2, then 1025 and 1026, continuing through the final partial period",
+    "span": "maximum sampled starting byte address minus minimum sampled starting byte address",
+    "oracle": "Affine jump-ahead of the frozen 32-bit recurrence, restricted by the power-of-two index mask. Independently compute the final index, visit and sampled-pair counts, near/far counts for every possible four-byte-aligned table offset modulo 64, and the extrema of sampled indices."
+  },
+  "feature_test": {
+    "population": "All five cycle_walk inputs. sort/1 and rep_copy/1 provide instrumentation cost controls only.",
+    "gate": "Verify every observed hot-site counter against the oracle. In every span-enabled replicate, require sampled byte span between 90% and 100% inclusive of the declared active address range in bytes. Require five strictly increasing observed spans in order of the five declared ranges. Report actual coverage and near/far rates even when a gate fails.",
+    "interpretation": "Span measures the interval between observed load starting addresses. It does not count distinct bytes touched or cache misses."
+  },
+  "timing_test": {
+    "target": "Median direct native wait4 user-plus-system CPU over the scored repetitions in this collection, including program startup and initialization. Use the native minimum as a sensitivity comparison without refitting.",
+    "calibration": ["cycle_walk/32KiB", "cycle_walk/64MiB"],
+    "fresh": ["cycle_walk/128KiB", "cycle_walk/2MiB", "cycle_walk/16MiB"],
+    "span_model": "At fixed traversal count, interpolate the two calibration native medians linearly as a function of log2(observed hot-site byte span). Use only the two repeated endpoints for calibration. Require stable exact observed spans on this input, two distinct positive anchor spans and an in-range result. Never extrapolate. Use observed diagnostic sampler receipts as the inference input.",
+    "comparison": "Fit a single nonnegative nanoseconds-per-modeled-cycle coefficient to the same two anchors by minimizing squared relative errors (no intercept), using the median of the diagnostic-off cycles_x16/16 per anchor. Score every corresponding diagnostic-off observation on held-out inputs.",
+    "gate": "For each fresh input, all applicable estimates must be within 20% inclusive of the native median. A model covers the fresh set if all three pass. Report relative errors and native ranges for each. Retain short or unstable samples and flag when native minimum is below 20ms or (maximum-minimum)/median exceeds 10%. This is a single-ELF interpolation check on three unseen inputs at one traversal count."
+  },
+  "cost_test": {
+    "comparisons": "Use matched repetitions for current v11 diagnostic (latency and nominal bytes) and its live clock, with and without the new span client. Report the original near/far sampler versus the same unsampled diagnostic and the span sampler versus near/far if those arms are scheduled.",
+    "statistics": "For each matched comparison and input sum metered user-plus-system CPU nanoseconds separately and report the on/off ratio. Also report the median and min/max paired ratios. Separately pool sums for the five walks, the two cost controls, and all seven cases. Keep the two v11 operating modes separate. Ordinary v11 and native CPU are descriptive when present.",
+    "gate": "For each of the diagnostic and live modes, the pooled on/off ratio over all seven cases must not exceed 1.05 and the pooled ratio within every individual case must not exceed 1.10. Report each gate regardless of outcome; do not discard slow repetitions.",
+    "causality": "Paired CPU covers the instrumented process including its startup. The new arm includes loading and running the experimental second client."
+  }
+}
