@@ -1,0 +1,29 @@
+--- a/candidate.c
++++ b/guarded.c
+@@ -134,0 +135,2 @@
++#include "omitted.h"
++
+@@ -137,0 +140,2 @@
++    if (instr_is_label(where) && instr_get_note(where) == (void *)group_note)
++        insert_omitted(ctx, bb, where);
+@@ -239,0 +244 @@
++    write_guard(loads);
+@@ -262 +267,2 @@
+-    drmgr_unregister_bb_insertion_event(insert);
++    drmgr_unregister_bb_instrumentation_event(analyze_omitted);
++    drmgr_unregister_signal_event(mark_signal);
+@@ -270,2 +276,2 @@
+-    if (argc != 5 || strcmp(argv[1], "-out") || strcmp(argv[3], "-sites"))
+-        fail("expected -out <new file> -sites <sorted decimal offsets>");
++    if (argc != 7 || strcmp(argv[1], "-out") || strcmp(argv[3], "-sites") || strcmp(argv[5], "-guard"))
++        fail("expected -out <new file> -sites <sorted decimal offsets> -guard <new file>");
+@@ -279,0 +286,3 @@
++    guard_file = dr_open_file(argv[6], DR_FILE_WRITE_REQUIRE_NEW | DR_FILE_CLOSE_ON_FORK);
++    if (guard_file == INVALID_FILE)
++        fail("cannot create guard receipt");
+@@ -287,2 +296,3 @@
+-    if (!drmgr_init() || !drmgr_register_thread_init_event(thread_init) ||
+-        !drmgr_register_bb_instrumentation_event(NULL, insert, NULL))
++    if (!drmgr_init() || (group_note = drmgr_reserve_note_range(1)) == DRMGR_NOTE_NONE ||
++        !drmgr_register_thread_init_event(thread_init) || !drmgr_register_signal_event(mark_signal) ||
++        !drmgr_register_bb_instrumentation_event(analyze_omitted, insert, NULL))
