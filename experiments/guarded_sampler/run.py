@@ -9,7 +9,7 @@ import tempfile
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
-from first_run_sampler.profile import capture_for_digest, elf_digest, read_json, resolve_for_digest
+from first_run_sampler.profile import calibration_sites, capture_for_digest, elf_digest, read_json, resolve_for_digest
 from guarded_sampler.guard import decision, read_report
 
 
@@ -40,6 +40,18 @@ def execute(runtime, plan, elf, stdin, out, offsets=None):
     return row
 
 
+def full_sample(directory, pid):
+    raw = (directory / "sample.json").read_bytes()
+    sample = read_json(raw)
+    if sample["sites"]:
+        return raw
+    empty = dict(schema=2, pid=pid, threads=1, period=1024, line_bytes=64,
+                 loads=0, pairs=0, near_pairs=0, far_pairs=0, sites=[])
+    if sample != empty or any(type(sample[k]) is not int for k in empty if k != "sites"):
+        raise ValueError("inconsistent empty full sample")
+    return None
+
+
 def run(payload, elf, stdin, cache, out):
     plan_file = HERE / "protocol.json"
     if plan_file.read_bytes() != (payload / "protocol.json").read_bytes():
@@ -62,17 +74,12 @@ def run(payload, elf, stdin, cache, out):
               "authority": "diagnostic_only", "launches": []}
     if not cached.exists():
         row = execute(runtime, plan, elf, input_copy, out / "full")
-        raw = (out / "full/sample.json").read_bytes()
-        sample = read_json(raw)
-        if sample["sites"]:
+        raw = full_sample(out / "full", row["launcher_pid"])
+        if raw is None:
+            result["profile"] = None
+        else:
             profile = capture_for_digest(digest, input_copy.read_bytes(), raw, row["launcher_pid"], arm="full")
             publish_profile(cached, profile)
-        else:
-            empty = dict(schema=2, pid=row["launcher_pid"], threads=1, period=1024, line_bytes=64,
-                         loads=0, pairs=0, near_pairs=0, far_pairs=0, sites=[])
-            if sample != empty or any(type(sample[k]) is not int for k in empty if k != "sites"):
-                raise ValueError("inconsistent empty full sample")
-            result["profile"] = None
         result["launches"].append({"mode": "full", **row})
         final = "full"
     else:
@@ -87,6 +94,9 @@ def run(payload, elf, stdin, cache, out):
             if elf_digest(elf) != digest:
                 raise ValueError("executable changed before full recovery")
             rerun = execute(runtime, plan, elf, input_copy, out / "full")
+            raw = full_sample(out / "full", rerun["launcher_pid"])
+            if raw is not None:
+                calibration_sites(raw, rerun["launcher_pid"])
             if rerun["stdout_sha256"] != row["stdout_sha256"]:
                 raise ValueError("rerun produced different output for the same input")
             result["launches"].append({"mode": "full", **rerun})
