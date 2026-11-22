@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "question": "Do terminal v11 counts augmented with scalar reads observed in a delivered guarded diagnostic predict native CPU time and reproduce time-limit boundaries on different program families?",
+  "native_reference": "Use the nine scored wait4 user+system observations, in nanoseconds, from the fresh CPU-pinned guest for each exact ELF, stdin, stdout case. Exclude the warmup. The primary target is the median. Report the complete range and the median-to-median change for every exact case also present in Aonohako #154. The fresh guest is a reference replication on known programs.",
+  "case_groups": {
+    "train": ["integer", "rep_fill", "branch_scan"],
+    "heldout_real": ["branch", "mod_inverse"],
+    "controls": ["path_switch", "path_mix"]
+  },
+  "split": "All scales of a family stay together. The primary train/heldout-real/control panel has 8/5/5 cases. Controls never train coefficients. One further panel holds out each of five real families in turn, fitting on the other four and scoring each real case exactly once. Earlier site-selection calibration is independent of the time-regression labels.",
+  "views": {
+    "delivered": "A first/confirmation input uses its full first-run record. A scored input uses every accepted guarded record. Include the actual selected audit record for larger stable input, and precisely the actual full rerun for each of the two rejected inputs. Do not count the paired full substitutes for rejected scored runs as actual deliveries. Use counters and sample from the same PID.",
+    "full": "Use the full first/confirmation run and the eight scheduled matched Full trials on each other input. Exclude the separate conditional audit trials from this comparison.",
+    "ablation": "Use identical training cases and native targets. Fit the complete model series independently on delivered and full counters. Additionally apply the delivered-view fitted weights unchanged to full observations to separate changed measurement inputs from refitting."
+  },
+  "fit_models": {
+    "work": ["instructions", "rep_bytes"],
+    "work_reads": ["instructions", "rep_bytes", "loads"],
+    "work_reads_far": ["instructions", "rep_bytes", "loads", "far_pairs"]
+  },
+  "features": "rep_bytes is MOVS+STOS bytes. loads counts eligible scalar-read visits in the returned sample, across its reported sites. far_pairs is the number of sampled pairs classified far by the original sampler. The latter is an address-pattern diagnostic and does not count hardware cache misses. No omitted-count augmentation, span-based feature search, arbitrary intercept, or post-score model choice.",
+  "fit": "Use the component-wise median of all applicable counter observations per training case. Minimize sum over cases of (dot(weights, counters)/native_median_ns - 1)^2 with nonnegative weights in ns per unit and zero intercept. Use exact rational arithmetic and enumerate nonnegative faces. Resolve exact ties by the smallest active set then feature order. Publish matrix rank, feature training ranges, zero coefficients, and rank limitations.",
+  "frozen": "Apply both exact #154 CPP20 calibration coefficient sets (instruction_rep and instruction_movs_stos) unchanged. Their training used all integer and REP-copy scales in #154. Separate these fixed-weight transfer results from the new fits. They are research reference fits. Positive weights and an explicit runtime identity are required for an installed Aonohako policy. The split-REP reference has a zero STOS coefficient. No deployed default or executable policy is implied.",
+  "timing": "Round the exact rational sum up once to a whole nanosecond. Compare predicted ns strictly greater than the nominal limit in ns; equality passes. Match Aonohako estimate-and-compare rounding. A case passes time accuracy only when every observation in the view lies within the inclusive 20% band around its native median. Report separately against the native minimum without refitting. Publish the median across cases of the absolute error of the worst observation, maximum absolute error, per-case prediction ranges and all predictions.",
+  "limits": {
+    "relative": "Low is max(1, floor(0.8 times the native median in milliseconds)); high is ceil(1.2 times that median in milliseconds). Use both only when low ms < median < high ms. Report skipped limits explicitly.",
+    "fixed_ms": [50, 100, 250, 500, 1000],
+    "verdict": "For each case and each limit count how many native repetitions and model observations exceed it. A native range straddling a limit is inconclusive. With unanimous native samples, report false TLE if any model observation times out a native pass, false accept if any model observation passes a native TLE. Count boundaries rather than all pairwise Cartesian products. Simulated outcomes use completed runs: there are no real timer-initiated kills."
+  },
+  "acceptance": "The candidate must keep every primary held-out real case within plus/minus 20% and agree on every unanimous relative boundary. Report controls and the leave-one-real-family-out transfer separately. Include all cases and also summarize real holdouts with native minimum >=20 ms and (maximum-minimum)/median <=10%. A passing access-coverage threshold is not a prediction-time guarantee.",
+  "authority": "Offline diagnostic comparison of deterministic C++ and synthetic controls on a single new Milan reference guest. Terminal sampled reads become available at exit, and a full recovery can require a second execution. The comparison does not implement an online clock."
+}
