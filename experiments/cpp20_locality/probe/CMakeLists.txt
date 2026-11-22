@@ -1,0 +1,28 @@
+cmake_minimum_required(VERSION 3.16)
+project(durante_access_span C)
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux" OR NOT CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|amd64|AMD64)$")
+  message(FATAL_ERROR "The address span probe requires Linux x86-64")
+endif()
+
+set(previous "${CMAKE_CURRENT_SOURCE_DIR}/../../access_sample/probe.c")
+set(delta "${CMAKE_CURRENT_SOURCE_DIR}/span.patch")
+set(source "${CMAKE_CURRENT_BINARY_DIR}/access_span.c")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${previous}")
+file(SHA256 "${previous}" previous_hash)
+if(NOT previous_hash STREQUAL "813817d50ac688895401cdda7f0d08a7a2f78cfca79e73fa61dbbd83ee79b503")
+  message(FATAL_ERROR "The registered access sampler source has changed")
+endif()
+find_program(PATCH_TOOL patch)
+if(NOT PATCH_TOOL)
+  message(FATAL_ERROR "GNU patch is required to build the address span probe")
+endif()
+add_custom_command(OUTPUT "${source}"
+  COMMAND "${PATCH_TOOL}" --silent --batch --fuzz=0 --output "${source}" "${previous}" "${delta}"
+  DEPENDS "${previous}" "${delta}" VERBATIM)
+
+find_package(DynamoRIO 11.3 EXACT REQUIRED)
+add_library(access_span SHARED "${source}")
+configure_DynamoRIO_client(access_span)
+use_DynamoRIO_extension(access_span drmgr)
+set_target_properties(access_span PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES)
+target_compile_options(access_span PRIVATE -Wall -Wextra -Werror)

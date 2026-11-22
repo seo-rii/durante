@@ -1,0 +1,66 @@
+--- a/probe.c
++++ b/probe.c
+@@ -10,6 +10,7 @@
+ typedef struct {
+     app_pc pc;
+     uint64_t remaining, previous_line, pairs, near;
++    uintptr_t min_address, max_address;
+     bool pending;
+ } site_t;
+ static site_t sites[MAX_SITES];
+@@ -21,7 +22,7 @@
+ static process_id_t owner;
+ 
+ static void fail(const char *why) {
+-    dr_fprintf(STDERR, "access_sample: %s\n", why);
++    dr_fprintf(STDERR, "access_span: %s\n", why);
+     dr_abort_with_code(1);
+ }
+ 
+@@ -35,6 +36,7 @@
+         site_t *s = &sites[used++];
+         s->pc = pc;
+         s->remaining = 1;
++        s->min_address = UINTPTR_MAX;
+         table[slot] = s;
+     }
+     return table[slot];
+@@ -45,6 +47,11 @@
+ __attribute__((target("general-regs-only")))
+ static void observe(site_t *site, uintptr_t base, uintptr_t index, uint64_t spec) {
+     uintptr_t address = base + index * (spec >> 32) + (int32_t)spec;
++    /* Include both observations, even when the last pair never completes. */
++    if (address < site->min_address)
++        site->min_address = address;
++    if (address > site->max_address)
++        site->max_address = address;
+     uint64_t line = address / LINE;
+     if (!site->pending) {
+         site->previous_line = line;
+@@ -194,7 +201,7 @@
+         near += sites[i].near;
+         pairs += sites[i].pairs;
+     }
+-    dr_fprintf(output, "{\"schema\":1,\"pid\":%u,\"threads\":1,\"period\":%d,\"line_bytes\":%d,"
++    dr_fprintf(output, "{\"schema\":2,\"pid\":%u,\"threads\":1,\"period\":%d,\"line_bytes\":%d,"
+                "\"loads\":%llu,\"pairs\":%llu,\"near_pairs\":%llu,\"far_pairs\":%llu,\"sites\":[",
+                (unsigned)owner, PERIOD, LINE, (unsigned long long)loads, (unsigned long long)pairs,
+                (unsigned long long)near, (unsigned long long)(pairs - near));
+@@ -203,10 +210,14 @@
+         site_t *s = &sites[i];
+         uint64_t n = visits(s);
+         if (!n) continue;
++        if (s->min_address > s->max_address)
++            fail("missing sampled address");
+         dr_fprintf(output, "%s{\"offset\":%llu,\"loads\":%llu,\"pairs\":%llu,\"near_pairs\":%llu,"
+-                   "\"far_pairs\":%llu}", comma ? "," : "", (unsigned long long)(s->pc - module_start),
+-                   (unsigned long long)n, (unsigned long long)s->pairs, (unsigned long long)s->near,
+-                   (unsigned long long)(s->pairs - s->near));
++                   "\"far_pairs\":%llu,\"sampled_address_span_bytes\":%llu}", comma ? "," : "",
++                   (unsigned long long)(s->pc - module_start), (unsigned long long)n,
++                   (unsigned long long)s->pairs, (unsigned long long)s->near,
++                   (unsigned long long)(s->pairs - s->near),
++                   (unsigned long long)(s->max_address - s->min_address));
+         comma = true;
+     }
+     dr_fprintf(output, "]}\n");
