@@ -45,14 +45,14 @@ def registration():
                 tools_sha256=files, schedule=schedule)
 
 
-def sources():
+def sources(reader=REPO / "collect.py"):
     return {"bench.py": BASE / "bench.py", "guest.sh": BASE / "guest.sh", "cases.json": GUARDED / "cases.json",
-            "production_reader.py": REPO / "collect.py"}
+            "production_reader.py": reader}
 
 
-def prepare(out, elf_archive):
+def prepare(out, elf_archive, reader=REPO / "collect.py"):
     require(json.loads((HERE / "protocol.json").read_bytes()) == registration(), "native registration differs")
-    files = sources()
+    files = sources(reader)
     with tempfile.TemporaryDirectory(dir=out.parent) as directory:
         for name, raw in (("path_switch", control_binary()), ("path_mix", mix_binary())):
             file = Path(directory) / name
@@ -65,5 +65,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("out", type=Path)
     parser.add_argument("--elf-archive", type=Path, required=True, help="Aonohako #154 corpus/elfs.tar.xz")
+    parser.add_argument("--reader", type=Path, default=REPO / "collect.py", help="registered v11 collect.py")
     args = parser.parse_args()
-    prepare(args.out, args.elf_archive)
+    prepare(args.out, args.elf_archive, args.reader)
