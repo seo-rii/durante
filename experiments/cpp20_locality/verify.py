@@ -99,7 +99,8 @@ def verify(result, elf_archive=None):
                              {"live", "live_span"})
 
 
-def verify_collection(result, protocol_bytes, cases, sampled_arms, live_arms, binary_sample_arms=()):
+def verify_collection(result, protocol_bytes, cases, sampled_arms, live_arms, binary_sample_arms=(),
+                      extra_receipts_by_arm=None):
     """Replay every trial using the same CPU placement, wait4 and v11 record contract."""
     plan = json.loads(protocol_bytes)
     by_id = {case["case_id"]: case for case in cases}
@@ -149,6 +150,7 @@ def verify_collection(result, protocol_bytes, cases, sampled_arms, live_arms, bi
             require(events.get(pid) == observation["events"], f"trace mismatch at {i}")
             record = f"records/process-{pid}.jsonl"
             files = {"stdout", "stderr"}
+            files.update((extra_receipts_by_arm or {}).get(arm, ()))
             if metered:
                 files.update(("production.json", record))
             if arm in sampled_arms:
