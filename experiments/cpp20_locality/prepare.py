@@ -5,18 +5,26 @@ from pathlib import Path
 import shutil
 import tarfile
 import tempfile
+import sys
 
-from fixtures import manifest
-from verify import HERE, REPO, require, sha, verify_elfs
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parent))
+from cpp20_locality.fixtures import manifest
+from cpp20_locality.verify import REPO, require, sha, verify_elfs
 
 
 def prepare(out, release, near, span, elf_archive, reader):
-    require(not out.exists(), f"output already exists: {out}")
-    protocol = (HERE / "protocol.json").read_bytes()
-    digests = json.loads(protocol)["tools_sha256"]
-    verify_elfs(elf_archive, manifest())
     sources = {"v11.so": release / "lib/libdurante.so", "near.so": near, "span.so": span,
                "production_reader.py": reader}
+    materialize(out, release, elf_archive, HERE, sources)
+
+
+def materialize(out, release, elf_archive, study, sources):
+    """Build a new payload only when all inputs match the published protocol."""
+    require(not out.exists(), f"output already exists: {out}")
+    protocol = (study / "protocol.json").read_bytes()
+    digests = json.loads(protocol)["tools_sha256"]
+    verify_elfs(elf_archive, manifest())
     with tempfile.TemporaryDirectory(dir=out.parent) as temp, tarfile.open(elf_archive, "r:xz") as elfs:
         staging = Path(temp) / "payload"
         staging.mkdir()
@@ -27,7 +35,7 @@ def prepare(out, release, near, span, elf_archive, reader):
                 target.write_bytes(elfs.extractfile(name).read())
                 target.chmod(0o755)
             else:
-                origin = release / name if name.startswith("dynamorio/") else sources.get(name, HERE / name)
+                origin = release / name if name.startswith("dynamorio/") else sources.get(name, study / name)
                 shutil.copy2(origin, target)
             require(sha(target.read_bytes()) == expected, "payload differs from preregistration: " + name)
         (staging / "protocol.json").write_bytes(protocol)

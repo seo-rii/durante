@@ -8,14 +8,16 @@ import re
 import runpy
 import struct
 import subprocess
+import sys
 import tarfile
 import tempfile
 
-from export import parse_trace
-from fixtures import manifest
-from schedule import build
-
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parent))
+from cpp20_locality.export import parse_trace
+from cpp20_locality.fixtures import manifest
+from cpp20_locality.schedule import build
+
 REPO = HERE.parents[1]
 RESULT = HERE.parent / "results/gce-cpp20-locality"
 ELF_ARCHIVE = "051251cd87b3119d1d2ddcbfd65e474f8294dc503efadf0871f783d8b5f18999"
@@ -93,8 +95,15 @@ def verify(result, elf_archive=None):
             for c in cases), "registration mismatch")
     if elf_archive:
         verify_elfs(elf_archive, cases)
+    return verify_collection(result, protocol_bytes, cases, {"diag_near", "diag_span", "live_span"},
+                             {"live", "live_span"})
+
+
+def verify_collection(result, protocol_bytes, cases, sampled_arms, live_arms):
+    """Replay every trial using the same CPU placement, wait4 and v11 record contract."""
+    plan = json.loads(protocol_bytes)
     by_id = {case["case_id"]: case for case in cases}
-    reader = release_reader(tools["production_reader.py"])
+    reader = release_reader(plan["tools_sha256"]["production_reader.py"])
     data = read_compressed(result / "dataset.json.gz")
     placement = read_compressed(result / "placement.json.gz")
     cleanup = json.loads((result / "cleanup.json").read_bytes())
@@ -132,7 +141,7 @@ def verify(result, elf_archive=None):
                     f"invalid wait4 accounting at {i}")
             arm = row["arm"]
             metered = arm not in ("warmup", "native")
-            live = arm in ("live", "live_span")
+            live = arm in live_arms
             case = by_id[row["case_id"]]
             executables = ["drrun", "libdynamorio.so"] if metered else [case["program"]]
             require(observation == dict(sequence=i, pid=pid, events=[dict(cpu=1, executable=s) for s in executables]),
@@ -142,7 +151,7 @@ def verify(result, elf_archive=None):
             files = {"stdout", "stderr"}
             if metered:
                 files.update(("production.json", record))
-            if arm in ("diag_near", "diag_span", "live_span"):
+            if arm in sampled_arms:
                 files.add("sample.json")
             if live:
                 files.add("clock.bin")
