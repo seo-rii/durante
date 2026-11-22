@@ -99,7 +99,7 @@ def verify(result, elf_archive=None):
                              {"live", "live_span"})
 
 
-def verify_collection(result, protocol_bytes, cases, sampled_arms, live_arms):
+def verify_collection(result, protocol_bytes, cases, sampled_arms, live_arms, binary_sample_arms=()):
     """Replay every trial using the same CPU placement, wait4 and v11 record contract."""
     plan = json.loads(protocol_bytes)
     by_id = {case["case_id"]: case for case in cases}
@@ -153,6 +153,8 @@ def verify_collection(result, protocol_bytes, cases, sampled_arms, live_arms):
                 files.update(("production.json", record))
             if arm in sampled_arms:
                 files.add("sample.json")
+            if arm in binary_sample_arms:
+                files.add("sample.bin")
             if live:
                 files.add("clock.bin")
             require(("clock_polls" in row) == live and (not live or
