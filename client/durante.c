@@ -972,11 +972,12 @@ static opnd_t state_field(size_t offset) {
  * scratch registers are restored before the first application instruction.
  * Both guard paths precede the charge store and the final RCX restore, so
  * restore_state() can recognize partial entries by those two instructions. */
-static void insert_flat_charge(void *ctx, instrlist_t *bb, instr_t *where, int count) {
+static void emit_flat_charge(void *ctx, instrlist_t *bb, instr_t *where, int count) {
   opnd_t value = opnd_create_reg(DR_REG_RCX), state = opnd_create_reg(DR_REG_R11);
   opnd_t low_reg = opnd_create_reg(DR_REG_ECX);
   instr_t *wrapped = INSTR_CREATE_label(ctx), *checked = INSTR_CREATE_label(ctx);
-#define INSERT(i) instrlist_meta_preinsert(bb, where, (i))
+#define INSERT(i) \
+  (where ? instrlist_meta_preinsert(bb, where, (i)) : instrlist_meta_append(bb, (i)))
   INSERT(INSTR_CREATE_mov_st(ctx, raw_slot(RAW_TLS_SPILL_RCX), value));
   INSERT(INSTR_CREATE_mov_st(ctx, raw_slot(RAW_TLS_SPILL_R11), state));
   INSERT(INSTR_CREATE_mov_ld(ctx, state, raw_slot(RAW_TLS_STATE)));
@@ -1005,6 +1006,57 @@ static void insert_flat_charge(void *ctx, instrlist_t *bb, instr_t *where, int c
   INSERT(INSTR_CREATE_mov_ld(ctx, state, raw_slot(RAW_TLS_SPILL_R11)));
   INSERT(INSTR_CREATE_mov_ld(ctx, value, raw_slot(RAW_TLS_SPILL_RCX)));
 #undef INSERT
+}
+
+/* The runtime re-encodes every meta instruction of each new block, which
+ * dominates block building for interpreters and generated code. These
+ * sequences depend only on the block size or on a write's immediates, so they
+ * are encoded once and inserted as one raw copy. A valid opcode and an empty
+ * operand list keep the runtime from decoding the bundle; restore_state()
+ * decodes the code cache itself. */
+enum { FLAT_ENTRY_CACHE = 1024, SEQUENCE_BYTES = 128 };
+typedef struct {
+  uint length;
+  byte bytes[SEQUENCE_BYTES];
+} encoded_sequence_t;
+static encoded_sequence_t *flat_entries[FLAT_ENTRY_CACHE + 1];
+
+static uint encode_sequence(void *ctx, instrlist_t *ilist, byte *buf) {
+  byte *end = instrlist_encode(ctx, ilist, buf, true);
+  if (!end || end - buf > SEQUENCE_BYTES)
+    fail("cannot pre-encode instrumentation");
+  return (uint)(end - buf);
+}
+
+static void insert_bundle(void *ctx, instrlist_t *bb, instr_t *where, const byte *bytes,
+                          uint length) {
+  instr_t *bundle = instr_build_bits(ctx, OP_mov_st, length);
+  instr_set_raw_bytes(bundle, (byte *)bytes, length);
+  /* No operands: mangling's RIP-relative scan must not decode the bundle,
+   * which would cut its raw bits down to the first instruction. */
+  instr_set_operands_valid(bundle, true);
+  instrlist_meta_preinsert(bb, where, bundle);
+}
+
+static void insert_flat_charge(void *ctx, instrlist_t *bb, instr_t *where, int count) {
+  if (count <= 0 || count > FLAT_ENTRY_CACHE) {
+    emit_flat_charge(ctx, bb, where, count);
+    return;
+  }
+  encoded_sequence_t *entry = __atomic_load_n(&flat_entries[count], __ATOMIC_ACQUIRE);
+  if (!entry) {
+    encoded_sequence_t *fresh = dr_global_alloc(sizeof(*fresh));
+    instrlist_t *ilist = instrlist_create(ctx);
+    emit_flat_charge(ctx, ilist, NULL, count);
+    fresh->length = encode_sequence(ctx, ilist, fresh->bytes);
+    instrlist_clear_and_destroy(ctx, ilist);
+    if (__atomic_compare_exchange_n(&flat_entries[count], &entry, fresh, false,
+                                    __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE))
+      entry = fresh;
+    else
+      dr_global_free(fresh, sizeof(*fresh));
+  }
+  insert_bundle(ctx, bb, where, entry->bytes, entry->length);
 }
 
 static bool is_raw_slot(opnd_t opnd, uint slot) {
@@ -1182,8 +1234,76 @@ static void before_write_memory(app_pc pc, app_pc next_pc, int suffix,
  * directly with flag-neutral moves. The scratch register is always restored
  * before the application instruction, even when normal liveness treats it
  * as dead: a synchronous signal handler may read every saved register. */
+/* Raw-TLS write checkpoint: a fixed layout whose five 32-bit immediates are
+ * patched per write. Both pointers always use two 32-bit stores. */
+enum { CHECKPOINT_PC_LO, CHECKPOINT_PC_HI, CHECKPOINT_NEXT_LO, CHECKPOINT_NEXT_HI,
+       CHECKPOINT_SUFFIX, CHECKPOINT_IMMEDIATES };
+typedef struct {
+  encoded_sequence_t code;
+  uint immediate[CHECKPOINT_IMMEDIATES];
+} checkpoint_template_t;
+static checkpoint_template_t *checkpoint_template;
+
+static checkpoint_template_t *write_checkpoint_template(void *ctx) {
+  checkpoint_template_t *t = __atomic_load_n(&checkpoint_template, __ATOMIC_ACQUIRE);
+  if (t)
+    return t;
+  checkpoint_template_t *fresh = dr_global_alloc(sizeof(*fresh));
+  const reg_id_t data = DR_REG_R11;
+  instrlist_t *ilist = instrlist_create(ctx);
+  instr_t *imm[CHECKPOINT_IMMEDIATES];
+  instrlist_meta_append(ilist, INSTR_CREATE_mov_st(ctx, raw_slot(RAW_TLS_SPILL_R11),
+                                                    opnd_create_reg(data)));
+  instrlist_meta_append(ilist, INSTR_CREATE_mov_ld(ctx, opnd_create_reg(data),
+                                                    raw_slot(RAW_TLS_STATE)));
+  static const size_t fields[CHECKPOINT_IMMEDIATES] = {
+      offsetof(thread_data_t, write_pc), offsetof(thread_data_t, write_pc) + 4,
+      offsetof(thread_data_t, write_next_pc), offsetof(thread_data_t, write_next_pc) + 4,
+      offsetof(thread_data_t, write_suffix)};
+  for (int i = 0; i < CHECKPOINT_IMMEDIATES; ++i) {
+    opnd_t dst = i == CHECKPOINT_SUFFIX ? OPND_CREATE_MEM64(data, (int)fields[i])
+                                        : OPND_CREATE_MEM32(data, (int)fields[i]);
+    imm[i] = INSTR_CREATE_mov_st(ctx, dst, OPND_CREATE_INT32(0x7fffffff));
+    instrlist_meta_append(ilist, imm[i]);
+  }
+  instrlist_meta_append(ilist, INSTR_CREATE_mov_st(ctx, OPND_CREATE_MEM8(data,
+                                                    offsetof(thread_data_t, write_rep)),
+                                                    OPND_CREATE_INT8(0)));
+  instrlist_meta_append(ilist, INSTR_CREATE_mov_ld(ctx, opnd_create_reg(data),
+                                                    raw_slot(RAW_TLS_SPILL_R11)));
+  fresh->code.length = encode_sequence(ctx, ilist, fresh->code.bytes);
+  uint offset = 0;
+  int index = 0;
+  for (instr_t *in = instrlist_first(ilist); in; in = instr_get_next(in)) {
+    offset += instr_length(ctx, in);
+    if (index < CHECKPOINT_IMMEDIATES && in == imm[index])
+      fresh->immediate[index++] = offset - 4; /* imm32 is each store's last field */
+  }
+  instrlist_clear_and_destroy(ctx, ilist);
+  if (index != CHECKPOINT_IMMEDIATES || offset != fresh->code.length)
+    fail("cannot lay out the write checkpoint");
+  if (__atomic_compare_exchange_n(&checkpoint_template, &t, fresh, false, __ATOMIC_ACQ_REL,
+                                  __ATOMIC_ACQUIRE))
+    return fresh;
+  dr_global_free(fresh, sizeof(*fresh));
+  return t;
+}
+
 static void insert_write_checkpoint(void *ctx, instrlist_t *bb, instr_t *where,
                                     app_pc pc, app_pc next_pc, int suffix) {
+  if (raw_tls_enabled) {
+    const checkpoint_template_t *t = write_checkpoint_template(ctx);
+    byte code[SEQUENCE_BYTES];
+    memcpy(code, t->code.bytes, t->code.length);
+    const uint32_t value[CHECKPOINT_IMMEDIATES] = {
+        (uint32_t)(ptr_uint_t)pc, (uint32_t)((ptr_uint_t)pc >> 32),
+        (uint32_t)(ptr_uint_t)next_pc, (uint32_t)((ptr_uint_t)next_pc >> 32),
+        (uint32_t)suffix};
+    for (int i = 0; i < CHECKPOINT_IMMEDIATES; ++i)
+      memcpy(code + t->immediate[i], &value[i], sizeof(value[i]));
+    insert_bundle(ctx, bb, where, code, t->code.length);
+    return;
+  }
   const reg_id_t data = DR_REG_R11;
   if (raw_tls_enabled)
     instrlist_meta_preinsert(bb, where, INSTR_CREATE_mov_st(ctx, raw_slot(RAW_TLS_SPILL_R11),
@@ -1769,6 +1889,12 @@ static void process_exit(void) {
 #endif
   drmgr_exit();
   dr_mutex_destroy(state_lock);
+  for (int i = 0; i <= FLAT_ENTRY_CACHE; ++i) {
+    if (flat_entries[i])
+      dr_global_free(flat_entries[i], sizeof(*flat_entries[i]));
+  }
+  if (checkpoint_template)
+    dr_global_free(checkpoint_template, sizeof(*checkpoint_template));
   if (live_work)
     dr_unmap_file(live_work, sizeof(*live_work));
   if (cpu_policy_exit_pc)

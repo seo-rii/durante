@@ -23,7 +23,11 @@ A restore-state handler recovers them if the runtime translates a thread inside
 one of these sequences. It also returns a stored entry charge when a relocated
 thread will enter the same block again. The layout depends only on the block, so
 no translations are stored. A retry's first-block checks move from block entry
-to the replay, REP, signal and snapshot callbacks.
+to the replay, REP, signal and snapshot callbacks. The entry sequence for each
+block size and the raw-TLS write checkpoint are encoded once per process and
+inserted as raw copies, with only a write's addresses and suffix patched. The
+runtime otherwise re-encodes every inserted instruction of each new block, which
+dominated block building for interpreters and generated code.
 
 With `-live_work_v1`, the ordinary counter can update that state directly in the
 original executable text containing a fixed-address, statically linked program's
