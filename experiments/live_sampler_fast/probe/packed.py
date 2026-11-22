@@ -18,3 +18,15 @@ def decode_packed(raw):
     sites = [dict(zip(FIELDS, row, strict=True)) for row in ROW.iter_unpack(memoryview(raw)[HEADER.size:])]
     return {"schema": schema, "pid": pid, "threads": threads, "period": period, "line_bytes": line,
             "loads": loads, "pairs": pairs, "near_pairs": near, "far_pairs": far, "sites": sites}
+
+
+if __name__ == "__main__":
+    import argparse
+    import json
+    from pathlib import Path
+
+    cli = argparse.ArgumentParser(description=__doc__)
+    cli.add_argument("receipt", type=Path)
+    args = cli.parse_args()
+    with args.receipt.open("rb") as stream:
+        print(json.dumps(decode_packed(stream.read(HEADER.size + MAX_SITES * ROW.size + 1))))

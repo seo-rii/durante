@@ -101,8 +101,21 @@ def profiles():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--write", action="store_true", help="regenerate the two manifests")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--write", action="store_true", help="regenerate the two manifests")
+    mode.add_argument("--sites-for", type=Path, metavar="ELF", help="print the registered decimal offsets for this exact ELF")
     args = parser.parse_args()
+    if args.sites_for:
+        with args.sites_for.open("rb") as binary:
+            key = hashlib.file_digest(binary, "sha256").hexdigest()
+        raw = (HERE / "profiles.json").read_bytes()
+        design = json.loads((HERE / "design.json").read_bytes())
+        require(digest(raw) == design["profiles_sha256"], "different registered profiles")
+        record = json.loads(raw)["by_elf"].get(key)
+        if record is None:
+            parser.error("no sampled-site profile registered for this ELF digest")
+        print(",".join(map(str, record["offsets"])))
+        raise SystemExit(0)
     for name, obj in (("cases.json", fixtures()), ("profiles.json", profiles())):
         raw = (json.dumps(obj, indent=2) + "\n").encode()
         if args.write:
