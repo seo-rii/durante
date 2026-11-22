@@ -1,0 +1,66 @@
+{
+  "schema": 1,
+  "training": {
+    "cmov": [
+      "cmov_sorted",
+      "cmov_random"
+    ],
+    "jcc": [
+      "jcc_sorted",
+      "jcc_random"
+    ]
+  },
+  "holdouts": {
+    "order": [
+      "cmov_block32",
+      "jcc_block32"
+    ],
+    "footprint": [
+      "cmov_random_small",
+      "cmov_random_large"
+    ],
+    "archived_rust": [
+      "rust_original"
+    ],
+    "new_rust": [
+      "rust_new"
+    ]
+  },
+  "period": 1021,
+  "line_elements": 16,
+  "hot_line_bits": 9,
+  "contrasts": {
+    "cmov_random_minus_sorted": [
+      "cmov_random",
+      "cmov_sorted"
+    ],
+    "jcc_random_minus_sorted": [
+      "jcc_random",
+      "jcc_sorted"
+    ],
+    "jcc_minus_cmov_random": [
+      "jcc_random",
+      "cmov_random"
+    ],
+    "jcc_minus_cmov_sorted": [
+      "jcc_sorted",
+      "cmov_sorted"
+    ],
+    "jcc_minus_cmov_block32": [
+      "jcc_block32",
+      "cmov_block32"
+    ],
+    "large_minus_small_random": [
+      "cmov_random_large",
+      "cmov_random_small"
+    ]
+  },
+  "fit": "Within each machine implementation use only its two 1-MiB training workloads. At each, the target is median native CPU (eight whole-child wait4 observations) minus median paired v9001 estimate (four sampled processes), divided by the number of completed searches. Fit separate slopes/intercepts on the two registered feature transformations. Each feature is the mean transformed width over sampled transitions times (visits-1)/visits. Preserve the signed coefficients and extrapolation unaltered. The query-only reference averages the two training residuals per query. Use the CMOV fit for both Rust inputs because their compiled comparison uses CMOVB. Compute scores for all candidates and publish every case.",
+  "features": {
+    "suffix": "For sampled terminal element indices i,j, width = bit_length((i >> 4) XOR (j >> 4)). Each adjacent-pair sample starts at visits 1, 1022, ... . Use its mean width as a proxy for how far two consecutive searches separate in the array's index space.",
+    "above_9": "Use max(width-9,0) per sampled pair. Nine bits address 512 64-byte lines. This threshold is a software locality proxy, not an observation of cache capacity, hits or misses."
+  },
+  "scoring": "Four native-bracketed quartets per case in a counterbalanced schedule. Compare every estimate with the median of eight native user-plus-system CPU observations. Require every repetition within 20 percent. Also report duration (minimum 20 ms), spread ((max-min)/median at most 10 percent), sampled vs full histogram means, both diagnostic CPU times, all contrasts and the difference of the order effects between JCC and CMOV. Keep all observations if a quality gate fails.",
+  "baseline": "experiments/gcd_controls/calibration.json",
+  "feasibility": "As a distinct hindsight diagnostic, eliminate a common unrestricted intercept and intersect slope bounds for all observations. Report the smallest worst relative error (rounded up to one ppm), with median native targets and with any favorable native endpoint allowed independently per estimate, for all CMOV cells including Rust and for JCC alone. These hindsight bounds do not select a model or count as validation."
+}

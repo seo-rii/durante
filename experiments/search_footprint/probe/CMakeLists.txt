@@ -1,0 +1,28 @@
+cmake_minimum_required(VERSION 3.16)
+project(durante_footprint_probe C)
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux" OR NOT CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|amd64|AMD64)$")
+  message(FATAL_ERROR "footprint_probe requires Linux x86-64")
+endif()
+
+set(previous "${CMAKE_CURRENT_SOURCE_DIR}/../../search_order/probe/probe.c")
+set(delta "${CMAKE_CURRENT_SOURCE_DIR}/footprint.patch")
+set(source "${CMAKE_CURRENT_BINARY_DIR}/footprint_probe.c")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${previous}")
+file(SHA256 "${previous}" previous_hash)
+if(NOT previous_hash STREQUAL "bfd949db146e4e3a86a76e5aef24a8a541a0f651e254444e5f406b2641b92f0f")
+  message(FATAL_ERROR "The registered original terminal-index client source has changed")
+endif()
+find_program(PATCH_TOOL patch)
+if(NOT PATCH_TOOL)
+  message(FATAL_ERROR "GNU patch is required to build the footprint probe")
+endif()
+add_custom_command(OUTPUT "${source}"
+  COMMAND "${PATCH_TOOL}" --silent --batch --fuzz=0 --output "${source}" "${previous}" "${delta}"
+  DEPENDS "${previous}" "${delta}" VERBATIM)
+
+find_package(DynamoRIO 11.3 EXACT REQUIRED)
+add_library(footprint_probe SHARED "${source}")
+configure_DynamoRIO_client(footprint_probe)
+use_DynamoRIO_extension(footprint_probe drmgr)
+set_target_properties(footprint_probe PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES)
+target_compile_options(footprint_probe PRIVATE -Wall -Wextra -Werror)
