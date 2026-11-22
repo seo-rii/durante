@@ -44,6 +44,8 @@ The ten held-out inputs each ran under all six permutations of three modes. **Li
 
 The main cost measure sums child user and system CPU from `wait4` and the polling parent's CPU over the operational interval. It includes hashing the ELF in every mode, loading and validating a cached profile, and constructing and writing the first one. The parent closes the buffered file and excludes subsequent research verification and export from this interval. First use means no existing profile. Guest integrity checks have already read the executables. A second calculation subtracts the measured hash CPU from Live and Full to estimate how costs change when those baselines can skip the preflight. [Cost and coverage criteria](../experiments/first_run_sampler/design.json)
 
+The next study measures omitted eligible reads during the same execution and reruns a low-coverage input under Full. It tests both unseen loops and shifts in frequency between two previously observed instructions. [Coverage checks and measured recovery costs](GCE_GUARDED_SAMPLER.md)
+
 ## Replay and reproduction
 
 Python 3.11 or later can verify every placement trace, process record, terminal clock, first-run profile, held-out comparison and reported cost from the published captures. The optional archive and manifest arguments check the original five executable identities, inputs and expected outputs against the Aonohako corpus. [Original Aonohako corpus](https://github.com/seo-rii/aonohako/tree/b938afaa6c171a8a56e24d376d6662f93fcea4c6/docs/durante/gce-v11-cpp20-accuracy/corpus)

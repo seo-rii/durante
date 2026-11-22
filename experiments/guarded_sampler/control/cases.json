@@ -1,0 +1,60 @@
+[
+  {
+    "case_id": "path_mix/train",
+    "program": "path_mix",
+    "binary_sha256": "193f9146f5c58f414d6c6bae5907c8750c7071886b67337f76af8c263a740a54",
+    "split": "calibration",
+    "population": "control",
+    "stdin": "A\n",
+    "stdout": "000000040b022880\n",
+    "stdin_sha256": "06f961b802bc46ee168555f066d28f4f0e9afdf3f88174c1ee6f9de004fc30a0",
+    "stdout_sha256": "2b95b8f9ae7bd5d3ed0a132bc7573f6d29f7f878761e4376940a01af0d4464e3",
+    "mix_oracle": [
+      {
+        "offset": 4193,
+        "loads": 7920000,
+        "pairs": 7735,
+        "near_pairs": 7735,
+        "far_pairs": 0,
+        "sampled_address_span_bytes": 4
+      },
+      {
+        "offset": 4211,
+        "loads": 80000,
+        "pairs": 79,
+        "near_pairs": 79,
+        "far_pairs": 0,
+        "sampled_address_span_bytes": 4
+      }
+    ]
+  },
+  {
+    "case_id": "path_mix/shift",
+    "program": "path_mix",
+    "binary_sha256": "193f9146f5c58f414d6c6bae5907c8750c7071886b67337f76af8c263a740a54",
+    "split": "holdout",
+    "population": "control",
+    "stdin": "B\n",
+    "stdout": "000000040e256180\n",
+    "stdin_sha256": "c0cde77fa8fef97d476c10aad3d2d54fcc2f336140d073651c2dcccf1e379fd6",
+    "stdout_sha256": "f154cd8a0e460b721750d5eb44de490776ecae0a2afc7e1819ae67297282bf3c",
+    "mix_oracle": [
+      {
+        "offset": 4193,
+        "loads": 400000,
+        "pairs": 391,
+        "near_pairs": 391,
+        "far_pairs": 0,
+        "sampled_address_span_bytes": 4
+      },
+      {
+        "offset": 4211,
+        "loads": 7600000,
+        "pairs": 7422,
+        "near_pairs": 7422,
+        "far_pairs": 0,
+        "sampled_address_span_bytes": 4
+      }
+    ]
+  }
+]
