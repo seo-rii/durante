@@ -113,7 +113,7 @@ static uint raw_tls_offset;
 /* Client-owned raw TLS slots: the accounting pointer and two scratch spills.
  * Private spill slots let restore_state() recognize exactly this client's
  * sequences; the runtime's shared spill slots are also used by its mangling. */
-enum { RAW_TLS_STATE, RAW_TLS_SPILL_R10, RAW_TLS_SPILL_R11, RAW_TLS_SLOTS };
+enum { RAW_TLS_STATE, RAW_TLS_SPILL_RCX, RAW_TLS_SPILL_R11, RAW_TLS_SLOTS };
 /* Without a live clock nothing is published between syscalls. Every block and
  * store then uses flag-free inline accounting, including shared libraries and
  * generated code. Restart validation moves from block entry to the callbacks
@@ -353,8 +353,8 @@ static void settle_restart(thread_data_t *d) {
   d->restart_pc = NULL;
 }
 
-/* The inline counter is never checked at entry. An increment below its prior
- * value can only come from an overflowing (or rewritten) final entry. */
+/* Settle the last flat charge before aggregation or replay. Later block
+ * entries latch earlier wraps before overwriting entry_base. */
 static void check_flat_counter(thread_data_t *d) {
   if (flat_inline && d->instructions < d->entry_base) {
     d->counter_overflows = 1;
@@ -968,27 +968,42 @@ static opnd_t state_field(size_t offset) {
   return opnd_create_base_disp(DR_REG_R11, DR_REG_NULL, 0, (int)offset, OPSZ_8);
 }
 
-/* Flat inline block entry. Only MOV and LEA: the application's arithmetic flags
- * are never read or written, so no flag save is needed even when a signal
- * handler inspects them. The scratch registers are restored before the first
- * application instruction; restore_state() recovers them if the runtime
- * translates a thread in between. The order is fixed: restore_state() relies
- * on the instructions store preceding the final r10 restore. */
+/* MOV, MOVZX, LEA and these branches preserve all arithmetic flags. The
+ * scratch registers are restored before the first application instruction.
+ * Both guard paths precede the charge store and the final RCX restore, so
+ * restore_state() can recognize partial entries by those two instructions. */
 static void insert_flat_charge(void *ctx, instrlist_t *bb, instr_t *where, int count) {
-  opnd_t value = opnd_create_reg(DR_REG_R10), state = opnd_create_reg(DR_REG_R11);
+  opnd_t value = opnd_create_reg(DR_REG_RCX), state = opnd_create_reg(DR_REG_R11);
+  opnd_t low_reg = opnd_create_reg(DR_REG_ECX);
+  instr_t *wrapped = INSTR_CREATE_label(ctx), *checked = INSTR_CREATE_label(ctx);
 #define INSERT(i) instrlist_meta_preinsert(bb, where, (i))
-  INSERT(INSTR_CREATE_mov_st(ctx, raw_slot(RAW_TLS_SPILL_R10), value));
+  INSERT(INSTR_CREATE_mov_st(ctx, raw_slot(RAW_TLS_SPILL_RCX), value));
   INSERT(INSTR_CREATE_mov_st(ctx, raw_slot(RAW_TLS_SPILL_R11), state));
   INSERT(INSTR_CREATE_mov_ld(ctx, state, raw_slot(RAW_TLS_STATE)));
+  /* A block adds at most INT_MAX. On x86-64 its most significant byte
+   * can increase by at most one, and goes from nonzero to zero only on wrap.
+   * Check the completed entry before replacing its base. This keeps the new
+   * charge reversible if restore_state() relocates this thread mid-entry. */
+  INSERT(INSTR_CREATE_movzx(ctx, low_reg,
+                            OPND_CREATE_MEM8(DR_REG_R11, offsetof(thread_data_t, entry_base) + 7)));
+  INSERT(INSTR_CREATE_jecxz(ctx, opnd_create_instr(checked)));
+  INSERT(INSTR_CREATE_movzx(ctx, low_reg,
+                            OPND_CREATE_MEM8(DR_REG_R11, offsetof(thread_data_t, instructions) + 7)));
+  INSERT(INSTR_CREATE_jecxz(ctx, opnd_create_instr(wrapped)));
+  INSERT(INSTR_CREATE_jmp_short(ctx, opnd_create_instr(checked)));
+  INSERT(wrapped);
+  INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, counter_overflows)),
+                             OPND_CREATE_INT32(1)));
+  INSERT(checked);
   INSERT(INSTR_CREATE_mov_ld(ctx, value, state_field(offsetof(thread_data_t, instructions))));
   INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, entry_base)), value));
   INSERT(INSTR_CREATE_lea(ctx, value,
-                          opnd_create_base_disp(DR_REG_R10, DR_REG_NULL, 0, count, OPSZ_lea)));
+                          opnd_create_base_disp(DR_REG_RCX, DR_REG_NULL, 0, count, OPSZ_lea)));
   INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, instructions)), value));
   INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, write_pc)),
                              OPND_CREATE_INT32(0)));
   INSERT(INSTR_CREATE_mov_ld(ctx, state, raw_slot(RAW_TLS_SPILL_R11)));
-  INSERT(INSTR_CREATE_mov_ld(ctx, value, raw_slot(RAW_TLS_SPILL_R10)));
+  INSERT(INSTR_CREATE_mov_ld(ctx, value, raw_slot(RAW_TLS_SPILL_RCX)));
 #undef INSERT
 }
 
@@ -1007,7 +1022,7 @@ static bool is_reg(opnd_t opnd, reg_id_t reg) {
 }
 
 /* The runtime can translate a thread stopped inside this client's inline
- * sequences (synchronization, relocation). Recover r10/r11 from the private
+ * sequences (synchronization, relocation). Recover rcx/r11 from the private
  * spill slots. If a relocated thread will re-enter a flat block whose charge
  * has already been stored, return the counter to its pre-entry value: the
  * re-entry charges the block again. Restoration is idempotent. */
@@ -1019,7 +1034,7 @@ static bool restore_state(void *drcontext, bool restore_memory, dr_restore_state
   if (!d || !d->raw_tls_base)
     return true;
   byte *pc = info->fragment_info.cache_start_pc, *stop = info->raw_mcontext->pc;
-  bool spilled_r10 = false, spilled_r11 = false, charged = false;
+  bool spilled_rcx = false, spilled_r11 = false, charged = false;
   instr_t ins;
   instr_init(drcontext, &ins);
   for (uint n = 0; pc != NULL && pc < stop && n < 4096; ++n) {
@@ -1030,19 +1045,19 @@ static bool restore_state(void *drcontext, bool restore_memory, dr_restore_state
     int op = instr_get_opcode(&ins);
     if (op == OP_mov_st && instr_num_dsts(&ins) == 1 && instr_num_srcs(&ins) == 1) {
       opnd_t dst = instr_get_dst(&ins, 0), src = instr_get_src(&ins, 0);
-      if (is_raw_slot(dst, RAW_TLS_SPILL_R10) && is_reg(src, DR_REG_R10))
-        spilled_r10 = true;
+      if (is_raw_slot(dst, RAW_TLS_SPILL_RCX) && is_reg(src, DR_REG_RCX))
+        spilled_rcx = true;
       else if (is_raw_slot(dst, RAW_TLS_SPILL_R11) && is_reg(src, DR_REG_R11))
         spilled_r11 = true;
-      else if (flat_inline && spilled_r10 && spilled_r11 && is_reg(src, DR_REG_R10) &&
+      else if (flat_inline && spilled_rcx && spilled_r11 && is_reg(src, DR_REG_RCX) &&
                opnd_is_base_disp(dst) && opnd_get_base(dst) == DR_REG_R11 &&
                opnd_get_index(dst) == DR_REG_NULL &&
                opnd_get_disp(dst) == (int)offsetof(thread_data_t, instructions))
         charged = true;
     } else if (op == OP_mov_ld && instr_num_dsts(&ins) == 1 && instr_num_srcs(&ins) == 1) {
       opnd_t dst = instr_get_dst(&ins, 0), src = instr_get_src(&ins, 0);
-      if (is_raw_slot(src, RAW_TLS_SPILL_R10) && is_reg(dst, DR_REG_R10)) {
-        spilled_r10 = false;
+      if (is_raw_slot(src, RAW_TLS_SPILL_RCX) && is_reg(dst, DR_REG_RCX)) {
+        spilled_rcx = false;
         charged = false; /* The entry sequence is complete. */
       } else if (is_raw_slot(src, RAW_TLS_SPILL_R11) && is_reg(dst, DR_REG_R11)) {
         spilled_r11 = false;
@@ -1052,8 +1067,8 @@ static bool restore_state(void *drcontext, bool restore_memory, dr_restore_state
   }
   instr_free(drcontext, &ins);
   reg_t *slots = (reg_t *)(d->raw_tls_base + raw_tls_offset);
-  if (spilled_r10)
-    info->mcontext->r10 = slots[RAW_TLS_SPILL_R10];
+  if (spilled_rcx)
+    info->mcontext->xcx = slots[RAW_TLS_SPILL_RCX];
   if (spilled_r11)
     info->mcontext->r11 = slots[RAW_TLS_SPILL_R11];
   if (charged && restore_memory)
@@ -1206,6 +1221,7 @@ static void code_replay(void *ctx, int reason, app_pc source_pc,
     __atomic_store_n(&replay_without_tls, 1, __ATOMIC_RELAXED);
     return;
   }
+  check_flat_counter(d);
   settle_restart(d);
   d->fast_until = 0;
   if (reason == DR_DURANTE_REPLAY_ENTRY) {
