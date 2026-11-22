@@ -19,6 +19,8 @@ All 42 Gate–Full and all 42 Full–Fused comparisons agreed on instruction off
 
 The kernel recorded all 469 measured exec events on CPU 1 over the 259 runs. Guest CPU 1 reported zero steal ticks and the trace recorded zero losses. The temporary VM and disk both returned 404 after deletion, and the temporary SSH key was removed. [Kernel trace](../experiments/results/gce-live-sampler-cost/exec-trace.txt) · [Teardown receipt](../experiments/results/gce-live-sampler-cost/cleanup.json)
 
+A later run tested a translation-only control, compact all-site output and sampling only the busiest instructions of each exact ELF. [Optimized sampling and held-out coverage](GCE_LIVE_SAMPLER_FAST.md)
+
 ## Implementations and measurement
 
 The preceding C++20 study found that adding the span sampler to the release v11 work clock increased child CPU by 13.94%. Recording extrema in the existing diagnostic sampler had cost 0.12%. This experiment repeats the live comparison and tests the cost of loading a second client, executing a sampling countdown and producing address telemetry. A single-client candidate also links the original meter and sampler into one DSO. [Earlier measurements](GCE_CPP20_LOCALITY.md) · [Premeasurement registration](https://github.com/seo-rii/durante/commit/4397d1979b78291f6f30acc0a322808f61312f35)
