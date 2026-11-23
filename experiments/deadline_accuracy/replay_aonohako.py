@@ -30,8 +30,8 @@ def project_limits(export, limits):
     return results
 
 
-def replay(root, binaries, reference, strategy="near-three"):
-    primary = verify.verify(root, strategy)
+def replay(root, binaries, reference, strategy="near-three", contest=False):
+    primary = verify.verify(root, strategy, contest)
     summary = verify.load(root / "summary.json")
     candidate = "exact" if strategy == "exact-one" else "gate"
     counts = {arm: Counter() for arm in ("baseline", candidate)}
@@ -83,9 +83,13 @@ if __name__ == "__main__":
     cli.add_argument("--binaries", type=Path, required=True)
     cli.add_argument("--reference", type=Path, required=True)
     cli.add_argument("--output", type=Path)
-    cli.add_argument("--strategy", choices=("near-three", "exact-one"), default="near-three")
+    cli.add_argument("--strategy", choices=("near-three", "exact-one"))
+    cli.add_argument("--contest", action="store_true", help="use the contest registration and its exact-one clock")
     args = cli.parse_args()
-    result = replay(args.directory, args.binaries, args.reference.resolve(), args.strategy)
+    strategy = args.strategy or ("exact-one" if args.contest else "near-three")
+    if args.contest and strategy != "exact-one":
+        cli.error("the contest study requires exact-one")
+    result = replay(args.directory, args.binaries, args.reference.resolve(), strategy, args.contest)
     output = json.dumps(result, indent=2)
     if args.output:
         args.output.write_text(output + "\n")

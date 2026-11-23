@@ -10,6 +10,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 from cpp20_locality.verify import require, sha
 from deadline_accuracy import gate
+from deadline_accuracy.registration import load_registration
 from first_run_sampler.profile import elf_digest
 from guarded_native import live
 from shape_calibration import combined, run, select_policy
@@ -22,12 +23,9 @@ def deadlines(prediction_ns, percent, fixed):
     return sorted(set(fixed).union(relative))
 
 
-def bench(payload, binaries, probe, out, exact=False):
+def bench(payload, binaries, probe, out, exact=False, contest=False):
     candidate = "exact" if exact else "gate"
-    prefix = "exact-" if exact else ""
-    raw_plan = (HERE / (prefix + "plan.json")).read_bytes()
-    raw_rules = (HERE / (prefix + "rules.json")).read_bytes()
-    plan = json.loads(raw_plan)
+    raw_plan, raw_rules, plan = load_registration(exact, contest)
     probe_sha = elf_digest(probe)
     require(probe_sha == plan["probe_sha256"] == json.loads(raw_rules)["probe_sha256"], "different registered probe")
     affinity, allowed = pinned_cpu()
@@ -88,12 +86,12 @@ def bench(payload, binaries, probe, out, exact=False):
           steal_delta=runtime.base["steal"](1) - start, rows=rows, native=native))
 
 
-def main(exact=False):
+def main(exact=False, contest=False):
     cli = argparse.ArgumentParser(description=__doc__)
     for flag in ("payload", "binaries", "probe", "out"):
         cli.add_argument("--" + flag, type=Path, required=True)
     args = cli.parse_args()
-    bench(args.payload.resolve(), args.binaries.resolve(), args.probe.resolve(), args.out.resolve(), exact)
+    bench(args.payload.resolve(), args.binaries.resolve(), args.probe.resolve(), args.out.resolve(), exact, contest)
 
 
 if __name__ == "__main__":
