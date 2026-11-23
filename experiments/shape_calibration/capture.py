@@ -10,7 +10,7 @@ from cpp20_locality.verify import require
 from first_run_sampler.profile import elf_digest
 from guarded_native import anchor
 from guarded_sampler import run as guarded
-from shape_calibration import temporal
+from shape_calibration import combined, temporal
 
 
 def capture(payload, probe, elf, stdin, out):
@@ -38,7 +38,9 @@ if __name__ == "__main__":
     for name in ("payload", "elf", "stdin", "out"):
         cli.add_argument("--" + name, required=True, type=Path)
     cli.add_argument("--probe", type=Path, help="registered temporal sampler; omit for spatial profiles only")
+    cli.add_argument("--separate", action="store_true", help="run each sampler in its own process for comparison")
     args = cli.parse_args()
-    first, extra = capture(args.payload.resolve(), args.probe.resolve() if args.probe else None,
+    capture_run = combined.capture if args.probe and not args.separate else capture
+    first, extra = capture_run(args.payload.resolve(), args.probe.resolve() if args.probe else None,
                            args.elf.resolve(), args.stdin.resolve(), args.out.resolve())
     print(json.dumps({"spatial_pid": first["launcher_pid"], "temporal_pid": extra["pid"] if extra else None}))

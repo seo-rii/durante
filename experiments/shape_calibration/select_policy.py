@@ -10,7 +10,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 from first_run_sampler.profile import digest, read_json, require, sha
 from guarded_native import anchor
-from shape_calibration import shape, temporal
+from shape_calibration import combined, shape, temporal
 
 
 def profiles(run, elf_sha, probe_sha, method):
@@ -19,7 +19,10 @@ def profiles(run, elf_sha, probe_sha, method):
     require(obs["launch_count"] == 1, "selector requires a fresh full capture")
     extra = None
     if method == "temporal":
-        extra = temporal.inspect_run(run / "temporal", elf_sha, obs["stdin_sha256"], obs["stdout_sha256"], probe_sha)
+        if (run / "combined.json").is_file():
+            extra = combined.inspect_temporal(run, elf_sha, obs["stdin_sha256"], obs["stdout_sha256"], probe_sha)
+        else:
+            extra = temporal.inspect_run(run / "temporal", elf_sha, obs["stdin_sha256"], obs["stdout_sha256"], probe_sha)
     return full, extra
 
 

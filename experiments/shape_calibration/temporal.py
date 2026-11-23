@@ -43,11 +43,13 @@ def sample_sites(raw, pid):
     return sites
 
 
-def inspect_run(out, elf_sha, stdin_sha, stdout_sha, probe_sha=PROBE_SHA):
-    result = read_json((out / "result.json").read_bytes())
+def inspect_run(out, elf_sha, stdin_sha, stdout_sha, probe_sha=PROBE_SHA, *, metadata_filename="result.json", stdin_file=None):
+    result = read_json((out / metadata_filename).read_bytes())
+    if stdin_file is None:
+        stdin_file = out / "stdin"
     require(result["schema"] == 1 and result["authority"] == "diagnostic_only"
             and result["probe_sha256"] == probe_sha == PROBE_SHA and digest(elf_sha) and result["elf_sha256"] == elf_sha
-            and result["stdin_sha256"] == stdin_sha == elf_digest(out / "stdin")
+            and result["stdin_sha256"] == stdin_sha == elf_digest(stdin_file)
             and result["stdout_sha256"] == stdout_sha == elf_digest(out / "stdout")
             and (out / "stderr").stat().st_size == 0 and result["exit_code"] == 0,
             "temporal input, probe or output mismatch")
