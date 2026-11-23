@@ -36,10 +36,10 @@ negative countdown takes the checked callback, which handles the publication
 boundary, replay and additions near overflow and charges the block. Publication
 therefore happens at the same block entries as on the callback path. Replay, REP
 and new threads reset the countdown so the next entry takes the callback, and the
-callback recomputes it. The callback lies between the entry prefix and the
-charge in the code cache, with the scratch registers still spilled, so the
-restore-state handler finds the spills and no charge when the runtime translates
-a thread there.
+callback recomputes it. The prefix saves the pre-entry instruction count before choosing the
+callback or inline charge. If relocation will re-enter an unfinished entry, the
+restore-state handler restores that count and re-arms a pending REP retry. Work
+already published for earlier blocks remains visible.
 
 Without raw TLS, or with the cache probe, the ordinary counter can instead
 update that state directly in the original executable text containing a

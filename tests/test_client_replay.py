@@ -259,7 +259,9 @@ static void flat_enter(uint64_t count) {
  * otherwise the inline body counts down and charges. */
 static void flat_live_enter(int count, app_pc pc) {
     if (active->live_room < 0) {
-        charge_flat_boundary(count, pc);
+        check_flat_counter(active);
+        active->entry_base = active->instructions;
+        charge_boundary(count, pc);
         return;
     }
     active->live_room -= count;
@@ -979,6 +981,47 @@ FLAT_ENTRY_HARNESS = r'''
 #include <unistd.h>
 #include CLIENT_SOURCE
 
+static thread_data_t *restoring;
+void *drmgr_get_tls_field(void *ctx, int index) {
+    (void)ctx; (void)index;
+    return restoring;
+}
+
+/* Decode the actual live prefix at a relocation before the fast-body store.
+ * A completed slow callback has already charged the block at this point.
+ * A register-only translation must leave the clock unchanged; relocation
+ * followed by re-entry must charge exactly once. */
+static void check_boundary_relocation(void *ctx, byte *start, byte *stop) {
+    reg_t slots[RAW_TLS_SLOTS] = {0, 11, 12};
+    thread_data_t d = {.instructions = 4100, .entry_base = 4100,
+                       .published_instructions = 4100, .raw_tls_base = (byte *)slots,
+                       .restart_pc = (app_pc)1, .restart_rep = true, .restart_base = 4100};
+    dr_mcontext_t raw = {.pc = stop}, app = {0};
+    dr_restore_state_info_t info = { .raw_mcontext = &raw, .mcontext = &app };
+    info.fragment_info.cache_start_pc = start;
+    live_work_t page = {.ready = 1, .instructions = 4100};
+    restoring = &d;
+    live_work = &page;
+    flat_inline = raw_tls_enabled = true;
+    charge_boundary(7, d.restart_pc);
+    assert(d.instructions == 4107 && d.restart_entered && !d.replay_error);
+    raw.pc = decode_next_pc(ctx, start); /* first spill, before the new checkpoint */
+    assert(restore_state(ctx, true, &info) && d.instructions == 4107);
+    raw.pc = stop;
+    assert(restore_state(ctx, false, &info) && d.instructions == 4107 && d.restart_entered);
+    assert(app.xcx == 11 && app.r11 == 12);
+    for (int i = 0; i < 2; ++i) {
+        assert(restore_state(ctx, true, &info));
+        assert(d.instructions == 4100 && !d.restart_entered && d.live_room < 0);
+        assert(d.published_instructions == 4100 && page.instructions == 4100 && !page.invalid);
+    }
+    charge_boundary(7, d.restart_pc);
+    assert(d.instructions == 4107 && d.restart_entered && !d.replay_error);
+    assert(page.instructions == 4100 && !page.invalid);
+    restoring = NULL;
+    live_work = NULL;
+}
+
 int main(void) {
     void *ctx = dr_standalone_init();
     raw_tls_register = DR_SEG_GS;
@@ -1011,6 +1054,15 @@ int main(void) {
     end = instrlist_encode(ctx, bb, live_code, true);
     assert(end && end <= code + 2048);
     instrlist_clear_and_destroy(ctx, bb);
+    /* Model the slow-path continuation using the actual prefix's machine
+     * code. The skipped fast-body charge has no store in this prefix. */
+    byte *continuation_code = code + 3072;
+    instrlist_t *prefix = instrlist_create(ctx);
+    emit_flat_parts(ctx, prefix, NULL, 1, FLAT_PREFIX, true);
+    byte *continuation = instrlist_encode(ctx, prefix, continuation_code, true);
+    assert(continuation && continuation < code + page);
+    instrlist_clear_and_destroy(ctx, prefix);
+    check_boundary_relocation(ctx, continuation_code, continuation);
     /* The live prefix alone, storing the ECX it leaves for the branch. */
     byte *sign_code = code + 2048;
     bb = instrlist_create(ctx);

@@ -974,16 +974,6 @@ static void charge_boundary(int count, app_pc first_pc) {
     set_fast_until(d, d->published_instructions + LIVE_WORK_BATCH);
 }
 
-/* The live boundary of a flat block: the same restart checks, publication and
- * charge as the callback path. Flat restart reconstruction also needs the
- * pre-entry base, which the inline entry would have stored. */
-static void charge_flat_boundary(int count, app_pc first_pc) {
-  thread_data_t *d = accounting_thread_data();
-  if (d)
-    d->entry_base = d->instructions;
-  charge_boundary(count, first_pc);
-}
-
 static opnd_t raw_slot(uint slot) {
   return opnd_create_far_base_disp(raw_tls_register, DR_REG_NULL, DR_REG_NULL, 0,
                                    (int)(raw_tls_offset + slot * sizeof(void *)), OPSZ_PTR);
@@ -1028,6 +1018,11 @@ static void emit_flat_parts(void *ctx, instrlist_t *bb, instr_t *where, int coun
                              OPND_CREATE_INT32(1)));
   INSERT(checked);
   if (live) {
+    /* Both the slow callback and the inline body may charge this entry.
+     * Save the base before taking either branch so relocation can undo the
+     * charge even immediately after returning from the callback. */
+    INSERT(INSTR_CREATE_mov_ld(ctx, value, state_field(offsetof(thread_data_t, instructions))));
+    INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, entry_base)), value));
     /* live_room is far below 2^56 in magnitude, so its top byte is 0xff
      * exactly when it is negative. ECX = (top byte + 1) & 0xff is then zero. */
     INSERT(INSTR_CREATE_movzx(ctx, low_reg,
@@ -1045,7 +1040,8 @@ static void emit_flat_parts(void *ctx, instrlist_t *bb, instr_t *where, int coun
     INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, live_room)), value));
   }
   INSERT(INSTR_CREATE_mov_ld(ctx, value, state_field(offsetof(thread_data_t, instructions))));
-  INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, entry_base)), value));
+  if (!live)
+    INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, entry_base)), value));
   INSERT(INSTR_CREATE_lea(ctx, value,
                           opnd_create_base_disp(DR_REG_RCX, DR_REG_NULL, 0, count, OPSZ_lea)));
   INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, instructions)), value));
@@ -1135,10 +1131,9 @@ static void insert_flat_part(void *ctx, instrlist_t *bb, instr_t *where,
 
 /* Live clock: the flag-free entry also counts live_room down and takes the
  * existing boundary callback when it is negative, so publication happens at
- * the same block entries as on the callback path. The callback runs with the
- * scratch registers still spilled and lies between the prefix and the body in
- * the cache, so restore_state()'s linear scan sees the spills and no charge
- * when it stops there; the callback charges the block itself. */
+ * the same block entries as on the callback path. The prefix checkpoints
+ * the count while the scratch registers are spilled. Relocation can roll
+ * either path back until the suffix restores RCX. */
 static void insert_flat_live_charge(void *ctx, instrlist_t *bb, instr_t *where, int count,
                                     app_pc first_pc) {
   instr_t *slow = INSTR_CREATE_label(ctx), *fast = INSTR_CREATE_label(ctx);
@@ -1147,7 +1142,7 @@ static void insert_flat_live_charge(void *ctx, instrlist_t *bb, instr_t *where, 
   instrlist_meta_preinsert(bb, where, INSTR_CREATE_jecxz(ctx, opnd_create_instr(slow)));
   instrlist_meta_preinsert(bb, where, INSTR_CREATE_jmp(ctx, opnd_create_instr(fast)));
   instrlist_meta_preinsert(bb, where, slow);
-  dr_insert_clean_call_ex(ctx, bb, where, (void *)charge_flat_boundary,
+  dr_insert_clean_call_ex(ctx, bb, where, (void *)charge_boundary,
                           DR_CLEANCALL_ALWAYS_OUT_OF_LINE, 2, OPND_CREATE_INT32(count),
                           OPND_CREATE_INTPTR(first_pc));
   instrlist_meta_preinsert(bb, where, INSTR_CREATE_jmp(ctx, opnd_create_instr(resume)));
@@ -1186,7 +1181,7 @@ static bool restore_state(void *drcontext, bool restore_memory, dr_restore_state
   if (!d || !d->raw_tls_base)
     return true;
   byte *pc = info->fragment_info.cache_start_pc, *stop = info->raw_mcontext->pc;
-  bool spilled_rcx = false, spilled_r11 = false, charged = false;
+  bool spilled_rcx = false, spilled_r11 = false, checkpointed = false;
   instr_t ins;
   instr_init(drcontext, &ins);
   for (uint n = 0; pc != NULL && pc < stop && n < 4096; ++n) {
@@ -1204,13 +1199,13 @@ static bool restore_state(void *drcontext, bool restore_memory, dr_restore_state
       else if (flat_inline && spilled_rcx && spilled_r11 && is_reg(src, DR_REG_RCX) &&
                opnd_is_base_disp(dst) && opnd_get_base(dst) == DR_REG_R11 &&
                opnd_get_index(dst) == DR_REG_NULL &&
-               opnd_get_disp(dst) == (int)offsetof(thread_data_t, instructions))
-        charged = true;
+               opnd_get_disp(dst) == (int)offsetof(thread_data_t, entry_base))
+        checkpointed = true;
     } else if (op == OP_mov_ld && instr_num_dsts(&ins) == 1 && instr_num_srcs(&ins) == 1) {
       opnd_t dst = instr_get_dst(&ins, 0), src = instr_get_src(&ins, 0);
       if (is_raw_slot(src, RAW_TLS_SPILL_RCX) && is_reg(dst, DR_REG_RCX)) {
         spilled_rcx = false;
-        charged = false; /* The entry sequence is complete. */
+        checkpointed = false; /* The entry sequence is complete. */
       } else if (is_raw_slot(src, RAW_TLS_SPILL_R11) && is_reg(dst, DR_REG_R11)) {
         spilled_r11 = false;
       }
@@ -1223,8 +1218,17 @@ static bool restore_state(void *drcontext, bool restore_memory, dr_restore_state
     info->mcontext->xcx = slots[RAW_TLS_SPILL_RCX];
   if (spilled_r11)
     info->mcontext->r11 = slots[RAW_TLS_SPILL_R11];
-  if (charged && restore_memory)
+  if (checkpointed && restore_memory && d->instructions != d->entry_base) {
     d->instructions = d->entry_base;
+    if (live_work) {
+      /* The boundary callback may have admitted a pending REP retry before
+       * relocation. Its first resumed block will enter again. Keep already
+       * published prior work and re-evaluate the boundary for this entry. */
+      if (d->restart_pc && d->restart_rep && d->instructions == d->restart_base)
+        d->restart_entered = false;
+      set_fast_until(d, 0);
+    }
+  }
   return true;
 }
 
