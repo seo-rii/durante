@@ -1263,6 +1263,81 @@ static void run_entry(byte *code, reg_t rcx, reg_t r11, reg_t *out_rcx, reg_t *o
 
 #define ENTRY_PC ((app_pc)(ptr_uint_t)UINT64_C(0x123456789abc))
 
+/* The complete register state an emitted sequence starts from and ends with:
+ * RAX RBX RCX RDX RSI RDI RBP R8-R15, then the flags and, on return, RSP. */
+typedef struct {
+    reg_t gpr[15], flags, rsp;
+} machine_t;
+/* CF PF AF ZF SF DF OF AC: every flag an application can set and read back. */
+#define MACHINE_FLAGS UINT64_C(0x40cd5)
+/* Call code on the stack ending at stack_top with all of *in loaded, and
+ * report what it leaves. C code never runs with the loaded flags. */
+void run_machine(byte *code, const machine_t *in, machine_t *out, byte *stack_top);
+/* What the boundary routine's callee saw on entry. */
+struct {
+    thread_data_t *state;
+    reg_t count;
+    app_pc pc;
+    reg_t rsp, flags, calls;
+} probe;
+/* Stands in for the callback: records its arguments, stack and flags, then
+ * overwrites every register and status flag the ABI lets a callee change. */
+void boundary_probe(void);
+__asm__(
+    ".text\n"
+    ".local machine_rsp\n.comm machine_rsp,8,8\n"
+    ".local machine_code\n.comm machine_code,8,8\n"
+    ".local machine_seen_rsp\n.comm machine_seen_rsp,8,8\n"
+    ".type run_machine, @function\n"
+    "run_machine:\n"
+    "    push %rbx\n    push %rbp\n    push %r12\n    push %r13\n    push %r14\n    push %r15\n"
+    "    push %rdx\n"
+    "    mov %rsp, machine_rsp(%rip)\n"
+    "    mov %rdi, machine_code(%rip)\n"
+    "    mov %rcx, %rsp\n"
+    /* The call's return address replaces this copy of the flags. */
+    "    pushq 120(%rsi)\n"
+    "    popfq\n"
+    "    mov 0(%rsi), %rax\n    mov 8(%rsi), %rbx\n    mov 16(%rsi), %rcx\n    mov 24(%rsi), %rdx\n"
+    "    mov 40(%rsi), %rdi\n    mov 48(%rsi), %rbp\n    mov 56(%rsi), %r8\n    mov 64(%rsi), %r9\n"
+    "    mov 72(%rsi), %r10\n    mov 80(%rsi), %r11\n    mov 88(%rsi), %r12\n    mov 96(%rsi), %r13\n"
+    "    mov 104(%rsi), %r14\n    mov 112(%rsi), %r15\n    mov 32(%rsi), %rsi\n"
+    "    call *machine_code(%rip)\n"
+    "    mov %rsp, machine_seen_rsp(%rip)\n"
+    "    mov machine_rsp(%rip), %rsp\n"
+    "    pushfq\n"
+    "    push %rax\n"
+    "    mov 16(%rsp), %rax\n"
+    "    popq (%rax)\n"
+    "    popq 120(%rax)\n"
+    "    mov %rbx, 8(%rax)\n    mov %rcx, 16(%rax)\n    mov %rdx, 24(%rax)\n    mov %rsi, 32(%rax)\n"
+    "    mov %rdi, 40(%rax)\n    mov %rbp, 48(%rax)\n    mov %r8, 56(%rax)\n    mov %r9, 64(%rax)\n"
+    "    mov %r10, 72(%rax)\n    mov %r11, 80(%rax)\n    mov %r12, 88(%rax)\n    mov %r13, 96(%rax)\n"
+    "    mov %r14, 104(%rax)\n    mov %r15, 112(%rax)\n"
+    "    mov machine_seen_rsp(%rip), %rcx\n"
+    "    mov %rcx, 128(%rax)\n"
+    "    pushq $0\n    popfq\n"
+    "    pop %rdx\n"
+    "    pop %r15\n    pop %r14\n    pop %r13\n    pop %r12\n    pop %rbp\n    pop %rbx\n"
+    "    ret\n"
+    ".size run_machine, .-run_machine\n"
+    ".type boundary_probe, @function\n"
+    "boundary_probe:\n"
+    "    mov %rdi, probe(%rip)\n"
+    "    mov %rsi, probe+8(%rip)\n"
+    "    mov %rdx, probe+16(%rip)\n"
+    "    mov %rsp, probe+24(%rip)\n"
+    "    pushfq\n"
+    "    popq probe+32(%rip)\n"
+    "    incq probe+40(%rip)\n"
+    "    movabs $0x5a5a5a5a5a5a5a5a, %rcx\n"
+    "    mov %rcx, %rdx\n    mov %rcx, %rsi\n    mov %rcx, %rdi\n    mov %rcx, %r8\n"
+    "    mov %rcx, %r9\n    mov %rcx, %r10\n    mov %rcx, %r11\n"
+    /* ZF and PF set; CF, SF and OF clear. */
+    "    xor %eax, %eax\n"
+    "    ret\n"
+    ".size boundary_probe, .-boundary_probe\n");
+
 /* One 32-bit half of the raw TLS write word. */
 static bool is_raw_slot_half(opnd_t opnd, int half) {
     return opnd_is_far_base_disp(opnd) && opnd_get_segment(opnd) == raw_tls_register &&
@@ -1443,9 +1518,53 @@ int main(void) {
     assert(!insert_write_checkpoint(ctx, bb, ret, ENTRY_PC, ENTRY_PC + 7, 4096));
     assert(instrlist_first(bb) == ret);
     instrlist_clear_and_destroy(ctx, bb);
+    /* A live entry that only returns, and the boundary routine as the client
+     * generates it. The routine names the callback once, as an absolute
+     * address, and is otherwise independent of where it runs, so a second
+     * copy can call the probe instead. */
+    byte *machine = mmap(NULL, page, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    assert(machine != MAP_FAILED);
+    bb = instrlist_create(ctx);
+    ret = INSTR_CREATE_ret(ctx);
+    instrlist_append(bb, ret);
+    insert_flat_live_charge(ctx, bb, ret, 5, ENTRY_PC);
+    end = instrlist_encode(ctx, bb, machine, true);
+    assert(end && end <= machine + page / 4);
+    instrlist_clear_and_destroy(ctx, bb);
+    byte *real_routine = machine + page / 4, *probe_routine = machine + page / 2;
+    instrlist_t *boundary = instrlist_create(ctx);
+    emit_boundary_routine(ctx, boundary);
+    byte *routine_end = instrlist_encode(ctx, boundary, real_routine, true);
+    assert(routine_end && routine_end <= probe_routine);
+    instrlist_clear_and_destroy(ctx, boundary);
+    memcpy(probe_routine, real_routine, (size_t)(routine_end - real_routine));
+    int callbacks = 0;
+    for (byte *pc = real_routine; pc < routine_end;) {
+        instr_t in;
+        instr_init(ctx, &in);
+        byte *next = decode(ctx, pc, &in);
+        assert(next);
+        /* Nothing in the routine can change the vector or x87 state. */
+        for (int i = 0; i < instr_num_dsts(&in); ++i) {
+            opnd_t dst = instr_get_dst(&in, i);
+            assert(!opnd_is_reg(dst) || reg_is_gpr(opnd_get_reg(dst)));
+        }
+        assert(!instr_is_floating(&in));
+        if (instr_get_opcode(&in) == OP_mov_imm) {
+            void (*target)(void) = boundary_probe;
+            assert(next - pc == 10 && opnd_get_immed_int(instr_get_src(&in, 0)) ==
+                                          (ptr_int_t)(void *)charge_boundary_state);
+            memcpy(probe_routine + (next - real_routine) - sizeof(target), &target, sizeof(target));
+            ++callbacks;
+        }
+        instr_free(ctx, &in);
+        pc = next;
+    }
+    assert(callbacks == 1);
     dr_standalone_exit();
     assert(mprotect(code, page, PROT_READ | PROT_EXEC) == 0);
     assert(mprotect(entry, page, PROT_READ | PROT_EXEC) == 0);
+    assert(mprotect(machine, page, PROT_READ | PROT_EXEC) == 0);
 
     /* The emitted sequence uses GS-relative raw TLS on x86-64 Linux. Execute
      * it against an isolated slot array, with the same production layout. */
@@ -1540,9 +1659,83 @@ int main(void) {
         assert(d.write_pc == ENTRY_PC && d.write_next_pc == ENTRY_PC + 7 && d.write_suffix == 9);
         assert(!d.write_rep && slots[RAW_TLS_WRITE] == WRITE_WORD_SETTLED);
     }
+    /* A negative countdown reaches the callback through the client's own
+     * boundary routine. The application sees every general register, flag and
+     * its stack pointer unchanged, and nothing below its stack pointer is
+     * written: the routine runs the callback on the thread's private stack.
+     * The callee starts with the ABI's flags and stack alignment, first as a
+     * probe that overwrites all it may, then as the callback itself, which
+     * leaves the state a direct call leaves. */
+    {
+        enum { APP_STACK = 4096, PRIVATE_STACK = 16384, GUARD = 64 };
+        static byte app_stack[APP_STACK] __attribute__((aligned(16)));
+        static byte private_stack[PRIVATE_STACK + GUARD] __attribute__((aligned(16)));
+        byte *app_top = app_stack + APP_STACK / 2, *private_top = private_stack + PRIVATE_STACK;
+        for (int pass = 0; pass < 4; ++pass) {
+            bool real = pass & 1;
+            live_work_t page_seen = {.ready = 1, .instructions = 4100}, page_direct = page_seen;
+            thread_data_t initial, d, direct;
+            memset(&initial, 0, sizeof(initial));
+            initial.instructions = initial.published_instructions = 4100;
+            initial.live_room = initial.room_settled = -1;
+            initial.entry_room = 77;
+            initial.raw_tls_base = (byte *)slots;
+            initial.boundary_routine = real ? real_routine : probe_routine;
+            initial.boundary_stack_top = private_top;
+            memcpy(&d, &initial, sizeof(d));
+            memset(app_stack, 0xa5, sizeof(app_stack));
+            memset(private_stack, 0x5a, sizeof(private_stack));
+            machine_t in, out;
+            for (int i = 0; i < 15; ++i)
+                in.gpr[i] = UINT64_C(0x0101010101010101) * (reg_t)(i + 1) + (reg_t)pass;
+            in.flags = pass & 2 ? MACHINE_FLAGS : 0;
+            flat_inline = raw_tls_enabled = true;
+            live_work = &page_seen;
+            slots[RAW_TLS_STATE] = (reg_t)&d;
+            slots[RAW_TLS_WRITE] = 77;
+            reg_t calls = probe.calls;
+            run_machine(machine, &in, &out, app_top);
+            reg_t word = slots[RAW_TLS_WRITE];
+            assert(!memcmp(in.gpr, out.gpr, sizeof(in.gpr)));
+            assert(((in.flags ^ out.flags) & MACHINE_FLAGS) == 0);
+            assert(out.rsp == (reg_t)app_top);
+            /* The call into the entry wrote its return address; nothing else. */
+            for (int i = 0; i < APP_STACK; ++i)
+                assert(app_stack[i] == 0xa5 || (i >= APP_STACK / 2 - 8 && i < APP_STACK / 2));
+            for (int i = 0; i < GUARD; ++i)
+                assert(private_top[i] == 0x5a);
+            assert(d.boundary_rsp == (reg_t)app_top - 8);
+            assert(d.boundary_count == 5 && d.boundary_pc == ENTRY_PC);
+            /* What the prefix and the slow path did before the routine. */
+            memcpy(&direct, &initial, sizeof(direct));
+            direct.entry_room = -1;
+            direct.boundary_count = 5;
+            direct.boundary_pc = ENTRY_PC;
+            direct.boundary_rsp = (reg_t)app_top - 8;
+            if (real) {
+                assert(probe.calls == calls);
+                live_work = &page_direct;
+                slots[RAW_TLS_WRITE] = 77;
+                charge_boundary_state(&direct, 5, ENTRY_PC);
+                assert(slots[RAW_TLS_WRITE] == word && word != 77);
+                assert(direct.instructions == 4105 && direct.entry_base == 4100);
+                assert(direct.entry_room == ENTRY_ROOM_CHARGED && direct.live_room >= 0);
+            } else {
+                assert(probe.calls == calls + 1 && word == 77);
+                assert(probe.state == &d && probe.count == 5 && probe.pc == ENTRY_PC);
+                assert(probe.rsp % 16 == 8 && probe.rsp > (reg_t)private_stack &&
+                       probe.rsp < (reg_t)private_top);
+                assert((probe.flags & MACHINE_FLAGS) == 0);
+            }
+            assert(!memcmp(&d, &direct, sizeof(d)));
+            assert(!memcmp(&page_seen, &page_direct, sizeof(page_seen)));
+            live_work = NULL;
+        }
+    }
     assert(syscall(SYS_arch_prctl, ARCH_SET_GS, original_gs) == 0);
     assert(munmap(code, page) == 0);
     assert(munmap(entry, page) == 0);
+    assert(munmap(machine, page) == 0);
     puts("flat-charge-ok");
     return 0;
 }

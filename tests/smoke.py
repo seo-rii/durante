@@ -132,12 +132,14 @@ def main():
    r=run('pypy',[args.pypy,'-c','print(sum(range(100000)))']);assert r['stdout'].strip()=='4999950000',r
   else:rows.append({'test':'pypy','skipped':'runtime unavailable; not qualified'})
   if args.runner_bin:
+   # With a debugger, also interrupt the live boundary routine at each of its points.
+   debugger=['--gdb',shutil.which('gdb')] if shutil.which('gdb') else []
    subprocess.run([sys.executable, ROOT/'tests/live_work_client.py', '--drrun', args.sdk/'bin64/drrun',
-                   '--client', args.client], check=True)
+                   '--client', args.client, *debugger], check=True)
    # The debug core fails a run that leaks: inline live entries are built once
    # per block, so an instruction they create but never insert only shows there.
    subprocess.run([sys.executable, ROOT/'tests/live_work_client.py', '--drrun', args.sdk/'bin64/drrun',
-                   '--client', args.client, '--engine-debug'], check=True)
+                   '--client', args.client, '--engine-debug', *debugger], check=True)
    def run_supervised(name,argv,valid=True,code=0,expected=None,processes=None,images=None,timeout=30000,qualified=True):
     report=tmp/(name+'-supervised.json')
     cmd=[str(args.runner_bin),'run','--drrun',str(args.sdk/'bin64/drrun'),'--client',str(args.client),

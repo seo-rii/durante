@@ -118,6 +118,10 @@ typedef struct {
   int32_t boundary_count;
   app_pc boundary_pc;
   byte *boundary_routine;
+  /* The boundary routine's private stack (its top is 16-byte aligned), and
+   * the two registers it keeps here while that stack is in use. */
+  byte *boundary_stack, *boundary_stack_top;
+  reg_t boundary_rsp;
 } thread_data_t;
 static int tls_index;
 /* In ordinary static code the generated accounting runs at every block and
@@ -262,12 +266,17 @@ static bool cache_probe_enabled(void) {
 #endif
 }
 
-static inline void invalidate_live_work(void) {
+/* The live boundary routine saves only the general registers and the flags
+ * around its callback, so everything that callback can execute is compiled
+ * without vector or x87 instructions. */
+#define SCALAR __attribute__((target("general-regs-only")))
+
+SCALAR static inline void invalidate_live_work(void) {
   if (live_work)
     __atomic_store_n(&live_work->invalid, 1, __ATOMIC_RELEASE);
 }
 
-static inline void counter_error(bool *flag) {
+SCALAR static inline void counter_error(bool *flag) {
   *flag = true;
   invalidate_live_work();
 }
@@ -298,7 +307,7 @@ static void open_live_work(const char *path) {
 /* Use process-shared atomics rather than inherited process totals. Only the
  * thread owning a TLS baseline adds a delta. There is no snapshot merging at
  * fork/exec and a failed exec can publish the same baseline again for free. */
-static void add_live_delta(uint64_t *counter, uint64_t delta, uint64_t overflow_bit) {
+SCALAR static void add_live_delta(uint64_t *counter, uint64_t delta, uint64_t overflow_bit) {
   if (!delta)
     return;
   uint64_t old = __atomic_load_n(counter, __ATOMIC_RELAXED);
@@ -326,7 +335,7 @@ enum { LIVE_WORK_BATCH = 4096 };
 /* Add what flat live entries have charged since the count was last settled.
  * Every fetch of a thread's state settles it (thread_state()), as does the
  * only code that sets live_room, so callbacks always see the full count. */
-static void settle_live_count(thread_data_t *d) {
+SCALAR static void settle_live_count(thread_data_t *d) {
   if (d->live_room == d->room_settled)
     return;
   uint64_t charged = (uint64_t)d->room_settled - (uint64_t)d->live_room;
@@ -342,7 +351,7 @@ static void settle_live_count(thread_data_t *d) {
   d->instructions += charged;
 }
 
-static void set_fast_until(thread_data_t *d, uint64_t until) {
+SCALAR static void set_fast_until(thread_data_t *d, uint64_t until) {
   settle_live_count(d);
   d->fast_until = until;
   if (until <= d->instructions)
@@ -362,12 +371,12 @@ static thread_data_t *thread_state(void *ctx) {
   return d;
 }
 
-static bool invalid_thread_work(const thread_data_t *d) {
+SCALAR static bool invalid_thread_work(const thread_data_t *d) {
   return d->signals || d->rep_error || d->replay_error || d->cpuid_error ||
          d->counter_overflows || d->unsupported_rep_entries;
 }
 
-static void publish_live_work(thread_data_t *d, bool flush) {
+SCALAR static void publish_live_work(thread_data_t *d, bool flush) {
   settle_live_count(d);
   if (invalid_thread_work(d) || d->instructions < d->published_instructions ||
       d->rep_movs_bytes < d->published_movs || d->rep_stos_bytes < d->published_stos) {
@@ -717,7 +726,7 @@ static bool pack_write_checkpoint(app_pc pc, app_pc next_pc, int suffix, uint64_
   return true;
 }
 
-static inline uint64_t *write_word(thread_data_t *d) {
+SCALAR static inline uint64_t *write_word(thread_data_t *d) {
   return flat_inline && d->raw_tls_base
              ? (uint64_t *)(d->raw_tls_base + raw_tls_offset) + RAW_TLS_WRITE
              : NULL;
@@ -742,14 +751,15 @@ static void settle_write_checkpoint(thread_data_t *d) {
 
 /* Discard the checkpoint, including one inline code stored but no callback
  * has settled. */
-static void clear_write_checkpoint(thread_data_t *d) {
+SCALAR static void clear_write_checkpoint(thread_data_t *d) {
   uint64_t *word = write_word(d);
   if (word)
     *word = WRITE_WORD_SETTLED;
   d->write_pc = NULL;
 }
 
-static byte *live_boundary_routine(void *ctx);
+enum { BOUNDARY_STACK_BYTES = 16 * 1024 };
+static void set_boundary_state(void *ctx, thread_data_t *d);
 
 static void thread_init(void *ctx) {
   thread_data_t *d = dr_thread_alloc(ctx, sizeof(*d));
@@ -764,8 +774,7 @@ static void thread_init(void *ctx) {
   if (!drmgr_set_tls_field(ctx, tls_index, d))
     fail("TLS init failed");
   set_raw_accounting_state(d);
-  if (flat_inline && live_work)
-    d->boundary_routine = live_boundary_routine(ctx);
+  set_boundary_state(ctx, d);
   set_fast_until(d, 0);
   process_id_t process = dr_get_process_id();
   if (process != owner_pid) {
@@ -799,6 +808,8 @@ static void thread_exit(void *ctx) {
      * parent. Exec/_exit checkpoints close it in child context before the
      * transition. */
     drmgr_set_tls_field(ctx, tls_index, NULL);
+    if (d->boundary_stack)
+      dr_thread_free(ctx, d->boundary_stack, BOUNDARY_STACK_BYTES);
     dr_thread_free(ctx, d, sizeof(*d));
     return;
   }
@@ -811,6 +822,8 @@ static void thread_exit(void *ctx) {
   dr_mutex_unlock(state_lock);
   if (d) {
     drmgr_set_tls_field(ctx, tls_index, NULL);
+    if (d->boundary_stack)
+      dr_thread_free(ctx, d->boundary_stack, BOUNDARY_STACK_BYTES);
     dr_thread_free(ctx, d, sizeof(*d));
   }
 }
@@ -1027,8 +1040,8 @@ static inline thread_data_t *accounting_thread_data(void) {
   return thread_state(dr_get_current_drcontext());
 }
 
-static thread_data_t *charge_block(int instructions, app_pc first_pc) {
-  thread_data_t *data = accounting_thread_data();
+SCALAR static thread_data_t *charge_block_state(thread_data_t *data, int instructions,
+                                                app_pc first_pc) {
   if (data == NULL || instructions <= 0)
     fail("instruction count without valid thread state");
   if (data->restart_pc) {
@@ -1057,6 +1070,10 @@ static thread_data_t *charge_block(int instructions, app_pc first_pc) {
   return data;
 }
 
+static thread_data_t *charge_block(int instructions, app_pc first_pc) {
+  return charge_block_state(accounting_thread_data(), instructions, first_pc);
+}
+
 static void count_block(int instructions, app_pc first_pc) {
   charge_block(instructions, first_pc);
 }
@@ -1065,10 +1082,11 @@ static void count_block(int instructions, app_pc first_pc) {
  * and charges its count. REP can introduce a publishable byte delta, and replay
  * can roll back instructions or require a restart. Both callbacks disarm the
  * window. A syscall flush publishes early and can only move the boundary later. */
-static void charge_boundary(int count, app_pc first_pc) {
-  thread_data_t *entered = accounting_thread_data();
-  uint64_t base = entered ? entered->instructions : 0;
-  thread_data_t *d = charge_block(count, first_pc);
+SCALAR static void charge_boundary_state(thread_data_t *d, int count, app_pc first_pc) {
+  if (d)
+    settle_live_count(d);
+  uint64_t base = d ? d->instructions : 0;
+  d = charge_block_state(d, count, first_pc);
   if (!d)
     return;
   /* A flat live entry leaves its charge to this callback. Keep the count it
@@ -1084,6 +1102,10 @@ static void charge_boundary(int count, app_pc first_pc) {
     set_fast_until(d, UINT64_MAX - INT32_MAX);
   else if (d->published_instructions <= d->instructions)
     set_fast_until(d, d->published_instructions + LIVE_WORK_BATCH);
+}
+
+static void charge_boundary(int count, app_pc first_pc) {
+  charge_boundary_state(accounting_thread_data(), count, first_pc);
 }
 
 static opnd_t raw_slot(uint slot) {
@@ -1271,15 +1293,57 @@ static void insert_flat_charge(void *ctx, instrlist_t *bb, instr_t *where, int c
   insert_bundle(ctx, bb, where, entry->bytes, entry->length);
 }
 
-/* The runtime encodes every inserted instruction when it builds a block, and
- * a clean call's context switch is most of a live entry. Live entries
- * therefore share one routine that performs the boundary clean call. An
- * entry stores the arguments through R11 and the address to resume at in
- * RCX, both of which the clean call preserves, and jumps through the
- * thread's boundary_routine. The routine is client memory outside the code
- * cache: like a callback, the runtime defers asynchronous signals that
- * arrive there and does not translate a thread stopped there. */
+/* The runtime encodes every inserted instruction when it builds a block, so
+ * live entries share one routine that makes the boundary callback. An entry
+ * stores the arguments through R11 and the address to resume at in RCX, and
+ * jumps through the thread's boundary_routine.
+ *
+ * The routine is this client's own context switch, not a runtime clean call.
+ * The callback reads and writes only this thread's accounting state, so the
+ * switch keeps what the C calling convention lets it change and nothing more:
+ * the flags and the nine caller-saved general registers. charge_boundary_state()
+ * and everything it calls are compiled for the general registers only (SCALAR),
+ * so vector and x87 state is never touched and needs no save. The application's
+ * stack may be invalid or hold a red zone, so the callback runs on a private
+ * per-thread stack, with the flags cleared as a C function expects (direction
+ * and alignment-check included).
+ *
+ * The routine is client memory outside the code cache: like a callback, the
+ * runtime defers asynchronous signals that arrive there and does not translate
+ * a thread stopped there. */
 static byte *boundary_routine;
+
+static void emit_boundary_routine(void *ctx, instrlist_t *ilist) {
+  static const reg_id_t saved[] = {DR_REG_RAX, DR_REG_RCX, DR_REG_RDX, DR_REG_RSI, DR_REG_RDI,
+                                   DR_REG_R8,  DR_REG_R9,  DR_REG_R10, DR_REG_R11};
+  enum { SAVED = sizeof(saved) / sizeof(saved[0]) };
+  /* With the flags that is ten pushes from a 16-byte aligned top, which leaves
+   * the stack aligned at the call. */
+  _Static_assert((SAVED + 1) % 2 == 0, "the boundary callback needs an aligned stack");
+#define APPEND(i) instrlist_meta_append(ilist, (i))
+#define FIELD(field) OPND_CREATE_MEMPTR(DR_REG_R11, offsetof(thread_data_t, field))
+  APPEND(INSTR_CREATE_mov_st(ctx, FIELD(boundary_rsp), opnd_create_reg(DR_REG_RSP)));
+  APPEND(INSTR_CREATE_mov_ld(ctx, opnd_create_reg(DR_REG_RSP), FIELD(boundary_stack_top)));
+  APPEND(INSTR_CREATE_pushf(ctx));
+  APPEND(INSTR_CREATE_push_imm(ctx, OPND_CREATE_INT8(0)));
+  APPEND(INSTR_CREATE_popf(ctx));
+  for (int i = 0; i < SAVED; ++i)
+    APPEND(INSTR_CREATE_push(ctx, opnd_create_reg(saved[i])));
+  APPEND(XINST_CREATE_move(ctx, opnd_create_reg(DR_REG_RDI), opnd_create_reg(DR_REG_R11)));
+  APPEND(INSTR_CREATE_mov_ld(ctx, opnd_create_reg(DR_REG_ESI),
+                             OPND_CREATE_MEM32(DR_REG_R11, offsetof(thread_data_t, boundary_count))));
+  APPEND(INSTR_CREATE_mov_ld(ctx, opnd_create_reg(DR_REG_RDX), FIELD(boundary_pc)));
+  APPEND(INSTR_CREATE_mov_imm(ctx, opnd_create_reg(DR_REG_RAX),
+                              OPND_CREATE_INTPTR((ptr_int_t)(void *)charge_boundary_state)));
+  APPEND(INSTR_CREATE_call_ind(ctx, opnd_create_reg(DR_REG_RAX)));
+  for (int i = SAVED - 1; i >= 0; --i)
+    APPEND(INSTR_CREATE_pop(ctx, opnd_create_reg(saved[i])));
+  APPEND(INSTR_CREATE_popf(ctx));
+  APPEND(INSTR_CREATE_mov_ld(ctx, opnd_create_reg(DR_REG_RSP), FIELD(boundary_rsp)));
+  APPEND(INSTR_CREATE_jmp_ind(ctx, opnd_create_reg(DR_REG_RCX)));
+#undef FIELD
+#undef APPEND
+}
 
 static byte *live_boundary_routine(void *ctx) {
   byte *routine = __atomic_load_n(&boundary_routine, __ATOMIC_ACQUIRE);
@@ -1290,12 +1354,7 @@ static byte *live_boundary_routine(void *ctx) {
   if (!fresh)
     fail("cannot allocate the live boundary routine");
   instrlist_t *ilist = instrlist_create(ctx);
-  instr_t *back = INSTR_CREATE_jmp_ind(ctx, opnd_create_reg(DR_REG_RCX));
-  instrlist_meta_append(ilist, back);
-  dr_insert_clean_call_ex(ctx, ilist, back, (void *)charge_boundary,
-                          DR_CLEANCALL_ALWAYS_OUT_OF_LINE, 2,
-                          OPND_CREATE_MEM32(DR_REG_R11, offsetof(thread_data_t, boundary_count)),
-                          OPND_CREATE_MEMPTR(DR_REG_R11, offsetof(thread_data_t, boundary_pc)));
+  emit_boundary_routine(ctx, ilist);
   byte *end = instrlist_encode_to_copy(ctx, ilist, fresh, fresh, fresh + size, true);
   instrlist_clear_and_destroy(ctx, ilist);
   if (!end || !dr_memory_protect(fresh, size, DR_MEMPROT_READ | DR_MEMPROT_EXEC))
@@ -1305,6 +1364,20 @@ static byte *live_boundary_routine(void *ctx) {
     return fresh;
   dr_nonheap_free(fresh, size);
   return routine;
+}
+
+/* Give a thread what its live entries need to reach the boundary callback. */
+static void set_boundary_state(void *ctx, thread_data_t *d) {
+  if (!flat_inline || !live_work)
+    return;
+  d->boundary_routine = live_boundary_routine(ctx);
+  if (!d->boundary_stack) {
+    d->boundary_stack = dr_thread_alloc(ctx, BOUNDARY_STACK_BYTES);
+    if (!d->boundary_stack)
+      fail("cannot allocate the live boundary stack");
+  }
+  d->boundary_stack_top =
+      (byte *)(((ptr_uint_t)d->boundary_stack + BOUNDARY_STACK_BYTES) & ~(ptr_uint_t)15);
 }
 
 /* Live clock: the flag-free entry also counts live_room down and takes the
@@ -2193,11 +2266,12 @@ static void fork_init(void *ctx) {
   thread_data_t *d = thread_state(ctx);
   if (!d)
     fail("fork without surviving TLS");
+  byte *stack = d->boundary_stack; /* The child inherits the thread's allocations. */
   memset(d, 0, sizeof(*d));
+  d->boundary_stack = stack;
   set_raw_accounting_state(d);
   clear_write_checkpoint(d); /* The slot still holds the parent's word. */
-  if (flat_inline && live_work)
-    d->boundary_routine = live_boundary_routine(ctx);
+  set_boundary_state(ctx, d);
   set_fast_until(d, 0);
   open_stream("fork", parent, previous);
 }

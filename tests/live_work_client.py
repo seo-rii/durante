@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Check the online work page against real, independently collected terminal records."""
 import argparse
+import json
 import os
 from pathlib import Path
 import signal
@@ -68,12 +69,78 @@ def check_run(prefix, work, name, command, *, valid=True, stdin=None):
         return measurement
 
 
+def client_addresses(client):
+    """Link-time addresses the debugger needs to find the boundary callback."""
+    image = client.read_bytes()
+    if image[:6] != b"\x7fELF\x02\x01":
+        raise ValueError("the client is not a little-endian ELF64 file")
+    offset, size, count = struct.unpack_from("<Q", image, 32)[0], *struct.unpack_from("<HH", image, 54)
+    loads = []
+    for index in range(count):
+        kind, _, file_offset, address, _, file_size = struct.unpack_from("<IIQQQQ", image, offset + index * size)
+        if kind == 1:  # PT_LOAD
+            loads.append((address, file_offset, file_size))
+    symbols = {}
+    for line in subprocess.run(["nm", client], capture_output=True, text=True, check=True).stdout.splitlines():
+        fields = line.split()
+        if len(fields) == 3 and fields[2] in ("charge_boundary_state", "boundary_routine"):
+            symbols[fields[2]] = int(fields[0], 16)
+    callback = symbols["charge_boundary_state"]
+    address, file_offset, _ = next(load for load in loads if load[0] <= callback < load[0] + load[2])
+    start = file_offset + callback - address
+    return {"BASE": min(load[0] for load in loads) & ~0xfff, "CALLBACK": callback,
+            "ROUTINE": symbols["boundary_routine"]}, image[start:start + 16]
+
+
+BOUNDARY_POINTS = ("entry", "switched", "call", "callback", "returned", "resume")
+
+
+def check_boundary_signal(gdb, prefix, work, client, exe, point):
+    """A signal that finds the thread at this point of the boundary routine is
+    handled and leaves every register the fixture checks unchanged."""
+    directory = work / f"boundary-signal-{point}"
+    directory.mkdir()
+    records, page, result = directory / "records", directory / "live", directory / "result.json"
+    records.mkdir()
+    page.write_bytes(bytes(PAGE.size))
+    addresses, text = client_addresses(client)
+    environment = dict(os.environ, DURANTE_GDB_CLIENT=str(client), DURANTE_GDB_POINT=point,
+                       DURANTE_GDB_RESULT=str(result), DURANTE_GDB_CALLBACK_BYTES=text.hex(),
+                       **{"DURANTE_GDB_" + name: hex(value) for name, value in addresses.items()})
+    # The debugger waits for its inferior with SIGCHLD, which main() blocks.
+    proc = subprocess.Popen([gdb, "-nx", "-batch", "-x", ROOT / "tests/live_boundary_gdb.py", "--args",
+                             *prefix, "-outdir", str(records), "-rep_bytes", "-live_work_v1", str(page),
+                             "--", exe], start_new_session=True, cwd=directory, env=environment,
+                            preexec_fn=lambda: signal.pthread_sigmask(signal.SIG_UNBLOCK, {signal.SIGCHLD}),
+                            stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    try:
+        proc.wait(timeout=4 * TIMEOUT)
+    finally:
+        if proc.poll() is None:
+            os.killpg(proc.pid, signal.SIGKILL)
+            proc.wait()
+        if not cleanup_orphans():
+            raise RuntimeError(f"boundary signal at {point}: failed to reap fixture")
+    report = json.loads(result.read_text()) if result.is_file() else {"error": "no debugger report"}
+    if report.get("error") or report["stopped"] != report["target"] or report["exit_code"] != 0:
+        raise RuntimeError(f"boundary signal at {point}: {report}")
+    # Only the routine's first and last instructions run on the application's
+    # stack; between them, and in the callback, the thread is on its private one.
+    if report["application_stack"] != (point in ("entry", "resume")):
+        raise RuntimeError(f"boundary signal at {point}: unexpected stack {report}")
+    ready, invalid, _, _, _, overflow = PAGE.unpack(page.read_bytes())
+    if (ready, invalid, overflow) != (1, 1, 0):
+        raise ValueError(f"boundary signal at {point}: unexpected ready/invalid/overflow")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--drrun", required=True, type=Path)
     parser.add_argument("--client", required=True, type=Path)
     parser.add_argument("--engine-debug", action="store_true",
                         help="use the SDK's debug core, whose exit checks fail a run that leaks")
+    parser.add_argument("--gdb", type=Path,
+                        help="also deliver a signal at each point of the live boundary routine")
     args = parser.parse_args()
     global TIMEOUT
     if args.engine_debug:
@@ -105,6 +172,25 @@ def main():
                 # and 33 instructions through the read, checks and exit.
                 if measurement["instructions"] != 24_036:
                     raise ValueError(f"unexpected input clock for {mode}: {measurement['instructions']}")
+            state = work / "live-state-exe"
+            subprocess.run(["cc", "-static", "-nostdlib", "-no-pie",
+                            ROOT / "tests/live_state.S", "-o", state], check=True)
+            # The loop alone is 3 * 3,000,000 - 1 instructions, so the run
+            # crosses more than two thousand publication boundaries.
+            if not 8_999_999 < check_run(prefix, work, "live-state", [state])["instructions"] < 9_001_000:
+                raise ValueError("unexpected live state clock")
+            # The same state with a signal handler that overwrites all of it:
+            # first interrupted by a timer, then by one signal at each point of
+            # the boundary routine, which no timer can aim at.
+            for name, mode in (("timer", 1), ("external", 2)):
+                subprocess.run(["cc", "-static", "-nostdlib", "-no-pie", f"-DLIVE_STATE_SIGNALS={mode}",
+                                ROOT / "tests/live_state.S", "-o", work / f"live-state-{name}-exe"],
+                               check=True)
+            check_run(prefix, work, "live-state-timer", [work / "live-state-timer-exe"], valid=False)
+            if args.gdb:
+                for point in BOUNDARY_POINTS:
+                    check_boundary_signal(args.gdb, prefix, work, args.client.resolve(),
+                                          work / "live-state-external-exe", point)
             # Each .Lwork body takes 5*N+18 instructions. Reading stdin adds
             # 12 instructions and a two-instruction loop with 10,000 iterations.
             thread_work = 5 * (100003 + 70001) + 2 * 18 + 32

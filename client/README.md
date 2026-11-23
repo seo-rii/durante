@@ -41,14 +41,18 @@ count. The entry reads the countdown's sign from its top byte with one MOVZX,
 so it still never reads or writes the application's flags. A
 negative countdown takes the checked callback, which handles the publication
 boundary, replay and additions near overflow and charges the block. All blocks
-reach it through one routine, generated once per process, that makes the clean
-call. An entry stores its count and first address in the thread's state and
-jumps there through a pointer in that state, with its resume address in RCX.
-Nothing in the entry depends on where it is placed, so the whole entry is
-encoded once per block size and copied with only the block's address patched;
-building a block encodes no context switch. The runtime defers asynchronous
-signals and translation while a thread is in that routine, as it does inside a
-callback. Publication therefore
+reach it through one routine, generated once per process. An entry stores its
+count and first address in the thread's state and jumps there through a pointer
+in that state, with its resume address in RCX. Nothing in the entry depends on
+where it is placed, so the whole entry is encoded once per block size and copied
+with only the block's address patched; building a block encodes no context
+switch. The routine moves to a stack the thread owns, saves the flags and the
+general registers a C function may change, clears the flags and calls the
+callback. It saves no vector or x87 state: the callback and everything it can
+reach are compiled to use the general registers only, and
+`tests/test_boundary_callback.py` reads the built client to check that. The
+runtime defers asynchronous signals and translation while a thread is in the
+routine or the callback, as it does inside a clean call. Publication therefore
 happens at the same block entries as on the callback path. Replay, REP
 and new threads reset the countdown so the next entry takes the callback, and the
 callback recomputes it. The prefix saves the pre-entry countdown before choosing the
