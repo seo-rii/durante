@@ -1,5 +1,6 @@
 """Check unseen-submission estimates and their pre-label seal against both GCE journals."""
 from contextlib import contextmanager
+from fractions import Fraction
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -73,12 +74,23 @@ class SubmissionReplay(unittest.TestCase):
             self.assertEqual((measured["verified_pids"], measured["profile_runs"], measured["reference_native_runs"],
                               measured["submission_native_runs"]), (112, 16, 24, 72))
             predictions = read(root / "predictions.json")["predictions"]
+            errors, reference_votes = [], []
             for name, case in measured["cases"].items():
                 with self.subTest(guest=study.name, case=name):
                     timings = [(row["user_us"] + row["sys_us"]) * 1000 for row in run["rows"]
                                if row["case_id"] == name and row["role"] == "submission" and row["kind"] == "native"]
                     self.assertEqual(len(timings), 9)
                     self.assertEqual(median(timings), case["native_cpu"]["median_ns"])
+                    payments = [(row["user_us"] + row["sys_us"]) * 1000 for row in run["rows"]
+                                if row["case_id"] == name and row["role"] == "reference" and row["kind"] == "native"]
+                    estimate = median(payments)
+                    comparison = measured["reference_only"]["cases"][name]
+                    self.assertEqual(comparison["prediction_ns"], estimate)
+                    errors.append(abs(Fraction(estimate - median(timings), median(timings))))
+                    for point in comparison["fixed_deadlines"]:
+                        limit = point["limit_ms"] * 1_000_000
+                        count = sum(value > limit for value in timings)
+                        reference_votes.append((count, estimate > limit))
                     for method, estimate in predictions[name].items():
                         self.assertEqual(estimate, case["predictions"][method])
                         for point in case["fixed_deadlines"][method]:
@@ -86,6 +98,15 @@ class SubmissionReplay(unittest.TestCase):
                             count = sum(value > cutoff for value in timings)
                             self.assertEqual(point["native_tle"], count)
                             self.assertEqual(point["majority_correct"], (estimate > cutoff) == (count >= 5))
+            total = measured["reference_only"]["all"]
+            self.assertEqual(total["median_absolute_error_ppm"], round(median(errors) * 1_000_000))
+            self.assertEqual(total["maximum_absolute_error_ppm"], round(max(errors) * 1_000_000))
+            self.assertEqual(total["within_20pct"], sum(e <= Fraction(1, 5) for e in errors))
+            self.assertEqual(total["fixed_limits"], len(reference_votes))
+            self.assertEqual(total["majority_correct"], sum((n >= 5) == tle for n, tle in reference_votes))
+            self.assertEqual(total["unanimous_correct"], sum((n == 9) == tle for n, tle in reference_votes if n in (0, 9)))
+            self.assertEqual(total["false_accept"], reference_votes.count((9, False)))
+            self.assertEqual(total["false_tle"], reference_votes.count((0, True)))
         self.assertEqual(len(boots), 2)
         self.assertEqual(len(payloads), 1)
 

@@ -1,8 +1,10 @@
 """Replay the registered run order, diagnostic profiles and sealed submission predictions."""
 import argparse
+from fractions import Fraction
 import json
 from pathlib import Path
 import re
+from statistics import median
 import sys
 
 HERE = Path(__file__).resolve().parent
@@ -25,6 +27,34 @@ def profile(directory, row, reader):
     parsed = reader(directory, pid)
     verify_counters(raw, parsed, None, "diag", pid, 0, reader)
     return record, bench.counters(parsed)
+
+
+def reference_only(measured):
+    """Retrospective forecast assigning the reference solution's median time to the submission."""
+    cases, errors = {}, {}
+    for name, row in measured.items():
+        estimate = median(row["reference_samples_ns"])
+        native = row["native_samples_ns"]
+        target = median(native)
+        errors[name] = Fraction(estimate - target, target)
+        cases[name] = dict(prediction_ns=estimate, signed_error_ppm=round(score.MS * errors[name]),
+                           fixed_deadlines=score.deadlines(estimate, native, row["fixed_limits_ms"]))
+
+    def summary(names):
+        absolute = [abs(errors[name]) for name in names]
+        points = [p for name in names for p in cases[name]["fixed_deadlines"]]
+        unanimous = [p for p in points if not p["mixed"]]
+        return dict(cases=len(names), median_absolute_error_ppm=round(score.MS * median(absolute)),
+                    maximum_absolute_error_ppm=round(score.MS * max(absolute)), within_20pct=sum(5*e <= 1 for e in absolute),
+                    fixed_limits=len(points), mixed=len(points) - len(unanimous),
+                    majority_correct=sum(p["majority_correct"] for p in points),
+                    unanimous_correct=sum(p["majority_correct"] for p in unanimous),
+                    false_tle=sum(p["model_tle"] and not p["majority_correct"] for p in unanimous),
+                    false_accept=sum(not p["model_tle"] and not p["majority_correct"] for p in unanimous))
+
+    programs = sorted({name.split("/")[0] for name in cases})
+    return dict(all=summary(cases), programs={p: summary([n for n in cases if n.startswith(p + "/")]) for p in programs},
+                cases=cases)
 
 
 def verify(directory):
@@ -99,6 +129,7 @@ def verify(directory):
     for name, data in measured.items():
         data["predictions"] = sealed["predictions"][name]
     report = score.evaluate(measured)
+    report["reference_only"] = reference_only(measured)
     # The submission labels enter this exploratory bound only after the frozen forecasts are checked.
     report["feature_bounds"] = {name: bounds(data["reference_counter"], data["submission_counter"],
                                              data["reference_samples_ns"], data["native_samples_ns"])
