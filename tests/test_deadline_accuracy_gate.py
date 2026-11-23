@@ -81,9 +81,62 @@ class MedianPacket(unittest.TestCase):
         return dict(self.origin["native"], boot_sha256=self.host["boot_sha256"], pid=pid,
                     cpu_ns=1000*us, user_us=us, sys_us=0, stdout_sha256=launch["stdout_sha256"])
 
-    def prepare(self, ms=None):
+    def prepare(self, ms=None, strategy="near-three"):
         return gate.prepare(self.elf, self.stdin, self.capture, self.selection, self.source,
-                            self.packet, self.ms if ms is None else ms)
+                            self.packet, self.ms if ms is None else ms, strategy)
+
+    def test_exact_one_transferred_policy_pays_once_across_far_and_near_limits(self):
+        self.select("expanded_repeat")
+        self.mock_elf_and_host()
+        with patch.object(gate.anchor, "native_once", return_value=self.sample(521, 111_000)) as run:
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                far, close = list(pool.map(lambda ms: self.prepare(ms, "exact-one"), (1, self.ms)))
+        self.assertEqual(run.call_count, 1)
+        self.assertFalse(far["near"])
+        self.assertTrue(close["near"])
+        self.assertEqual(dict(far, near=True), close)
+        self.assertEqual({p.name for p in self.packet.iterdir()}, {"policy-0.json", "packet.json", "selection.json"})
+        manifest = gate.read_json(far["packet"].read_bytes())
+        self.assertEqual((manifest["schema"], manifest["strategy"], manifest["reused_original"],
+                          manifest["selected_index"]), (2, "exact-one", False, 0))
+        self.assertEqual(far["prediction_ns"], 111_000_000)
+        self.assertEqual(manifest["policy_sha256"], [gate.elf_digest(far["policy"])])
+        selected = gate.read_json(far["selection"].read_bytes())
+        self.assertEqual((selected["action"], selected["comparisons"], selected["reference_index"]),
+                         ("calibrate", [], None))
+
+    def test_exact_one_current_capture_reuses_paid_observation_but_rechecks_packet(self):
+        self.select("expanded")
+        self.mock_elf_and_host()
+        with patch.object(gate.anchor, "native_once", side_effect=AssertionError("unexpected native sampling")):
+            far = self.prepare(1, "exact-one")
+            self.assertFalse(far["near"])
+            self.assertEqual(far["policy"].read_bytes(), self.source.read_bytes())
+            manifest = gate.read_json(far["packet"].read_bytes())
+            self.assertTrue(manifest["reused_original"])
+            with self.assertRaisesRegex(ValueError, "calibration strategy"):
+                self.prepare()
+            self.host["cpu"] += 1
+            with self.assertRaisesRegex(ValueError, "pinned context"):
+                self.prepare(1, "exact-one")
+            self.host["cpu"] -= 1
+            manifest["selected_index"] = False
+            far["packet"].write_text(json.dumps(manifest))
+            with self.assertRaisesRegex(ValueError, "stored packet"):
+                self.prepare(1, "exact-one")
+
+    def test_exact_one_remeasures_current_capture_when_boot_changed_and_discards_failure(self):
+        self.select("expanded", boot=False)
+        self.mock_elf_and_host()
+        samples = [dict(self.sample(511, 100_000), stdout_sha256="0"*64), self.sample(512, 200_000)]
+        with patch.object(gate.anchor, "native_once", side_effect=samples) as run:
+            with self.assertRaisesRegex(ValueError, "calibration output"):
+                self.prepare(1, "exact-one")
+            self.assertFalse(self.packet.exists())
+            choice = self.prepare(1, "exact-one")
+        self.assertEqual(run.call_count, 2)
+        self.assertFalse(gate.read_json(choice["packet"].read_bytes())["reused_original"])
+        self.assertEqual(choice["prediction_ns"], 200_000_000)
 
     def test_far_uses_existing_policy_without_creating_packet(self):
         self.select("expanded_repeat")
@@ -183,22 +236,48 @@ class MedianPacket(unittest.TestCase):
                 self.prepare()
         self.assertFalse(self.packet.exists())
 
-    @unittest.skipUnless(os.getenv("DURANTE_SHAPE_RUNTIME") and os.getenv("DURANTE_SHAPE_BINARIES"),
-                         "requires registered v11 runtime and workload ELFs")
-    def test_public_cli_creates_three_native_votes_and_enforces_a_new_limit(self):
-        self.select("expanded_repeat", boot=False)
+    def run_cli(self, out, ms, *args):
         cpu = min(os.sched_getaffinity(0))
-        out = self.tmp / "live"
         cmd = ["taskset", "-c", str(cpu), sys.executable, "-B", gate.__file__,
                "--payload", os.environ["DURANTE_SHAPE_RUNTIME"], "--elf",
                Path(os.environ["DURANTE_SHAPE_BINARIES"]) / "fenwick", "--capture", self.capture,
                "--selection", self.selection, "--policy", self.source, "--packet-dir", self.packet,
-               "--out", out, "--stdin", self.stdin, "--limit-ms", str(self.ms)]
+               "--out", out, "--stdin", self.stdin, "--limit-ms", str(ms), *args]
         proc = subprocess.run(cmd, capture_output=True, timeout=60)
         self.assertIn(proc.returncode, (0, 123), (proc.stdout, proc.stderr))
         result = gate.read_json(proc.stdout)
-        self.assertEqual(result["status"] == "budget_exceeded", result["prediction_ns"] > self.ms * 1_000_000)
+        self.assertEqual(result["status"] == "budget_exceeded", result["prediction_ns"] > ms * 1_000_000)
+        return result
+
+    @unittest.skipUnless(os.getenv("DURANTE_SHAPE_RUNTIME") and os.getenv("DURANTE_SHAPE_BINARIES"),
+                         "requires registered v11 runtime and workload ELFs")
+    def test_public_cli_creates_three_native_votes_and_enforces_a_new_limit(self):
+        self.select("expanded_repeat", boot=False)
+        out = self.tmp / "live"
+        result = self.run_cli(out, self.ms)
         self.assertTrue(gate.read_json((out / "gate.json").read_bytes())["near"])
         natives = [gate.read_json((self.packet / f"policy-{i}.json").read_bytes())["native"] for i in range(3)]
         self.assertEqual(len({v["pid"] for v in natives} | {result["pid"]}), 4)
         self.assertEqual(result["preflight_prediction_ns"], sorted(v["cpu_ns"] for v in natives)[1])
+
+    @unittest.skipUnless(os.getenv("DURANTE_SHAPE_RUNTIME") and os.getenv("DURANTE_SHAPE_BINARIES"),
+                         "requires registered v11 runtime and workload ELFs")
+    def test_exact_one_cli_binds_far_and_near_to_the_same_real_observation(self):
+        self.select("expanded_repeat", boot=False)
+        enforcements = set()
+        packet_sha = None
+        for ms, nearby in ((1, False), (self.ms, True)):
+            out = self.tmp / f"limit-{ms}"
+            result = self.run_cli(out, ms, "--strategy", "exact-one")
+            enforcements.add(result["pid"])
+            receipt = gate.read_json((out / "gate.json").read_bytes())
+            self.assertEqual((receipt["near"], receipt["strategy"]), (nearby, "exact-one"))
+            digest = gate.elf_digest(self.packet / "packet.json")
+            self.assertEqual(receipt["packet_sha256"], digest)
+            if packet_sha is not None:
+                self.assertEqual(digest, packet_sha)
+            packet_sha = digest
+            native = gate.read_json((self.packet / "policy-0.json").read_bytes())["native"]
+            self.assertEqual(result["preflight_prediction_ns"], native["cpu_ns"])
+            self.assertNotIn(native["pid"], enforcements)
+        self.assertEqual(len(enforcements), 2)

@@ -1,4 +1,4 @@
-"""Use three pinned native observations near a deadline on a trusted, input-deterministic static ELF."""
+"""Calibrate a trusted, input-deterministic static ELF using pinned exact-input native observations."""
 import argparse
 import fcntl
 import json
@@ -13,6 +13,11 @@ sys.path.insert(0, str(HERE.parent))
 from first_run_sampler.profile import elf_digest, read_json, require, sha
 from guarded_native import anchor, live
 from shape_calibration import run, select_policy, temporal
+
+
+def observation_count(strategy):
+    require(strategy in ("near-three", "exact-one"), "unknown exact-input calibration strategy")
+    return 3 if strategy == "near-three" else 1
 
 
 def near(prediction_ns, limit_ms):
@@ -39,12 +44,15 @@ def original_is_current(policy, obs, context):
     return policy["anchor"] == obs and same_placement(policy["native"], context)
 
 
-def packet_evidence(directory, obs, context, source_raw):
+def packet_evidence(directory, obs, context, source_raw, strategy="near-three"):
     """Derive the manifest and normal selected-input receipt; offline callers can supply the recorded context."""
     samples = []
     hashes = []
     pids = set()
-    for i in range(3):
+    count = observation_count(strategy)
+    require({p.name for p in directory.glob("policy-*.json")} == {f"policy-{i}.json" for i in range(count)},
+            "unexpected native policies for calibration strategy")
+    for i in range(count):
         raw = (directory / f"policy-{i}.json").read_bytes()
         clock = anchor.clock_from_raw(raw, obs["elf_sha256"])
         policy = read_json(raw)
@@ -59,12 +67,17 @@ def packet_evidence(directory, obs, context, source_raw):
     reused = original_is_current(read_json(source_raw), obs, context)
     if reused:
         require(hashes[0] == context["source_policy_sha256"], "first observation differs from paid current calibration")
-    # Sorting is stable. A tie selects the chronological middle of the three ordered observations.
-    mid = sorted(range(3), key=samples.__getitem__)[1]
     manifest = dict(schema=1, authority="diagnostic_only", context=context, reused_original=reused,
-                    policy_sha256=hashes, median_index=mid)
+                    policy_sha256=hashes)
+    if strategy == "near-three":
+        # Sorting is stable. A tie selects the chronological middle of the three ordered observations.
+        index = sorted(range(count), key=samples.__getitem__)[1]
+        manifest["median_index"] = index
+    else:
+        index = 0
+        manifest.update(schema=2, strategy=strategy, selected_index=index)
     selected = dict(schema=1, method="footprint", action="calibrate", reference_index=None, comparisons=[],
-                    policy_sha256=hashes[mid], prediction_ns=samples[mid], current_sample_sha256=obs["sample_sha256"])
+                    policy_sha256=hashes[index], prediction_ns=samples[index], current_sample_sha256=obs["sample_sha256"])
     return manifest, selected
 
 
@@ -73,8 +86,9 @@ def exact_json(left, right):
     return json.dumps(left, sort_keys=True) == json.dumps(right, sort_keys=True)
 
 
-def prepare(elf, stdin, capture, selection, policy, packet_dir, limit_ms):
-    """Return selection and policy paths for one fresh enforcement; all near limits share packet_dir."""
+def prepare(elf, stdin, capture, selection, policy, packet_dir, limit_ms, strategy="near-three"):
+    """Return selection and policy paths for one fresh enforcement. Share packet_dir across limits of one strategy."""
+    count = observation_count(strategy)
     elf, stdin, capture, selection, policy = (Path(p).resolve() for p in (elf, stdin, capture, selection, policy))
     packet_dir = Path(packet_dir)
     origin = placement()
@@ -87,7 +101,8 @@ def prepare(elf, stdin, capture, selection, policy, packet_dir, limit_ms):
     run.check_selection(selected, full, order, source, clock)
     require(elf_digest(stdin) == obs["stdin_sha256"], "requested input differs from the full capture")
     estimate = selected["prediction_ns"]
-    if not near(estimate, limit_ms):
+    is_near = near(estimate, limit_ms)
+    if strategy == "near-three" and not is_near:
         return dict(near=False, selection=selection, policy=policy, prediction_ns=estimate, packet=None)
     context = dict(**origin, source_selection_sha256=sha(selection_raw), source_policy_sha256=clock.policy_sha256,
                    elf_sha256=clock.elf_sha256, stdin_sha256=obs["stdin_sha256"],
@@ -101,37 +116,42 @@ def prepare(elf, stdin, capture, selection, policy, packet_dir, limit_ms):
             with tempfile.TemporaryDirectory(dir=packet_dir.parent) as tmp:
                 draft = Path(tmp) / "packet"
                 draft.mkdir(mode=0o700)
-                for i in range(3):
+                for i in range(count):
                     dest = draft / f"policy-{i}.json"
                     if i == 0 and original_is_current(source, obs, context):
                         dest.write_bytes(source_raw)
                     else:
                         anchor.calibrate(elf, stdin, capture / "full", dest)
-                manifest, candidate = packet_evidence(draft, obs, context, source_raw)
+                manifest, candidate = packet_evidence(draft, obs, context, source_raw, strategy)
                 anchor.save_new(draft / "packet.json", manifest)
                 anchor.save_new(draft / "selection.json", candidate)
                 draft.rename(packet_dir)
-        manifest, candidate = packet_evidence(packet_dir, obs, context, source_raw)
+        manifest, candidate = packet_evidence(packet_dir, obs, context, source_raw, strategy)
         require(exact_json(read_json((packet_dir / "packet.json").read_bytes()), manifest)
                 and exact_json(read_json((packet_dir / "selection.json").read_bytes()), candidate),
                 "stored packet differs from current evidence")
-        require(placement() == origin, "placement changed while obtaining the median calibration")
+        require(placement() == origin, "placement changed while obtaining the calibration")
     finally:
         os.close(fd)
-    return dict(near=True, selection=packet_dir / "selection.json",
-                policy=packet_dir / f"policy-{manifest['median_index']}.json",
+    index = manifest["median_index"] if strategy == "near-three" else manifest["selected_index"]
+    return dict(near=is_near, selection=packet_dir / "selection.json",
+                policy=packet_dir / f"policy-{index}.json",
                 prediction_ns=candidate["prediction_ns"], packet=packet_dir / "packet.json")
 
 
-def enforce(payload, elf, stdin, capture, selection, policy, packet_dir, out, limit_ms, timeout_ms=120000, poll_ms=5):
+def enforce(payload, elf, stdin, capture, selection, policy, packet_dir, out, limit_ms, timeout_ms=120000,
+            poll_ms=5, strategy="near-three"):
     out.mkdir(mode=0o700)
     try:
         require(all(type(v) is int and v > 0 for v in (limit_ms, timeout_ms, poll_ms)), "invalid deadline or watchdog")
-        choice = prepare(elf, stdin, capture, selection, policy, packet_dir, limit_ms)
-        anchor.save_new(out / "gate.json", dict(near=choice["near"], limit_ms=limit_ms,
+        choice = prepare(elf, stdin, capture, selection, policy, packet_dir, limit_ms, strategy)
+        receipt = dict(near=choice["near"], limit_ms=limit_ms,
                         prediction_ns=choice["prediction_ns"], source_selection_sha256=elf_digest(selection),
                         source_policy_sha256=elf_digest(policy), selected_policy_sha256=elf_digest(choice["policy"]),
-                        packet_sha256=elf_digest(choice["packet"]) if choice["near"] else None))
+                        packet_sha256=elf_digest(choice["packet"]) if choice["packet"] is not None else None)
+        if strategy == "exact-one":
+            receipt["strategy"] = strategy
+        anchor.save_new(out / "gate.json", receipt)
         result = run.run(payload, choice["selection"], capture, choice["policy"], elf, stdin, out / "enforced",
                          limit_ms, timeout_ms, poll_ms)
     except (OSError, ValueError, KeyError, TypeError, IndexError, OverflowError) as error:
@@ -145,12 +165,14 @@ if __name__ == "__main__":
     for flag in ("payload", "elf", "stdin", "capture", "selection", "policy", "packet-dir", "out"):
         cli.add_argument("--" + flag, required=True, type=Path)
     cli.add_argument("--limit-ms", required=True, type=int)
+    cli.add_argument("--strategy", choices=("near-three", "exact-one"), default="near-three")
     cli.add_argument("--timeout-ms", type=int, default=120000)
     cli.add_argument("--poll-ms", type=int, default=5)
     args = cli.parse_args()
     try:
         result = enforce(args.payload.resolve(), args.elf.resolve(), args.stdin, args.capture, args.selection,
-                         args.policy, args.packet_dir, args.out.resolve(), args.limit_ms, args.timeout_ms, args.poll_ms)
+                         args.policy, args.packet_dir, args.out.resolve(), args.limit_ms, args.timeout_ms, args.poll_ms,
+                         args.strategy)
     except (ValueError, OSError) as error:
         result = dict(schema=1, authority="diagnostic_only", status="unavailable", pid=None, reason=str(error))
     print(json.dumps(result))
