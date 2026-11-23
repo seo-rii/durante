@@ -15,7 +15,7 @@ def digest(file):
         return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
-def prepare(out, runtime, *, study=HERE, probe=None):
+def prepare(out, runtime, *, study=HERE, probe=None, benchmark="bench.py"):
     plan = json.loads((study / "plan.json").read_bytes())
     if (runtime / "protocol.json").read_bytes() != (HERE.parent / "guarded_sampler/protocol.json").read_bytes():
         raise ValueError("expected the registered guarded-sampler runtime")
@@ -43,7 +43,7 @@ def prepare(out, runtime, *, study=HERE, probe=None):
     command = '"$PWD/bench.py"'
     if guest.count(command) != 1:
         raise ValueError("different guest entry point")
-    new_command = (f'"$PWD/repo/experiments/{study.name}/bench.py" '
+    new_command = (f'"$PWD/repo/experiments/{study.name}/{benchmark}" '
                    '--payload "$PWD/runtime" --binaries "$PWD/binaries" --out "$PWD/output"')
     if probe is not None:
         expected = json.loads((study / "rules.json").read_bytes())["probe_sha256"]
