@@ -3,13 +3,11 @@ import argparse
 from collections import Counter
 import json
 from pathlib import Path
-import subprocess
 import sys
 import tempfile
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
-from cpp20_locality.verify import require
 from preflight_cache.verify import verify
 from shape_calibration import aonohako_clock
 
@@ -39,15 +37,8 @@ def replay(root, binaries, reference):
             arm = "fresh" if row["arm"] == "fresh" else ("warm" if prepared["hit"] else "cold")
             for i, ms in enumerate(limits):
                 wrapped = root / "trials" / f"{row['sequence']:03d}" / f"limit-{i}/result.json"
-                observed = json.loads(wrapped.read_bytes())
-                command = [reference, "replay-input-deadline", "--projection", projections[key], "--live", wrapped,
-                           "--elf", elf, "--stdin", stdin, "--limit-ms", str(ms)]
-                proc = subprocess.run(command, check=True, stdout=subprocess.PIPE)
-                expected = {k: observed[k] for k in ("schema", "authority", "selection_sha256", "policy_sha256",
-                                                       "limit_ms", "pid", "status")}
-                expected["exceeded"] = observed["status"] == "budget_exceeded"
-                require(json.loads(proc.stdout) == expected, f"unexpected replay of {case['case_id']} at {ms} ms")
-                counts[arm][observed["status"]] += 1
+                status = aonohako_clock.replay_live(reference, projections[key], wrapped, elf, stdin, ms)
+                counts[arm][status] += 1
     return counts
 
 
