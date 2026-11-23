@@ -7,7 +7,7 @@ use std::collections::BTreeSet;
 use std::ffi::OsString;
 use std::fs::{self, DirBuilder, File, OpenOptions};
 use std::io::{self, Read, Seek, Write};
-use std::os::fd::AsRawFd;
+use std::os::fd::{AsRawFd, FromRawFd, OwnedFd, RawFd};
 use std::os::unix::ffi::OsStrExt;
 use std::os::unix::fs::{DirBuilderExt, MetadataExt, OpenOptionsExt, PermissionsExt};
 use std::os::unix::process::CommandExt;
@@ -256,6 +256,51 @@ impl WaitState {
             } else {
                 self.other_child_signal.get_or_insert(signal);
             }
+        }
+    }
+}
+
+/// The pause between supervisor passes. With a pidfd for the root it ends as
+/// soon as the root exits, so a finished run is not left waiting for the next
+/// interval. Every other condition is still checked once per interval.
+pub(crate) struct RootWatch {
+    root: Option<OwnedFd>,
+}
+
+impl RootWatch {
+    pub(crate) fn new(root_pid: u32) -> Self {
+        // The root is our own unreaped child, so its PID cannot have been
+        // reused. Kernels before 5.3 and sandboxes that deny the call fall
+        // back to interval polling.
+        // SAFETY: integer arguments only.
+        let fd = unsafe { libc::syscall(libc::SYS_pidfd_open, root_pid as libc::pid_t, 0) };
+        // SAFETY: a non-negative result is a new close-on-exec descriptor
+        // that nothing else owns.
+        let root = (fd >= 0).then(|| unsafe { OwnedFd::from_raw_fd(fd as RawFd) });
+        Self { root }
+    }
+
+    pub(crate) fn pause(&mut self, state: &WaitState, interval: Duration) {
+        if state.root_status.is_some() {
+            // A reaped root leaves its descriptor readable forever.
+            self.root = None;
+        }
+        let Some(root) = &self.root else {
+            std::thread::sleep(interval);
+            return;
+        };
+        let mut poll = libc::pollfd {
+            fd: root.as_raw_fd(),
+            events: libc::POLLIN,
+            revents: 0,
+        };
+        let timeout = interval.as_millis().min(libc::c_int::MAX as u128) as libc::c_int;
+        // SAFETY: one valid pollfd. A signal ends the pause early; the caller
+        // checks cancellation on every pass.
+        let ready = unsafe { libc::poll(&mut poll, 1, timeout) };
+        let interrupted = io::Error::last_os_error().raw_os_error() == Some(libc::EINTR);
+        if (ready < 0 && !interrupted) || poll.revents & (libc::POLLERR | libc::POLLNVAL) != 0 {
+            self.root = None;
         }
     }
 }
@@ -629,6 +674,7 @@ fn execute(
     result["execution"]["root_pid"] = json!(root_pid);
     let deadline = Instant::now() + Duration::from_millis(options.timeout_ms);
     let mut waited = WaitState::default();
+    let mut watch = RootWatch::new(root_pid);
     let mut crossing = None;
     let (state, mut code, mut forced) = loop {
         let signal = CANCEL_SIGNAL.load(Ordering::Relaxed);
@@ -650,7 +696,7 @@ fn execute(
                 break ("work_budget_exceeded", work_budget::EXIT_EXCEEDED, true);
             }
         }
-        std::thread::sleep(POLL_INTERVAL);
+        watch.pause(&waited, POLL_INTERVAL);
     };
     result["execution"]["state"] = json!(state);
     let cleanup_start = Instant::now();
@@ -862,6 +908,48 @@ mod tests {
         waited.record_exit(42, 43, libc::SIGKILL);
         assert_eq!(waited.killed_during_cleanup, 1);
         assert_eq!(waited.other_child_signal, Some(libc::SIGKILL));
+    }
+
+    #[test]
+    fn root_watch_ends_the_pause_when_the_root_exits() {
+        let mut child = Command::new("/bin/sleep").arg("0.05").spawn().unwrap();
+        let mut watch = RootWatch::new(child.id());
+        if watch.root.is_none() {
+            // No pidfd on this kernel: the watch is interval polling only.
+            child.wait().unwrap();
+            return;
+        }
+        // Far longer than the child lives: only its exit can end this pause.
+        let started = Instant::now();
+        watch.pause(&WaitState::default(), Duration::from_secs(30));
+        assert!(started.elapsed() < Duration::from_secs(15));
+        assert!(watch.root.is_some());
+        // An exited but unreaped root keeps ending the pause at once.
+        let started = Instant::now();
+        watch.pause(&WaitState::default(), Duration::from_secs(30));
+        assert!(started.elapsed() < Duration::from_secs(15));
+        child.wait().unwrap();
+        // Once the root is reaped the watch only sleeps.
+        let reaped = WaitState {
+            root_status: Some(0),
+            ..WaitState::default()
+        };
+        let started = Instant::now();
+        watch.pause(&reaped, Duration::from_millis(40));
+        assert!(started.elapsed() >= Duration::from_millis(40));
+        assert!(watch.root.is_none());
+    }
+
+    #[test]
+    fn root_watch_waits_out_the_interval_while_the_root_runs() {
+        let mut child = Command::new("/bin/sleep").arg("30").spawn().unwrap();
+        let mut watch = RootWatch::new(child.id());
+        let started = Instant::now();
+        watch.pause(&WaitState::default(), Duration::from_millis(40));
+        let elapsed = started.elapsed();
+        child.kill().unwrap();
+        child.wait().unwrap();
+        assert!(elapsed >= Duration::from_millis(40));
     }
 
     #[test]

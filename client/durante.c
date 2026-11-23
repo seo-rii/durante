@@ -70,14 +70,20 @@ typedef struct {
       unsupported_rep_entries;
   uint64_t rep_movs_bytes, rep_stos_bytes, rep_movs_entries, rep_stos_entries;
   uint64_t published_instructions, published_movs, published_stos;
-  uint64_t fast_until; /* Exclusive pre-charge threshold; zero forces the callback. */
-  /* Flat live entries: fast_until - instructions - 1, kept by each inline entry.
-   * A negative value takes the boundary callback. It may run low after replay
-   * or relocation, which only adds a callback; the callback recomputes it. */
-  int64_t live_room;
-  /* Flat inline accounting (no live clock): the value of instructions before
-   * the most recent block entry, and its value just after a RETRY rollback. */
+  /* Flat live entries charge a block by counting live_room down from
+   * fast_until - instructions - 1, and store nothing else. instructions lags
+   * until settle_live_count() adds the distance live_room has moved since
+   * room_settled. A negative value takes the boundary callback. It may run low
+   * after replay or relocation, which only adds a callback; the callback
+   * recomputes it. entry_room is live_room before the current entry, or
+   * ENTRY_ROOM_CHARGED once the callback has charged that entry. */
+  int64_t live_room, entry_room;
+  /* The value of instructions before the most recent block entry (set by flat
+   * entries without a live clock, and by the live boundary callback), and its
+   * value just after a RETRY rollback. */
   uint64_t entry_base, restart_base;
+  uint64_t fast_until; /* Exclusive pre-charge threshold; zero forces the callback. */
+  int64_t room_settled;
   byte *raw_tls_base; /* This thread's runtime segment base, for state restoration. */
   bool pending_stdin_read, received_stdin;
   bool rep_error;
@@ -111,6 +117,11 @@ typedef struct {
    * after the fields the entries access with 8-bit displacements. */
   int32_t boundary_count;
   app_pc boundary_pc;
+  byte *boundary_routine;
+  /* The boundary routine's private stack (its top is 16-byte aligned), and
+   * the two registers it keeps here while that stack is in use. */
+  byte *boundary_stack, *boundary_stack_top;
+  reg_t boundary_rsp;
 } thread_data_t;
 static int tls_index;
 /* In ordinary static code the generated accounting runs at every block and
@@ -118,10 +129,11 @@ static int tls_index;
 static bool raw_tls_enabled;
 static reg_id_t raw_tls_register;
 static uint raw_tls_offset;
-/* Client-owned raw TLS slots: the accounting pointer and two scratch spills.
- * Private spill slots let restore_state() recognize exactly this client's
- * sequences; the runtime's shared spill slots are also used by its mangling. */
-enum { RAW_TLS_STATE, RAW_TLS_SPILL_RCX, RAW_TLS_SPILL_R11, RAW_TLS_SLOTS };
+/* Client-owned raw TLS slots: the accounting pointer, two scratch spills and
+ * the flat write checkpoint. Private spill slots let restore_state() recognize
+ * exactly this client's sequences; the runtime's shared spill slots are also
+ * used by its mangling. */
+enum { RAW_TLS_STATE, RAW_TLS_SPILL_RCX, RAW_TLS_SPILL_R11, RAW_TLS_WRITE, RAW_TLS_SLOTS };
 /* Without a live clock nothing is published between syscalls. Every block and
  * store then uses flag-free inline accounting, including shared libraries and
  * generated code. Restart validation moves from block entry to the callbacks
@@ -254,12 +266,17 @@ static bool cache_probe_enabled(void) {
 #endif
 }
 
-static inline void invalidate_live_work(void) {
+/* The live boundary routine saves only the general registers and the flags
+ * around its callback, so everything that callback can execute is compiled
+ * without vector or x87 instructions. */
+#define SCALAR __attribute__((target("general-regs-only")))
+
+SCALAR static inline void invalidate_live_work(void) {
   if (live_work)
     __atomic_store_n(&live_work->invalid, 1, __ATOMIC_RELEASE);
 }
 
-static inline void counter_error(bool *flag) {
+SCALAR static inline void counter_error(bool *flag) {
   *flag = true;
   invalidate_live_work();
 }
@@ -290,7 +307,7 @@ static void open_live_work(const char *path) {
 /* Use process-shared atomics rather than inherited process totals. Only the
  * thread owning a TLS baseline adds a delta. There is no snapshot merging at
  * fork/exec and a failed exec can publish the same baseline again for free. */
-static void add_live_delta(uint64_t *counter, uint64_t delta, uint64_t overflow_bit) {
+SCALAR static void add_live_delta(uint64_t *counter, uint64_t delta, uint64_t overflow_bit) {
   if (!delta)
     return;
   uint64_t old = __atomic_load_n(counter, __ATOMIC_RELAXED);
@@ -308,22 +325,59 @@ static void add_live_delta(uint64_t *counter, uint64_t delta, uint64_t overflow_
 
 enum { LIVE_WORK_BATCH = 4096 };
 
-static void set_fast_until(thread_data_t *d, uint64_t until) {
+/* A flat live entry reads the countdown's sign from its top byte, which must
+ * be zero for every non-negative value. A capped countdown only adds a
+ * callback, which recomputes it. */
+#define LIVE_ROOM_MAX ((INT64_C(1) << 56) - 1)
+
+#define ENTRY_ROOM_CHARGED INT64_MIN
+
+/* Add what flat live entries have charged since the count was last settled.
+ * Every fetch of a thread's state settles it (thread_state()), as does the
+ * only code that sets live_room, so callbacks always see the full count. */
+SCALAR static void settle_live_count(thread_data_t *d) {
+  if (d->live_room == d->room_settled)
+    return;
+  uint64_t charged = (uint64_t)d->room_settled - (uint64_t)d->live_room;
+  bool rose = d->live_room > d->room_settled; /* Entries only count down. */
+  d->room_settled = d->live_room;
+  if (rose || charged > UINT64_MAX - d->instructions) {
+    /* Sticky invalidity, as for a callback charge that would wrap. */
+    d->counter_overflows = 1;
+    invalidate_live_work();
+    if (rose)
+      return;
+  }
+  d->instructions += charged;
+}
+
+SCALAR static void set_fast_until(thread_data_t *d, uint64_t until) {
+  settle_live_count(d);
   d->fast_until = until;
   if (until <= d->instructions)
     d->live_room = -1;
   else
-    d->live_room = until - d->instructions - 1 > (uint64_t)INT64_MAX
-                       ? INT64_MAX
+    d->live_room = until - d->instructions - 1 > (uint64_t)LIVE_ROOM_MAX
+                       ? LIVE_ROOM_MAX
                        : (int64_t)(until - d->instructions - 1);
+  d->room_settled = d->live_room;
 }
 
-static bool invalid_thread_work(const thread_data_t *d) {
+/* A thread's state with its live count settled. */
+static thread_data_t *thread_state(void *ctx) {
+  thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
+  if (d)
+    settle_live_count(d);
+  return d;
+}
+
+SCALAR static bool invalid_thread_work(const thread_data_t *d) {
   return d->signals || d->rep_error || d->replay_error || d->cpuid_error ||
          d->counter_overflows || d->unsupported_rep_entries;
 }
 
-static void publish_live_work(thread_data_t *d, bool flush) {
+SCALAR static void publish_live_work(thread_data_t *d, bool flush) {
+  settle_live_count(d);
   if (invalid_thread_work(d) || d->instructions < d->published_instructions ||
       d->rep_movs_bytes < d->published_movs || d->rep_stos_bytes < d->published_stos) {
     invalidate_live_work();
@@ -528,7 +582,7 @@ static bool add_thread(thread_data_t *d) {
 }
 
 static void snapshot_event(const char *kind, void *ctx, bool is_exec) {
-  thread_data_t *d = ctx ? drmgr_get_tls_field(ctx, tls_index) : NULL;
+  thread_data_t *d = ctx ? thread_state(ctx) : NULL;
   if (d) {
     settle_restart(d);
     check_flat_counter(d);
@@ -652,6 +706,61 @@ static void set_raw_accounting_state(thread_data_t *d) {
   }
 }
 
+/* Flat inline code keeps the write checkpoint as one word in RAW_TLS_WRITE,
+ * stored with immediates and no scratch register: the write's address, its
+ * length and its block suffix. A block entry stores zero. Callbacks settle
+ * the word into the checkpoint fields before they read or replace them, and
+ * leave WRITE_WORD_SETTLED while the fields are current. A packed word has a
+ * nonzero length, so it equals neither marker. */
+enum { WRITE_WORD_PC_BITS = 48, WRITE_WORD_LENGTH_BITS = 4, WRITE_WORD_SETTLED = 1 };
+#define WRITE_WORD_MAX_SUFFIX \
+  ((UINT64_C(1) << (64 - WRITE_WORD_PC_BITS - WRITE_WORD_LENGTH_BITS)) - 1)
+
+static bool pack_write_checkpoint(app_pc pc, app_pc next_pc, int suffix, uint64_t *word) {
+  uint64_t address = (uint64_t)(ptr_uint_t)pc, kept = suffix > 0 ? (uint64_t)suffix : 0;
+  if (!pc || next_pc <= pc || next_pc - pc >= 1 << WRITE_WORD_LENGTH_BITS ||
+      address >> WRITE_WORD_PC_BITS || kept > WRITE_WORD_MAX_SUFFIX)
+    return false;
+  *word = address | (uint64_t)(next_pc - pc) << WRITE_WORD_PC_BITS |
+          kept << (WRITE_WORD_PC_BITS + WRITE_WORD_LENGTH_BITS);
+  return true;
+}
+
+SCALAR static inline uint64_t *write_word(thread_data_t *d) {
+  return flat_inline && d->raw_tls_base
+             ? (uint64_t *)(d->raw_tls_base + raw_tls_offset) + RAW_TLS_WRITE
+             : NULL;
+}
+
+static void settle_write_checkpoint(thread_data_t *d) {
+  uint64_t *word = write_word(d);
+  if (!word || *word == WRITE_WORD_SETTLED)
+    return;
+  uint64_t packed = *word;
+  *word = WRITE_WORD_SETTLED;
+  if (packed >> WRITE_WORD_PC_BITS == 0) {
+    d->write_pc = NULL; /* A block was entered after the last checkpoint. */
+    return;
+  }
+  app_pc pc = (app_pc)(ptr_uint_t)(packed & ((UINT64_C(1) << WRITE_WORD_PC_BITS) - 1));
+  d->write_pc = pc;
+  d->write_next_pc = pc + (packed >> WRITE_WORD_PC_BITS & ((1 << WRITE_WORD_LENGTH_BITS) - 1));
+  d->write_suffix = packed >> (WRITE_WORD_PC_BITS + WRITE_WORD_LENGTH_BITS);
+  d->write_rep = false;
+}
+
+/* Discard the checkpoint, including one inline code stored but no callback
+ * has settled. */
+SCALAR static void clear_write_checkpoint(thread_data_t *d) {
+  uint64_t *word = write_word(d);
+  if (word)
+    *word = WRITE_WORD_SETTLED;
+  d->write_pc = NULL;
+}
+
+enum { BOUNDARY_STACK_BYTES = 16 * 1024 };
+static void set_boundary_state(void *ctx, thread_data_t *d);
+
 static void thread_init(void *ctx) {
   thread_data_t *d = dr_thread_alloc(ctx, sizeof(*d));
   if (!d)
@@ -665,6 +774,7 @@ static void thread_init(void *ctx) {
   if (!drmgr_set_tls_field(ctx, tls_index, d))
     fail("TLS init failed");
   set_raw_accounting_state(d);
+  set_boundary_state(ctx, d);
   set_fast_until(d, 0);
   process_id_t process = dr_get_process_id();
   if (process != owner_pid) {
@@ -682,7 +792,7 @@ static void thread_init(void *ctx) {
   dr_mutex_unlock(state_lock);
 }
 static void thread_exit(void *ctx) {
-  thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
+  thread_data_t *d = thread_state(ctx);
   /* Asynchronous thread termination can interrupt an arbitrary charged BB.
    * Only an explicit exit/exec checkpoint can attest to that final prefix. */
   if (live_work && d &&
@@ -698,6 +808,8 @@ static void thread_exit(void *ctx) {
      * parent. Exec/_exit checkpoints close it in child context before the
      * transition. */
     drmgr_set_tls_field(ctx, tls_index, NULL);
+    if (d->boundary_stack)
+      dr_thread_free(ctx, d->boundary_stack, BOUNDARY_STACK_BYTES);
     dr_thread_free(ctx, d, sizeof(*d));
     return;
   }
@@ -710,6 +822,8 @@ static void thread_exit(void *ctx) {
   dr_mutex_unlock(state_lock);
   if (d) {
     drmgr_set_tls_field(ctx, tls_index, NULL);
+    if (d->boundary_stack)
+      dr_thread_free(ctx, d->boundary_stack, BOUNDARY_STACK_BYTES);
     dr_thread_free(ctx, d, sizeof(*d));
   }
 }
@@ -798,10 +912,11 @@ static uint32_t suffix_memory_bytes(instr_t *start) {
  */
 static void observe_rep(app_pc pc, int opcode, int bytes, int count_reg) {
   void *drcontext = dr_get_current_drcontext();
-  thread_data_t *data = drmgr_get_tls_field(drcontext, tls_index);
+  thread_data_t *data = thread_state(drcontext);
   if (data == NULL)
     fail("REP observation without thread state");
   settle_restart(data);
+  settle_write_checkpoint(data);
   set_fast_until(data, 0);
   uint64_t repeats = 0;
   if (bytes != 0) {
@@ -880,7 +995,7 @@ static void observe_rep(app_pc pc, int opcode, int bytes, int count_reg) {
 static void cpu_policy_exit(void) {
   invalidate_live_work();
   void *ctx = dr_get_current_drcontext();
-  thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
+  thread_data_t *d = thread_state(ctx);
   if (!d)
     fail("CPU policy exit without valid thread state");
   if (d->child_pid) {
@@ -922,11 +1037,11 @@ static inline thread_data_t *accounting_thread_data(void) {
   if (probe_l1d)
     return probe_thread_data;
 #endif
-  return drmgr_get_tls_field(dr_get_current_drcontext(), tls_index);
+  return thread_state(dr_get_current_drcontext());
 }
 
-static thread_data_t *charge_block(int instructions, app_pc first_pc) {
-  thread_data_t *data = accounting_thread_data();
+SCALAR static thread_data_t *charge_block_state(thread_data_t *data, int instructions,
+                                                app_pc first_pc) {
   if (data == NULL || instructions <= 0)
     fail("instruction count without valid thread state");
   if (data->restart_pc) {
@@ -939,7 +1054,7 @@ static thread_data_t *charge_block(int instructions, app_pc first_pc) {
       data->restart_pc = NULL;
     }
   }
-  data->write_pc = NULL;
+  clear_write_checkpoint(data);
   if (live_work)
     publish_live_work(data, false);
   if (UINT64_MAX - data->instructions < (uint64_t)instructions) {
@@ -955,6 +1070,10 @@ static thread_data_t *charge_block(int instructions, app_pc first_pc) {
   return data;
 }
 
+static thread_data_t *charge_block(int instructions, app_pc first_pc) {
+  return charge_block_state(accounting_thread_data(), instructions, first_pc);
+}
+
 static void count_block(int instructions, app_pc first_pc) {
   charge_block(instructions, first_pc);
 }
@@ -963,10 +1082,17 @@ static void count_block(int instructions, app_pc first_pc) {
  * and charges its count. REP can introduce a publishable byte delta, and replay
  * can roll back instructions or require a restart. Both callbacks disarm the
  * window. A syscall flush publishes early and can only move the boundary later. */
-static void charge_boundary(int count, app_pc first_pc) {
-  thread_data_t *d = charge_block(count, first_pc);
+SCALAR static void charge_boundary_state(thread_data_t *d, int count, app_pc first_pc) {
+  if (d)
+    settle_live_count(d);
+  uint64_t base = d ? d->instructions : 0;
+  d = charge_block_state(d, count, first_pc);
   if (!d)
     return;
+  /* A flat live entry leaves its charge to this callback. Keep the count it
+   * started from, so that relocation can undo exactly this charge. */
+  d->entry_base = base;
+  d->entry_room = ENTRY_ROOM_CHARGED;
   set_fast_until(d, 0);
   if (d->restart_pc || d->instructions > UINT64_MAX - INT32_MAX - LIVE_WORK_BATCH)
     return;
@@ -976,6 +1102,10 @@ static void charge_boundary(int count, app_pc first_pc) {
     set_fast_until(d, UINT64_MAX - INT32_MAX);
   else if (d->published_instructions <= d->instructions)
     set_fast_until(d, d->published_instructions + LIVE_WORK_BATCH);
+}
+
+static void charge_boundary(int count, app_pc first_pc) {
+  charge_boundary_state(accounting_thread_data(), count, first_pc);
 }
 
 static opnd_t raw_slot(uint slot) {
@@ -993,8 +1123,9 @@ static opnd_t state_field(size_t offset) {
  * restore_state() can recognize partial entries by those two instructions. */
 enum { FLAT_PREFIX = 1, FLAT_BODY = 2, FLAT_SUFFIX = 4, FLAT_ALL = 7 };
 
-/* With live, the prefix leaves ECX zero when live_room is negative, which the
- * caller branches on, and the body also counts live_room down. */
+/* With live, the prefix leaves ECX zero unless live_room is negative, which
+ * the caller branches on, and the body counts live_room down instead of
+ * adding to instructions. */
 static void emit_flat_parts(void *ctx, instrlist_t *bb, instr_t *where, int count, int parts,
                             bool live) {
   opnd_t value = opnd_create_reg(DR_REG_RCX), state = opnd_create_reg(DR_REG_R11);
@@ -1002,10 +1133,11 @@ static void emit_flat_parts(void *ctx, instrlist_t *bb, instr_t *where, int coun
 #define INSERT(i) \
   (where ? instrlist_meta_preinsert(bb, where, (i)) : instrlist_meta_append(bb, (i)))
   if (parts & FLAT_PREFIX) {
-  instr_t *wrapped = INSTR_CREATE_label(ctx), *checked = INSTR_CREATE_label(ctx);
   INSERT(INSTR_CREATE_mov_st(ctx, raw_slot(RAW_TLS_SPILL_RCX), value));
   INSERT(INSTR_CREATE_mov_st(ctx, raw_slot(RAW_TLS_SPILL_R11), state));
   INSERT(INSTR_CREATE_mov_ld(ctx, state, raw_slot(RAW_TLS_STATE)));
+  if (!live) {
+  instr_t *wrapped = INSTR_CREATE_label(ctx), *checked = INSTR_CREATE_label(ctx);
   /* A block adds at most INT_MAX. On x86-64 its most significant byte
    * can increase by at most one, and goes from nonzero to zero only on wrap.
    * Check the completed entry before replacing its base. This keeps the new
@@ -1021,36 +1153,34 @@ static void emit_flat_parts(void *ctx, instrlist_t *bb, instr_t *where, int coun
   INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, counter_overflows)),
                              OPND_CREATE_INT32(1)));
   INSERT(checked);
-  if (live) {
-    /* Both the slow callback and the inline body may charge this entry.
-     * Save the base before taking either branch so relocation can undo the
-     * charge even immediately after returning from the callback. */
-    INSERT(INSTR_CREATE_mov_ld(ctx, value, state_field(offsetof(thread_data_t, instructions))));
-    INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, entry_base)), value));
-    /* live_room is far below 2^56 in magnitude, so its top byte is 0xff
-     * exactly when it is negative. ECX = (top byte + 1) & 0xff is then zero. */
+  } else {
+    /* Either the boundary callback or the inline body charges this entry.
+     * Save the countdown before taking either branch so relocation can undo
+     * the charge even immediately after returning from the callback. The
+     * callback and settle_live_count() check the count for overflow. */
+    INSERT(INSTR_CREATE_mov_ld(ctx, value, state_field(offsetof(thread_data_t, live_room))));
+    INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, entry_room)), value));
+    /* live_room is below 2^56 in magnitude, so its top byte is zero exactly
+     * when it is non-negative and 0xff when it is negative. */
     INSERT(INSTR_CREATE_movzx(ctx, low_reg,
                               OPND_CREATE_MEM8(DR_REG_R11, offsetof(thread_data_t, live_room) + 7)));
-    INSERT(INSTR_CREATE_lea(ctx, low_reg,
-                            opnd_create_base_disp(DR_REG_ECX, DR_REG_NULL, 0, 1, OPSZ_lea)));
-    INSERT(INSTR_CREATE_movzx(ctx, low_reg, opnd_create_reg(DR_REG_CL)));
   }
   }
   if (parts & FLAT_BODY) {
   if (live) {
+    /* The countdown is the only counter a live entry updates. */
     INSERT(INSTR_CREATE_mov_ld(ctx, value, state_field(offsetof(thread_data_t, live_room))));
     INSERT(INSTR_CREATE_lea(ctx, value,
                             opnd_create_base_disp(DR_REG_RCX, DR_REG_NULL, 0, -count, OPSZ_lea)));
     INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, live_room)), value));
-  }
-  INSERT(INSTR_CREATE_mov_ld(ctx, value, state_field(offsetof(thread_data_t, instructions))));
-  if (!live)
+  } else {
+    INSERT(INSTR_CREATE_mov_ld(ctx, value, state_field(offsetof(thread_data_t, instructions))));
     INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, entry_base)), value));
-  INSERT(INSTR_CREATE_lea(ctx, value,
-                          opnd_create_base_disp(DR_REG_RCX, DR_REG_NULL, 0, count, OPSZ_lea)));
-  INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, instructions)), value));
-  INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, write_pc)),
-                             OPND_CREATE_INT32(0)));
+    INSERT(INSTR_CREATE_lea(ctx, value,
+                            opnd_create_base_disp(DR_REG_RCX, DR_REG_NULL, 0, count, OPSZ_lea)));
+    INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, instructions)), value));
+  }
+  INSERT(INSTR_CREATE_mov_st(ctx, raw_slot(RAW_TLS_WRITE), OPND_CREATE_INT32(0)));
   }
   if (parts & FLAT_SUFFIX) {
   INSERT(INSTR_CREATE_mov_ld(ctx, state, raw_slot(RAW_TLS_SPILL_R11)));
@@ -1069,15 +1199,12 @@ static void emit_flat_charge(void *ctx, instrlist_t *bb, instr_t *where, int cou
  * are encoded once and inserted as one raw copy. A valid opcode and an empty
  * operand list keep the runtime from decoding the bundle; restore_state()
  * decodes the code cache itself. */
-enum { FLAT_ENTRY_CACHE = 1024, SEQUENCE_BYTES = 128 };
+enum { FLAT_ENTRY_CACHE = 1024, SEQUENCE_BYTES = 192 };
 typedef struct {
   uint length;
   byte bytes[SEQUENCE_BYTES];
 } encoded_sequence_t;
 static encoded_sequence_t *flat_entries[FLAT_ENTRY_CACHE + 1];
-/* Live entries: one prefix and suffix, and a body per block size. */
-static encoded_sequence_t *flat_live_prefix, *flat_live_suffix;
-static encoded_sequence_t *flat_live_bodies[FLAT_ENTRY_CACHE + 1];
 
 static uint encode_sequence(void *ctx, instrlist_t *ilist, byte *buf) {
   byte *end = instrlist_encode(ctx, ilist, buf, true);
@@ -1129,10 +1256,12 @@ static patched_template_t *publish_template(void *ctx, patched_template_t **slot
 }
 
 static void insert_patched(void *ctx, instrlist_t *bb, instr_t *where,
-                           const patched_template_t *t, const uint32_t *value) {
+                           const patched_template_t *t, const uint32_t *value, uint values) {
+  if (values != t->immediates)
+    fail("patched template does not match its immediates");
   byte code[SEQUENCE_BYTES];
   memcpy(code, t->code.bytes, t->code.length);
-  for (uint i = 0; i < t->immediates; ++i)
+  for (uint i = 0; i < values; ++i)
     memcpy(code + t->immediate[i], &value[i], sizeof(value[i]));
   insert_bundle(ctx, bb, where, code, t->code.length);
 }
@@ -1164,64 +1293,68 @@ static void insert_flat_charge(void *ctx, instrlist_t *bb, instr_t *where, int c
   insert_bundle(ctx, bb, where, entry->bytes, entry->length);
 }
 
-static void insert_flat_part(void *ctx, instrlist_t *bb, instr_t *where,
-                             encoded_sequence_t **slot, int count, int parts) {
-  if (count <= 0 || count > FLAT_ENTRY_CACHE) {
-    emit_flat_parts(ctx, bb, where, count, parts, true);
-    return;
-  }
-  encoded_sequence_t *entry = cached_flat_parts(ctx, slot, count, parts, true);
-  insert_bundle(ctx, bb, where, entry->bytes, entry->length);
-}
-
-/* A live entry's callback arguments: the block count and the two halves of
- * its first address, stored through R11 (the accounting state). */
-enum { BOUNDARY_COUNT, BOUNDARY_PC_LO, BOUNDARY_PC_HI, BOUNDARY_IMMEDIATES };
-static patched_template_t *boundary_template;
-
-static const patched_template_t *live_boundary_template(void *ctx) {
-  patched_template_t *t = __atomic_load_n(&boundary_template, __ATOMIC_ACQUIRE);
-  if (t)
-    return t;
-  static const size_t fields[BOUNDARY_IMMEDIATES] = {
-      offsetof(thread_data_t, boundary_count), offsetof(thread_data_t, boundary_pc),
-      offsetof(thread_data_t, boundary_pc) + 4};
-  instrlist_t *ilist = instrlist_create(ctx);
-  instr_t *imm[BOUNDARY_IMMEDIATES];
-  for (int i = 0; i < BOUNDARY_IMMEDIATES; ++i) {
-    imm[i] = INSTR_CREATE_mov_st(ctx, OPND_CREATE_MEM32(DR_REG_R11, (int)fields[i]),
-                                 OPND_CREATE_INT32(0x7fffffff));
-    instrlist_meta_append(ilist, imm[i]);
-  }
-  return publish_template(ctx, &boundary_template, ilist, imm, BOUNDARY_IMMEDIATES,
-                          "cannot lay out the live boundary arguments");
-}
-
-/* The runtime encodes every inserted instruction when it builds a block, and
- * a clean call's context switch is most of a live entry. Live entries
- * therefore share one routine that performs the boundary clean call. An
- * entry stores the arguments through R11 and the address to resume at in
- * RCX, both of which the clean call preserves. The routine is client memory
- * outside the code cache: like a callback, the runtime defers asynchronous
- * signals that arrive there and does not translate a thread stopped there. */
+/* The runtime encodes every inserted instruction when it builds a block, so
+ * live entries share one routine that makes the boundary callback. An entry
+ * stores the arguments through R11 and the address to resume at in RCX, and
+ * jumps through the thread's boundary_routine.
+ *
+ * The routine is this client's own context switch, not a runtime clean call.
+ * The callback reads and writes only this thread's accounting state, so the
+ * switch keeps what the C calling convention lets it change and nothing more:
+ * the flags and the nine caller-saved general registers. charge_boundary_state()
+ * and everything it calls are compiled for the general registers only (SCALAR),
+ * so vector and x87 state is never touched and needs no save. The application's
+ * stack may be invalid or hold a red zone, so the callback runs on a private
+ * per-thread stack, with the flags cleared as a C function expects (direction
+ * and alignment-check included).
+ *
+ * The routine is client memory outside the code cache: like a callback, the
+ * runtime defers asynchronous signals that arrive there and does not translate
+ * a thread stopped there. */
 static byte *boundary_routine;
+
+static void emit_boundary_routine(void *ctx, instrlist_t *ilist) {
+  static const reg_id_t saved[] = {DR_REG_RAX, DR_REG_RCX, DR_REG_RDX, DR_REG_RSI, DR_REG_RDI,
+                                   DR_REG_R8,  DR_REG_R9,  DR_REG_R10, DR_REG_R11};
+  enum { SAVED = sizeof(saved) / sizeof(saved[0]) };
+  /* With the flags that is ten pushes from a 16-byte aligned top, which leaves
+   * the stack aligned at the call. */
+  _Static_assert((SAVED + 1) % 2 == 0, "the boundary callback needs an aligned stack");
+#define APPEND(i) instrlist_meta_append(ilist, (i))
+#define FIELD(field) OPND_CREATE_MEMPTR(DR_REG_R11, offsetof(thread_data_t, field))
+  APPEND(INSTR_CREATE_mov_st(ctx, FIELD(boundary_rsp), opnd_create_reg(DR_REG_RSP)));
+  APPEND(INSTR_CREATE_mov_ld(ctx, opnd_create_reg(DR_REG_RSP), FIELD(boundary_stack_top)));
+  APPEND(INSTR_CREATE_pushf(ctx));
+  APPEND(INSTR_CREATE_push_imm(ctx, OPND_CREATE_INT8(0)));
+  APPEND(INSTR_CREATE_popf(ctx));
+  for (int i = 0; i < SAVED; ++i)
+    APPEND(INSTR_CREATE_push(ctx, opnd_create_reg(saved[i])));
+  APPEND(XINST_CREATE_move(ctx, opnd_create_reg(DR_REG_RDI), opnd_create_reg(DR_REG_R11)));
+  APPEND(INSTR_CREATE_mov_ld(ctx, opnd_create_reg(DR_REG_ESI),
+                             OPND_CREATE_MEM32(DR_REG_R11, offsetof(thread_data_t, boundary_count))));
+  APPEND(INSTR_CREATE_mov_ld(ctx, opnd_create_reg(DR_REG_RDX), FIELD(boundary_pc)));
+  APPEND(INSTR_CREATE_mov_imm(ctx, opnd_create_reg(DR_REG_RAX),
+                              OPND_CREATE_INTPTR((ptr_int_t)(void *)charge_boundary_state)));
+  APPEND(INSTR_CREATE_call_ind(ctx, opnd_create_reg(DR_REG_RAX)));
+  for (int i = SAVED - 1; i >= 0; --i)
+    APPEND(INSTR_CREATE_pop(ctx, opnd_create_reg(saved[i])));
+  APPEND(INSTR_CREATE_popf(ctx));
+  APPEND(INSTR_CREATE_mov_ld(ctx, opnd_create_reg(DR_REG_RSP), FIELD(boundary_rsp)));
+  APPEND(INSTR_CREATE_jmp_ind(ctx, opnd_create_reg(DR_REG_RCX)));
+#undef FIELD
+#undef APPEND
+}
 
 static byte *live_boundary_routine(void *ctx) {
   byte *routine = __atomic_load_n(&boundary_routine, __ATOMIC_ACQUIRE);
   if (routine)
     return routine;
   size_t size = dr_page_size();
-  /* Reachable from the code cache, as the entries jump here directly. */
   byte *fresh = dr_nonheap_alloc(size, DR_MEMPROT_READ | DR_MEMPROT_WRITE);
   if (!fresh)
     fail("cannot allocate the live boundary routine");
   instrlist_t *ilist = instrlist_create(ctx);
-  instr_t *back = INSTR_CREATE_jmp_ind(ctx, opnd_create_reg(DR_REG_RCX));
-  instrlist_meta_append(ilist, back);
-  dr_insert_clean_call_ex(ctx, ilist, back, (void *)charge_boundary,
-                          DR_CLEANCALL_ALWAYS_OUT_OF_LINE, 2,
-                          OPND_CREATE_MEM32(DR_REG_R11, offsetof(thread_data_t, boundary_count)),
-                          OPND_CREATE_MEMPTR(DR_REG_R11, offsetof(thread_data_t, boundary_pc)));
+  emit_boundary_routine(ctx, ilist);
   byte *end = instrlist_encode_to_copy(ctx, ilist, fresh, fresh, fresh + size, true);
   instrlist_clear_and_destroy(ctx, ilist);
   if (!end || !dr_memory_protect(fresh, size, DR_MEMPROT_READ | DR_MEMPROT_EXEC))
@@ -1233,39 +1366,80 @@ static byte *live_boundary_routine(void *ctx) {
   return routine;
 }
 
+/* Give a thread what its live entries need to reach the boundary callback. */
+static void set_boundary_state(void *ctx, thread_data_t *d) {
+  if (!flat_inline || !live_work)
+    return;
+  d->boundary_routine = live_boundary_routine(ctx);
+  if (!d->boundary_stack) {
+    d->boundary_stack = dr_thread_alloc(ctx, BOUNDARY_STACK_BYTES);
+    if (!d->boundary_stack)
+      fail("cannot allocate the live boundary stack");
+  }
+  d->boundary_stack_top =
+      (byte *)(((ptr_uint_t)d->boundary_stack + BOUNDARY_STACK_BYTES) & ~(ptr_uint_t)15);
+}
+
 /* Live clock: the flag-free entry also counts live_room down and takes the
  * existing boundary callback when it is negative, so publication happens at
  * the same block entries as on the callback path. The prefix checkpoints
  * the count while the scratch registers are spilled. Relocation can roll
  * either path back until the suffix restores RCX. The slow path passes this
- * block's arguments to the boundary routine, which resumes at the suffix. */
-static void insert_flat_live_entry(void *ctx, instrlist_t *bb, instr_t *where, int count,
-                                   app_pc first_pc, byte *routine) {
-  instr_t *slow = INSTR_CREATE_label(ctx), *fast = INSTR_CREATE_label(ctx);
-  instr_t *resume = INSTR_CREATE_label(ctx);
-  insert_flat_part(ctx, bb, where, &flat_live_prefix, 1, FLAT_PREFIX);
-  instrlist_meta_preinsert(bb, where, INSTR_CREATE_jecxz(ctx, opnd_create_instr(slow)));
-  instrlist_meta_preinsert(bb, where, INSTR_CREATE_jmp(ctx, opnd_create_instr(fast)));
-  instrlist_meta_preinsert(bb, where, slow);
-  const uint32_t value[BOUNDARY_IMMEDIATES] = {
-      (uint32_t)count, (uint32_t)(ptr_uint_t)first_pc,
-      (uint32_t)((ptr_uint_t)first_pc >> 32)};
-  insert_patched(ctx, bb, where, live_boundary_template(ctx), value);
-  instrlist_meta_preinsert(bb, where,
-                           INSTR_CREATE_lea(ctx, opnd_create_reg(DR_REG_RCX),
-                                            opnd_create_mem_instr(resume, 0, OPSZ_lea)));
-  instrlist_meta_preinsert(bb, where, INSTR_CREATE_jmp(ctx, opnd_create_pc(routine)));
-  instrlist_meta_preinsert(bb, where, fast);
-  insert_flat_part(ctx, bb, where,
-                   count > 0 && count <= FLAT_ENTRY_CACHE ? &flat_live_bodies[count] : NULL,
-                   count, FLAT_BODY);
-  instrlist_meta_preinsert(bb, where, resume);
-  insert_flat_part(ctx, bb, where, &flat_live_suffix, 1, FLAT_SUFFIX);
+ * block's arguments to the boundary routine, which resumes at the suffix.
+ * Every branch is relative to the entry itself or goes through the thread's
+ * state, so the entry can be copied to any address. address receives the two
+ * stores of the block's first address. */
+enum { ENTRY_PC_LOW, ENTRY_PC_HIGH, ENTRY_IMMEDIATES };
+
+static void emit_flat_live_entry(void *ctx, instrlist_t *bb, instr_t *where, int count,
+                                 app_pc first_pc, instr_t **address) {
+#define INSERT(i) \
+  (where ? instrlist_meta_preinsert(bb, where, (i)) : instrlist_meta_append(bb, (i)))
+  instr_t *fast = INSTR_CREATE_label(ctx), *resume = INSTR_CREATE_label(ctx);
+  emit_flat_parts(ctx, bb, where, 1, FLAT_PREFIX, true);
+  INSERT(INSTR_CREATE_jecxz(ctx, opnd_create_instr(fast)));
+  INSERT(INSTR_CREATE_mov_st(ctx,
+                             OPND_CREATE_MEM32(DR_REG_R11, offsetof(thread_data_t, boundary_count)),
+                             OPND_CREATE_INT32(count)));
+  for (int i = 0; i < ENTRY_IMMEDIATES; ++i) {
+    instr_t *half = INSTR_CREATE_mov_st(
+        ctx, OPND_CREATE_MEM32(DR_REG_R11, (int)offsetof(thread_data_t, boundary_pc) + 4 * i),
+        OPND_CREATE_INT32((int)(uint32_t)((ptr_uint_t)first_pc >> (32 * i))));
+    INSERT(half);
+    if (address)
+      address[i] = half;
+  }
+  INSERT(INSTR_CREATE_lea(ctx, opnd_create_reg(DR_REG_RCX),
+                          opnd_create_mem_instr(resume, 0, OPSZ_lea)));
+  INSERT(INSTR_CREATE_jmp_ind(
+      ctx, OPND_CREATE_MEMPTR(DR_REG_R11, offsetof(thread_data_t, boundary_routine))));
+  INSERT(fast);
+  emit_flat_parts(ctx, bb, where, count, FLAT_BODY, true);
+  INSERT(resume);
+  emit_flat_parts(ctx, bb, where, 1, FLAT_SUFFIX, true);
+#undef INSERT
 }
+
+/* One encoded entry per block size, with the block's first address patched. */
+static patched_template_t *flat_live_entries[FLAT_ENTRY_CACHE + 1];
 
 static void insert_flat_live_charge(void *ctx, instrlist_t *bb, instr_t *where, int count,
                                     app_pc first_pc) {
-  insert_flat_live_entry(ctx, bb, where, count, first_pc, live_boundary_routine(ctx));
+  if (count <= 0 || count > FLAT_ENTRY_CACHE) {
+    emit_flat_live_entry(ctx, bb, where, count, first_pc, NULL);
+    return;
+  }
+  const patched_template_t *t = __atomic_load_n(&flat_live_entries[count], __ATOMIC_ACQUIRE);
+  if (!t) {
+    instrlist_t *ilist = instrlist_create(ctx);
+    instr_t *address[ENTRY_IMMEDIATES];
+    emit_flat_live_entry(ctx, ilist, NULL, count, NULL, address);
+    t = publish_template(ctx, &flat_live_entries[count], ilist, address, ENTRY_IMMEDIATES,
+                         "cannot lay out the live entry");
+  }
+  const uint32_t value[ENTRY_IMMEDIATES] = {(uint32_t)(ptr_uint_t)first_pc,
+                                            (uint32_t)((ptr_uint_t)first_pc >> 32)};
+  insert_patched(ctx, bb, where, t, value, ENTRY_IMMEDIATES);
 }
 
 static bool is_raw_slot(opnd_t opnd, uint slot) {
@@ -1285,8 +1459,9 @@ static bool is_reg(opnd_t opnd, reg_id_t reg) {
 /* The runtime can translate a thread stopped inside this client's inline
  * sequences (synchronization, relocation). Recover rcx/r11 from the private
  * spill slots. If a relocated thread will re-enter a flat block whose charge
- * has already been stored, return the counter to its pre-entry value: the
- * re-entry charges the block again. Restoration is idempotent. */
+ * has already been made, take that charge back: the re-entry charges the
+ * block again. Restoration is idempotent, and a query (!restore_memory)
+ * changes nothing. */
 static bool restore_state(void *drcontext, bool restore_memory, dr_restore_state_info_t *info) {
   if (!raw_tls_enabled || !info || !info->raw_mcontext || !info->mcontext ||
       !info->fragment_info.cache_start_pc)
@@ -1295,7 +1470,7 @@ static bool restore_state(void *drcontext, bool restore_memory, dr_restore_state
   if (!d || !d->raw_tls_base)
     return true;
   byte *pc = info->fragment_info.cache_start_pc, *stop = info->raw_mcontext->pc;
-  bool spilled_rcx = false, spilled_r11 = false, checkpointed = false;
+  bool spilled_rcx = false, spilled_r11 = false, checkpointed = false, live_entry = false;
   instr_t ins;
   instr_init(drcontext, &ins);
   for (uint n = 0; pc != NULL && pc < stop && n < 4096; ++n) {
@@ -1313,8 +1488,11 @@ static bool restore_state(void *drcontext, bool restore_memory, dr_restore_state
       else if (flat_inline && spilled_rcx && spilled_r11 && is_reg(src, DR_REG_RCX) &&
                opnd_is_base_disp(dst) && opnd_get_base(dst) == DR_REG_R11 &&
                opnd_get_index(dst) == DR_REG_NULL &&
-               opnd_get_disp(dst) == (int)offsetof(thread_data_t, entry_base))
+               (opnd_get_disp(dst) == (int)offsetof(thread_data_t, entry_base) ||
+                opnd_get_disp(dst) == (int)offsetof(thread_data_t, entry_room))) {
         checkpointed = true;
+        live_entry = opnd_get_disp(dst) == (int)offsetof(thread_data_t, entry_room);
+      }
     } else if (op == OP_mov_ld && instr_num_dsts(&ins) == 1 && instr_num_srcs(&ins) == 1) {
       opnd_t dst = instr_get_dst(&ins, 0), src = instr_get_src(&ins, 0);
       if (is_raw_slot(src, RAW_TLS_SPILL_RCX) && is_reg(dst, DR_REG_RCX)) {
@@ -1332,17 +1510,33 @@ static bool restore_state(void *drcontext, bool restore_memory, dr_restore_state
     info->mcontext->xcx = slots[RAW_TLS_SPILL_RCX];
   if (spilled_r11)
     info->mcontext->r11 = slots[RAW_TLS_SPILL_R11];
-  if (checkpointed && restore_memory && d->instructions != d->entry_base) {
-    d->instructions = d->entry_base;
-    if (live_work) {
-      /* The boundary callback may have admitted a pending REP retry before
-       * relocation. Its first resumed block will enter again. Keep already
-       * published prior work and re-evaluate the boundary for this entry. */
-      if (d->restart_pc && d->restart_rep && d->instructions == d->restart_base)
-        d->restart_entered = false;
-      set_fast_until(d, 0);
-    }
+  if (!checkpointed || !restore_memory)
+    return true;
+  if (!live_entry) {
+    if (d->instructions != d->entry_base)
+      d->instructions = d->entry_base;
+    return true;
   }
+  /* A live entry is charged by its inline body, which moves live_room away
+   * from the saved entry_room, or by the boundary callback, which marks the
+   * entry and keeps the count it started from. */
+  settle_live_count(d);
+  if (d->entry_room == ENTRY_ROOM_CHARGED) {
+    if (d->instructions == d->entry_base)
+      return true;
+    d->instructions = d->entry_base;
+  } else if (d->entry_room >= 0 && d->live_room != d->entry_room) {
+    d->instructions -= (uint64_t)d->entry_room - (uint64_t)d->live_room;
+  } else {
+    return true; /* Not charged yet. */
+  }
+  d->entry_room = -1;
+  /* The boundary callback may have admitted a pending REP retry before
+   * relocation. Its first resumed block will enter again. Keep already
+   * published prior work and re-evaluate the boundary for this entry. */
+  if (d->restart_pc && d->restart_rep && d->instructions == d->restart_base)
+    d->restart_entered = false;
+  set_fast_until(d, 0);
   return true;
 }
 
@@ -1436,6 +1630,7 @@ static thread_data_t *before_write(app_pc pc, app_pc next_pc, int suffix) {
   thread_data_t *data = accounting_thread_data();
   if (data == NULL)
     fail("write checkpoint without thread state");
+  clear_write_checkpoint(data);
   record_write_checkpoint(data, pc, next_pc, suffix);
   return data;
 }
@@ -1489,15 +1684,49 @@ static const patched_template_t *write_checkpoint_template(void *ctx) {
                           "cannot lay out the write checkpoint");
 }
 
-static void insert_write_checkpoint(void *ctx, instrlist_t *bb, instr_t *where,
+/* Flat write checkpoint: the two halves of the packed word, stored straight
+ * to the raw TLS slot. It needs no scratch register, so restore_state() has
+ * nothing to recover inside it. */
+enum { PACKED_LOW, PACKED_HIGH, PACKED_IMMEDIATES };
+static patched_template_t *packed_checkpoint_template;
+
+static const patched_template_t *packed_write_template(void *ctx) {
+  patched_template_t *t = __atomic_load_n(&packed_checkpoint_template, __ATOMIC_ACQUIRE);
+  if (t)
+    return t;
+  instrlist_t *ilist = instrlist_create(ctx);
+  instr_t *imm[PACKED_IMMEDIATES];
+  for (int i = 0; i < PACKED_IMMEDIATES; ++i) {
+    opnd_t half = raw_slot(RAW_TLS_WRITE);
+    opnd_set_disp(&half, opnd_get_disp(half) + 4 * i);
+    opnd_set_size(&half, OPSZ_4);
+    imm[i] = INSTR_CREATE_mov_st(ctx, half, OPND_CREATE_INT32(0x7fffffff));
+    instrlist_meta_append(ilist, imm[i]);
+  }
+  return publish_template(ctx, &packed_checkpoint_template, ilist, imm, PACKED_IMMEDIATES,
+                          "cannot lay out the packed write checkpoint");
+}
+
+/* Returns false when this write needs the callback instead: flat code only
+ * stores checkpoints that fit the packed word. */
+static bool insert_write_checkpoint(void *ctx, instrlist_t *bb, instr_t *where,
                                     app_pc pc, app_pc next_pc, int suffix) {
+  if (flat_inline) {
+    uint64_t word;
+    if (!pack_write_checkpoint(pc, next_pc, suffix, &word))
+      return false;
+    const uint32_t value[PACKED_IMMEDIATES] = {(uint32_t)word, (uint32_t)(word >> 32)};
+    insert_patched(ctx, bb, where, packed_write_template(ctx), value, PACKED_IMMEDIATES);
+    return true;
+  }
   if (raw_tls_enabled) {
     const uint32_t value[CHECKPOINT_IMMEDIATES] = {
         (uint32_t)(ptr_uint_t)pc, (uint32_t)((ptr_uint_t)pc >> 32),
         (uint32_t)(ptr_uint_t)next_pc, (uint32_t)((ptr_uint_t)next_pc >> 32),
         (uint32_t)suffix};
-    insert_patched(ctx, bb, where, write_checkpoint_template(ctx), value);
-    return;
+    insert_patched(ctx, bb, where, write_checkpoint_template(ctx), value,
+                   CHECKPOINT_IMMEDIATES);
+    return true;
   }
   const reg_id_t data = DR_REG_R11;
   if (raw_tls_enabled)
@@ -1522,6 +1751,7 @@ static void insert_write_checkpoint(void *ctx, instrlist_t *bb, instr_t *where,
                                                             raw_slot(RAW_TLS_SPILL_R11)));
   else
     dr_restore_reg(ctx, bb, where, data, SPILL_SLOT_1);
+  return true;
 }
 
 static void code_replay(void *ctx, int reason, app_pc source_pc,
@@ -1530,7 +1760,7 @@ static void code_replay(void *ctx, int reason, app_pc source_pc,
   if (probe_l1d && reason != DR_DURANTE_REPLAY_ENTRY)
     probe_partial_block = true;
 #endif
-  thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
+  thread_data_t *d = thread_state(ctx);
   if (!d) {
     invalidate_live_work();
     __atomic_store_n(&replay_without_tls, 1, __ATOMIC_RELAXED);
@@ -1538,6 +1768,7 @@ static void code_replay(void *ctx, int reason, app_pc source_pc,
   }
   check_flat_counter(d);
   settle_restart(d);
+  settle_write_checkpoint(d);
   set_fast_until(d, 0);
   if (reason == DR_DURANTE_REPLAY_ENTRY) {
     /* Cache validation ran before client entry instrumentation. Nothing was
@@ -1605,14 +1836,14 @@ static void code_replay(void *ctx, int reason, app_pc source_pc,
 
 static void kernel_xfer(void *ctx, const dr_kernel_xfer_info_t *info) {
   (void)info;
-  thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
+  thread_data_t *d = thread_state(ctx);
   if (!d)
     return;
   settle_restart(d);
   /* Signal handlers can call the same code at the same PC with another BB
    * suffix. PC equality cannot authenticate an interrupted TLS checkpoint.
    * An unrelated earlier signal does not make later JIT work invalid. */
-  d->write_pc = NULL;
+  clear_write_checkpoint(d);
   if (d->restart_pc) {
     counter_error(&d->replay_error);
     d->restart_pc = NULL;
@@ -1645,7 +1876,7 @@ static void cpu_feature_violation(int feature) {
     cpu_policy_exit();
   }
   void *ctx = dr_get_current_drcontext();
-  thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
+  thread_data_t *d = thread_state(ctx);
   if (!d || (feature != CPU_POLICY_AVX && feature != CPU_POLICY_SIMD))
     fail("CPU policy observation without valid thread state");
   /* route_event keeps a shared-VM/vfork child's report out of its parent's
@@ -1661,7 +1892,7 @@ static void cpu_feature_violation(int feature) {
 /* The profile has no defined value for this request. Charge the instruction
  * as usual but make the whole measurement unusable. */
 static void cpuid_request_invalid(void *ctx) {
-  thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
+  thread_data_t *d = thread_state(ctx);
   if (!d)
     fail("CPUID profile observation without valid thread state");
   counter_error(&d->cpuid_error);
@@ -1685,7 +1916,7 @@ static bool select_inline_block(void *ctx, instrlist_t *bb, bool translating,
     return true;
   if (translating)
     return false;
-  thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
+  thread_data_t *d = thread_state(ctx);
   if (!d)
     return false;
   /* Static programs commonly enter their main loop after parsing input. Keep
@@ -1787,8 +2018,8 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
                            OPND_CREATE_INT32(suffix),
                            OPND_CREATE_INT32((int)suffix_memory_bytes(where)),
                            OPND_CREATE_INT32((int)instruction_memory_bytes(where)));
-    } else if (!latency_bound_enabled && inline_write) {
-      insert_write_checkpoint(drcontext, bb, where, pc, next_pc, suffix);
+    } else if (!latency_bound_enabled && inline_write &&
+               insert_write_checkpoint(drcontext, bb, where, pc, next_pc, suffix)) {
       /* Flat layouts depend only on the block, so retranslation reproduces them. */
       if (!cache_probe_enabled() && !flat_inline)
         flags = DR_EMIT_STORE_TRANSLATIONS;
@@ -1859,7 +2090,7 @@ static bool pre_syscall(void *ctx, int number) {
   if (static_text_end && !__atomic_load_n(&static_text_revoked, __ATOMIC_ACQUIRE) &&
       (x32_syscall(number) || changes_static_text(ctx, number)))
     __atomic_store_n(&static_text_revoked, true, __ATOMIC_RELEASE);
-  thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
+  thread_data_t *d = thread_state(ctx);
   if (!d)
     fail("syscall without TLS");
   if (live_work && !lifecycle_syscall(number)) {
@@ -1969,7 +2200,7 @@ static void post_syscall(void *ctx, int number) {
   bool ordinary = live_work && !lifecycle_syscall(number);
   if (ordinary && !static_input_syscall(number))
     return;
-  thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
+  thread_data_t *d = thread_state(ctx);
   if (!d)
     fail("post syscall without TLS");
   ptr_int_t result = (ptr_int_t)dr_syscall_get_result(ctx);
@@ -2001,7 +2232,7 @@ static void post_syscall(void *ctx, int number) {
 }
 static dr_signal_action_t signal_event(void *ctx, dr_siginfo_t *info) {
   (void)info;
-  thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
+  thread_data_t *d = thread_state(ctx);
   if (!d || d->signals == UINT64_MAX)
     fail("signal accounting overflow");
   invalidate_live_work();
@@ -2009,7 +2240,7 @@ static dr_signal_action_t signal_event(void *ctx, dr_siginfo_t *info) {
   return DR_SIGNAL_DELIVER;
 }
 static void fork_init(void *ctx) {
-  thread_data_t *inherited = drmgr_get_tls_field(ctx, tls_index);
+  thread_data_t *inherited = thread_state(ctx);
   if (inherited && (inherited->pending_clone_flags & CLONE_FILES_FLAG))
     fail("shared-descriptor process clones are unsupported");
   process_id_t parent = owner_pid;
@@ -2032,11 +2263,15 @@ static void fork_init(void *ctx) {
   accounting_error = app_exit_seen = report_written = false;
   __atomic_store_n(&replay_without_tls, 0, __ATOMIC_RELAXED);
   app_exit_code = 0;
-  thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);
+  thread_data_t *d = thread_state(ctx);
   if (!d)
     fail("fork without surviving TLS");
+  byte *stack = d->boundary_stack; /* The child inherits the thread's allocations. */
   memset(d, 0, sizeof(*d));
+  d->boundary_stack = stack;
   set_raw_accounting_state(d);
+  clear_write_checkpoint(d); /* The slot still holds the parent's word. */
+  set_boundary_state(ctx, d);
   set_fast_until(d, 0);
   open_stream("fork", parent, previous);
 }
@@ -2093,17 +2328,13 @@ static void process_exit(void) {
       dr_global_free(flat_entries[i], sizeof(*flat_entries[i]));
   }
   for (int i = 0; i <= FLAT_ENTRY_CACHE; ++i) {
-    if (flat_live_bodies[i])
-      dr_global_free(flat_live_bodies[i], sizeof(*flat_live_bodies[i]));
+    if (flat_live_entries[i])
+      dr_global_free(flat_live_entries[i], sizeof(*flat_live_entries[i]));
   }
-  if (flat_live_prefix)
-    dr_global_free(flat_live_prefix, sizeof(*flat_live_prefix));
-  if (flat_live_suffix)
-    dr_global_free(flat_live_suffix, sizeof(*flat_live_suffix));
   if (checkpoint_template)
     dr_global_free(checkpoint_template, sizeof(*checkpoint_template));
-  if (boundary_template)
-    dr_global_free(boundary_template, sizeof(*boundary_template));
+  if (packed_checkpoint_template)
+    dr_global_free(packed_checkpoint_template, sizeof(*packed_checkpoint_template));
   if (boundary_routine)
     dr_nonheap_free(boundary_routine, dr_page_size());
   if (live_work)

@@ -17,33 +17,48 @@ cache probe and count-location profiling disabled. It also supports `-rep_bytes`
 and `-live_work_v1`. With `-latency_bound` or its `-memory_operand_bytes`
 extension, a callback charges each block, even when the live clock is off.
 The inline entry preserves application flags, including values a signal handler
-may inspect. Each memory write records its replay checkpoint with flag-neutral
-moves. Scratch registers spill to client-owned TLS slots.
+may inspect. Its scratch registers spill to client-owned TLS slots.
 A restore-state handler recovers them if the runtime translates a thread inside
-one of these sequences. It also returns a stored entry charge when a relocated
+the entry. Each memory write records its replay checkpoint as one packed word in
+another slot: the write's address, its length and its block suffix, stored as
+two immediates with no scratch register. A block entry stores zero there.
+Callbacks settle the word into the checkpoint state before they read or replace
+it. A write that does not fit the word (a suffix above 4095 instructions) takes
+the callback instead. It also returns a stored entry charge when a relocated
 thread will enter the same block again. The layout depends only on the block, so
 no translations are stored. A retry's first-block checks move from block entry
 to the replay, REP, signal and snapshot callbacks. The entry sequence for each
-block size and the raw-TLS write checkpoint are encoded once per process and
-inserted as raw copies, with only a write's addresses and suffix patched. The
+block size and the write checkpoint are encoded once per process and inserted
+as raw copies, with only a write's packed word patched. The
 runtime otherwise re-encodes every inserted instruction of each new block, which
 dominated block building for interpreters and generated code.
 
-With `-live_work_v1`, the inline entry also counts down to the thread's next
-publication boundary. It tests the countdown's sign through its top byte with
-MOVZX and LEA, so it still never reads or writes the application's flags. A
+With `-live_work_v1`, the inline entry counts down to the thread's next
+publication boundary instead of adding to the instruction count: the countdown
+is the only counter it updates. Callbacks add the distance the countdown has
+moved to the instruction count before they read it, so they always see the full
+count. The entry reads the countdown's sign from its top byte with one MOVZX,
+so it still never reads or writes the application's flags. A
 negative countdown takes the checked callback, which handles the publication
 boundary, replay and additions near overflow and charges the block. All blocks
-reach it through one routine, generated once per process, that makes the clean
-call. An entry stores its count and first address in the thread's state and
-jumps there with its resume address in RCX, so building a block encodes no
-context switch. The runtime defers asynchronous signals and translation while a
-thread is in that routine, as it does inside a callback. Publication therefore
+reach it through one routine, generated once per process. An entry stores its
+count and first address in the thread's state and jumps there through a pointer
+in that state, with its resume address in RCX. Nothing in the entry depends on
+where it is placed, so the whole entry is encoded once per block size and copied
+with only the block's address patched; building a block encodes no context
+switch. The routine moves to a stack the thread owns, saves the flags and the
+general registers a C function may change, clears the flags and calls the
+callback. It saves no vector or x87 state: the callback and everything it can
+reach are compiled to use the general registers only, and
+`tests/test_boundary_callback.py` reads the built client to check that. The
+runtime defers asynchronous signals and translation while a thread is in the
+routine or the callback, as it does inside a clean call. Publication therefore
 happens at the same block entries as on the callback path. Replay, REP
 and new threads reset the countdown so the next entry takes the callback, and the
-callback recomputes it. The prefix saves the pre-entry instruction count before choosing the
-callback or inline charge. If relocation will re-enter an unfinished entry, the
-restore-state handler restores that count and re-arms a pending REP retry. Work
+callback recomputes it. The prefix saves the pre-entry countdown before choosing the
+callback or inline charge, and the callback marks an entry it has charged. If
+relocation will re-enter an unfinished entry, the restore-state handler takes
+that entry's charge back and re-arms a pending REP retry. Work
 already published for earlier blocks remains visible.
 
 Without raw TLS, or with the cache probe, the ordinary counter can instead
