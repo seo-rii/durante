@@ -1188,6 +1188,7 @@ fn execute(
     result["execution"]["wrapper_pid"] = json!(pid);
     let deadline = Instant::now() + Duration::from_millis(options.timeout_ms);
     let mut waited = runner::WaitState::default();
+    let mut watch = runner::RootWatch::new(pid);
     let (state, mut code, forced) = loop {
         let signal = runner::cancellation_signal();
         if signal != 0 {
@@ -1211,7 +1212,7 @@ fn execute(
             Err(_) => break ("wait_failed", 1, true),
             Ok(true) => {}
         }
-        std::thread::sleep(runner::POLL_INTERVAL);
+        watch.pause(&waited, runner::POLL_INTERVAL);
     };
     let cleaned = !forced || runner::cleanup_tree(pid, &mut waited);
     result["execution"]["state"] = json!(state);
