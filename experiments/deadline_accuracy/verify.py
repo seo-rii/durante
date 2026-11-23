@@ -13,6 +13,7 @@ sys.path.insert(0, str(HERE.parent))
 from calibrated_limits.verify import METER, TYPES, live_observation, load, positive, verify_placement
 from cpp20_locality.export import parse_trace
 from cpp20_locality.verify import release_reader, require, sha
+from deadline_accuracy.registration import load_registration
 from first_run_sampler.profile import digest
 from footprint_admission.verify import select
 from guarded_native import anchor
@@ -218,14 +219,12 @@ def aggregate(cases, candidate):
     return result
 
 
-def verify(root, strategy="near-three"):
+def verify(root, strategy="near-three", contest=False):
     require(strategy in ("near-three", "exact-one"), "unknown registered strategy")
     candidate = "exact" if strategy == "exact-one" else "gate"
-    prefix = "exact-" if candidate == "exact" else ""
-    plan_path, rules_path = (HERE / f"{prefix}{name}.json" for name in ("plan", "rules"))
-    plan, rules, summary = (load(p) for p in (plan_path, rules_path, root / "summary.json"))
-    require(summary["plan_sha256"] == sha(plan_path.read_bytes())
-            and summary["rules_sha256"] == sha(rules_path.read_bytes())
+    raw_plan, raw_rules, plan = load_registration(candidate == "exact", contest)
+    rules, summary = json.loads(raw_rules), load(root / "summary.json")
+    require(summary["plan_sha256"] == sha(raw_plan) and summary["rules_sha256"] == sha(raw_rules)
             and summary["probe_sha256"] == temporal.PROBE_SHA == rules["probe_sha256"] == plan["probe_sha256"]
             and summary["schema"] == rules["schema"] == plan["schema"] == 1 and summary["affinity"] == [1]
             and summary["cgroup_cpus"] == "1" and isinstance(summary["kernel"], str) and summary["kernel"]
@@ -271,8 +270,9 @@ if __name__ == "__main__":
     cli.add_argument("directory", type=Path)
     cli.add_argument("--output", type=Path)
     cli.add_argument("--strategy", choices=("near-three", "exact-one"), default="near-three")
+    cli.add_argument("--contest", action="store_true", help="use the contest exact-one registration")
     args = cli.parse_args()
-    metrics = verify(args.directory, args.strategy)
+    metrics = verify(args.directory, args.strategy, args.contest)
     if args.output:
         args.output.write_text(json.dumps(metrics, indent=2) + "\n")
     print(json.dumps(metrics["totals"], indent=2))

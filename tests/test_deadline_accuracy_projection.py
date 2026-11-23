@@ -44,7 +44,7 @@ class PartialProjection(unittest.TestCase):
                      patch.object(replay_aonohako.aonohako_clock, "replay_live",
                                   side_effect=("within_budget", "budget_exceeded")) as live:
                     result = replay_aonohako.replay(root, binaries, go, strategy)
-                validate.assert_called_once_with(root, strategy)
+                validate.assert_called_once_with(root, strategy, False)
                 self.assertEqual(result["arms"], {"baseline":{"within_budget":1}, arm:{"budget_exceeded":1}})
                 self.assertEqual(result["bindings"], 2)
                 self.assertEqual(result["certified_projections"], 2)
