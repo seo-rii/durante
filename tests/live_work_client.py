@@ -34,6 +34,9 @@ int main(void) {
 """
 
 
+TIMEOUT = 10
+
+
 def check_run(prefix, work, name, command, *, valid=True, stdin=None):
     directory = work / name
     directory.mkdir()
@@ -44,7 +47,7 @@ def check_run(prefix, work, name, command, *, valid=True, stdin=None):
     proc = subprocess.Popen([*prefix, "-outdir", str(records), "-rep_bytes", "-live_work_v1",
                              str(page), "--", *command], start_new_session=True, cwd=directory, stdin=stdin)
     try:
-        if proc.wait(timeout=10) != 0:
+        if proc.wait(timeout=TIMEOUT) != 0:
             raise RuntimeError(f"{name}: fixture exited {proc.returncode}")
     finally:
         if proc.poll() is None:
@@ -69,8 +72,14 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--drrun", required=True, type=Path)
     parser.add_argument("--client", required=True, type=Path)
+    parser.add_argument("--engine-debug", action="store_true",
+                        help="use the SDK's debug core, whose exit checks fail a run that leaks")
     args = parser.parse_args()
-    prefix = [str(args.drrun.resolve()), "-quiet", "-follow_children", "-disable_traces",
+    global TIMEOUT
+    if args.engine_debug:
+        TIMEOUT = 60
+    prefix = [str(args.drrun.resolve()), *(["-debug"] if args.engine_debug else []),
+              "-quiet", "-follow_children", "-disable_traces",
               "-vm_size", "32M", "-vmheap_size", "32M", "-c", str(args.client.resolve())]
     with tempfile.TemporaryDirectory(prefix="durante-live-work-") as scratch:
         work = Path(scratch)

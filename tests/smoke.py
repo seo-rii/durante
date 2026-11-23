@@ -134,6 +134,10 @@ def main():
   if args.runner_bin:
    subprocess.run([sys.executable, ROOT/'tests/live_work_client.py', '--drrun', args.sdk/'bin64/drrun',
                    '--client', args.client], check=True)
+   # The debug core fails a run that leaks: inline live entries are built once
+   # per block, so an instruction they create but never insert only shows there.
+   subprocess.run([sys.executable, ROOT/'tests/live_work_client.py', '--drrun', args.sdk/'bin64/drrun',
+                   '--client', args.client, '--engine-debug'], check=True)
    def run_supervised(name,argv,valid=True,code=0,expected=None,processes=None,images=None,timeout=30000,qualified=True):
     report=tmp/(name+'-supervised.json')
     cmd=[str(args.runner_bin),'run','--drrun',str(args.sdk/'bin64/drrun'),'--client',str(args.client),

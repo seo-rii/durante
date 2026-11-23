@@ -271,17 +271,18 @@ static void flat_enter(uint64_t count) {
     *write_word(active) = 0;
 }
 
-/* The live flat entry: a negative countdown takes the boundary callback,
- * otherwise the inline body counts down and charges. */
+/* The live flat entry: the prefix saves the countdown, a negative one takes
+ * the boundary callback, and otherwise the inline body only counts it down.
+ * The count itself lags until a callback settles it. */
 static void flat_live_enter(int count, app_pc pc) {
+    active->entry_room = active->live_room;
     if (active->live_room < 0) {
-        check_flat_counter(active);
-        active->entry_base = active->instructions;
         charge_boundary(count, pc);
         return;
     }
     active->live_room -= count;
-    flat_enter((uint64_t)count);
+    assert(write_word(active));
+    *write_word(active) = 0;
 }
 
 static void enter_rep(void) {
@@ -784,6 +785,10 @@ int main(int argc, char **argv) {
         assert(state.fast_until == 4096 && state.live_room == 3995);
         for (int i = 0; i < 4; ++i)
             flat_live_enter(1000, START);
+        /* Inline entries moved only the countdown; settling adds their charge once. */
+        assert(state.instructions == 100 && state.live_room == -5 && state.entry_room == 995);
+        settle_live_count(&state);
+        settle_live_count(&state);
         assert(state.instructions == 4100 && state.live_room == -5 && page.instructions == 0);
         /* The next entry publishes every earlier block, but not its own. */
         flat_live_enter(7, START);
@@ -805,6 +810,63 @@ int main(int argc, char **argv) {
         thread_data_t far = {.instructions = 5};
         set_fast_until(&far, UINT64_MAX - INT32_MAX);
         assert(far.live_room == LIVE_ROOM_MAX && far.live_room >> 56 == 0);
+        live_work = NULL;
+    } else if (!strcmp(test, "live-settle")) {
+        live_work_t page = {0};
+        live_work = &page;
+        flat_mode();
+        set_fast_until(&state, 0);
+        flat_live_enter(10, START); /* callback: 10 charged, window opens */
+        assert(state.instructions == 10 && state.entry_base == 0 &&
+               state.entry_room == ENTRY_ROOM_CHARGED && state.live_room == 4085);
+        /* Every way a callback obtains the state settles the inline charges. */
+        flat_live_enter(3, START);
+        flat_live_enter(4, START);
+        assert(state.instructions == 10 && state.live_room == 4078);
+        assert(thread_state(CTX) == &state && state.instructions == 17 &&
+               state.room_settled == 4078);
+        flat_live_enter(5, START);
+        publish_live_work(&state, false);
+        assert(state.instructions == 22 && page.instructions == 0);
+        flat_live_enter(6, START);
+        set_fast_until(&state, 0); /* replaces the countdown only after settling it */
+        assert(state.instructions == 28 && state.live_room == -1 && state.room_settled == -1);
+        /* Publication at a syscall sees inline charges. */
+        set_fast_until(&state, 4096);
+        flat_live_enter(7, START);
+        publish_live_work(&state, true);
+        assert(state.instructions == 35 && page.instructions == 35 && !page.invalid);
+        /* A replay refund applies to the settled count. */
+        flat_live_enter(9, START);
+        flat_write(WRITE, NEXT, 4);
+        code_replay(CTX, DR_DURANTE_REPLAY_RETRY, WRITE, WRITE);
+        assert(state.instructions == 40 && state.restart_pc == WRITE && !state.replay_error);
+        flat_live_enter(4, WRITE);
+        assert(state.instructions == 44 && !state.restart_pc && !state.replay_error);
+        snapshot(true);
+        /* A settled charge that would wrap the count is sticky invalidity. */
+        reset();
+        flat_mode();
+        live_work = &page;
+        page = (live_work_t){0};
+        state.instructions = UINT64_MAX - 5;
+        state.live_room = state.room_settled = 100;
+        flat_live_enter(5, START);
+        settle_live_count(&state);
+        assert(state.instructions == UINT64_MAX && !state.counter_overflows && !page.invalid);
+        flat_live_enter(1, START);
+        settle_live_count(&state);
+        assert(state.counter_overflows && page.invalid && state.instructions == 0);
+        /* Entries only count down: a countdown that rose is not a charge. */
+        reset();
+        flat_mode();
+        page = (live_work_t){0};
+        state.instructions = 50;
+        state.live_room = 9;
+        state.room_settled = 4;
+        settle_live_count(&state);
+        assert(state.counter_overflows && page.invalid && state.instructions == 50 &&
+               state.room_settled == 9);
         live_work = NULL;
     } else if (!strcmp(test, "live-saturation")) {
         live_work_t page = {.instructions = UINT64_MAX - 1, .movs = UINT64_MAX};
@@ -1104,7 +1166,8 @@ bool drmgr_insert_read_tls_field(void *ctx, int index, instrlist_t *list, instr_
  * followed by re-entry must charge exactly once. */
 static void check_boundary_relocation(void *ctx, byte *start, byte *stop) {
     reg_t slots[RAW_TLS_SLOTS] = {0, 11, 12};
-    thread_data_t d = {.instructions = 4100, .entry_base = 4100,
+    thread_data_t d = {.instructions = 4100, .live_room = -1, .room_settled = -1,
+                       .entry_room = -1, /* as the prefix saved it */
                        .published_instructions = 4100, .raw_tls_base = (byte *)slots,
                        .restart_pc = (app_pc)1, .restart_rep = true, .restart_base = 4100};
     dr_mcontext_t raw = {.pc = stop}, app = {0};
@@ -1116,6 +1179,7 @@ static void check_boundary_relocation(void *ctx, byte *start, byte *stop) {
     flat_inline = raw_tls_enabled = true;
     charge_boundary(7, d.restart_pc);
     assert(d.instructions == 4107 && d.restart_entered && !d.replay_error);
+    assert(d.entry_base == 4100 && d.entry_room == ENTRY_ROOM_CHARGED);
     raw.pc = decode_next_pc(ctx, start); /* first spill, before the new checkpoint */
     assert(restore_state(ctx, true, &info) && d.instructions == 4107);
     raw.pc = stop;
@@ -1137,15 +1201,50 @@ static void check_boundary_relocation(void *ctx, byte *start, byte *stop) {
  * routine recovers both scratch registers and leaves the entry uncharged. */
 static void check_slow_path_relocation(void *ctx, byte *start, byte *stop) {
     reg_t slots[RAW_TLS_SLOTS] = {0, 21, 22};
-    thread_data_t d = {.instructions = 60, .entry_base = 60, .raw_tls_base = (byte *)slots};
+    thread_data_t d = {.instructions = 60, .live_room = -3, .room_settled = -3,
+                       .entry_room = -3, .raw_tls_base = (byte *)slots};
     dr_mcontext_t raw = {.pc = stop}, app = {0};
     dr_restore_state_info_t info = { .raw_mcontext = &raw, .mcontext = &app };
     info.fragment_info.cache_start_pc = start;
     restoring = &d;
     flat_inline = raw_tls_enabled = true;
     assert(restore_state(ctx, true, &info));
-    assert(app.xcx == 21 && app.r11 == 22 && d.instructions == 60 && d.entry_base == 60);
+    assert(app.xcx == 21 && app.r11 == 22 && d.instructions == 60);
+    assert(d.live_room == -3 && d.entry_room == -3);
     restoring = NULL;
+}
+
+/* Relocating a thread stopped after the inline body charged the entry, at
+ * the suffix, takes back exactly that charge whether or not a callback has
+ * settled it, and keeps the earlier inline charges. A query changes nothing. */
+static void check_fast_path_relocation(void *ctx, byte *start, byte *resume) {
+    for (int settled = 0; settled < 2; ++settled) {
+        reg_t slots[RAW_TLS_SLOTS] = {0, 31, 32};
+        /* Settled at 20; one earlier entry charged 11; this one charged 5. */
+        thread_data_t d = {.instructions = 70, .room_settled = 20, .entry_room = 9,
+                           .live_room = 4, .raw_tls_base = (byte *)slots};
+        dr_mcontext_t raw = {.pc = resume}, app = {0};
+        dr_restore_state_info_t info = { .raw_mcontext = &raw, .mcontext = &app };
+        info.fragment_info.cache_start_pc = start;
+        live_work_t page = {.ready = 1};
+        restoring = &d;
+        live_work = &page;
+        flat_inline = raw_tls_enabled = true;
+        if (settled) {
+            settle_live_count(&d);
+            assert(d.instructions == 86);
+        }
+        assert(restore_state(ctx, false, &info));
+        assert(d.instructions == (settled ? 86 : 70) && d.live_room == 4 && d.entry_room == 9);
+        assert(app.xcx == 31 && app.r11 == 32);
+        for (int i = 0; i < 2; ++i) {
+            assert(restore_state(ctx, true, &info));
+            assert(d.instructions == 81 && d.live_room == -1 && d.room_settled == -1);
+            assert(d.entry_room == -1 && !d.counter_overflows && !page.invalid);
+        }
+        restoring = NULL;
+        live_work = NULL;
+    }
 }
 
 /* Call an emitted sequence that returns its final RCX in RAX and R11 in RDX.
@@ -1254,7 +1353,7 @@ int main(void) {
     instrlist_clear_and_destroy(ctx, bb);
     /* It reaches the routine only through the thread's state, and no
      * instruction of it reads or writes a flag. */
-    byte *jump = NULL;
+    byte *jump = NULL, *resume = NULL;
     for (byte *pc = entry; pc != NULL && pc < entry_end;) {
         instr_t in;
         instr_init(ctx, &in);
@@ -1267,12 +1366,24 @@ int main(void) {
                    opnd_get_disp(target) == (int)offsetof(thread_data_t, boundary_routine));
             jump = pc;
         }
+        if (instr_get_opcode(&in) == OP_lea && opnd_is_rel_addr(instr_get_src(&in, 0))) {
+            assert(!resume);
+            resume = opnd_get_addr(instr_get_src(&in, 0));
+        }
         assert(instr_get_opcode(&in) != OP_jmp && instr_get_opcode(&in) != OP_call);
+        /* A live entry stores only its countdown, never the count. */
+        if (instr_get_opcode(&in) == OP_mov_st) {
+            opnd_t dst = instr_get_dst(&in, 0);
+            assert(!(opnd_is_base_disp(dst) && opnd_get_base(dst) == DR_REG_R11 &&
+                     (opnd_get_disp(dst) == (int)offsetof(thread_data_t, instructions) ||
+                      opnd_get_disp(dst) == (int)offsetof(thread_data_t, entry_base))));
+        }
         instr_free(ctx, &in);
         pc = next;
     }
-    assert(jump);
+    assert(jump && resume > jump && resume < entry_end);
     check_slow_path_relocation(ctx, entry, jump);
+    check_fast_path_relocation(ctx, entry, resume);
     /* The patched copy equals the entry emitted for this block at another
      * address: nothing in it depends on where it runs. */
     {
@@ -1359,12 +1470,14 @@ int main(void) {
     }
     /* The live entry counts down and charges. */
     {
-        thread_data_t d = {.instructions = 100, .live_room = 7};
+        thread_data_t d = {.instructions = 100, .live_room = 7, .room_settled = 7};
         slots[RAW_TLS_STATE] = (reg_t)&d;
         slots[RAW_TLS_WRITE] = 77;
         ((void (*)(void))live_code)();
         assert(slots[RAW_TLS_WRITE] == 0);
-        assert(d.instructions == 105 && d.entry_base == 100 && d.live_room == 2);
+        assert(d.instructions == 100 && d.entry_room == 7 && d.live_room == 2);
+        settle_live_count(&d);
+        assert(d.instructions == 105);
     }
     /* ECX is zero for the branch exactly when the countdown is not negative. */
     const int64_t rooms[] = {INT64_MIN / 256, -4096, -2, -1, 0, 1, 4095, LIVE_ROOM_MAX};
@@ -1373,13 +1486,14 @@ int main(void) {
         slots[RAW_TLS_STATE] = (reg_t)&d;
         ((void (*)(void))sign_code)();
         assert((d.write_suffix == 0) == (rooms[i] >= 0));
-        assert(d.instructions == 10 && d.live_room == rooms[i]);
+        assert(d.instructions == 10 && d.live_room == rooms[i] && d.entry_room == rooms[i]);
     }
     /* A negative countdown passes this block to the boundary routine, which
      * resumes at the suffix without the fast body's charge. Otherwise the
      * body counts down and charges. Both paths restore RCX and R11. */
     for (int slow = 0; slow < 2; ++slow) {
         thread_data_t d = {.instructions = 50, .live_room = slow ? -1 : 9,
+                           .room_settled = slow ? -1 : 9, .entry_room = 1234,
                            .boundary_routine = routine};
         slots[RAW_TLS_STATE] = (reg_t)&d;
         slots[RAW_TLS_WRITE] = 77;
@@ -1387,23 +1501,28 @@ int main(void) {
         run_entry(entry, 0x1111, 0x2222, &rcx, &r11);
         /* The boundary callback clears the checkpoint on the slow path. */
         assert(slots[RAW_TLS_WRITE] == (slow ? 77 : 0));
-        assert(rcx == 0x1111 && r11 == 0x2222 && d.entry_base == 50);
+        assert(rcx == 0x1111 && r11 == 0x2222 && d.entry_room == (slow ? -1 : 9));
+        assert(d.instructions == 50 && d.entry_base == 0);
         if (slow) {
             assert(d.boundary_count == 5 && d.boundary_pc == ENTRY_PC);
-            assert(d.write_next_pc > entry && d.write_next_pc < entry_end);
-            assert(d.instructions == 50 && d.live_room == -1);
+            assert(d.write_next_pc == resume && d.live_room == -1);
         } else {
-            assert(d.instructions == 55 && d.live_room == 4);
+            assert(d.live_room == 4);
             assert(d.boundary_count == 0 && d.boundary_pc == NULL && d.write_next_pc == NULL);
+            settle_live_count(&d);
+            assert(d.instructions == 55);
         }
     }
     /* The uncached entry charges its own count on the fast path. */
     {
-        thread_data_t d = {.instructions = 50, .live_room = 5000, .boundary_routine = routine};
+        thread_data_t d = {.instructions = 50, .live_room = 5000, .room_settled = 5000,
+                           .boundary_routine = routine};
         slots[RAW_TLS_STATE] = (reg_t)&d;
         ((void (*)(void))large)();
-        assert(d.instructions == 50 + FLAT_ENTRY_CACHE + 1 && d.entry_base == 50);
+        assert(d.instructions == 50 && d.entry_room == 5000);
         assert(d.live_room == 5000 - (FLAT_ENTRY_CACHE + 1) && d.boundary_pc == NULL);
+        settle_live_count(&d);
+        assert(d.instructions == 50 + FLAT_ENTRY_CACHE + 1);
     }
     /* The emitted checkpoint stores exactly the packed word and leaves both
      * scratch registers alone; settling it restores the callback's fields. */
@@ -1604,6 +1723,21 @@ class ClientReplayStateTests(unittest.TestCase):
 
     def test_flat_rep_restart_must_observe_in_first_resumed_block(self):
         self.run_case("flat-rep-missed")
+
+    def test_live_entries_settle_their_countdown_into_the_count(self):
+        self.run_case("live-settle")
+
+    def test_thread_state_is_fetched_through_the_settling_accessor(self):
+        # Live entries leave the instruction count behind the countdown, so a
+        # callback that read the drmgr slot directly would see a stale count.
+        source = self.sources[0].read_text()
+        raw = [line.strip() for line in source.splitlines() if "drmgr_get_tls_field(" in line]
+        self.assertEqual(raw, [
+            "thread_data_t *d = drmgr_get_tls_field(ctx, tls_index);",  # thread_state()
+            "thread_data_t *d = drmgr_get_tls_field(drcontext, tls_index);",  # restore_state()
+        ])
+        accessor = source.index("static thread_data_t *thread_state(void *ctx) {")
+        self.assertIn("settle_live_count(d);", source[accessor:accessor + 200])
 
     def test_flat_write_word_settles_clears_and_falls_back(self):
         self.run_case("flat-write-word")

@@ -33,9 +33,12 @@ as raw copies, with only a write's packed word patched. The
 runtime otherwise re-encodes every inserted instruction of each new block, which
 dominated block building for interpreters and generated code.
 
-With `-live_work_v1`, the inline entry also counts down to the thread's next
-publication boundary. It reads the countdown's sign from its top byte with one
-MOVZX, so it still never reads or writes the application's flags. A
+With `-live_work_v1`, the inline entry counts down to the thread's next
+publication boundary instead of adding to the instruction count: the countdown
+is the only counter it updates. Callbacks add the distance the countdown has
+moved to the instruction count before they read it, so they always see the full
+count. The entry reads the countdown's sign from its top byte with one MOVZX,
+so it still never reads or writes the application's flags. A
 negative countdown takes the checked callback, which handles the publication
 boundary, replay and additions near overflow and charges the block. All blocks
 reach it through one routine, generated once per process, that makes the clean
@@ -48,9 +51,10 @@ signals and translation while a thread is in that routine, as it does inside a
 callback. Publication therefore
 happens at the same block entries as on the callback path. Replay, REP
 and new threads reset the countdown so the next entry takes the callback, and the
-callback recomputes it. The prefix saves the pre-entry instruction count before choosing the
-callback or inline charge. If relocation will re-enter an unfinished entry, the
-restore-state handler restores that count and re-arms a pending REP retry. Work
+callback recomputes it. The prefix saves the pre-entry countdown before choosing the
+callback or inline charge, and the callback marks an entry it has charged. If
+relocation will re-enter an unfinished entry, the restore-state handler takes
+that entry's charge back and re-arms a pending REP retry. Work
 already published for earlier blocks remains visible.
 
 Without raw TLS, or with the cache probe, the ordinary counter can instead
