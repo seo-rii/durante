@@ -1,0 +1,2877 @@
+{
+  "schema": 1,
+  "plan_sha256": "99ff2adce09ed3d27b0f19f368d9d8ef22d489dba5d9ff07bb9842e22aba8767",
+  "rules_sha256": "d7fed6ea851f0351feb9bd0fecf6da7c5710458338c4f1327a5ace5370d46b5b",
+  "summary_sha256": "f4e9a08475aa338b1891f75b97ffb2eb30e38c7b5a61b7ef1b85382bab48cb7a",
+  "verified_pids": 262,
+  "native_runs": 108,
+  "steal_ticks": 0,
+  "seeds": {
+    "threshold_runs/blocked": {
+      "anchor_case": "threshold_runs/blocked",
+      "baseline_ns": 14666000,
+      "profile_cpu_ns": 187372000,
+      "baseline_paid_cpu_ns": 14666000,
+      "extra_ns": [],
+      "deadlines": [],
+      "cohort": "calibration",
+      "program": "threshold_runs"
+    },
+    "successor_walk/small_blocks": {
+      "anchor_case": "successor_walk/small_blocks",
+      "baseline_ns": 17490000,
+      "profile_cpu_ns": 126926000,
+      "baseline_paid_cpu_ns": 17490000,
+      "extra_ns": [],
+      "deadlines": [],
+      "cohort": "calibration",
+      "program": "successor_walk"
+    },
+    "rational_gcd/narrow_divisors": {
+      "anchor_case": "rational_gcd/narrow_divisors",
+      "baseline_ns": 33141000,
+      "profile_cpu_ns": 234610000,
+      "baseline_paid_cpu_ns": 33141000,
+      "extra_ns": [],
+      "deadlines": [],
+      "cohort": "calibration",
+      "program": "rational_gcd"
+    },
+    "csr_frontier/ordered": {
+      "anchor_case": "csr_frontier/ordered",
+      "baseline_ns": 12419000,
+      "profile_cpu_ns": 174572000,
+      "baseline_paid_cpu_ns": 12419000,
+      "extra_ns": [],
+      "deadlines": [],
+      "cohort": "calibration",
+      "program": "csr_frontier"
+    },
+    "fenwick/large": {
+      "anchor_case": "fenwick/large",
+      "baseline_ns": 80145000,
+      "profile_cpu_ns": 253001000,
+      "baseline_paid_cpu_ns": 80145000,
+      "extra_ns": [],
+      "deadlines": [],
+      "cohort": "calibration",
+      "program": "fenwick"
+    }
+  },
+  "totals": {
+    "all": {
+      "inputs": 12,
+      "profile_cpu_ns": 3435420000,
+      "baseline_paid_cpu_ns": 650397000,
+      "baseline_paid_runs": 7,
+      "exact_extra_cpu_ns": 524991000,
+      "exact_extra_runs": 5,
+      "baseline_estimates": {
+        "cases": 12,
+        "within_20pct": 9,
+        "median_absolute_error_ppm": 83992.5,
+        "max_absolute_error_ppm": 812426
+      },
+      "packet_exact_estimates": {
+        "cases": 12,
+        "within_20pct": 12,
+        "median_absolute_error_ppm": 17526.0,
+        "max_absolute_error_ppm": 163827
+      },
+      "deadlines": {
+        "all": {
+          "limits": 60,
+          "near": 47,
+          "fixed_and_adaptive": 0,
+          "changed": 9,
+          "baseline": {
+            "agreement": 36,
+            "false_tle": 1,
+            "false_accept": 7,
+            "mixed_native": 16,
+            "majority_matches": 47,
+            "live_kills": 23,
+            "preflight_disagreements": 0
+          },
+          "exact": {
+            "agreement": 44,
+            "false_tle": 0,
+            "false_accept": 0,
+            "mixed_native": 16,
+            "majority_matches": 54,
+            "live_kills": 28,
+            "preflight_disagreements": 0
+          }
+        },
+        "fixed": {
+          "limits": 24,
+          "near": 11,
+          "fixed_and_adaptive": 0,
+          "changed": 3,
+          "baseline": {
+            "agreement": 15,
+            "false_tle": 0,
+            "false_accept": 3,
+            "mixed_native": 6,
+            "majority_matches": 19,
+            "live_kills": 11,
+            "preflight_disagreements": 0
+          },
+          "exact": {
+            "agreement": 18,
+            "false_tle": 0,
+            "false_accept": 0,
+            "mixed_native": 6,
+            "majority_matches": 22,
+            "live_kills": 14,
+            "preflight_disagreements": 0
+          }
+        },
+        "adaptive": {
+          "limits": 36,
+          "near": 36,
+          "fixed_and_adaptive": 0,
+          "changed": 6,
+          "baseline": {
+            "agreement": 21,
+            "false_tle": 1,
+            "false_accept": 4,
+            "mixed_native": 10,
+            "majority_matches": 28,
+            "live_kills": 12,
+            "preflight_disagreements": 0
+          },
+          "exact": {
+            "agreement": 26,
+            "false_tle": 0,
+            "false_accept": 0,
+            "mixed_native": 10,
+            "majority_matches": 32,
+            "live_kills": 14,
+            "preflight_disagreements": 0
+          }
+        },
+        "overlap": {
+          "limits": 0,
+          "near": 0,
+          "fixed_and_adaptive": 0,
+          "changed": 0,
+          "baseline": {
+            "agreement": 0,
+            "false_tle": 0,
+            "false_accept": 0,
+            "mixed_native": 0,
+            "majority_matches": 0,
+            "live_kills": 0,
+            "preflight_disagreements": 0
+          },
+          "exact": {
+            "agreement": 0,
+            "false_tle": 0,
+            "false_accept": 0,
+            "mixed_native": 0,
+            "majority_matches": 0,
+            "live_kills": 0,
+            "preflight_disagreements": 0
+          }
+        },
+        "near": {
+          "limits": 47,
+          "near": 47,
+          "fixed_and_adaptive": 0,
+          "changed": 6,
+          "baseline": {
+            "agreement": 26,
+            "false_tle": 1,
+            "false_accept": 4,
+            "mixed_native": 16,
+            "majority_matches": 37,
+            "live_kills": 20,
+            "preflight_disagreements": 0
+          },
+          "exact": {
+            "agreement": 31,
+            "false_tle": 0,
+            "false_accept": 0,
+            "mixed_native": 16,
+            "majority_matches": 41,
+            "live_kills": 22,
+            "preflight_disagreements": 0
+          }
+        },
+        "far": {
+          "limits": 13,
+          "near": 0,
+          "fixed_and_adaptive": 0,
+          "changed": 3,
+          "baseline": {
+            "agreement": 10,
+            "false_tle": 0,
+            "false_accept": 3,
+            "mixed_native": 0,
+            "majority_matches": 10,
+            "live_kills": 3,
+            "preflight_disagreements": 0
+          },
+          "exact": {
+            "agreement": 13,
+            "false_tle": 0,
+            "false_accept": 0,
+            "mixed_native": 0,
+            "majority_matches": 13,
+            "live_kills": 6,
+            "preflight_disagreements": 0
+          }
+        }
+      },
+      "monotonicity_violations": {
+        "baseline": 0,
+        "exact": 0
+      }
+    },
+    "prospective": {
+      "inputs": 10,
+      "profile_cpu_ns": 2818127000,
+      "baseline_paid_cpu_ns": 468170000,
+      "baseline_paid_runs": 6,
+      "exact_extra_cpu_ns": 446254000,
+      "exact_extra_runs": 4,
+      "baseline_estimates": {
+        "cases": 10,
+        "within_20pct": 8,
+        "median_absolute_error_ppm": 83992.5,
+        "max_absolute_error_ppm": 812364
+      },
+      "packet_exact_estimates": {
+        "cases": 10,
+        "within_20pct": 10,
+        "median_absolute_error_ppm": 22100.0,
+        "max_absolute_error_ppm": 163827
+      },
+      "deadlines": {
+        "all": {
+          "limits": 50,
+          "near": 39,
+          "fixed_and_adaptive": 0,
+          "changed": 5,
+          "baseline": {
+            "agreement": 32,
+            "false_tle": 1,
+            "false_accept": 3,
+            "mixed_native": 14,
+            "majority_matches": 41,
+            "live_kills": 19,
+            "preflight_disagreements": 0
+          },
+          "exact": {
+            "agreement": 36,
+            "false_tle": 0,
+            "false_accept": 0,
+            "mixed_native": 14,
+            "majority_matches": 44,
+            "live_kills": 20,
+            "preflight_disagreements": 0
+          }
+        },
+        "fixed": {
+          "limits": 20,
+          "near": 9,
+          "fixed_and_adaptive": 0,
+          "changed": 1,
+          "baseline": {
+            "agreement": 14,
+            "false_tle": 0,
+            "false_accept": 1,
+            "mixed_native": 5,
+            "majority_matches": 17,
+            "live_kills": 9,
+            "preflight_disagreements": 0
+          },
+          "exact": {
+            "agreement": 15,
+            "false_tle": 0,
+            "false_accept": 0,
+            "mixed_native": 5,
+            "majority_matches": 18,
+            "live_kills": 10,
+            "preflight_disagreements": 0
+          }
+        },
+        "adaptive": {
+          "limits": 30,
+          "near": 30,
+          "fixed_and_adaptive": 0,
+          "changed": 4,
+          "baseline": {
+            "agreement": 18,
+            "false_tle": 1,
+            "false_accept": 2,
+            "mixed_native": 9,
+            "majority_matches": 24,
+            "live_kills": 10,
+            "preflight_disagreements": 0
+          },
+          "exact": {
+            "agreement": 21,
+            "false_tle": 0,
+            "false_accept": 0,
+            "mixed_native": 9,
+            "majority_matches": 26,
+            "live_kills": 10,
+            "preflight_disagreements": 0
+          }
+        },
+        "overlap": {
+          "limits": 0,
+          "near": 0,
+          "fixed_and_adaptive": 0,
+          "changed": 0,
+          "baseline": {
+            "agreement": 0,
+            "false_tle": 0,
+            "false_accept": 0,
+            "mixed_native": 0,
+            "majority_matches": 0,
+            "live_kills": 0,
+            "preflight_disagreements": 0
+          },
+          "exact": {
+            "agreement": 0,
+            "false_tle": 0,
+            "false_accept": 0,
+            "mixed_native": 0,
+            "majority_matches": 0,
+            "live_kills": 0,
+            "preflight_disagreements": 0
+          }
+        },
+        "near": {
+          "limits": 39,
+          "near": 39,
+          "fixed_and_adaptive": 0,
+          "changed": 4,
+          "baseline": {
+            "agreement": 22,
+            "false_tle": 1,
+            "false_accept": 2,
+            "mixed_native": 14,
+            "majority_matches": 31,
+            "live_kills": 16,
+            "preflight_disagreements": 0
+          },
+          "exact": {
+            "agreement": 25,
+            "false_tle": 0,
+            "false_accept": 0,
+            "mixed_native": 14,
+            "majority_matches": 33,
+            "live_kills": 16,
+            "preflight_disagreements": 0
+          }
+        },
+        "far": {
+          "limits": 11,
+          "near": 0,
+          "fixed_and_adaptive": 0,
+          "changed": 1,
+          "baseline": {
+            "agreement": 10,
+            "false_tle": 0,
+            "false_accept": 1,
+            "mixed_native": 0,
+            "majority_matches": 10,
+            "live_kills": 3,
+            "preflight_disagreements": 0
+          },
+          "exact": {
+            "agreement": 11,
+            "false_tle": 0,
+            "false_accept": 0,
+            "mixed_native": 0,
+            "majority_matches": 11,
+            "live_kills": 4,
+            "preflight_disagreements": 0
+          }
+        }
+      },
+      "monotonicity_violations": {
+        "baseline": 0,
+        "exact": 0
+      }
+    },
+    "previous": {
+      "inputs": 2,
+      "profile_cpu_ns": 617293000,
+      "baseline_paid_cpu_ns": 182227000,
+      "baseline_paid_runs": 1,
+      "exact_extra_cpu_ns": 78737000,
+      "exact_extra_runs": 1,
+      "baseline_estimates": {
+        "cases": 2,
+        "within_20pct": 1,
+        "median_absolute_error_ppm": 417274.0,
+        "max_absolute_error_ppm": 812426
+      },
+      "packet_exact_estimates": {
+        "cases": 2,
+        "within_20pct": 2,
+        "median_absolute_error_ppm": 13050.0,
+        "max_absolute_error_ppm": 22122
+      },
+      "deadlines": {
+        "all": {
+          "limits": 10,
+          "near": 8,
+          "fixed_and_adaptive": 0,
+          "changed": 4,
+          "baseline": {
+            "agreement": 4,
+            "false_tle": 0,
+            "false_accept": 4,
+            "mixed_native": 2,
+            "majority_matches": 6,
+            "live_kills": 4,
+            "preflight_disagreements": 0
+          },
+          "exact": {
+            "agreement": 8,
+            "false_tle": 0,
+            "false_accept": 0,
+            "mixed_native": 2,
+            "majority_matches": 10,
+            "live_kills": 8,
+            "preflight_disagreements": 0
+          }
+        },
+        "fixed": {
+          "limits": 4,
+          "near": 2,
+          "fixed_and_adaptive": 0,
+          "changed": 2,
+          "baseline": {
+            "agreement": 1,
+            "false_tle": 0,
+            "false_accept": 2,
+            "mixed_native": 1,
+            "majority_matches": 2,
+            "live_kills": 2,
+            "preflight_disagreements": 0
+          },
+          "exact": {
+            "agreement": 3,
+            "false_tle": 0,
+            "false_accept": 0,
+            "mixed_native": 1,
+            "majority_matches": 4,
+            "live_kills": 4,
+            "preflight_disagreements": 0
+          }
+        },
+        "adaptive": {
+          "limits": 6,
+          "near": 6,
+          "fixed_and_adaptive": 0,
+          "changed": 2,
+          "baseline": {
+            "agreement": 3,
+            "false_tle": 0,
+            "false_accept": 2,
+            "mixed_native": 1,
+            "majority_matches": 4,
+            "live_kills": 2,
+            "preflight_disagreements": 0
+          },
+          "exact": {
+            "agreement": 5,
+            "false_tle": 0,
+            "false_accept": 0,
+            "mixed_native": 1,
+            "majority_matches": 6,
+            "live_kills": 4,
+            "preflight_disagreements": 0
+          }
+        },
+        "overlap": {
+          "limits": 0,
+          "near": 0,
+          "fixed_and_adaptive": 0,
+          "changed": 0,
+          "baseline": {
+            "agreement": 0,
+            "false_tle": 0,
+            "false_accept": 0,
+            "mixed_native": 0,
+            "majority_matches": 0,
+            "live_kills": 0,
+            "preflight_disagreements": 0
+          },
+          "exact": {
+            "agreement": 0,
+            "false_tle": 0,
+            "false_accept": 0,
+            "mixed_native": 0,
+            "majority_matches": 0,
+            "live_kills": 0,
+            "preflight_disagreements": 0
+          }
+        },
+        "near": {
+          "limits": 8,
+          "near": 8,
+          "fixed_and_adaptive": 0,
+          "changed": 2,
+          "baseline": {
+            "agreement": 4,
+            "false_tle": 0,
+            "false_accept": 2,
+            "mixed_native": 2,
+            "majority_matches": 6,
+            "live_kills": 4,
+            "preflight_disagreements": 0
+          },
+          "exact": {
+            "agreement": 6,
+            "false_tle": 0,
+            "false_accept": 0,
+            "mixed_native": 2,
+            "majority_matches": 8,
+            "live_kills": 6,
+            "preflight_disagreements": 0
+          }
+        },
+        "far": {
+          "limits": 2,
+          "near": 0,
+          "fixed_and_adaptive": 0,
+          "changed": 2,
+          "baseline": {
+            "agreement": 0,
+            "false_tle": 0,
+            "false_accept": 2,
+            "mixed_native": 0,
+            "majority_matches": 0,
+            "live_kills": 0,
+            "preflight_disagreements": 0
+          },
+          "exact": {
+            "agreement": 2,
+            "false_tle": 0,
+            "false_accept": 0,
+            "mixed_native": 0,
+            "majority_matches": 2,
+            "live_kills": 2,
+            "preflight_disagreements": 0
+          }
+        }
+      },
+      "monotonicity_violations": {
+        "baseline": 0,
+        "exact": 0
+      }
+    }
+  },
+  "cases": {
+    "successor_walk/eight_mib_shuffle": {
+      "anchor_case": "successor_walk/eight_mib_shuffle",
+      "baseline_ns": 75121000,
+      "profile_cpu_ns": 181812000,
+      "baseline_paid_cpu_ns": 75121000,
+      "extra_ns": [],
+      "deadlines": [
+        {
+          "limit_ms": 64,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            85
+          ],
+          "exact": {
+            "pid": 1138,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 65443157,
+            "wall_ns": 108423178,
+            "preflight_ns": 75121000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1139,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 65443157,
+            "wall_ns": 108445211,
+            "preflight_ns": 75121000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 9,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 12105000
+        },
+        {
+          "limit_ms": 75,
+          "near": true,
+          "fixed": true,
+          "adaptive_percent": [],
+          "baseline": {
+            "pid": 1140,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 75116802,
+            "wall_ns": 154960632,
+            "preflight_ns": 75121000,
+            "native_class": "mixed_native",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1141,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 75116802,
+            "wall_ns": 133948061,
+            "preflight_ns": 75121000,
+            "native_class": "mixed_native",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 8,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 1105000
+        },
+        {
+          "limit_ms": 76,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            100
+          ],
+          "exact": {
+            "pid": 1142,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 75121000,
+            "wall_ns": 149901169,
+            "preflight_ns": 75121000,
+            "native_class": "mixed_native",
+            "majority_match": false,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1143,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 75121000,
+            "wall_ns": 149446995,
+            "preflight_ns": 75121000,
+            "native_class": "mixed_native",
+            "majority_match": false,
+            "preflight_match": true
+          },
+          "native_tle_reps": 5,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 105000
+        },
+        {
+          "limit_ms": 87,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            115
+          ],
+          "baseline": {
+            "pid": 1144,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 75121000,
+            "wall_ns": 148567526,
+            "preflight_ns": 75121000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1145,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 75121000,
+            "wall_ns": 148480520,
+            "preflight_ns": 75121000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 0,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -10895000
+        },
+        {
+          "limit_ms": 150,
+          "near": false,
+          "fixed": true,
+          "adaptive_percent": [],
+          "exact": {
+            "pid": 1146,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 75121000,
+            "wall_ns": 149220505,
+            "preflight_ns": 75121000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1147,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 75121000,
+            "wall_ns": 149415211,
+            "preflight_ns": 75121000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 0,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -73895000
+        }
+      ],
+      "packet_exact_ns": 75121000,
+      "cohort": "prospective",
+      "program": "successor_walk",
+      "native_ns": [
+        77382000,
+        78840000,
+        75307000,
+        75862000,
+        76975000,
+        76105000,
+        75044000,
+        76219000,
+        74853000
+      ],
+      "median_ns": 76105000,
+      "min_ns": 74853000,
+      "max_ns": 78840000,
+      "baseline_signed_error_ppm": -12930,
+      "baseline_within_20pct": true,
+      "packet_exact_signed_error_ppm": -12930,
+      "packet_exact_within_20pct": true
+    },
+    "fenwick/eleven_mib_repeat": {
+      "anchor_case": "fenwick/eleven_mib_repeat",
+      "baseline_ns": 182227000,
+      "profile_cpu_ns": 355163000,
+      "baseline_paid_cpu_ns": 182227000,
+      "extra_ns": [],
+      "deadlines": [
+        {
+          "limit_ms": 150,
+          "near": true,
+          "fixed": true,
+          "adaptive_percent": [],
+          "baseline": {
+            "pid": 1226,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 152806906,
+            "wall_ns": 251447487,
+            "preflight_ns": 182227000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1227,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 150844491,
+            "wall_ns": 246286715,
+            "preflight_ns": 182227000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 9,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 28283000
+        },
+        {
+          "limit_ms": 155,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            85
+          ],
+          "exact": {
+            "pid": 1228,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 158545500,
+            "wall_ns": 292979269,
+            "preflight_ns": 182227000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1229,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 155740501,
+            "wall_ns": 256586742,
+            "preflight_ns": 182227000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 9,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 23283000
+        },
+        {
+          "limit_ms": 169,
+          "near": true,
+          "fixed": true,
+          "adaptive_percent": [],
+          "baseline": {
+            "pid": 1230,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 169191290,
+            "wall_ns": 271895938,
+            "preflight_ns": 182227000,
+            "native_class": "mixed_native",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1231,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 169530900,
+            "wall_ns": 287542112,
+            "preflight_ns": 182227000,
+            "native_class": "mixed_native",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 5,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 9283000
+        },
+        {
+          "limit_ms": 183,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            100
+          ],
+          "exact": {
+            "pid": 1232,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 182227000,
+            "wall_ns": 335371293,
+            "preflight_ns": 182227000,
+            "native_class": "mixed_native",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1233,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 182227000,
+            "wall_ns": 306803121,
+            "preflight_ns": 182227000,
+            "native_class": "mixed_native",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 1,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -4717000
+        },
+        {
+          "limit_ms": 210,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            115
+          ],
+          "baseline": {
+            "pid": 1234,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 182227000,
+            "wall_ns": 309298320,
+            "preflight_ns": 182227000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1235,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 182227000,
+            "wall_ns": 330448667,
+            "preflight_ns": 182227000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 0,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -31717000
+        }
+      ],
+      "packet_exact_ns": 182227000,
+      "cohort": "previous",
+      "program": "fenwick",
+      "native_ns": [
+        179944000,
+        167902000,
+        166214000,
+        183484000,
+        181027000,
+        165910000,
+        179643000,
+        165851000,
+        178283000
+      ],
+      "median_ns": 178283000,
+      "min_ns": 165851000,
+      "max_ns": 183484000,
+      "baseline_signed_error_ppm": 22122,
+      "baseline_within_20pct": true,
+      "packet_exact_signed_error_ppm": 22122,
+      "packet_exact_within_20pct": true
+    },
+    "threshold_runs/short_blocks_smaller": {
+      "anchor_case": "threshold_runs/blocked",
+      "baseline_ns": 13074052,
+      "profile_cpu_ns": 175633000,
+      "baseline_paid_cpu_ns": 0,
+      "extra_ns": [
+        10373000
+      ],
+      "deadlines": [
+        {
+          "limit_ms": 12,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            85
+          ],
+          "exact": {
+            "pid": 1124,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 10373000,
+            "wall_ns": 129145722,
+            "preflight_ns": 10373000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1125,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 12254433,
+            "wall_ns": 108119709,
+            "preflight_ns": 13074052,
+            "native_class": "false_tle",
+            "majority_match": false,
+            "preflight_match": true
+          },
+          "native_tle_reps": 0,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -1527000
+        },
+        {
+          "limit_ms": 14,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            100
+          ],
+          "baseline": {
+            "pid": 1126,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 13074052,
+            "wall_ns": 129263667,
+            "preflight_ns": 13074052,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1127,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 10373000,
+            "wall_ns": 129749090,
+            "preflight_ns": 10373000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 0,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -3527000
+        },
+        {
+          "limit_ms": 16,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            115
+          ],
+          "exact": {
+            "pid": 1128,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 10373000,
+            "wall_ns": 129677890,
+            "preflight_ns": 10373000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1129,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 13074052,
+            "wall_ns": 129517235,
+            "preflight_ns": 13074052,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 0,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -5527000
+        },
+        {
+          "limit_ms": 25,
+          "near": false,
+          "fixed": true,
+          "adaptive_percent": [],
+          "baseline": {
+            "pid": 1130,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 13074052,
+            "wall_ns": 129623845,
+            "preflight_ns": 13074052,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1131,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 10373000,
+            "wall_ns": 129698060,
+            "preflight_ns": 10373000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 0,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -14527000
+        },
+        {
+          "limit_ms": 75,
+          "near": false,
+          "fixed": true,
+          "adaptive_percent": [],
+          "exact": {
+            "pid": 1132,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 10373000,
+            "wall_ns": 129160893,
+            "preflight_ns": 10373000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1133,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 13074052,
+            "wall_ns": 130557445,
+            "preflight_ns": 13074052,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 0,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -64527000
+        }
+      ],
+      "packet_exact_ns": 10373000,
+      "cohort": "prospective",
+      "program": "threshold_runs",
+      "native_ns": [
+        10894000,
+        10438000,
+        10460000,
+        10533000,
+        10410000,
+        10741000,
+        10473000,
+        10448000,
+        10666000
+      ],
+      "median_ns": 10473000,
+      "min_ns": 10410000,
+      "max_ns": 10894000,
+      "baseline_signed_error_ppm": 248358,
+      "baseline_within_20pct": false,
+      "packet_exact_signed_error_ppm": -9548,
+      "packet_exact_within_20pct": true
+    },
+    "successor_walk/thirtytwo_mib_blocks": {
+      "anchor_case": "successor_walk/thirtytwo_mib_blocks",
+      "baseline_ns": 41692000,
+      "profile_cpu_ns": 167951000,
+      "baseline_paid_cpu_ns": 41692000,
+      "extra_ns": [],
+      "deadlines": [
+        {
+          "limit_ms": 36,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            85
+          ],
+          "baseline": {
+            "pid": 1150,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 36907061,
+            "wall_ns": 103612605,
+            "preflight_ns": 41692000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1151,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 37033070,
+            "wall_ns": 103515602,
+            "preflight_ns": 41692000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 9,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 2826000
+        },
+        {
+          "limit_ms": 40,
+          "near": true,
+          "fixed": true,
+          "adaptive_percent": [],
+          "exact": {
+            "pid": 1152,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 40224236,
+            "wall_ns": 119126892,
+            "preflight_ns": 41692000,
+            "native_class": "mixed_native",
+            "majority_match": false,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1153,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 41278059,
+            "wall_ns": 124429855,
+            "preflight_ns": 41692000,
+            "native_class": "mixed_native",
+            "majority_match": false,
+            "preflight_match": true
+          },
+          "native_tle_reps": 4,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -1174000
+        },
+        {
+          "limit_ms": 42,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            100
+          ],
+          "baseline": {
+            "pid": 1154,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 41692000,
+            "wall_ns": 134034250,
+            "preflight_ns": 41692000,
+            "native_class": "mixed_native",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1155,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 41692000,
+            "wall_ns": 135262054,
+            "preflight_ns": 41692000,
+            "native_class": "mixed_native",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 2,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -3174000
+        },
+        {
+          "limit_ms": 48,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            115
+          ],
+          "exact": {
+            "pid": 1156,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 41692000,
+            "wall_ns": 139837858,
+            "preflight_ns": 41692000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1157,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 41692000,
+            "wall_ns": 134667092,
+            "preflight_ns": 41692000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 0,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -9174000
+        },
+        {
+          "limit_ms": 150,
+          "near": false,
+          "fixed": true,
+          "adaptive_percent": [],
+          "baseline": {
+            "pid": 1158,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 41692000,
+            "wall_ns": 133727247,
+            "preflight_ns": 41692000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1159,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 41692000,
+            "wall_ns": 136848356,
+            "preflight_ns": 41692000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 0,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -111174000
+        }
+      ],
+      "packet_exact_ns": 41692000,
+      "cohort": "prospective",
+      "program": "successor_walk",
+      "native_ns": [
+        38106000,
+        38690000,
+        42784000,
+        40453000,
+        40351000,
+        38390000,
+        38324000,
+        43409000,
+        38826000
+      ],
+      "median_ns": 38826000,
+      "min_ns": 38106000,
+      "max_ns": 43409000,
+      "baseline_signed_error_ppm": 73817,
+      "baseline_within_20pct": true,
+      "packet_exact_signed_error_ppm": 73817,
+      "packet_exact_within_20pct": true
+    },
+    "csr_frontier/large_ordered": {
+      "anchor_case": "csr_frontier/large_ordered",
+      "baseline_ns": 24999000,
+      "profile_cpu_ns": 232492000,
+      "baseline_paid_cpu_ns": 24999000,
+      "extra_ns": [],
+      "deadlines": [
+        {
+          "limit_ms": 22,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            85
+          ],
+          "baseline": {
+            "pid": 1205,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 23506930,
+            "wall_ns": 134392100,
+            "preflight_ns": 24999000,
+            "native_class": "mixed_native",
+            "majority_match": false,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1207,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 23510827,
+            "wall_ns": 134456329,
+            "preflight_ns": 24999000,
+            "native_class": "mixed_native",
+            "majority_match": false,
+            "preflight_match": true
+          },
+          "native_tle_reps": 4,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -520000
+        },
+        {
+          "limit_ms": 25,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            100
+          ],
+          "exact": {
+            "pid": 1208,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 24999000,
+            "wall_ns": 156500702,
+            "preflight_ns": 24999000,
+            "native_class": "mixed_native",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1209,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 24999000,
+            "wall_ns": 156235263,
+            "preflight_ns": 24999000,
+            "native_class": "mixed_native",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 1,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -3520000
+        },
+        {
+          "limit_ms": 29,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            115
+          ],
+          "baseline": {
+            "pid": 1210,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 24999000,
+            "wall_ns": 157389599,
+            "preflight_ns": 24999000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1215,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 24999000,
+            "wall_ns": 156009250,
+            "preflight_ns": 24999000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 0,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -7520000
+        },
+        {
+          "limit_ms": 40,
+          "near": false,
+          "fixed": true,
+          "adaptive_percent": [],
+          "exact": {
+            "pid": 1218,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 24999000,
+            "wall_ns": 156274538,
+            "preflight_ns": 24999000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1219,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 24999000,
+            "wall_ns": 156301025,
+            "preflight_ns": 24999000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 0,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -18520000
+        },
+        {
+          "limit_ms": 75,
+          "near": false,
+          "fixed": true,
+          "adaptive_percent": [],
+          "baseline": {
+            "pid": 1220,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 24999000,
+            "wall_ns": 156680137,
+            "preflight_ns": 24999000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1221,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 24999000,
+            "wall_ns": 157001412,
+            "preflight_ns": 24999000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 0,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -53520000
+        }
+      ],
+      "packet_exact_ns": 24999000,
+      "cohort": "prospective",
+      "program": "csr_frontier",
+      "native_ns": [
+        25580000,
+        23026000,
+        22762000,
+        20663000,
+        19421000,
+        20276000,
+        22869000,
+        21480000,
+        19985000
+      ],
+      "median_ns": 21480000,
+      "min_ns": 19421000,
+      "max_ns": 25580000,
+      "baseline_signed_error_ppm": 163827,
+      "baseline_within_20pct": true,
+      "packet_exact_signed_error_ppm": 163827,
+      "packet_exact_within_20pct": true
+    },
+    "rational_gcd/wide_new_count": {
+      "anchor_case": "rational_gcd/wide_new_count",
+      "baseline_ns": 120742000,
+      "profile_cpu_ns": 268094000,
+      "baseline_paid_cpu_ns": 120742000,
+      "extra_ns": [],
+      "deadlines": [
+        {
+          "limit_ms": 75,
+          "near": false,
+          "fixed": true,
+          "adaptive_percent": [],
+          "baseline": {
+            "pid": 1164,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 77902305,
+            "wall_ns": 159116271,
+            "preflight_ns": 120742000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1165,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 77155598,
+            "wall_ns": 159163374,
+            "preflight_ns": 120742000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 9,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 45718000
+        },
+        {
+          "limit_ms": 103,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            85
+          ],
+          "exact": {
+            "pid": 1166,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 106206427,
+            "wall_ns": 199984689,
+            "preflight_ns": 120742000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1167,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 106171894,
+            "wall_ns": 199928306,
+            "preflight_ns": 120742000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 9,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 17718000
+        },
+        {
+          "limit_ms": 121,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            100
+          ],
+          "baseline": {
+            "pid": 1168,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 120742000,
+            "wall_ns": 236520502,
+            "preflight_ns": 120742000,
+            "native_class": "mixed_native",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1170,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 120742000,
+            "wall_ns": 236517900,
+            "preflight_ns": 120742000,
+            "native_class": "mixed_native",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 2,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -282000
+        },
+        {
+          "limit_ms": 139,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            115
+          ],
+          "exact": {
+            "pid": 1171,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 120742009,
+            "wall_ns": 236634534,
+            "preflight_ns": 120742000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1172,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 120742000,
+            "wall_ns": 236609117,
+            "preflight_ns": 120742000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 0,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -18282000
+        },
+        {
+          "limit_ms": 150,
+          "near": true,
+          "fixed": true,
+          "adaptive_percent": [],
+          "baseline": {
+            "pid": 1173,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 120742000,
+            "wall_ns": 236708135,
+            "preflight_ns": 120742000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1176,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 120742000,
+            "wall_ns": 236528883,
+            "preflight_ns": 120742000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 0,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -29282000
+        }
+      ],
+      "packet_exact_ns": 120742000,
+      "cohort": "prospective",
+      "program": "rational_gcd",
+      "native_ns": [
+        120672000,
+        120756000,
+        120718000,
+        121066000,
+        120582000,
+        120767000,
+        120585000,
+        122022000,
+        120584000
+      ],
+      "median_ns": 120718000,
+      "min_ns": 120582000,
+      "max_ns": 122022000,
+      "baseline_signed_error_ppm": 199,
+      "baseline_within_20pct": true,
+      "packet_exact_signed_error_ppm": 199,
+      "packet_exact_within_20pct": true
+    },
+    "csr_frontier/intermediate_relabel": {
+      "anchor_case": "csr_frontier/intermediate_relabel",
+      "baseline_ns": 43247000,
+      "profile_cpu_ns": 278161000,
+      "baseline_paid_cpu_ns": 43247000,
+      "extra_ns": [],
+      "deadlines": [
+        {
+          "limit_ms": 37,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            85
+          ],
+          "exact": {
+            "pid": 1193,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 37237253,
+            "wall_ns": 165236839,
+            "preflight_ns": 43247000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1194,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 38444551,
+            "wall_ns": 165186624,
+            "preflight_ns": 43247000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 9,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 2525000
+        },
+        {
+          "limit_ms": 40,
+          "near": true,
+          "fixed": true,
+          "adaptive_percent": [],
+          "baseline": {
+            "pid": 1195,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 40347577,
+            "wall_ns": 170014070,
+            "preflight_ns": 43247000,
+            "native_class": "mixed_native",
+            "majority_match": false,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1196,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 40711517,
+            "wall_ns": 170003919,
+            "preflight_ns": 43247000,
+            "native_class": "mixed_native",
+            "majority_match": false,
+            "preflight_match": true
+          },
+          "native_tle_reps": 3,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -475000
+        },
+        {
+          "limit_ms": 44,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            100
+          ],
+          "exact": {
+            "pid": 1197,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 43247000,
+            "wall_ns": 195237611,
+            "preflight_ns": 43247000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1198,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 43247000,
+            "wall_ns": 190355484,
+            "preflight_ns": 43247000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 0,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -4475000
+        },
+        {
+          "limit_ms": 50,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            115
+          ],
+          "baseline": {
+            "pid": 1199,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 43247000,
+            "wall_ns": 195353474,
+            "preflight_ns": 43247000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1200,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 43247000,
+            "wall_ns": 195035183,
+            "preflight_ns": 43247000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 0,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -10475000
+        },
+        {
+          "limit_ms": 75,
+          "near": false,
+          "fixed": true,
+          "adaptive_percent": [],
+          "exact": {
+            "pid": 1201,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 43247000,
+            "wall_ns": 194995355,
+            "preflight_ns": 43247000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1202,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 43247000,
+            "wall_ns": 194587176,
+            "preflight_ns": 43247000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 0,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -35475000
+        }
+      ],
+      "packet_exact_ns": 43247000,
+      "cohort": "prospective",
+      "program": "csr_frontier",
+      "native_ns": [
+        37607000,
+        39640000,
+        37688000,
+        37781000,
+        40257000,
+        39144000,
+        39525000,
+        42925000,
+        40856000
+      ],
+      "median_ns": 39525000,
+      "min_ns": 37607000,
+      "max_ns": 42925000,
+      "baseline_signed_error_ppm": 94168,
+      "baseline_within_20pct": true,
+      "packet_exact_signed_error_ppm": 94168,
+      "packet_exact_within_20pct": true
+    },
+    "fenwick/four_half_mib": {
+      "anchor_case": "fenwick/large",
+      "baseline_ns": 132238930,
+      "profile_cpu_ns": 351729000,
+      "baseline_paid_cpu_ns": 0,
+      "extra_ns": [
+        127401000
+      ],
+      "deadlines": [
+        {
+          "limit_ms": 113,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            85
+          ],
+          "exact": {
+            "pid": 1238,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 114253702,
+            "wall_ns": 261333486,
+            "preflight_ns": 127401000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1239,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 114952542,
+            "wall_ns": 256311336,
+            "preflight_ns": 132238930,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 9,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 21716000
+        },
+        {
+          "limit_ms": 133,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            100
+          ],
+          "baseline": {
+            "pid": 1240,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 132238930,
+            "wall_ns": 308941997,
+            "preflight_ns": 132238930,
+            "native_class": "mixed_native",
+            "majority_match": false,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1241,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 127401000,
+            "wall_ns": 306934951,
+            "preflight_ns": 127401000,
+            "native_class": "mixed_native",
+            "majority_match": false,
+            "preflight_match": true
+          },
+          "native_tle_reps": 5,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 1716000
+        },
+        {
+          "limit_ms": 150,
+          "near": true,
+          "fixed": true,
+          "adaptive_percent": [],
+          "exact": {
+            "pid": 1242,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 127401000,
+            "wall_ns": 304326544,
+            "preflight_ns": 127401000,
+            "native_class": "mixed_native",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1243,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 132238930,
+            "wall_ns": 306228318,
+            "preflight_ns": 132238930,
+            "native_class": "mixed_native",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 2,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -15284000
+        },
+        {
+          "limit_ms": 153,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            115
+          ],
+          "baseline": {
+            "pid": 1244,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 132238930,
+            "wall_ns": 303636368,
+            "preflight_ns": 132238930,
+            "native_class": "mixed_native",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1245,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 127401000,
+            "wall_ns": 301680190,
+            "preflight_ns": 127401000,
+            "native_class": "mixed_native",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 2,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -18284000
+        },
+        {
+          "limit_ms": 175,
+          "near": true,
+          "fixed": true,
+          "adaptive_percent": [],
+          "exact": {
+            "pid": 1247,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 127401000,
+            "wall_ns": 304095555,
+            "preflight_ns": 127401000,
+            "native_class": "mixed_native",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1248,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 132238930,
+            "wall_ns": 310171503,
+            "preflight_ns": 132238930,
+            "native_class": "mixed_native",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 1,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -40284000
+        }
+      ],
+      "packet_exact_ns": 127401000,
+      "cohort": "prospective",
+      "program": "fenwick",
+      "native_ns": [
+        128543000,
+        126582000,
+        140122000,
+        177668000,
+        172707000,
+        126752000,
+        123933000,
+        134716000,
+        136780000
+      ],
+      "median_ns": 134716000,
+      "min_ns": 123933000,
+      "max_ns": 177668000,
+      "baseline_signed_error_ppm": -18387,
+      "baseline_within_20pct": true,
+      "packet_exact_signed_error_ppm": -54299,
+      "packet_exact_within_20pct": true
+    },
+    "threshold_runs/random": {
+      "anchor_case": "threshold_runs/blocked",
+      "baseline_ns": 14710497,
+      "profile_cpu_ns": 262130000,
+      "baseline_paid_cpu_ns": 0,
+      "extra_ns": [
+        78737000
+      ],
+      "deadlines": [
+        {
+          "limit_ms": 13,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            85
+          ],
+          "exact": {
+            "pid": 1097,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 15405804,
+            "wall_ns": 77636299,
+            "preflight_ns": 78737000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1098,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 13098739,
+            "wall_ns": 184713074,
+            "preflight_ns": 14710497,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 9,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 65425000
+        },
+        {
+          "limit_ms": 15,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            100
+          ],
+          "baseline": {
+            "pid": 1099,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 14710497,
+            "wall_ns": 218928902,
+            "preflight_ns": 14710497,
+            "native_class": "false_accept",
+            "majority_match": false,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1100,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 15640252,
+            "wall_ns": 77589547,
+            "preflight_ns": 78737000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 9,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 63425000
+        },
+        {
+          "limit_ms": 17,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            115
+          ],
+          "exact": {
+            "pid": 1101,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 17843312,
+            "wall_ns": 83010986,
+            "preflight_ns": 78737000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1102,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 14710497,
+            "wall_ns": 219327486,
+            "preflight_ns": 14710497,
+            "native_class": "false_accept",
+            "majority_match": false,
+            "preflight_match": true
+          },
+          "native_tle_reps": 9,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 61425000
+        },
+        {
+          "limit_ms": 23,
+          "near": false,
+          "fixed": true,
+          "adaptive_percent": [],
+          "baseline": {
+            "pid": 1103,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 14710497,
+            "wall_ns": 219157522,
+            "preflight_ns": 14710497,
+            "native_class": "false_accept",
+            "majority_match": false,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1104,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 23308166,
+            "wall_ns": 92854625,
+            "preflight_ns": 78737000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 9,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 55425000
+        },
+        {
+          "limit_ms": 75,
+          "near": false,
+          "fixed": true,
+          "adaptive_percent": [],
+          "exact": {
+            "pid": 1105,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 75411280,
+            "wall_ns": 194925189,
+            "preflight_ns": 78737000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1106,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 14710497,
+            "wall_ns": 219057088,
+            "preflight_ns": 14710497,
+            "native_class": "false_accept",
+            "majority_match": false,
+            "preflight_match": true
+          },
+          "native_tle_reps": 9,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 3425000
+        }
+      ],
+      "packet_exact_ns": 78737000,
+      "cohort": "previous",
+      "program": "threshold_runs",
+      "native_ns": [
+        78831000,
+        78265000,
+        78425000,
+        78607000,
+        78183000,
+        78195000,
+        79006000,
+        78172000,
+        79064000
+      ],
+      "median_ns": 78425000,
+      "min_ns": 78172000,
+      "max_ns": 79064000,
+      "baseline_signed_error_ppm": -812426,
+      "baseline_within_20pct": false,
+      "packet_exact_signed_error_ppm": 3978,
+      "packet_exact_within_20pct": true
+    },
+    "rational_gcd/long_quotient_series": {
+      "anchor_case": "rational_gcd/long_quotient_series",
+      "baseline_ns": 162369000,
+      "profile_cpu_ns": 421566000,
+      "baseline_paid_cpu_ns": 162369000,
+      "extra_ns": [],
+      "deadlines": [
+        {
+          "limit_ms": 75,
+          "near": false,
+          "fixed": true,
+          "adaptive_percent": [],
+          "exact": {
+            "pid": 1179,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 75204334,
+            "wall_ns": 199912742,
+            "preflight_ns": 162369000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1180,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 76278628,
+            "wall_ns": 205099588,
+            "preflight_ns": 162369000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 9,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 87611000
+        },
+        {
+          "limit_ms": 139,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            85
+          ],
+          "baseline": {
+            "pid": 1181,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 140325453,
+            "wall_ns": 332423322,
+            "preflight_ns": 162369000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1182,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 139977365,
+            "wall_ns": 332592248,
+            "preflight_ns": 162369000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 9,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 23611000
+        },
+        {
+          "limit_ms": 150,
+          "near": true,
+          "fixed": true,
+          "adaptive_percent": [],
+          "exact": {
+            "pid": 1183,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 150174295,
+            "wall_ns": 352819998,
+            "preflight_ns": 162369000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1184,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 150551051,
+            "wall_ns": 352814996,
+            "preflight_ns": 162369000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 9,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 12611000
+        },
+        {
+          "limit_ms": 163,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            100
+          ],
+          "baseline": {
+            "pid": 1185,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 162369000,
+            "wall_ns": 393660629,
+            "preflight_ns": 162369000,
+            "native_class": "mixed_native",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1186,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 162369000,
+            "wall_ns": 392790103,
+            "preflight_ns": 162369000,
+            "native_class": "mixed_native",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 2,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -389000
+        },
+        {
+          "limit_ms": 187,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            115
+          ],
+          "exact": {
+            "pid": 1187,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 162369000,
+            "wall_ns": 392763176,
+            "preflight_ns": 162369000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1188,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 162369000,
+            "wall_ns": 392517805,
+            "preflight_ns": 162369000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 0,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -24389000
+        }
+      ],
+      "packet_exact_ns": 162369000,
+      "cohort": "prospective",
+      "program": "rational_gcd",
+      "native_ns": [
+        162985000,
+        162492000,
+        162325000,
+        163767000,
+        162226000,
+        162284000,
+        162717000,
+        163379000,
+        162611000
+      ],
+      "median_ns": 162611000,
+      "min_ns": 162226000,
+      "max_ns": 163767000,
+      "baseline_signed_error_ppm": -1488,
+      "baseline_within_20pct": true,
+      "packet_exact_signed_error_ppm": -1488,
+      "packet_exact_within_20pct": true
+    },
+    "fenwick/seven_half_mib": {
+      "anchor_case": "fenwick/eleven_mib_repeat",
+      "baseline_ns": 215641594,
+      "profile_cpu_ns": 379222000,
+      "baseline_paid_cpu_ns": 0,
+      "extra_ns": [
+        181911000
+      ],
+      "deadlines": [
+        {
+          "limit_ms": 150,
+          "near": false,
+          "fixed": true,
+          "adaptive_percent": [],
+          "baseline": {
+            "pid": 1253,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 153742302,
+            "wall_ns": 241256635,
+            "preflight_ns": 215641594,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1254,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 150287405,
+            "wall_ns": 272004360,
+            "preflight_ns": 181911000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 9,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 37783000
+        },
+        {
+          "limit_ms": 175,
+          "near": true,
+          "fixed": true,
+          "adaptive_percent": [],
+          "exact": {
+            "pid": 1255,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 178263067,
+            "wall_ns": 312870649,
+            "preflight_ns": 181911000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1256,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 177205115,
+            "wall_ns": 272114083,
+            "preflight_ns": 215641594,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 9,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 12783000
+        },
+        {
+          "limit_ms": 184,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            85
+          ],
+          "baseline": {
+            "pid": 1257,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 185853381,
+            "wall_ns": 287535144,
+            "preflight_ns": 215641594,
+            "native_class": "mixed_native",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1258,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 181911000,
+            "wall_ns": 329289259,
+            "preflight_ns": 181911000,
+            "native_class": "mixed_native",
+            "majority_match": false,
+            "preflight_match": true
+          },
+          "native_tle_reps": 5,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 3783000
+        },
+        {
+          "limit_ms": 216,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            100
+          ],
+          "exact": {
+            "pid": 1259,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 181911000,
+            "wall_ns": 341322588,
+            "preflight_ns": 181911000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1260,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 215641594,
+            "wall_ns": 345202990,
+            "preflight_ns": 215641594,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 0,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -28217000
+        },
+        {
+          "limit_ms": 248,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            115
+          ],
+          "baseline": {
+            "pid": 1261,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 215641594,
+            "wall_ns": 345224412,
+            "preflight_ns": 215641594,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1262,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 181911000,
+            "wall_ns": 351631847,
+            "preflight_ns": 181911000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 0,
+          "native_majority_tle": false,
+          "native_median_margin_ns": -60217000
+        }
+      ],
+      "packet_exact_ns": 181911000,
+      "cohort": "prospective",
+      "program": "fenwick",
+      "native_ns": [
+        183354000,
+        191266000,
+        189353000,
+        187783000,
+        189762000,
+        183218000,
+        182855000,
+        183811000,
+        191066000
+      ],
+      "median_ns": 187783000,
+      "min_ns": 182855000,
+      "max_ns": 191266000,
+      "baseline_signed_error_ppm": 148355,
+      "baseline_within_20pct": true,
+      "packet_exact_signed_error_ppm": -31270,
+      "packet_exact_within_20pct": true
+    },
+    "threshold_runs/random_larger_stream": {
+      "anchor_case": "threshold_runs/blocked",
+      "baseline_ns": 23723610,
+      "profile_cpu_ns": 361467000,
+      "baseline_paid_cpu_ns": 0,
+      "extra_ns": [
+        126569000
+      ],
+      "deadlines": [
+        {
+          "limit_ms": 21,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            85
+          ],
+          "baseline": {
+            "pid": 1109,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 21444197,
+            "wall_ns": 271587290,
+            "preflight_ns": 23723610,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1110,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 21838910,
+            "wall_ns": 87824978,
+            "preflight_ns": 126569000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 9,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 105434000
+        },
+        {
+          "limit_ms": 23,
+          "near": true,
+          "fixed": true,
+          "adaptive_percent": [],
+          "exact": {
+            "pid": 1111,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 24372406,
+            "wall_ns": 92920054,
+            "preflight_ns": 126569000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1112,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 23395122,
+            "wall_ns": 292113716,
+            "preflight_ns": 23723610,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 9,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 103434000
+        },
+        {
+          "limit_ms": 24,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            100
+          ],
+          "baseline": {
+            "pid": 1113,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 23723610,
+            "wall_ns": 312087570,
+            "preflight_ns": 23723610,
+            "native_class": "false_accept",
+            "majority_match": false,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1114,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 24339022,
+            "wall_ns": 92982073,
+            "preflight_ns": 126569000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 9,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 102434000
+        },
+        {
+          "limit_ms": 28,
+          "near": true,
+          "fixed": false,
+          "adaptive_percent": [
+            115
+          ],
+          "exact": {
+            "pid": 1115,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 29745423,
+            "wall_ns": 103092107,
+            "preflight_ns": 126569000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "baseline": {
+            "pid": 1116,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 23723610,
+            "wall_ns": 311515337,
+            "preflight_ns": 23723610,
+            "native_class": "false_accept",
+            "majority_match": false,
+            "preflight_match": true
+          },
+          "native_tle_reps": 9,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 98434000
+        },
+        {
+          "limit_ms": 75,
+          "near": false,
+          "fixed": true,
+          "adaptive_percent": [],
+          "baseline": {
+            "pid": 1118,
+            "tle": false,
+            "observation": "terminal",
+            "prediction_ns": 23723610,
+            "wall_ns": 311663157,
+            "preflight_ns": 23723610,
+            "native_class": "false_accept",
+            "majority_match": false,
+            "preflight_match": true
+          },
+          "exact": {
+            "pid": 1119,
+            "tle": true,
+            "observation": "live",
+            "prediction_ns": 76082821,
+            "wall_ns": 194935642,
+            "preflight_ns": 126569000,
+            "native_class": "agreement",
+            "majority_match": true,
+            "preflight_match": true
+          },
+          "native_tle_reps": 9,
+          "native_majority_tle": true,
+          "native_median_margin_ns": 51434000
+        }
+      ],
+      "packet_exact_ns": 126569000,
+      "cohort": "prospective",
+      "program": "threshold_runs",
+      "native_ns": [
+        126260000,
+        126986000,
+        126434000,
+        126298000,
+        126524000,
+        127550000,
+        126420000,
+        126587000,
+        126418000
+      ],
+      "median_ns": 126434000,
+      "min_ns": 126260000,
+      "max_ns": 127550000,
+      "baseline_signed_error_ppm": -812364,
+      "baseline_within_20pct": false,
+      "packet_exact_signed_error_ppm": 1068,
+      "packet_exact_within_20pct": true
+    }
+  }
+}
