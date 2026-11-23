@@ -1,0 +1,201 @@
+{
+  "schema": 1,
+  "native_rounds": 9,
+  "poll_ms": 5,
+  "timeout_ms": 120000,
+  "cases": [
+    {
+      "case_id": "fenwick/train",
+      "program": "fenwick",
+      "split": "calibration",
+      "stdin": "16384 3000000\n",
+      "stdout": "22499227907698312\n",
+      "binary_sha256": "604edfbb56cfcdf621b0a22398d4556c65c0e442bfffdf98b8205782ac96ae9f",
+      "cohort": "calibration",
+      "limits_ms": [],
+      "shape_label": "initial tree"
+    },
+    {
+      "case_id": "fenwick/long",
+      "program": "fenwick",
+      "split": "holdout",
+      "stdin": "16384 9000000\n",
+      "stdout": "67592974333836570\n",
+      "binary_sha256": "604edfbb56cfcdf621b0a22398d4556c65c0e442bfffdf98b8205782ac96ae9f",
+      "cohort": "previous",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "shape_label": "original tree, more operations"
+    },
+    {
+      "case_id": "fenwick/large",
+      "program": "fenwick",
+      "split": "holdout",
+      "stdin": "1048576 3000000\n",
+      "stdout": "30280526504372768\n",
+      "binary_sha256": "604edfbb56cfcdf621b0a22398d4556c65c0e442bfffdf98b8205782ac96ae9f",
+      "cohort": "previous",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "shape_label": "larger tree, same operation count"
+    },
+    {
+      "case_id": "fenwick/scale",
+      "program": "fenwick",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "16384 6000000\n",
+      "stdout": "45043113444459384\n",
+      "binary_sha256": "604edfbb56cfcdf621b0a22398d4556c65c0e442bfffdf98b8205782ac96ae9f",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "shape_label": "original tree, more operations"
+    },
+    {
+      "case_id": "fenwick/expanded",
+      "program": "fenwick",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "2097152 6000000\n",
+      "stdout": "63796608529237330\n",
+      "binary_sha256": "604edfbb56cfcdf621b0a22398d4556c65c0e442bfffdf98b8205782ac96ae9f",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "shape_label": "larger tree, more operations"
+    },
+    {
+      "case_id": "lookup/train",
+      "program": "lookup",
+      "split": "calibration",
+      "stdin": "65536 1500000 0\n",
+      "stdout": "48091683072\n",
+      "binary_sha256": "a6675e774bb206112e1d578655908154de0b106c511705c5f3888f23ea9c06c8",
+      "cohort": "calibration",
+      "limits_ms": [],
+      "shape_label": "initial ordered queries"
+    },
+    {
+      "case_id": "lookup/long",
+      "program": "lookup",
+      "split": "holdout",
+      "stdin": "65536 4500000 0\n",
+      "stdout": "146503082240\n",
+      "binary_sha256": "a6675e774bb206112e1d578655908154de0b106c511705c5f3888f23ea9c06c8",
+      "cohort": "previous",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "shape_label": "ordered queries, more queries"
+    },
+    {
+      "case_id": "lookup/shuffled",
+      "program": "lookup",
+      "split": "holdout",
+      "stdin": "65536 1500000 1\n",
+      "stdout": "49114908191\n",
+      "binary_sha256": "a6675e774bb206112e1d578655908154de0b106c511705c5f3888f23ea9c06c8",
+      "cohort": "previous",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "shape_label": "shuffled queries, same query count"
+    },
+    {
+      "case_id": "lookup/ordered_pair",
+      "program": "lookup",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "65536 3000000 0\n",
+      "stdout": "97877451776\n",
+      "binary_sha256": "a6675e774bb206112e1d578655908154de0b106c511705c5f3888f23ea9c06c8",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "shape_label": "ordered queries, more queries"
+    },
+    {
+      "case_id": "lookup/shuffled_pair",
+      "program": "lookup",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "65536 3000000 1\n",
+      "stdout": "98282424879\n",
+      "binary_sha256": "a6675e774bb206112e1d578655908154de0b106c511705c5f3888f23ea9c06c8",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "shape_label": "shuffled queries, more queries"
+    },
+    {
+      "case_id": "window/train",
+      "program": "window",
+      "split": "calibration",
+      "cohort": "calibration",
+      "stdin": "4096 12000000\n",
+      "stdout": "42541588873\n",
+      "binary_sha256": "a388b4ded5b4313c07deaba0cd2f8bf82e61cc95b465ab14012b4e86d6f94c78",
+      "limits_ms": [],
+      "shape_label": "initial category table"
+    },
+    {
+      "case_id": "window/scale",
+      "program": "window",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "4096 20000000\n",
+      "stdout": "70908981999\n",
+      "binary_sha256": "a388b4ded5b4313c07deaba0cd2f8bf82e61cc95b465ab14012b4e86d6f94c78",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "shape_label": "original category table, more events"
+    },
+    {
+      "case_id": "window/expanded",
+      "program": "window",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "1048576 12000000\n",
+      "stdout": "97887963920\n",
+      "binary_sha256": "a388b4ded5b4313c07deaba0cd2f8bf82e61cc95b465ab14012b4e86d6f94c78",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "shape_label": "larger category table, same event count"
+    }
+  ]
+}

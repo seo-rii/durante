@@ -12,7 +12,21 @@ from cpp20_locality.export import parse_trace
 from cpp20_locality.verify import require, sha
 
 
-def publish(job, out):
+def limit_pids(summary, files):
+    pids = {r["pid"] for r in summary["native"]}
+    for case in summary["calibrations"]:
+        policy = json.loads(files[f"output/policies/{case['program']}.json"])
+        pids.update((policy["anchor"]["pid"], policy["native"]["pid"]))
+    for run in summary["runs"]:
+        pids.add(json.loads(files[f"output/live/{run['sequence']:03d}/result.json"])["pid"])
+    return pids
+
+
+SOURCES = ("experiments/calibrated_limits/bench.py", "experiments/calibrated_limits/plan.json",
+           "experiments/guarded_native/live.py", "experiments/guarded_native/anchor.py", "collect.py")
+
+
+def publish(job, out, *, select_pids=limit_pids, sources=SOURCES, plan_name="experiments/calibrated_limits/plan.json"):
     cleanup = json.loads((job / "cleanup.json").read_bytes())
     require((job / "ops.exit").read_text().strip() == "0" and cleanup["instance_http"] == cleanup["boot_disk_http"] == 404
             and cleanup["key_removed"] is True, "incomplete cleanup")
@@ -22,12 +36,7 @@ def publish(job, out):
     with tarfile.open(job / "raw.tar.gz", "r:gz") as raw:
         files = {m.name: raw.extractfile(m).read() for m in raw if m.isfile() and m.name.startswith("output/")}
     summary = json.loads(files["output/summary.json"])
-    pids = {r["pid"] for r in summary["native"]}
-    for case in summary["calibrations"]:
-        policy = json.loads(files[f"output/policies/{case['program']}.json"])
-        pids.update((policy["anchor"]["pid"], policy["native"]["pid"]))
-    for run in summary["runs"]:
-        pids.add(json.loads(files[f"output/live/{run['sequence']:03d}/result.json"])["pid"])
+    pids = select_pids(summary, files)
     _, lines = parse_trace(files["output/exec-trace"].decode())
     files["output/exec-trace"] = "".join(l + "\n" for pid, l in lines if pid in pids).encode()
     out.mkdir(parents=True, exist_ok=True)
@@ -37,10 +46,8 @@ def publish(job, out):
             item.size = len(raw)
             item.mode = 0o600
             tar.addfile(item, io.BytesIO(raw))
-    sources = ("experiments/calibrated_limits/bench.py", "experiments/calibrated_limits/plan.json",
-               "experiments/guarded_native/live.py", "experiments/guarded_native/anchor.py", "collect.py")
     guest = {name: sha((job / "payload/repo" / name).read_bytes()) for name in sources}
-    require(guest["experiments/calibrated_limits/plan.json"] == summary["plan_sha256"], "guest registration differs")
+    require(guest[plan_name] == summary["plan_sha256"], "guest registration differs")
     receipt = dict(platform=platform, cleanup=cleanup, input_sources_sha256=guest,
                    output_sha256=sha((out / "output.tar.xz").read_bytes()))
     (out / "collection.json").write_text(json.dumps(receipt, indent=2) + "\n")

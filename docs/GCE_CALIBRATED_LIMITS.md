@@ -58,3 +58,5 @@ python3 -m unittest discover -s tests -p 'test_calibrated_limits.py'
 ```
 
 To rebuild the guest payload, use `python3 "$study/prepare.py" "$scratch/guest" --runtime "$payload"` with the registered #82 runtime and Debian g++ 12.2.0-14+deb12u1. Preparation checks each static ELF against its registered SHA-256. Run the payload's `guest.sh` as root pinned to CPU 0 on a disposable two-core guest.
+
+A [follow-up with spatial and temporal load profiles](GCE_SHAPE_CALIBRATION.md) tests when a prior input's timing can be reused and measures the cost of making that choice.

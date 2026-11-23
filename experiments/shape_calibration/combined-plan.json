@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "corpus_sha256": "35ba3f6b8a6fe51a7ba9dcef263e66c4e2bc73e1f10531cfde52627f644a2feb",
+  "rules_sha256": "24bd66b246d25caac99dbad6e52620139e02c2d1edd53919765333f19835845b",
+  "reference_archive_sha256": "83f69cf503211adaaa41755b8254aabc822e1e4dccab8a6effcf71f40f4a01ff",
+  "repetitions": 3,
+  "algorithms": [
+    "separate",
+    "combined"
+  ],
+  "primary_metric": "sum of paired child wait4 CPU for one combined run divided by the sum of both separate runs on each input; publish all paired costs",
+  "ordering": "Sort case IDs by SHA-256; rotate by repeat starting at zero. Run combined first if the zero-based original sorted case index plus repeat is odd. Otherwise run separate first.",
+  "qualification": "Check both profiles and v11 records, ELF/input/output, held-out deadline predictions and chronological anchor actions against the frozen previous guest bank. Count unknown and mismatched outcomes. The new guest supplies profiling CPU, and no new native timing labels."
+}
