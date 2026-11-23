@@ -12,9 +12,10 @@ from cpp20_locality.export import parse_trace
 from preflight_cache.session import SOURCE_FILES
 
 
-def export(job, out):
+def export(job, out, mode="primary"):
     base = "experiments/deadline_accuracy/"
-    plan = json.loads((job / "payload/repo" / base / "plan.json").read_bytes())
+    plan_name = "exact-plan.json" if mode == "exact" else "plan.json"
+    plan = json.loads((job / "payload/repo" / base / plan_name).read_bytes())
     programs = {case["program"] for case in plan["cases"]}
     measured = set(METER) | programs
 
@@ -23,7 +24,12 @@ def export(job, out):
         return {pid for pid, rows in events.items() if any(r["executable"] in measured for r in rows)}
 
     sources = {"experiments/" + name for name in SOURCE_FILES}
-    sources.update(base + name for name in ("plan.json", "rules.json", "bench.py", "gate.py"))
+    files = {
+        "primary": (plan_name, "rules.json", "bench.py", "gate.py"),
+        "exact": (plan_name, "exact-rules.json", "bench_exact.py", "bench.py", "gate.py"),
+        "parity": (plan_name, "client-parity.json", "client_parity.py"),
+    }[mode]
+    sources.update(base + name for name in files)
     for name in programs:
         path = base + name + ".cpp"
         if not (job / "payload/repo" / path).is_file():
@@ -31,12 +37,13 @@ def export(job, out):
         sources.add(path)
     sources.update(("collect.py", "experiments/shape_calibration/bench.py",
                     "experiments/guarded_sampler/protocol.json", "experiments/guarded_native/archived_reference.json"))
-    publish(job, out, select_pids=pids, sources=sorted(sources), plan_name=base + "plan.json")
+    publish(job, out, select_pids=pids, sources=sorted(sources), plan_name=base + plan_name)
 
 
 if __name__ == "__main__":
     cli = argparse.ArgumentParser(description=__doc__)
     cli.add_argument("job", type=Path)
     cli.add_argument("out", type=Path)
+    cli.add_argument("--mode", choices=("primary", "exact", "parity"), default="primary")
     args = cli.parse_args()
-    export(args.job, args.out)
+    export(args.job, args.out, args.mode)

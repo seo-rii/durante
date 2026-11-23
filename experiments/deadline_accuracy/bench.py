@@ -22,9 +22,11 @@ def deadlines(prediction_ns, percent, fixed):
     return sorted(set(fixed).union(relative))
 
 
-def bench(payload, binaries, probe, out):
-    raw_plan = (HERE / "plan.json").read_bytes()
-    raw_rules = (HERE / "rules.json").read_bytes()
+def bench(payload, binaries, probe, out, exact=False):
+    candidate = "exact" if exact else "gate"
+    prefix = "exact-" if exact else ""
+    raw_plan = (HERE / (prefix + "plan.json")).read_bytes()
+    raw_rules = (HERE / (prefix + "rules.json")).read_bytes()
     plan = json.loads(raw_plan)
     probe_sha = elf_digest(probe)
     require(probe_sha == plan["probe_sha256"] == json.loads(raw_rules)["probe_sha256"], "different registered probe")
@@ -62,11 +64,12 @@ def bench(payload, binaries, probe, out):
         pred = selection["prediction_ns"]
         events = []
         if case["split"] == "holdout":
-            for method in ("baseline", "gate"):
+            for method in ("baseline", candidate):
                 (folder / "limits" / method).mkdir(parents=True)
             for index, ms in enumerate(deadlines(pred, plan["deadline_percent"], case["fixed_limits_ms"])):
-                chosen = gate.prepare(elf, stdin, folder, baseline_file, paid, folder / "deadline-packet", ms)
-                order = ("baseline", "gate") if (seq + index) % 2 == 0 else ("gate", "baseline")
+                chosen = gate.prepare(elf, stdin, folder, baseline_file, paid, folder / "deadline-packet", ms,
+                                      strategy="exact-one" if exact else "near-three")
+                order = ("baseline", candidate) if (seq + index) % 2 == 0 else (candidate, "baseline")
                 for method in order:
                     decision, policy = (baseline_file, paid) if method == "baseline" else (chosen["selection"], chosen["policy"])
                     dest = folder / "limits" / method / f"{index:02d}"
@@ -85,9 +88,13 @@ def bench(payload, binaries, probe, out):
           steal_delta=runtime.base["steal"](1) - start, rows=rows, native=native))
 
 
-if __name__ == "__main__":
+def main(exact=False):
     cli = argparse.ArgumentParser(description=__doc__)
     for flag in ("payload", "binaries", "probe", "out"):
         cli.add_argument("--" + flag, type=Path, required=True)
     args = cli.parse_args()
-    bench(args.payload.resolve(), args.binaries.resolve(), args.probe.resolve(), args.out.resolve())
+    bench(args.payload.resolve(), args.binaries.resolve(), args.probe.resolve(), args.out.resolve(), exact)
+
+
+if __name__ == "__main__":
+    main()
