@@ -15,7 +15,7 @@ def digest(file):
         return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
-def prepare(out, runtime, *, study=HERE, probe=None, benchmark="bench.py"):
+def prepare(out, runtime, *, study=HERE, probe=None, benchmark="bench.py", source_dirs=()):
     plan = json.loads((study / "plan.json").read_bytes())
     if (runtime / "protocol.json").read_bytes() != (HERE.parent / "guarded_sampler/protocol.json").read_bytes():
         raise ValueError("expected the registered guarded-sampler runtime")
@@ -29,10 +29,9 @@ def prepare(out, runtime, *, study=HERE, probe=None, benchmark="bench.py"):
     binaries = out / "binaries"
     binaries.mkdir()
     for program, expected in {c["program"]: c["binary_sha256"] for c in plan["cases"]}.items():
-        src = study / (program + ".cpp")
-        if not src.exists():
-            src = HERE / (program + ".cpp")
-        if src.exists():
+        src = next((path for directory in (study, *source_dirs, HERE)
+                    if (path := directory / (program + ".cpp")).is_file()), None)
+        if src is not None:
             subprocess.run(["g++", "-std=c++20", "-O2", "-static", "-s", "-march=x86-64-v2",
                             "-Wl,--build-id=none", src, "-o", binaries / program], check=True)
         else:
