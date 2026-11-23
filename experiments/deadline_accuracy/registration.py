@@ -6,12 +6,20 @@ HERE = Path(__file__).resolve().parent
 ARMS = {"near-three": "gate", "exact-one": "exact", "warm-three": "warm", "interleaved-three": "warm"}
 
 
-def registration_for(strategy, contest=False):
+INTERLEAVED_STUDIES = ("contest_batch", "contest_scale")
+
+
+def registration_for(strategy, contest=False, *, study=None):
     expand = None
     prefix = ""
+    if study is not None and (strategy != "interleaved-three" or contest or study not in INTERLEAVED_STUDIES):
+        raise ValueError("unregistered interleaved study")
     if strategy == "interleaved-three" and not contest:
-        from contest_batch.corpus import expand
-        directory = HERE.parent / "contest_batch"
+        if study == "contest_scale":
+            from contest_scale.corpus import expand
+        else:
+            from contest_batch.corpus import expand
+        directory = HERE.parent / (study or "contest_batch")
     elif strategy == "warm-three" and not contest:
         from contest_warm.corpus import expand
         directory = HERE.parent / "contest_warm"
