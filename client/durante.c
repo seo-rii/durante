@@ -118,10 +118,11 @@ static int tls_index;
 static bool raw_tls_enabled;
 static reg_id_t raw_tls_register;
 static uint raw_tls_offset;
-/* Client-owned raw TLS slots: the accounting pointer and two scratch spills.
- * Private spill slots let restore_state() recognize exactly this client's
- * sequences; the runtime's shared spill slots are also used by its mangling. */
-enum { RAW_TLS_STATE, RAW_TLS_SPILL_RCX, RAW_TLS_SPILL_R11, RAW_TLS_SLOTS };
+/* Client-owned raw TLS slots: the accounting pointer, two scratch spills and
+ * the flat write checkpoint. Private spill slots let restore_state() recognize
+ * exactly this client's sequences; the runtime's shared spill slots are also
+ * used by its mangling. */
+enum { RAW_TLS_STATE, RAW_TLS_SPILL_RCX, RAW_TLS_SPILL_R11, RAW_TLS_WRITE, RAW_TLS_SLOTS };
 /* Without a live clock nothing is published between syscalls. Every block and
  * store then uses flag-free inline accounting, including shared libraries and
  * generated code. Restart validation moves from block entry to the callbacks
@@ -652,6 +653,58 @@ static void set_raw_accounting_state(thread_data_t *d) {
   }
 }
 
+/* Flat inline code keeps the write checkpoint as one word in RAW_TLS_WRITE,
+ * stored with immediates and no scratch register: the write's address, its
+ * length and its block suffix. A block entry stores zero. Callbacks settle
+ * the word into the checkpoint fields before they read or replace them, and
+ * leave WRITE_WORD_SETTLED while the fields are current. A packed word has a
+ * nonzero length, so it equals neither marker. */
+enum { WRITE_WORD_PC_BITS = 48, WRITE_WORD_LENGTH_BITS = 4, WRITE_WORD_SETTLED = 1 };
+#define WRITE_WORD_MAX_SUFFIX \
+  ((UINT64_C(1) << (64 - WRITE_WORD_PC_BITS - WRITE_WORD_LENGTH_BITS)) - 1)
+
+static bool pack_write_checkpoint(app_pc pc, app_pc next_pc, int suffix, uint64_t *word) {
+  uint64_t address = (uint64_t)(ptr_uint_t)pc, kept = suffix > 0 ? (uint64_t)suffix : 0;
+  if (!pc || next_pc <= pc || next_pc - pc >= 1 << WRITE_WORD_LENGTH_BITS ||
+      address >> WRITE_WORD_PC_BITS || kept > WRITE_WORD_MAX_SUFFIX)
+    return false;
+  *word = address | (uint64_t)(next_pc - pc) << WRITE_WORD_PC_BITS |
+          kept << (WRITE_WORD_PC_BITS + WRITE_WORD_LENGTH_BITS);
+  return true;
+}
+
+static inline uint64_t *write_word(thread_data_t *d) {
+  return flat_inline && d->raw_tls_base
+             ? (uint64_t *)(d->raw_tls_base + raw_tls_offset) + RAW_TLS_WRITE
+             : NULL;
+}
+
+static void settle_write_checkpoint(thread_data_t *d) {
+  uint64_t *word = write_word(d);
+  if (!word || *word == WRITE_WORD_SETTLED)
+    return;
+  uint64_t packed = *word;
+  *word = WRITE_WORD_SETTLED;
+  if (packed >> WRITE_WORD_PC_BITS == 0) {
+    d->write_pc = NULL; /* A block was entered after the last checkpoint. */
+    return;
+  }
+  app_pc pc = (app_pc)(ptr_uint_t)(packed & ((UINT64_C(1) << WRITE_WORD_PC_BITS) - 1));
+  d->write_pc = pc;
+  d->write_next_pc = pc + (packed >> WRITE_WORD_PC_BITS & ((1 << WRITE_WORD_LENGTH_BITS) - 1));
+  d->write_suffix = packed >> (WRITE_WORD_PC_BITS + WRITE_WORD_LENGTH_BITS);
+  d->write_rep = false;
+}
+
+/* Discard the checkpoint, including one inline code stored but no callback
+ * has settled. */
+static void clear_write_checkpoint(thread_data_t *d) {
+  uint64_t *word = write_word(d);
+  if (word)
+    *word = WRITE_WORD_SETTLED;
+  d->write_pc = NULL;
+}
+
 static void thread_init(void *ctx) {
   thread_data_t *d = dr_thread_alloc(ctx, sizeof(*d));
   if (!d)
@@ -802,6 +855,7 @@ static void observe_rep(app_pc pc, int opcode, int bytes, int count_reg) {
   if (data == NULL)
     fail("REP observation without thread state");
   settle_restart(data);
+  settle_write_checkpoint(data);
   set_fast_until(data, 0);
   uint64_t repeats = 0;
   if (bytes != 0) {
@@ -939,7 +993,7 @@ static thread_data_t *charge_block(int instructions, app_pc first_pc) {
       data->restart_pc = NULL;
     }
   }
-  data->write_pc = NULL;
+  clear_write_checkpoint(data);
   if (live_work)
     publish_live_work(data, false);
   if (UINT64_MAX - data->instructions < (uint64_t)instructions) {
@@ -1049,8 +1103,7 @@ static void emit_flat_parts(void *ctx, instrlist_t *bb, instr_t *where, int coun
   INSERT(INSTR_CREATE_lea(ctx, value,
                           opnd_create_base_disp(DR_REG_RCX, DR_REG_NULL, 0, count, OPSZ_lea)));
   INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, instructions)), value));
-  INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, write_pc)),
-                             OPND_CREATE_INT32(0)));
+  INSERT(INSTR_CREATE_mov_st(ctx, raw_slot(RAW_TLS_WRITE), OPND_CREATE_INT32(0)));
   }
   if (parts & FLAT_SUFFIX) {
   INSERT(INSTR_CREATE_mov_ld(ctx, state, raw_slot(RAW_TLS_SPILL_R11)));
@@ -1129,10 +1182,12 @@ static patched_template_t *publish_template(void *ctx, patched_template_t **slot
 }
 
 static void insert_patched(void *ctx, instrlist_t *bb, instr_t *where,
-                           const patched_template_t *t, const uint32_t *value) {
+                           const patched_template_t *t, const uint32_t *value, uint values) {
+  if (values != t->immediates)
+    fail("patched template does not match its immediates");
   byte code[SEQUENCE_BYTES];
   memcpy(code, t->code.bytes, t->code.length);
-  for (uint i = 0; i < t->immediates; ++i)
+  for (uint i = 0; i < values; ++i)
     memcpy(code + t->immediate[i], &value[i], sizeof(value[i]));
   insert_bundle(ctx, bb, where, code, t->code.length);
 }
@@ -1250,7 +1305,7 @@ static void insert_flat_live_entry(void *ctx, instrlist_t *bb, instr_t *where, i
   const uint32_t value[BOUNDARY_IMMEDIATES] = {
       (uint32_t)count, (uint32_t)(ptr_uint_t)first_pc,
       (uint32_t)((ptr_uint_t)first_pc >> 32)};
-  insert_patched(ctx, bb, where, live_boundary_template(ctx), value);
+  insert_patched(ctx, bb, where, live_boundary_template(ctx), value, BOUNDARY_IMMEDIATES);
   instrlist_meta_preinsert(bb, where,
                            INSTR_CREATE_lea(ctx, opnd_create_reg(DR_REG_RCX),
                                             opnd_create_mem_instr(resume, 0, OPSZ_lea)));
@@ -1436,6 +1491,7 @@ static thread_data_t *before_write(app_pc pc, app_pc next_pc, int suffix) {
   thread_data_t *data = accounting_thread_data();
   if (data == NULL)
     fail("write checkpoint without thread state");
+  clear_write_checkpoint(data);
   record_write_checkpoint(data, pc, next_pc, suffix);
   return data;
 }
@@ -1489,15 +1545,49 @@ static const patched_template_t *write_checkpoint_template(void *ctx) {
                           "cannot lay out the write checkpoint");
 }
 
-static void insert_write_checkpoint(void *ctx, instrlist_t *bb, instr_t *where,
+/* Flat write checkpoint: the two halves of the packed word, stored straight
+ * to the raw TLS slot. It needs no scratch register, so restore_state() has
+ * nothing to recover inside it. */
+enum { PACKED_LOW, PACKED_HIGH, PACKED_IMMEDIATES };
+static patched_template_t *packed_checkpoint_template;
+
+static const patched_template_t *packed_write_template(void *ctx) {
+  patched_template_t *t = __atomic_load_n(&packed_checkpoint_template, __ATOMIC_ACQUIRE);
+  if (t)
+    return t;
+  instrlist_t *ilist = instrlist_create(ctx);
+  instr_t *imm[PACKED_IMMEDIATES];
+  for (int i = 0; i < PACKED_IMMEDIATES; ++i) {
+    opnd_t half = raw_slot(RAW_TLS_WRITE);
+    opnd_set_disp(&half, opnd_get_disp(half) + 4 * i);
+    opnd_set_size(&half, OPSZ_4);
+    imm[i] = INSTR_CREATE_mov_st(ctx, half, OPND_CREATE_INT32(0x7fffffff));
+    instrlist_meta_append(ilist, imm[i]);
+  }
+  return publish_template(ctx, &packed_checkpoint_template, ilist, imm, PACKED_IMMEDIATES,
+                          "cannot lay out the packed write checkpoint");
+}
+
+/* Returns false when this write needs the callback instead: flat code only
+ * stores checkpoints that fit the packed word. */
+static bool insert_write_checkpoint(void *ctx, instrlist_t *bb, instr_t *where,
                                     app_pc pc, app_pc next_pc, int suffix) {
+  if (flat_inline) {
+    uint64_t word;
+    if (!pack_write_checkpoint(pc, next_pc, suffix, &word))
+      return false;
+    const uint32_t value[PACKED_IMMEDIATES] = {(uint32_t)word, (uint32_t)(word >> 32)};
+    insert_patched(ctx, bb, where, packed_write_template(ctx), value, PACKED_IMMEDIATES);
+    return true;
+  }
   if (raw_tls_enabled) {
     const uint32_t value[CHECKPOINT_IMMEDIATES] = {
         (uint32_t)(ptr_uint_t)pc, (uint32_t)((ptr_uint_t)pc >> 32),
         (uint32_t)(ptr_uint_t)next_pc, (uint32_t)((ptr_uint_t)next_pc >> 32),
         (uint32_t)suffix};
-    insert_patched(ctx, bb, where, write_checkpoint_template(ctx), value);
-    return;
+    insert_patched(ctx, bb, where, write_checkpoint_template(ctx), value,
+                   CHECKPOINT_IMMEDIATES);
+    return true;
   }
   const reg_id_t data = DR_REG_R11;
   if (raw_tls_enabled)
@@ -1522,6 +1612,7 @@ static void insert_write_checkpoint(void *ctx, instrlist_t *bb, instr_t *where,
                                                             raw_slot(RAW_TLS_SPILL_R11)));
   else
     dr_restore_reg(ctx, bb, where, data, SPILL_SLOT_1);
+  return true;
 }
 
 static void code_replay(void *ctx, int reason, app_pc source_pc,
@@ -1538,6 +1629,7 @@ static void code_replay(void *ctx, int reason, app_pc source_pc,
   }
   check_flat_counter(d);
   settle_restart(d);
+  settle_write_checkpoint(d);
   set_fast_until(d, 0);
   if (reason == DR_DURANTE_REPLAY_ENTRY) {
     /* Cache validation ran before client entry instrumentation. Nothing was
@@ -1612,7 +1704,7 @@ static void kernel_xfer(void *ctx, const dr_kernel_xfer_info_t *info) {
   /* Signal handlers can call the same code at the same PC with another BB
    * suffix. PC equality cannot authenticate an interrupted TLS checkpoint.
    * An unrelated earlier signal does not make later JIT work invalid. */
-  d->write_pc = NULL;
+  clear_write_checkpoint(d);
   if (d->restart_pc) {
     counter_error(&d->replay_error);
     d->restart_pc = NULL;
@@ -1787,8 +1879,8 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
                            OPND_CREATE_INT32(suffix),
                            OPND_CREATE_INT32((int)suffix_memory_bytes(where)),
                            OPND_CREATE_INT32((int)instruction_memory_bytes(where)));
-    } else if (!latency_bound_enabled && inline_write) {
-      insert_write_checkpoint(drcontext, bb, where, pc, next_pc, suffix);
+    } else if (!latency_bound_enabled && inline_write &&
+               insert_write_checkpoint(drcontext, bb, where, pc, next_pc, suffix)) {
       /* Flat layouts depend only on the block, so retranslation reproduces them. */
       if (!cache_probe_enabled() && !flat_inline)
         flags = DR_EMIT_STORE_TRANSLATIONS;
@@ -2037,6 +2129,7 @@ static void fork_init(void *ctx) {
     fail("fork without surviving TLS");
   memset(d, 0, sizeof(*d));
   set_raw_accounting_state(d);
+  clear_write_checkpoint(d); /* The slot still holds the parent's word. */
   set_fast_until(d, 0);
   open_stream("fork", parent, previous);
 }
@@ -2102,6 +2195,8 @@ static void process_exit(void) {
     dr_global_free(flat_live_suffix, sizeof(*flat_live_suffix));
   if (checkpoint_template)
     dr_global_free(checkpoint_template, sizeof(*checkpoint_template));
+  if (packed_checkpoint_template)
+    dr_global_free(packed_checkpoint_template, sizeof(*packed_checkpoint_template));
   if (boundary_template)
     dr_global_free(boundary_template, sizeof(*boundary_template));
   if (boundary_routine)

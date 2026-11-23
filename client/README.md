@@ -17,15 +17,19 @@ cache probe and count-location profiling disabled. It also supports `-rep_bytes`
 and `-live_work_v1`. With `-latency_bound` or its `-memory_operand_bytes`
 extension, a callback charges each block, even when the live clock is off.
 The inline entry preserves application flags, including values a signal handler
-may inspect. Each memory write records its replay checkpoint with flag-neutral
-moves. Scratch registers spill to client-owned TLS slots.
+may inspect. Its scratch registers spill to client-owned TLS slots.
 A restore-state handler recovers them if the runtime translates a thread inside
-one of these sequences. It also returns a stored entry charge when a relocated
+the entry. Each memory write records its replay checkpoint as one packed word in
+another slot: the write's address, its length and its block suffix, stored as
+two immediates with no scratch register. A block entry stores zero there.
+Callbacks settle the word into the checkpoint state before they read or replace
+it. A write that does not fit the word (a suffix above 4095 instructions) takes
+the callback instead. It also returns a stored entry charge when a relocated
 thread will enter the same block again. The layout depends only on the block, so
 no translations are stored. A retry's first-block checks move from block entry
 to the replay, REP, signal and snapshot callbacks. The entry sequence for each
-block size and the raw-TLS write checkpoint are encoded once per process and
-inserted as raw copies, with only a write's addresses and suffix patched. The
+block size and the write checkpoint are encoded once per process and inserted
+as raw copies, with only a write's packed word patched. The
 runtime otherwise re-encodes every inserted instruction of each new block, which
 dominated block building for interpreters and generated code.
 

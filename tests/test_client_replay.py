@@ -247,12 +247,28 @@ static void arm_rep(void) {
     assert(!state.replay_error && !state.restart_entered);
 }
 
+/* Flat code keeps its write checkpoint in the raw TLS word: an entry stores
+ * zero and a write stores the packed word. Callbacks settle it. */
+static reg_t flat_slots[RAW_TLS_SLOTS];
+static void flat_mode(void) {
+    flat_inline = raw_tls_enabled = true;
+    raw_tls_offset = 0;
+    memset(flat_slots, 0, sizeof(flat_slots));
+    state.raw_tls_base = (byte *)flat_slots;
+}
+static void flat_write(app_pc pc, app_pc next_pc, int suffix) {
+    uint64_t word;
+    assert(pack_write_checkpoint(pc, next_pc, suffix, &word));
+    flat_slots[RAW_TLS_WRITE] = word;
+}
+
 /* Model the completed-entry latch and charge for state-callback tests. */
 static void flat_enter(uint64_t count) {
     check_flat_counter(active);
     active->entry_base = active->instructions;
     active->instructions += count;
-    active->write_pc = NULL;
+    assert(write_word(active));
+    *write_word(active) = 0;
 }
 
 /* The live flat entry: a negative countdown takes the boundary callback,
@@ -761,7 +777,7 @@ int main(int argc, char **argv) {
     } else if (!strcmp(test, "flat-live")) {
         live_work_t page = {0};
         live_work = &page;
-        flat_inline = true;
+        flat_mode();
         set_fast_until(&state, 0); /* as at thread start */
         flat_live_enter(100, START);
         assert(state.instructions == 100 && state.entry_base == 0 && page.instructions == 0);
@@ -775,7 +791,7 @@ int main(int argc, char **argv) {
         assert(state.entry_base == 4100 && state.fast_until == 8196 && state.live_room == 4088);
         /* Replay forces the callback, which settles the retry at the next entry. */
         flat_live_enter(4, START);
-        before_write(WRITE, NEXT, 2);
+        flat_write(WRITE, NEXT, 2);
         code_replay(CTX, DR_DURANTE_REPLAY_RETRY, WRITE, WRITE);
         assert(state.instructions == 4109 && state.restart_pc == WRITE && state.live_room == -1);
         flat_live_enter(2, WRITE);
@@ -847,10 +863,10 @@ int main(int argc, char **argv) {
         snapshot(true);
         assert(strstr(record, "\"instructions\":77") && add_thread(&parent_state));
     } else if (!strcmp(test, "flat-prefix")) {
-        flat_inline = true;
+        flat_mode();
         state.instructions = 100;
         flat_enter(10);
-        before_write(WRITE, NEXT, 4);
+        flat_write(WRITE, NEXT, 4);
         code_replay(CTX, DR_DURANTE_REPLAY_RETRY, WRITE, WRITE);
         assert(state.instructions == 106 && state.restart_pc == WRITE);
         assert(state.restart_base == 106);
@@ -866,10 +882,10 @@ int main(int argc, char **argv) {
         snapshot(false);
     } else if (!strcmp(test, "flat-first-write")) {
         /* A fault at the first instruction returns the whole entry charge. */
-        flat_inline = true;
+        flat_mode();
         state.instructions = 100;
         flat_enter(4);
-        before_write(START, WRITE, 4);
+        flat_write(START, START + 4, 4);
         code_replay(CTX, DR_DURANTE_REPLAY_RETRY, START, START);
         assert(state.instructions == 100 && state.entry_base == 100);
         assert(state.restart_base == 100 && state.restart_pc == START);
@@ -878,10 +894,10 @@ int main(int argc, char **argv) {
         snapshot(true);
         assert(!state.restart_pc && state.instructions == 104);
     } else if (!strcmp(test, "flat-rep")) {
-        flat_inline = true;
+        flat_mode();
         state.instructions = 100;
         flat_enter(7);
-        before_write(WRITE, NEXT, 3);
+        flat_write(WRITE, NEXT, 3);
         supplied_rcx = 10;
         observe_rep(WRITE, OP_rep_movs, 1, DR_REG_RCX);
         code_replay(CTX, DR_DURANTE_REPLAY_RETRY, WRITE, WRITE);
@@ -889,7 +905,7 @@ int main(int argc, char **argv) {
         code_replay(CTX, DR_DURANTE_REPLAY_ENTRY, NULL, WRITE);
         assert(state.restart_pc == WRITE && !state.replay_error);
         flat_enter(3);
-        before_write(WRITE, NEXT, 3);
+        flat_write(WRITE, NEXT, 3);
         supplied_rcx = 6;
         observe_rep(WRITE, OP_rep_movs, 1, DR_REG_RCX);
         assert(state.rep_bytes == 10 && state.rep_entries == 1 && !state.restart_pc);
@@ -897,7 +913,7 @@ int main(int argc, char **argv) {
         code_replay(CTX, DR_DURANTE_REPLAY_RETRY, WRITE, WRITE);
         assert(state.instructions == 104 && state.restart_rep_request == 10);
         flat_enter(3);
-        before_write(WRITE, NEXT, 3);
+        flat_write(WRITE, NEXT, 3);
         supplied_rcx = 2;
         observe_rep(WRITE, OP_rep_movs, 1, DR_REG_RCX);
         assert(state.rep_bytes == 10 && state.rep_entries == 1);
@@ -905,7 +921,7 @@ int main(int argc, char **argv) {
         assert(state.instructions == 105 && !state.restart_pc && !state.replay_error);
         flat_enter(2);
         flat_enter(3);
-        before_write(WRITE, NEXT, 3);
+        flat_write(WRITE, NEXT, 3);
         supplied_rcx = 4;
         observe_rep(WRITE, OP_rep_movs, 1, DR_REG_RCX);
         assert(state.instructions == 110 && state.rep_bytes == 14 && state.rep_entries == 2);
@@ -913,10 +929,10 @@ int main(int argc, char **argv) {
         snapshot(true);
         assert_record_breakdown(14, 0, 2, 0);
     } else if (!strcmp(test, "flat-rep-missed")) {
-        flat_inline = true;
+        flat_mode();
         state.instructions = 100;
         flat_enter(7);
-        before_write(WRITE, NEXT, 3);
+        flat_write(WRITE, NEXT, 3);
         supplied_rcx = 10;
         observe_rep(WRITE, OP_rep_movs, 1, DR_REG_RCX);
         code_replay(CTX, DR_DURANTE_REPLAY_RETRY, WRITE, WRITE);
@@ -929,7 +945,7 @@ int main(int argc, char **argv) {
         assert(!add_thread(&state));
         snapshot(false);
     } else if (!strcmp(test, "flat-overflow")) {
-        flat_inline = true;
+        flat_mode();
         state.instructions = UINT64_MAX - 1;
         flat_enter(5);
         assert(state.instructions == 3);
@@ -938,18 +954,101 @@ int main(int argc, char **argv) {
         snapshot(false);
         assert(state.counter_overflows && !add_thread(&state));
         reset();
-        flat_inline = true;
+        flat_mode();
         state.instructions = UINT64_MAX - 5;
         flat_enter(5);
         snapshot(true);
         assert(add_thread(&state) && total_instructions == UINT64_MAX);
         reset();
-        flat_inline = true;
+        flat_mode();
         state.instructions = UINT64_MAX - 1;
         flat_enter(5);
-        before_write(START, NEXT, 2);
+        flat_write(START, START + 3, 2);
         code_replay(CTX, DR_DURANTE_REPLAY_RETRY, START, START);
         assert(state.counter_overflows && state.replay_error && !state.restart_pc);
+    } else if (!strcmp(test, "flat-write-word")) {
+        flat_mode();
+        uint64_t *word = write_word(&state), packed;
+        assert(word == (uint64_t *)&flat_slots[RAW_TLS_WRITE]);
+        /* An entry since the last settle discards a stale checkpoint. */
+        state.write_pc = START;
+        *word = 0;
+        settle_write_checkpoint(&state);
+        assert(!state.write_pc && *word == WRITE_WORD_SETTLED);
+        /* A packed word restores exactly what the write stored. */
+        state.write_rep = true;
+        flat_write(WRITE, NEXT, 3);
+        settle_write_checkpoint(&state);
+        assert(state.write_pc == WRITE && state.write_next_pc == NEXT && state.write_suffix == 3);
+        assert(!state.write_rep && *word == WRITE_WORD_SETTLED);
+        /* Settled fields are current and are not rewritten. */
+        state.write_suffix = 9;
+        settle_write_checkpoint(&state);
+        assert(state.write_pc == WRITE && state.write_suffix == 9);
+        /* The widest fields and a non-positive suffix. */
+        app_pc high = PC((UINT64_C(1) << 47) - 16);
+        assert(pack_write_checkpoint(high, high + 15, 4095, &packed));
+        *word = packed;
+        settle_write_checkpoint(&state);
+        assert(state.write_pc == high && state.write_next_pc == high + 15 &&
+               state.write_suffix == 4095);
+        assert(pack_write_checkpoint(WRITE, NEXT, -1, &packed));
+        *word = packed;
+        settle_write_checkpoint(&state);
+        assert(state.write_pc == WRITE && state.write_suffix == 0);
+        /* Checkpoints that do not fit take the callback instead. */
+        assert(!pack_write_checkpoint(NULL, NEXT, 1, &packed));
+        assert(!pack_write_checkpoint(WRITE, WRITE, 1, &packed));
+        assert(!pack_write_checkpoint(WRITE, WRITE + 16, 1, &packed));
+        assert(!pack_write_checkpoint(PC(UINT64_C(1) << 48), PC((UINT64_C(1) << 48) + 2), 1, &packed));
+        assert(!pack_write_checkpoint(WRITE, NEXT, 4096, &packed));
+        flat_write(START, START + 2, 5);
+        before_write(WRITE, WRITE + 16, 7);
+        assert(*word == WRITE_WORD_SETTLED);
+        settle_write_checkpoint(&state);
+        assert(state.write_pc == WRITE && state.write_next_pc == WRITE + 16 && state.write_suffix == 7);
+        /* A discarded checkpoint cannot return at a later settle. */
+        flat_write(WRITE, NEXT, 3);
+        kernel_xfer(CTX, NULL);
+        assert(!state.write_pc && *word == WRITE_WORD_SETTLED);
+        settle_write_checkpoint(&state);
+        assert(!state.write_pc);
+        flat_write(WRITE, NEXT, 3);
+        clear_write_checkpoint(&state);
+        settle_write_checkpoint(&state);
+        assert(!state.write_pc);
+        /* The boundary callback is a block entry. */
+        live_work_t page = {0};
+        live_work = &page;
+        state.instructions = 100;
+        flat_write(WRITE, NEXT, 3);
+        charge_boundary(4, START);
+        assert(state.instructions == 104 && !state.write_pc && *word == WRITE_WORD_SETTLED);
+        live_work = NULL;
+        /* Replay and the REP observer read the inline word. */
+        flat_enter(6);
+        flat_write(WRITE, NEXT, 3);
+        supplied_rcx = 8;
+        observe_rep(WRITE, OP_rep_stos, 1, DR_REG_RCX);
+        assert(state.write_pc == WRITE && state.write_rep && state.write_rep_request == 8);
+        code_replay(CTX, DR_DURANTE_REPLAY_RETRY, WRITE, WRITE);
+        assert(state.instructions == 107 && state.restart_pc == WRITE && state.restart_rep);
+        assert(!state.write_pc && !state.replay_error);
+        /* A replay with no write since the entry has no checkpoint. */
+        reset();
+        flat_mode();
+        state.instructions = 50;
+        flat_write(WRITE, NEXT, 3);
+        flat_enter(5);
+        code_replay(CTX, DR_DURANTE_REPLAY_RETRY, WRITE, WRITE);
+        assert(state.replay_error && state.instructions == 55);
+        /* Without flat code the fields are used directly. */
+        reset();
+        flat_inline = false;
+        assert(!write_word(&state));
+        before_write(WRITE, NEXT, 3);
+        settle_write_checkpoint(&state);
+        assert(state.write_pc == WRITE && state.write_suffix == 3);
     } else if (!strcmp(test, "missing-tls")) {
         active = NULL;
         code_replay(CTX, DR_DURANTE_REPLAY_RETRY, WRITE, WRITE);
@@ -985,6 +1084,12 @@ static thread_data_t *restoring;
 void *drmgr_get_tls_field(void *ctx, int index) {
     (void)ctx; (void)index;
     return restoring;
+}
+/* Only the non-flat write checkpoint reads the drmgr slot; it is not emitted here. */
+bool drmgr_insert_read_tls_field(void *ctx, int index, instrlist_t *list, instr_t *where,
+                                 reg_id_t reg) {
+    (void)ctx; (void)index; (void)list; (void)where; (void)reg;
+    return false;
 }
 
 /* Decode the actual live prefix at a relocation before the fast-body store.
@@ -1052,6 +1157,15 @@ static void run_entry(byte *code, reg_t rcx, reg_t r11, reg_t *out_rcx, reg_t *o
 }
 
 #define ENTRY_PC ((app_pc)(ptr_uint_t)UINT64_C(0x123456789abc))
+
+/* One 32-bit half of the raw TLS write word. */
+static bool is_raw_slot_half(opnd_t opnd, int half) {
+    return opnd_is_far_base_disp(opnd) && opnd_get_segment(opnd) == raw_tls_register &&
+           opnd_get_base(opnd) == DR_REG_NULL && opnd_get_index(opnd) == DR_REG_NULL &&
+           opnd_get_size(opnd) == OPSZ_4 &&
+           opnd_get_disp(opnd) ==
+               (int)(raw_tls_offset + RAW_TLS_WRITE * sizeof(void *)) + 4 * half;
+}
 
 int main(void) {
     void *ctx = dr_standalone_init();
@@ -1145,6 +1259,44 @@ int main(void) {
     }
     assert(jump);
     check_slow_path_relocation(ctx, entry, jump);
+    /* The packed write checkpoint: immediate stores to the raw TLS word that
+     * read or write no register and no flag. */
+    byte *write_code = entry + 3 * page / 4;
+    flat_inline = true;
+    bb = instrlist_create(ctx);
+    ret = INSTR_CREATE_ret(ctx);
+    instrlist_append(bb, ret);
+    report = XINST_CREATE_move(ctx, opnd_create_reg(DR_REG_RAX), opnd_create_reg(DR_REG_RCX));
+    instrlist_meta_preinsert(bb, ret, report);
+    instrlist_meta_preinsert(bb, ret, XINST_CREATE_move(ctx, opnd_create_reg(DR_REG_RDX),
+                                                        opnd_create_reg(DR_REG_R11)));
+    assert(insert_write_checkpoint(ctx, bb, report, ENTRY_PC, ENTRY_PC + 7, 9));
+    byte *write_end = instrlist_encode(ctx, bb, write_code, true);
+    assert(write_end && write_end <= entry + page);
+    instrlist_clear_and_destroy(ctx, bb);
+    int stores = 0;
+    for (byte *pc = write_code; pc != NULL && pc < write_end;) {
+        instr_t in;
+        instr_init(ctx, &in);
+        byte *next = decode(ctx, pc, &in);
+        assert(next);
+        assert(!(instr_get_arith_flags(&in, DR_QUERY_DEFAULT) & (EFLAGS_READ_6 | EFLAGS_WRITE_6)));
+        if (instr_get_opcode(&in) == OP_mov_st && opnd_is_immed_int(instr_get_src(&in, 0))) {
+            assert(is_raw_slot_half(instr_get_dst(&in, 0), stores));
+            ++stores;
+        }
+        instr_free(ctx, &in);
+        pc = next;
+    }
+    assert(stores == 2);
+    /* A checkpoint that does not pack inserts nothing; the caller uses the callback. */
+    bb = instrlist_create(ctx);
+    ret = INSTR_CREATE_ret(ctx);
+    instrlist_append(bb, ret);
+    assert(!insert_write_checkpoint(ctx, bb, ret, ENTRY_PC, ENTRY_PC + 16, 9));
+    assert(!insert_write_checkpoint(ctx, bb, ret, ENTRY_PC, ENTRY_PC + 7, 4096));
+    assert(instrlist_first(bb) == ret);
+    instrlist_clear_and_destroy(ctx, bb);
     dr_standalone_exit();
     assert(mprotect(code, page, PROT_READ | PROT_EXEC) == 0);
     assert(mprotect(entry, page, PROT_READ | PROT_EXEC) == 0);
@@ -1162,7 +1314,9 @@ int main(void) {
         slots[RAW_TLS_STATE] = (reg_t)&d;
         for (int j = 0; j < 3; ++j) {
             uint64_t before = d.instructions;
+            slots[RAW_TLS_WRITE] = 77; /* an earlier block's checkpoint */
             ((void (*)(void))code)();
+            assert(slots[RAW_TLS_WRITE] == 0);
             assert(d.entry_base == before && d.instructions == before + 5);
             /* The next entry latches the preceding charge before replacing its base. */
             assert(d.counter_overflows == (before < starts[i]));
@@ -1172,7 +1326,9 @@ int main(void) {
     {
         thread_data_t d = {.instructions = 100, .live_room = 7};
         slots[RAW_TLS_STATE] = (reg_t)&d;
+        slots[RAW_TLS_WRITE] = 77;
         ((void (*)(void))live_code)();
+        assert(slots[RAW_TLS_WRITE] == 0);
         assert(d.instructions == 105 && d.entry_base == 100 && d.live_room == 2);
     }
     /* ECX is zero for the branch exactly when the countdown is negative. */
@@ -1190,8 +1346,11 @@ int main(void) {
     for (int slow = 0; slow < 2; ++slow) {
         thread_data_t d = {.instructions = 50, .live_room = slow ? -1 : 9};
         slots[RAW_TLS_STATE] = (reg_t)&d;
+        slots[RAW_TLS_WRITE] = 77;
         reg_t rcx, r11;
         run_entry(entry, 0x1111, 0x2222, &rcx, &r11);
+        /* The boundary callback clears the checkpoint on the slow path. */
+        assert(slots[RAW_TLS_WRITE] == (slow ? 77 : 0));
         assert(rcx == 0x1111 && r11 == 0x2222 && d.entry_base == 50);
         if (slow) {
             assert(d.boundary_count == 5 && d.boundary_pc == ENTRY_PC);
@@ -1201,6 +1360,22 @@ int main(void) {
             assert(d.instructions == 55 && d.live_room == 4);
             assert(d.boundary_count == 0 && d.boundary_pc == NULL && d.write_next_pc == NULL);
         }
+    }
+    /* The emitted checkpoint stores exactly the packed word and leaves both
+     * scratch registers alone; settling it restores the callback's fields. */
+    {
+        thread_data_t d = {.raw_tls_base = (byte *)slots, .write_rep = true};
+        slots[RAW_TLS_STATE] = (reg_t)&d;
+        slots[RAW_TLS_WRITE] = 0;
+        reg_t rcx, r11;
+        uint64_t expected;
+        run_entry(write_code, 0x3333, 0x4444, &rcx, &r11);
+        assert(rcx == 0x3333 && r11 == 0x4444);
+        assert(pack_write_checkpoint(ENTRY_PC, ENTRY_PC + 7, 9, &expected));
+        assert(slots[RAW_TLS_WRITE] == expected);
+        settle_write_checkpoint(&d);
+        assert(d.write_pc == ENTRY_PC && d.write_next_pc == ENTRY_PC + 7 && d.write_suffix == 9);
+        assert(!d.write_rep && slots[RAW_TLS_WRITE] == WRITE_WORD_SETTLED);
     }
     assert(syscall(SYS_arch_prctl, ARCH_SET_GS, original_gs) == 0);
     assert(munmap(code, page) == 0);
@@ -1385,6 +1560,9 @@ class ClientReplayStateTests(unittest.TestCase):
 
     def test_flat_rep_restart_must_observe_in_first_resumed_block(self):
         self.run_case("flat-rep-missed")
+
+    def test_flat_write_word_settles_clears_and_falls_back(self):
+        self.run_case("flat-write-word")
 
     def test_flat_counter_wrap_is_sticky_invalidity(self):
         self.run_case("flat-overflow")
