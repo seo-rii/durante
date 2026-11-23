@@ -94,17 +94,20 @@ work than its native control.
 The independent native `signal_context.c` regression also checks registers and
 flags that linear analysis would consider dead: a SIGSEGV handler inspects the
 saved state and resumes past a future clobber. The old client changes that state.
-In ordinary instruction-counting runs with raw TLS available and the live
-clock, latency model, cache probe and count-location profiling disabled, the
-client can inline block entry and write checkpoints even in managed runtimes.
+In ordinary instruction-counting runs with raw TLS available and the latency
+model, cache probe and count-location profiling disabled, the client can inline
+block entry and write checkpoints even in managed runtimes, with or without the
+live clock.
 The latency and memory-operand models continue to charge each block with a
 callback. The inline sequences preserve application flags and restore their
 scratch registers before the next application instruction. A restore-state
 handler recovers those registers when the runtime
-translates a thread inside a sequence. With a live clock, managed runtimes keep
-clean calls. The ordinary counter in eligible static executable text explicitly
-saves and restores its scratch registers and arithmetic flags at block entry.
-Its write checkpoints use flag-preserving moves.
+translates a thread inside a sequence. With a live clock, the same entry counts
+down to the publication boundary flag-free and calls the checked boundary
+callback there. Without raw TLS or with the cache probe, the ordinary counter in
+eligible static executable text explicitly saves and restores its scratch
+registers and arithmetic flags at block entry. Its write checkpoints use
+flag-preserving moves.
 An earlier counter relied on drreg liveness analysis, which omitted a flag save
 needed by this regression. Both direct REP modes and the supervisor must preserve exact
 fixture output and record both handled signals. These tests do not establish all

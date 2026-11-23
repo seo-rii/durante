@@ -12,9 +12,9 @@ single-file `drmeter -o REPORT` interface is not used.
 Each application basic block adds its instruction count to thread-local state.
 For ordinary instruction counting, the client can charge every block inline,
 including dynamically linked executables, shared libraries and generated code.
-This path requires client-owned raw TLS slots and runs with the live clock,
-latency model, cache probe and count-location profiling disabled. It also
-supports `-rep_bytes`. With `-latency_bound` or its `-memory_operand_bytes`
+This path requires client-owned raw TLS slots and runs with the latency model,
+cache probe and count-location profiling disabled. It also supports `-rep_bytes`
+and `-live_work_v1`. With `-latency_bound` or its `-memory_operand_bytes`
 extension, a callback charges each block, even when the live clock is off.
 The inline entry preserves application flags, including values a signal handler
 may inspect. Each memory write records its replay checkpoint with flag-neutral
@@ -29,14 +29,23 @@ inserted as raw copies, with only a write's addresses and suffix patched. The
 runtime otherwise re-encodes every inserted instruction of each new block, which
 dominated block building for interpreters and generated code.
 
-With `-live_work_v1`, the ordinary counter can update that state directly in the
-original executable text containing a fixed-address, statically linked program's
-entry point. Between live work publications this avoids a callback on each hot
-block. It saves and restores its scratch registers
-and arithmetic flags even when a signal handler is the only code that reads them.
-The checked callback handles publication boundaries, replay and additions near
-overflow. In live runs, dynamically linked executables, shared libraries and
-generated code use callbacks throughout.
+With `-live_work_v1`, the inline entry also counts down to the thread's next
+publication boundary. It tests the countdown's sign through its top byte with
+MOVZX and LEA, so it still never reads or writes the application's flags. A
+negative countdown takes the checked callback, which handles the publication
+boundary, replay and additions near overflow and charges the block. Publication
+therefore happens at the same block entries as on the callback path. Replay, REP
+and new threads reset the countdown so the next entry takes the callback, and the
+callback recomputes it. The callback lies between the entry prefix and the
+charge in the code cache, with the scratch registers still spilled, so the
+restore-state handler finds the spills and no charge when the runtime translates
+a thread there.
+
+Without raw TLS, or with the cache probe, the ordinary counter can instead
+update that state directly in the original executable text containing a
+fixed-address, statically linked program's entry point. It saves and restores
+its scratch registers and arithmetic flags even when a signal handler is the
+only code that reads them, and other code uses callbacks.
 
 REP MOVS/STOS byte demand is read at the REP instruction after earlier register
 updates, with one clean call per REP entry. Conditional REP forms are separately
