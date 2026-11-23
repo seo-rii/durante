@@ -23,7 +23,9 @@ The receipt records the hashes of the ELF, input, selection, current result and
 sample, calibration, paid policy and frozen reference. Its `weights` object is
 a coefficient fragment. A diagnostic comparison must bind the receipt to its
 trusted preflight and inputs, use one listed millisecond limit and validate the
-counter snapshot. Runtime-wide registration would discard its per-input scope.
+counter snapshot. The Durante live reader requires an overflow mask of zero.
+Exclude saturated snapshots carrying any overflow bit before comparing with
+Aonohako, whose native comparator can interpret those bits. Runtime-wide registration would discard its per-input scope.
 
 ## Strict comparison and verification
 
