@@ -2,6 +2,7 @@
 import argparse
 import io
 import json
+import lzma
 from pathlib import Path
 import sys
 import tarfile
@@ -41,13 +42,15 @@ def publish(job, out, *, select_pids=limit_pids, sources=SOURCES, plan_name="exp
     _, lines = parse_trace(files["output/exec-trace"].decode())
     files["output/exec-trace"] = "".join(l + "\n" for pid, l in lines if pid in pids).encode()
     out.mkdir(parents=True, exist_ok=True)
+    filters = None
     if group_duplicate_files:
         # The long-input study stores the same 12.8 MB stdin with every live receipt.
-        # Put identical files next to each other within preset 7's 16 MiB dictionary.
+        # A fast encoder with a large enough dictionary can reference the preceding copy.
         names = sorted(files, key=lambda name: (sha(files[name]), name))
+        filters = [dict(id=lzma.FILTER_LZMA2, preset=1, dict_size=16 * 1024 * 1024)]
     else:
         names = sorted(files)
-    with tarfile.open(out / "output.tar.xz", "w:xz", preset=7 if group_duplicate_files else None) as tar:
+    with lzma.open(out / "output.tar.xz", "wb", filters=filters) as stream, tarfile.open(fileobj=stream, mode="w") as tar:
         for name in names:
             raw = files[name]
             item = tarfile.TarInfo(name)
