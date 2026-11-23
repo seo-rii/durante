@@ -1,5 +1,6 @@
 """Scale frozen v11 work by one native calibration of the same trusted static Linux x86-64 ELF."""
 import argparse
+from dataclasses import dataclass
 from fractions import Fraction
 import hashlib
 import json
@@ -154,7 +155,19 @@ def calibrate(elf, stdin, run, out):
     return policy
 
 
-def predict(policy_file, elf, run, limit_ms=None):
+@dataclass(frozen=True)
+class CalibratedClock:
+    policy_sha256: str
+    elf_sha256: str
+    native_ns: int
+    weights_ns: dict
+    calibration_work: Fraction
+
+    def predict_ns(self, progress):
+        return scaled_ns(self.native_ns, work(progress, self.weights_ns), self.calibration_work)
+
+
+def load_clock(policy_file, elf):
     raw = policy_file.read_bytes()
     policy = read_json(raw)
     w = weights()
@@ -181,11 +194,16 @@ def predict(policy_file, elf, run, limit_ms=None):
             and all(type(native[k]) is int and native[k] >= 0 for k in ("user_us", "sys_us", "cpu_ns"))
             and native["cpu_ns"] == 1000 * (native["user_us"] + native["sys_us"]) > 0,
             "anchor contradicts its ELF, native accounting or provenance")
-    current = measured(run, digest_elf)
     weights_ns = {k: Fraction(v) for k, v in w.items()}
-    predicted = scaled_ns(native["cpu_ns"], work(current, weights_ns), work(anchor, weights_ns))
-    result = {"authority": "diagnostic_only", "policy_sha256": sha(raw), "observation": current,
-              "anchor_native_ns": native["cpu_ns"], "prediction_ns": predicted}
+    return CalibratedClock(sha(raw), digest_elf, native["cpu_ns"], weights_ns, work(anchor, weights_ns))
+
+
+def predict(policy_file, elf, run, limit_ms=None):
+    clock = load_clock(policy_file, elf)
+    current = measured(run, clock.elf_sha256)
+    predicted = clock.predict_ns(current)
+    result = {"authority": "diagnostic_only", "policy_sha256": clock.policy_sha256, "observation": current,
+              "anchor_native_ns": clock.native_ns, "prediction_ns": predicted}
     if limit_ms is not None:
         require(type(limit_ms) is int and limit_ms > 0, "expected a positive whole-millisecond deadline")
         result.update(limit_ms=limit_ms, implied_tle=predicted > limit_ms * 1_000_000)
