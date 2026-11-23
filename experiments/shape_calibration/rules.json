@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "probe_sha256": "159ca08d50bb8cf20e88f86b2186af422e094e7c14ebe98a42bed7adc2d6b186",
+  "scope": "trusted deterministic single-process static x86-64 ELF, separate ordered policy bank for each workload and method",
+  "shape": {
+    "comparison": "reuse only if every threshold passes and evidence contains eligible loads",
+    "max_total_variation_of_eligible_load_shares": "1/8",
+    "min_material_site_share_in_either_capture": "1/20",
+    "min_total_material_site_coverage_in_each_capture": "4/5",
+    "min_completed_pairs_per_material_site_in_each_capture": 64,
+    "max_absolute_far_pair_fraction_change": "1/16",
+    "span_floor_bytes": 4096,
+    "max_bidirectional_span_ratio": 4
+  },
+  "temporal": {
+    "period": 8191,
+    "window": 32,
+    "cache_line_bytes": 64,
+    "radius_in_lines": 64,
+    "min_completed_windows_per_material_site_in_each_capture": 64,
+    "max_absolute_exact_or_radius_recurrence_fraction_change": "1/8"
+  },
+  "methods": ["first ELF anchor", "spatial profiles", "spatial and temporal profiles"],
+  "selection": "Process in plan order. Within one ELF and method use the earliest previously paid anchor which passes. Pay one native execution of the current identical input only on first use or when all priors fail. Share the same native observation between the two methods if both would pay on that case, and report each method's own charge.",
+  "references": "After all decisions collect nine direct native executions per holdout. Sort holdout IDs by SHA-256 and rotate one position each round. Score the native median and all individual strict whole-millisecond boundaries with mixed outcomes retained.",
+  "enforcement": "Exercise every holdout limit with the selected spatial-plus-temporal policy using the released live diagnostic and independent 120 s watchdog. Compare against complete metering, first-anchor and spatial-only predictions and all nine native outcomes.",
+  "cost": "Report measured CPU consumed by full spatial capture, temporal capture and separately paid native anchors. Include case counts by cohort. Treat first ELF times and full preflight cost explicitly. Do not count nine reference executions in the modeled operating cost."
+}
