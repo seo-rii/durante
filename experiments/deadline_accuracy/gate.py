@@ -49,8 +49,8 @@ def original_is_current(policy, obs, context):
     return policy["anchor"] == obs and same_placement(policy["native"], context)
 
 
-def packet_evidence(directory, obs, context, source_raw, strategy="near-three"):
-    """Derive the manifest and normal selected-input receipt; offline callers can supply the recorded context."""
+def _read_packet(directory, obs, context, source_raw, strategy):
+    """Authenticate each policy and retain its native observation alongside the derived receipts."""
     samples = []
     hashes = []
     pids = set()
@@ -83,6 +83,12 @@ def packet_evidence(directory, obs, context, source_raw, strategy="near-three"):
         manifest.update(schema=2, strategy=strategy, selected_index=index)
     selected = dict(schema=1, method="footprint", action="calibrate", reference_index=None, comparisons=[],
                     policy_sha256=hashes[index], prediction_ns=samples[index], current_sample_sha256=obs["sample_sha256"])
+    return manifest, selected, samples
+
+
+def packet_evidence(directory, obs, context, source_raw, strategy="near-three"):
+    """Derive the manifest and selected-input receipt from a live or recorded context."""
+    manifest, selected, _ = _read_packet(directory, obs, context, source_raw, strategy)
     return manifest, selected
 
 
@@ -159,7 +165,7 @@ def prepare(elf, stdin, capture, selection, policy, packet_dir, limit_ms, strate
                 anchor.save_new(draft / "packet.json", manifest)
                 anchor.save_new(draft / "selection.json", candidate)
                 draft.rename(packet_dir)
-        manifest, candidate = packet_evidence(packet_dir, obs, context, source_raw, strategy)
+        manifest, candidate, samples = _read_packet(packet_dir, obs, context, source_raw, strategy)
         require(exact_json(read_json((packet_dir / "packet.json").read_bytes()), manifest)
                 and exact_json(read_json((packet_dir / "selection.json").read_bytes()), candidate),
                 "stored packet differs from current evidence")
@@ -168,6 +174,9 @@ def prepare(elf, stdin, capture, selection, policy, packet_dir, limit_ms, strate
             require(manifest["reused_original"] and selected["action"] == "calibrate",
                     "batch requires the current input's paid footprint selection")
             membership = batch_member(batch_manifest, packet_dir, origin, context)
+            later = samples[1:]  # Only the three interleaved runs vote on the deadline.
+            low, high = min(later), max(later)
+            membership["calibration_window"] = dict(min_ns=low, max_ns=high, split=low <= limit_ms * 1_000_000 < high)
         require(placement() == origin, "placement changed while obtaining the calibration")
     finally:
         os.close(fd)
@@ -190,7 +199,8 @@ def enforce(payload, elf, stdin, capture, selection, policy, packet_dir, out, li
         if strategy != "near-three":
             receipt["strategy"] = strategy
         if batch_manifest is not None:
-            receipt.update(batch_manifest_sha256=choice["batch_manifest_sha256"], batch_case_id=choice["batch_case_id"])
+            receipt.update(batch_manifest_sha256=choice["batch_manifest_sha256"], batch_case_id=choice["batch_case_id"],
+                           calibration_window=choice["calibration_window"])
         anchor.save_new(out / "gate.json", receipt)
         result = run.run(payload, choice["selection"], capture, choice["policy"], elf, stdin, out / "enforced",
                          limit_ms, timeout_ms, poll_ms)

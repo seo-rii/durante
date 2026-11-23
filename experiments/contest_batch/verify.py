@@ -9,7 +9,7 @@ sys.path.insert(0, str(HERE.parent))
 from calibrated_limits.verify import METER, load, positive, verify_placement
 from cpp20_locality.export import parse_trace
 from cpp20_locality.verify import release_reader, require, sha
-from deadline_accuracy.registration import registration_for
+from deadline_accuracy.registration import INTERLEAVED_STUDIES, registration_for
 from deadline_accuracy.verify import aggregate, annotate, baseline, exact, live, read_packet, thresholds
 from guarded_native import anchor
 from guarded_native.score import MS
@@ -54,7 +54,7 @@ def check_packets(root, cases, bindings, trials, kernel, boot, register):
     return selected
 
 
-def check_limits(root, seq, case, row, bindings, trial, plan, reader, register):
+def check_limits(root, seq, case, row, bindings, trial, plan, reader, register, *, check_windows):
     name = case["case_id"]
     obs, source, packet = bindings
     events = iter(row["limits"])
@@ -68,6 +68,13 @@ def check_limits(root, seq, case, row, bindings, trial, plan, reader, register):
             require(isinstance(event, dict), "missing paired live enforcement")
             exact([event[k] for k in ("index", "limit_ms", "method", "near")], [index, ms, arm, near],
                   "different deadline, arm order or near-boundary flag")
+            if check_windows and arm == "warm":
+                lo, hi = min(trial["extra_ns"]), max(trial["extra_ns"])
+                window = dict(min_ns=lo, max_ns=hi, split=lo <= ms * MS < hi)
+                exact(event.get("calibration_window"), window, "different three-sample calibration window")
+                point["calibration_window"] = window
+            else:
+                require("calibration_window" not in event, "unexpected calibration window")
             dest = root / "cases" / name / "limits" / arm / f"{index:02d}"
             point[arm] = live(root, dest, event, binding, obs, case, plan, reader, register)
         trial["deadlines"].append(point)
@@ -76,9 +83,13 @@ def check_limits(root, seq, case, row, bindings, trial, plan, reader, register):
 
 def verify(directory):
     root = Path(directory)
-    raw_plan, raw_rules, plan = registration_for("interleaved-three")
-    rules = json.loads(raw_rules)
     summary = load(root / "summary.json")
+    # Select only a checked-in registration. The envelope below binds its rules and every input.
+    matches = [study for study in INTERLEAVED_STUDIES
+               if sha((HERE.parent / study / "plan.json").read_bytes()) == summary["plan_sha256"]]
+    require(len(matches) == 1, "unknown interleaved plan digest")
+    raw_plan, raw_rules, plan = registration_for("interleaved-three", study=matches[0])
+    rules = json.loads(raw_rules)
     require(summary["plan_sha256"] == sha(raw_plan) and summary["rules_sha256"] == sha(raw_rules)
             and summary["probe_sha256"] == temporal.PROBE_SHA == rules["probe_sha256"] == plan["probe_sha256"]
             and summary["schema"] == rules["schema"] == plan["schema"] == 1
@@ -107,7 +118,8 @@ def verify(directory):
     selected = check_packets(root, cases, bindings, trials, kernel, boot, register)
     for seq, (case, row) in enumerate(zip(cases, summary["rows"], strict=True)):
         name = case["case_id"]
-        check_limits(root, seq, case, row, (*bindings[name], selected[name]), trials[name], plan, reader, register)
+        check_limits(root, seq, case, row, (*bindings[name], selected[name]), trials[name], plan, reader, register,
+                     check_windows="boundary_diagnostic" in rules)
 
     ordered = sorted(cases, key=lambda case: sha(case["case_id"].encode()))
     samples = native_reference(root, summary, plan, ordered, register)

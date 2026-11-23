@@ -2,6 +2,7 @@
 import argparse
 import io
 import json
+import lzma
 from pathlib import Path
 import sys
 import tarfile
@@ -26,7 +27,8 @@ SOURCES = ("experiments/calibrated_limits/bench.py", "experiments/calibrated_lim
            "experiments/guarded_native/live.py", "experiments/guarded_native/anchor.py", "collect.py")
 
 
-def publish(job, out, *, select_pids=limit_pids, sources=SOURCES, plan_name="experiments/calibrated_limits/plan.json"):
+def publish(job, out, *, select_pids=limit_pids, sources=SOURCES, plan_name="experiments/calibrated_limits/plan.json",
+            group_duplicate_files=False):
     cleanup = json.loads((job / "cleanup.json").read_bytes())
     require((job / "ops.exit").read_text().strip() == "0" and cleanup["instance_http"] == cleanup["boot_disk_http"] == 404
             and cleanup["key_removed"] is True, "incomplete cleanup")
@@ -40,8 +42,17 @@ def publish(job, out, *, select_pids=limit_pids, sources=SOURCES, plan_name="exp
     _, lines = parse_trace(files["output/exec-trace"].decode())
     files["output/exec-trace"] = "".join(l + "\n" for pid, l in lines if pid in pids).encode()
     out.mkdir(parents=True, exist_ok=True)
-    with tarfile.open(out / "output.tar.xz", "w:xz") as tar:
-        for name, raw in sorted(files.items()):
+    filters = None
+    if group_duplicate_files:
+        # The long-input study stores the same 12.8 MB stdin with every live receipt.
+        # A fast encoder with a large enough dictionary can reference the preceding copy.
+        names = sorted(files, key=lambda name: (sha(files[name]), name))
+        filters = [dict(id=lzma.FILTER_LZMA2, preset=1, dict_size=16 * 1024 * 1024)]
+    else:
+        names = sorted(files)
+    with lzma.open(out / "output.tar.xz", "wb", filters=filters) as stream, tarfile.open(fileobj=stream, mode="w") as tar:
+        for name in names:
+            raw = files[name]
             item = tarfile.TarInfo(name)
             item.size = len(raw)
             item.mode = 0o600

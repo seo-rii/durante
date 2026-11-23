@@ -83,6 +83,7 @@ class BatchCalibration(unittest.TestCase):
                 directory = self.out / item["id"]
                 choice = batch.gate.prepare(self.elf, item["stdin"], capture, capture / "baseline-selection.json",
                                             capture / "policy.json", directory, 1, "warm-three")
+                self.assertNotIn("calibration_window", choice)
                 self.assertEqual(choice["policy"].name, "policy-2.json")
                 self.assertEqual(binding["packet_sha256"], batch.elf_digest(choice["packet"]))
                 self.assertEqual(binding["selection_sha256"], batch.elf_digest(choice["selection"]))
@@ -136,6 +137,34 @@ class BatchCalibration(unittest.TestCase):
                 manifest_path.write_text(json.dumps(dict(manifest, **{field: value})))
                 with self.subTest(field=field), self.assertRaisesRegex(ValueError, "batch"):
                     gate_read()
+
+    def test_calibration_window_uses_only_three_interleaved_observations(self):
+        item = self.items[0]
+        capture = item["capture"]
+        initial = json.loads((capture / "policy.json").read_bytes())["native"]["cpu_ns"]
+        low_ms = initial // 1_000_000 + 10
+        high_ms = low_ms + 4
+        def sample(elf, stdin):
+            native = self.sample(elf, stdin)
+            index = self.launched.count(self.launched[-1]) - 1
+            ms = (low_ms + 2, high_ms, low_ms)[index]
+            return dict(native, cpu_ns=ms * 1_000_000, user_us=ms * 1000, sys_us=0)
+
+        with patch.object(batch.anchor, "native_once", side_effect=sample):
+            batch.prepare(self.items, self.out)
+        packet = self.out / item["id"]
+        files = {path: path.read_bytes() for path in packet.iterdir()}
+        with patch.object(batch.anchor, "native_once", side_effect=AssertionError("unexpected calibration payment")):
+            for ms, split in ((low_ms - 1, False), (low_ms, True), (high_ms - 1, True), (high_ms, False)):
+                choice = batch.gate.prepare(self.elf, item["stdin"], capture, capture / "baseline-selection.json",
+                                            capture / "policy.json", packet, ms, "warm-three",
+                                            batch_manifest=self.out / "manifest.json")
+                with self.subTest(ms=ms):
+                    self.assertEqual(choice["calibration_window"],
+                                     dict(min_ns=low_ms * 1_000_000, max_ns=high_ms * 1_000_000, split=split))
+                    self.assertEqual(choice["prediction_ns"], (low_ms + 2) * 1_000_000)
+                    self.assertEqual(choice["policy"], packet / "policy-1.json")
+        self.assertEqual(files, {path: path.read_bytes() for path in packet.iterdir()})
 
     def test_refuses_changed_packet_and_stale_boot(self):
         with patch.object(batch.anchor, "native_once", side_effect=self.sample):
@@ -228,5 +257,8 @@ class BatchGateCommand(unittest.TestCase):
             selected = json.loads((packet / "selection.json").read_bytes())
             self.assertEqual(receipt["batch_case_id"], first["id"])
             self.assertEqual(receipt["batch_manifest_sha256"], batch.elf_digest(group / "manifest.json"))
+            times = [json.loads((packet / f"policy-{i}.json").read_bytes())["native"]["cpu_ns"] for i in (1, 2, 3)]
+            self.assertEqual(receipt["calibration_window"],
+                             dict(min_ns=min(times), max_ns=max(times), split=min(times) <= 10_000_000 < max(times)))
             self.assertEqual(decision["preflight_prediction_ns"], selected["prediction_ns"])
             self.assertEqual(receipt["selected_policy_sha256"], selected["policy_sha256"])
