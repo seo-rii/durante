@@ -75,6 +75,16 @@ class SelectedInputRun(unittest.TestCase):
         self.assertEqual(response["preflight_prediction_ns"], self.decision["prediction_ns"])
         self.assertEqual(response["selection_sha256"], run.elf_digest(self.selection))
 
+    def test_rejects_changed_terminal_output_for_either_verdict(self):
+        with patch.object(run.anchor, "static_elf", return_value=self.binary_sha):
+            for status in ("within_budget", "budget_exceeded"):
+                observed = {"status": status, "observation": "terminal", "pid": 223, "stdout_sha256": "1" * 64}
+                with self.subTest(status=status), patch.object(run.live, "run", return_value=observed):
+                    result = self.attempt(status)
+                    self.assertEqual((result["status"], result["pid"]), ("unavailable", 223))
+                    self.assertEqual(result["reason"], "terminal output differs from the preflight")
+                    self.assertEqual(json.loads((self.out / status / "result.json").read_bytes()), result)
+
     @unittest.skipUnless(os.getenv("DURANTE_SHAPE_RUNTIME") and os.getenv("DURANTE_SHAPE_BINARIES"),
                          "set the registered #82 runtime and #85 binary directories for real enforcement")
     def test_cli_enforces_real_limits_with_prior_policy(self):
