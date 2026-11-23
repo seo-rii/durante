@@ -33,8 +33,13 @@ With `-live_work_v1`, the inline entry also counts down to the thread's next
 publication boundary. It tests the countdown's sign through its top byte with
 MOVZX and LEA, so it still never reads or writes the application's flags. A
 negative countdown takes the checked callback, which handles the publication
-boundary, replay and additions near overflow and charges the block. Publication
-therefore happens at the same block entries as on the callback path. Replay, REP
+boundary, replay and additions near overflow and charges the block. All blocks
+reach it through one routine, generated once per process, that makes the clean
+call. An entry stores its count and first address in the thread's state and
+jumps there with its resume address in RCX, so building a block encodes no
+context switch. The runtime defers asynchronous signals and translation while a
+thread is in that routine, as it does inside a callback. Publication therefore
+happens at the same block entries as on the callback path. Replay, REP
 and new threads reset the countdown so the next entry takes the callback, and the
 callback recomputes it. The prefix saves the pre-entry instruction count before choosing the
 callback or inline charge. If relocation will re-enter an unfinished entry, the

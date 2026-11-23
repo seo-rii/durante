@@ -107,6 +107,10 @@ typedef struct {
   bool child_exit_seen, child_policy_exit;
   uint64_t memory_operand_bytes;
   uint32_t write_suffix_bytes, write_operand_bytes;
+  /* The arguments a live entry passes to the shared boundary routine. Kept
+   * after the fields the entries access with 8-bit displacements. */
+  int32_t boundary_count;
+  app_pc boundary_pc;
 } thread_data_t;
 static int tls_index;
 /* In ordinary static code the generated accounting runs at every block and
@@ -1092,6 +1096,47 @@ static void insert_bundle(void *ctx, instrlist_t *bb, instr_t *where, const byte
   instrlist_meta_preinsert(bb, where, bundle);
 }
 
+/* A pre-encoded sequence whose 32-bit immediates are patched per use. Each
+ * listed instruction is a store whose immediate is its last field. */
+enum { TEMPLATE_IMMEDIATES = 5 };
+typedef struct {
+  encoded_sequence_t code;
+  uint immediates, immediate[TEMPLATE_IMMEDIATES];
+} patched_template_t;
+
+static patched_template_t *publish_template(void *ctx, patched_template_t **slot,
+                                            instrlist_t *ilist, instr_t *const *imm,
+                                            uint immediates, const char *failure) {
+  if (immediates > TEMPLATE_IMMEDIATES)
+    fail(failure);
+  patched_template_t *fresh = dr_global_alloc(sizeof(*fresh));
+  fresh->code.length = encode_sequence(ctx, ilist, fresh->code.bytes);
+  fresh->immediates = immediates;
+  uint offset = 0, index = 0;
+  for (instr_t *in = instrlist_first(ilist); in; in = instr_get_next(in)) {
+    offset += instr_length(ctx, in);
+    if (index < immediates && in == imm[index])
+      fresh->immediate[index++] = offset - 4;
+  }
+  instrlist_clear_and_destroy(ctx, ilist);
+  if (index != immediates || offset != fresh->code.length)
+    fail(failure);
+  patched_template_t *t = NULL;
+  if (__atomic_compare_exchange_n(slot, &t, fresh, false, __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE))
+    return fresh;
+  dr_global_free(fresh, sizeof(*fresh));
+  return t;
+}
+
+static void insert_patched(void *ctx, instrlist_t *bb, instr_t *where,
+                           const patched_template_t *t, const uint32_t *value) {
+  byte code[SEQUENCE_BYTES];
+  memcpy(code, t->code.bytes, t->code.length);
+  for (uint i = 0; i < t->immediates; ++i)
+    memcpy(code + t->immediate[i], &value[i], sizeof(value[i]));
+  insert_bundle(ctx, bb, where, code, t->code.length);
+}
+
 static encoded_sequence_t *cached_flat_parts(void *ctx, encoded_sequence_t **slot, int count,
                                              int parts, bool live) {
   encoded_sequence_t *entry = __atomic_load_n(slot, __ATOMIC_ACQUIRE);
@@ -1129,29 +1174,98 @@ static void insert_flat_part(void *ctx, instrlist_t *bb, instr_t *where,
   insert_bundle(ctx, bb, where, entry->bytes, entry->length);
 }
 
+/* A live entry's callback arguments: the block count and the two halves of
+ * its first address, stored through R11 (the accounting state). */
+enum { BOUNDARY_COUNT, BOUNDARY_PC_LO, BOUNDARY_PC_HI, BOUNDARY_IMMEDIATES };
+static patched_template_t *boundary_template;
+
+static const patched_template_t *live_boundary_template(void *ctx) {
+  patched_template_t *t = __atomic_load_n(&boundary_template, __ATOMIC_ACQUIRE);
+  if (t)
+    return t;
+  static const size_t fields[BOUNDARY_IMMEDIATES] = {
+      offsetof(thread_data_t, boundary_count), offsetof(thread_data_t, boundary_pc),
+      offsetof(thread_data_t, boundary_pc) + 4};
+  instrlist_t *ilist = instrlist_create(ctx);
+  instr_t *imm[BOUNDARY_IMMEDIATES];
+  for (int i = 0; i < BOUNDARY_IMMEDIATES; ++i) {
+    imm[i] = INSTR_CREATE_mov_st(ctx, OPND_CREATE_MEM32(DR_REG_R11, (int)fields[i]),
+                                 OPND_CREATE_INT32(0x7fffffff));
+    instrlist_meta_append(ilist, imm[i]);
+  }
+  return publish_template(ctx, &boundary_template, ilist, imm, BOUNDARY_IMMEDIATES,
+                          "cannot lay out the live boundary arguments");
+}
+
+/* The runtime encodes every inserted instruction when it builds a block, and
+ * a clean call's context switch is most of a live entry. Live entries
+ * therefore share one routine that performs the boundary clean call. An
+ * entry stores the arguments through R11 and the address to resume at in
+ * RCX, both of which the clean call preserves. The routine is client memory
+ * outside the code cache: like a callback, the runtime defers asynchronous
+ * signals that arrive there and does not translate a thread stopped there. */
+static byte *boundary_routine;
+
+static byte *live_boundary_routine(void *ctx) {
+  byte *routine = __atomic_load_n(&boundary_routine, __ATOMIC_ACQUIRE);
+  if (routine)
+    return routine;
+  size_t size = dr_page_size();
+  /* Reachable from the code cache, as the entries jump here directly. */
+  byte *fresh = dr_nonheap_alloc(size, DR_MEMPROT_READ | DR_MEMPROT_WRITE);
+  if (!fresh)
+    fail("cannot allocate the live boundary routine");
+  instrlist_t *ilist = instrlist_create(ctx);
+  instr_t *back = INSTR_CREATE_jmp_ind(ctx, opnd_create_reg(DR_REG_RCX));
+  instrlist_meta_append(ilist, back);
+  dr_insert_clean_call_ex(ctx, ilist, back, (void *)charge_boundary,
+                          DR_CLEANCALL_ALWAYS_OUT_OF_LINE, 2,
+                          OPND_CREATE_MEM32(DR_REG_R11, offsetof(thread_data_t, boundary_count)),
+                          OPND_CREATE_MEMPTR(DR_REG_R11, offsetof(thread_data_t, boundary_pc)));
+  byte *end = instrlist_encode_to_copy(ctx, ilist, fresh, fresh, fresh + size, true);
+  instrlist_clear_and_destroy(ctx, ilist);
+  if (!end || !dr_memory_protect(fresh, size, DR_MEMPROT_READ | DR_MEMPROT_EXEC))
+    fail("cannot generate the live boundary routine");
+  if (__atomic_compare_exchange_n(&boundary_routine, &routine, fresh, false, __ATOMIC_ACQ_REL,
+                                  __ATOMIC_ACQUIRE))
+    return fresh;
+  dr_nonheap_free(fresh, size);
+  return routine;
+}
+
 /* Live clock: the flag-free entry also counts live_room down and takes the
  * existing boundary callback when it is negative, so publication happens at
  * the same block entries as on the callback path. The prefix checkpoints
  * the count while the scratch registers are spilled. Relocation can roll
- * either path back until the suffix restores RCX. */
-static void insert_flat_live_charge(void *ctx, instrlist_t *bb, instr_t *where, int count,
-                                    app_pc first_pc) {
+ * either path back until the suffix restores RCX. The slow path passes this
+ * block's arguments to the boundary routine, which resumes at the suffix. */
+static void insert_flat_live_entry(void *ctx, instrlist_t *bb, instr_t *where, int count,
+                                   app_pc first_pc, byte *routine) {
   instr_t *slow = INSTR_CREATE_label(ctx), *fast = INSTR_CREATE_label(ctx);
   instr_t *resume = INSTR_CREATE_label(ctx);
   insert_flat_part(ctx, bb, where, &flat_live_prefix, 1, FLAT_PREFIX);
   instrlist_meta_preinsert(bb, where, INSTR_CREATE_jecxz(ctx, opnd_create_instr(slow)));
   instrlist_meta_preinsert(bb, where, INSTR_CREATE_jmp(ctx, opnd_create_instr(fast)));
   instrlist_meta_preinsert(bb, where, slow);
-  dr_insert_clean_call_ex(ctx, bb, where, (void *)charge_boundary,
-                          DR_CLEANCALL_ALWAYS_OUT_OF_LINE, 2, OPND_CREATE_INT32(count),
-                          OPND_CREATE_INTPTR(first_pc));
-  instrlist_meta_preinsert(bb, where, INSTR_CREATE_jmp(ctx, opnd_create_instr(resume)));
+  const uint32_t value[BOUNDARY_IMMEDIATES] = {
+      (uint32_t)count, (uint32_t)(ptr_uint_t)first_pc,
+      (uint32_t)((ptr_uint_t)first_pc >> 32)};
+  insert_patched(ctx, bb, where, live_boundary_template(ctx), value);
+  instrlist_meta_preinsert(bb, where,
+                           INSTR_CREATE_lea(ctx, opnd_create_reg(DR_REG_RCX),
+                                            opnd_create_mem_instr(resume, 0, OPSZ_lea)));
+  instrlist_meta_preinsert(bb, where, INSTR_CREATE_jmp(ctx, opnd_create_pc(routine)));
   instrlist_meta_preinsert(bb, where, fast);
   insert_flat_part(ctx, bb, where,
                    count > 0 && count <= FLAT_ENTRY_CACHE ? &flat_live_bodies[count] : NULL,
                    count, FLAT_BODY);
   instrlist_meta_preinsert(bb, where, resume);
   insert_flat_part(ctx, bb, where, &flat_live_suffix, 1, FLAT_SUFFIX);
+}
+
+static void insert_flat_live_charge(void *ctx, instrlist_t *bb, instr_t *where, int count,
+                                    app_pc first_pc) {
+  insert_flat_live_entry(ctx, bb, where, count, first_pc, live_boundary_routine(ctx));
 }
 
 static bool is_raw_slot(opnd_t opnd, uint slot) {
@@ -1342,17 +1456,13 @@ static void before_write_memory(app_pc pc, app_pc next_pc, int suffix,
  * patched per write. Both pointers always use two 32-bit stores. */
 enum { CHECKPOINT_PC_LO, CHECKPOINT_PC_HI, CHECKPOINT_NEXT_LO, CHECKPOINT_NEXT_HI,
        CHECKPOINT_SUFFIX, CHECKPOINT_IMMEDIATES };
-typedef struct {
-  encoded_sequence_t code;
-  uint immediate[CHECKPOINT_IMMEDIATES];
-} checkpoint_template_t;
-static checkpoint_template_t *checkpoint_template;
+_Static_assert((int)CHECKPOINT_IMMEDIATES <= (int)TEMPLATE_IMMEDIATES, "checkpoint immediates");
+static patched_template_t *checkpoint_template;
 
-static checkpoint_template_t *write_checkpoint_template(void *ctx) {
-  checkpoint_template_t *t = __atomic_load_n(&checkpoint_template, __ATOMIC_ACQUIRE);
+static const patched_template_t *write_checkpoint_template(void *ctx) {
+  patched_template_t *t = __atomic_load_n(&checkpoint_template, __ATOMIC_ACQUIRE);
   if (t)
     return t;
-  checkpoint_template_t *fresh = dr_global_alloc(sizeof(*fresh));
   const reg_id_t data = DR_REG_R11;
   instrlist_t *ilist = instrlist_create(ctx);
   instr_t *imm[CHECKPOINT_IMMEDIATES];
@@ -1375,37 +1485,18 @@ static checkpoint_template_t *write_checkpoint_template(void *ctx) {
                                                     OPND_CREATE_INT8(0)));
   instrlist_meta_append(ilist, INSTR_CREATE_mov_ld(ctx, opnd_create_reg(data),
                                                     raw_slot(RAW_TLS_SPILL_R11)));
-  fresh->code.length = encode_sequence(ctx, ilist, fresh->code.bytes);
-  uint offset = 0;
-  int index = 0;
-  for (instr_t *in = instrlist_first(ilist); in; in = instr_get_next(in)) {
-    offset += instr_length(ctx, in);
-    if (index < CHECKPOINT_IMMEDIATES && in == imm[index])
-      fresh->immediate[index++] = offset - 4; /* imm32 is each store's last field */
-  }
-  instrlist_clear_and_destroy(ctx, ilist);
-  if (index != CHECKPOINT_IMMEDIATES || offset != fresh->code.length)
-    fail("cannot lay out the write checkpoint");
-  if (__atomic_compare_exchange_n(&checkpoint_template, &t, fresh, false, __ATOMIC_ACQ_REL,
-                                  __ATOMIC_ACQUIRE))
-    return fresh;
-  dr_global_free(fresh, sizeof(*fresh));
-  return t;
+  return publish_template(ctx, &checkpoint_template, ilist, imm, CHECKPOINT_IMMEDIATES,
+                          "cannot lay out the write checkpoint");
 }
 
 static void insert_write_checkpoint(void *ctx, instrlist_t *bb, instr_t *where,
                                     app_pc pc, app_pc next_pc, int suffix) {
   if (raw_tls_enabled) {
-    const checkpoint_template_t *t = write_checkpoint_template(ctx);
-    byte code[SEQUENCE_BYTES];
-    memcpy(code, t->code.bytes, t->code.length);
     const uint32_t value[CHECKPOINT_IMMEDIATES] = {
         (uint32_t)(ptr_uint_t)pc, (uint32_t)((ptr_uint_t)pc >> 32),
         (uint32_t)(ptr_uint_t)next_pc, (uint32_t)((ptr_uint_t)next_pc >> 32),
         (uint32_t)suffix};
-    for (int i = 0; i < CHECKPOINT_IMMEDIATES; ++i)
-      memcpy(code + t->immediate[i], &value[i], sizeof(value[i]));
-    insert_bundle(ctx, bb, where, code, t->code.length);
+    insert_patched(ctx, bb, where, write_checkpoint_template(ctx), value);
     return;
   }
   const reg_id_t data = DR_REG_R11;
@@ -2011,6 +2102,10 @@ static void process_exit(void) {
     dr_global_free(flat_live_suffix, sizeof(*flat_live_suffix));
   if (checkpoint_template)
     dr_global_free(checkpoint_template, sizeof(*checkpoint_template));
+  if (boundary_template)
+    dr_global_free(boundary_template, sizeof(*boundary_template));
+  if (boundary_routine)
+    dr_nonheap_free(boundary_routine, dr_page_size());
   if (live_work)
     dr_unmap_file(live_work, sizeof(*live_work));
   if (cpu_policy_exit_pc)
