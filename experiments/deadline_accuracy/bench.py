@@ -10,7 +10,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 from cpp20_locality.verify import require, sha
 from deadline_accuracy import gate
-from deadline_accuracy.registration import load_registration
+from deadline_accuracy.registration import ARMS, registration_for
 from first_run_sampler.profile import elf_digest
 from guarded_native import live
 from shape_calibration import combined, run, select_policy
@@ -23,9 +23,10 @@ def deadlines(prediction_ns, percent, fixed):
     return sorted(set(fixed).union(relative))
 
 
-def bench(payload, binaries, probe, out, exact=False, contest=False):
-    candidate = "exact" if exact else "gate"
-    raw_plan, raw_rules, plan = load_registration(exact, contest)
+def bench(payload, binaries, probe, out, exact=False, contest=False, strategy=None):
+    strategy = strategy or ("exact-one" if exact else "near-three")
+    raw_plan, raw_rules, plan = registration_for(strategy, contest)
+    candidate = ARMS[strategy]
     probe_sha = elf_digest(probe)
     require(probe_sha == plan["probe_sha256"] == json.loads(raw_rules)["probe_sha256"], "different registered probe")
     affinity, allowed = pinned_cpu()
@@ -49,7 +50,8 @@ def bench(payload, binaries, probe, out, exact=False, contest=False):
         folder.parent.mkdir(exist_ok=True)
         profile, _ = combined.capture(payload, probe, elf, stdin, folder)
         require(profile["stdout_sha256"] == sha(case["stdout"].encode()), "profile stdout differs")
-        bank = banks[name]
+        # The warm comparison needs a first native observation of this exact input in both arms.
+        bank = [] if strategy == "warm-three" else banks[name]
         selection = select_policy.resolve(elf, folder, [out / "cases" / k for k in bank], probe_sha, "footprint")
         if selection["action"] == "calibrate":
             selected = key
@@ -66,7 +68,7 @@ def bench(payload, binaries, probe, out, exact=False, contest=False):
                 (folder / "limits" / method).mkdir(parents=True)
             for index, ms in enumerate(deadlines(pred, plan["deadline_percent"], case["fixed_limits_ms"])):
                 chosen = gate.prepare(elf, stdin, folder, baseline_file, paid, folder / "deadline-packet", ms,
-                                      strategy="exact-one" if exact else "near-three")
+                                      strategy=strategy)
                 order = ("baseline", candidate) if (seq + index) % 2 == 0 else (candidate, "baseline")
                 for method in order:
                     decision, policy = (baseline_file, paid) if method == "baseline" else (chosen["selection"], chosen["policy"])
@@ -86,12 +88,12 @@ def bench(payload, binaries, probe, out, exact=False, contest=False):
           steal_delta=runtime.base["steal"](1) - start, rows=rows, native=native))
 
 
-def main(exact=False, contest=False):
+def main(exact=False, contest=False, strategy=None):
     cli = argparse.ArgumentParser(description=__doc__)
     for flag in ("payload", "binaries", "probe", "out"):
         cli.add_argument("--" + flag, type=Path, required=True)
     args = cli.parse_args()
-    bench(args.payload.resolve(), args.binaries.resolve(), args.probe.resolve(), args.out.resolve(), exact, contest)
+    bench(args.payload.resolve(), args.binaries.resolve(), args.probe.resolve(), args.out.resolve(), exact, contest, strategy)
 
 
 if __name__ == "__main__":

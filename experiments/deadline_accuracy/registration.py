@@ -3,21 +3,30 @@ import json
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+ARMS = {"near-three": "gate", "exact-one": "exact", "warm-three": "warm"}
 
 
-def load_registration(exact, contest=False):
-    if contest:
+def registration_for(strategy, contest=False):
+    expand = None
+    prefix = ""
+    if strategy == "warm-three" and not contest:
+        from contest_warm.corpus import expand
+        directory = HERE.parent / "contest_warm"
+    elif contest and strategy == "exact-one":
         from contest_accuracy.corpus import expand
-        if not exact:
-            raise ValueError("the contest study registered the exact-one strategy")
         directory = HERE.parent / "contest_accuracy"
-        prefix = ""
-    else:
+    elif not contest and strategy in ("near-three", "exact-one"):
         directory = HERE
-        prefix = "exact-" if exact else ""
+        prefix = "exact-" if strategy == "exact-one" else ""
+    else:
+        raise ValueError("unregistered combination of study and calibration strategy")
     raw_plan = (directory / f"{prefix}plan.json").read_bytes()
     raw_rules = (directory / f"{prefix}rules.json").read_bytes()
     plan = json.loads(raw_plan)
-    if contest:
+    if expand is not None:
         expand(plan)
     return raw_plan, raw_rules, plan
+
+
+def load_registration(exact, contest=False):
+    return registration_for("exact-one" if exact else "near-three", contest)
