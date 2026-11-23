@@ -13,7 +13,7 @@ from preflight_cache.session import SOURCE_FILES
 
 
 def export(job, out, mode="primary"):
-    studies = {"contest": "contest_accuracy", "warm": "contest_warm"}
+    studies = {"contest": "contest_accuracy", "warm": "contest_warm", "batch": "contest_batch"}
     base = "experiments/" + studies.get(mode, "deadline_accuracy") + "/"
     plan_name = "exact-plan.json" if mode == "exact" else "plan.json"
     plan = json.loads((job / "payload/repo" / base / plan_name).read_bytes())
@@ -31,20 +31,24 @@ def export(job, out, mode="primary"):
         "parity": (plan_name, "client-parity.json", "client_parity.py"),
         "contest": (plan_name, "rules.json", "bench.py", "corpus.py"),
         "warm": (plan_name, "rules.json", "bench.py", "corpus.py"),
+        "batch": (plan_name, "rules.json", "bench.py", "corpus.py", "variants.py", "batch.py"),
     }[mode]
     sources.update(base + name for name in files)
-    if mode in ("contest", "warm"):
+    if mode in ("contest", "warm", "batch"):
         sources.update("experiments/deadline_accuracy/" + name for name in ("bench.py", "gate.py", "registration.py"))
-        if mode == "warm":
+        if mode in ("warm", "batch"):
             sources.add("experiments/contest_accuracy/corpus.py")
     elif mode in ("primary", "exact") and (job / "payload/repo" / base / "registration.py").is_file():
         sources.add(base + "registration.py")
     for name in programs:
         path = base + name + ".cpp"
         if not (job / "payload/repo" / path).is_file():
-            fallback = "contest_accuracy" if mode == "warm" else "calibrated_limits"
-            path = "experiments/" + fallback + "/" + name + ".cpp"
-        if mode in ("contest", "warm"):
+            fallback = {
+                "warm": ("contest_accuracy",), "batch": ("contest_warm", "contest_accuracy"),
+            }.get(mode, ("calibrated_limits",))
+            path = next(file for directory in fallback
+                        if (job / "payload/repo" / (file := f"experiments/{directory}/{name}.cpp")).is_file())
+        if mode in ("contest", "warm", "batch"):
             sources.add(path.removesuffix(".cpp") + ".py")
         sources.add(path)
     sources.update(("collect.py", "experiments/shape_calibration/bench.py",
@@ -56,6 +60,6 @@ if __name__ == "__main__":
     cli = argparse.ArgumentParser(description=__doc__)
     cli.add_argument("job", type=Path)
     cli.add_argument("out", type=Path)
-    cli.add_argument("--mode", choices=("primary", "exact", "parity", "contest", "warm"), default="primary")
+    cli.add_argument("--mode", choices=("primary", "exact", "parity", "contest", "warm", "batch"), default="primary")
     args = cli.parse_args()
     export(args.job, args.out, args.mode)

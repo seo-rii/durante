@@ -3,13 +3,16 @@ import json
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-ARMS = {"near-three": "gate", "exact-one": "exact", "warm-three": "warm"}
+ARMS = {"near-three": "gate", "exact-one": "exact", "warm-three": "warm", "interleaved-three": "warm"}
 
 
 def registration_for(strategy, contest=False):
     expand = None
     prefix = ""
-    if strategy == "warm-three" and not contest:
+    if strategy == "interleaved-three" and not contest:
+        from contest_batch.corpus import expand
+        directory = HERE.parent / "contest_batch"
+    elif strategy == "warm-three" and not contest:
         from contest_warm.corpus import expand
         directory = HERE.parent / "contest_warm"
     elif contest and strategy == "exact-one":
