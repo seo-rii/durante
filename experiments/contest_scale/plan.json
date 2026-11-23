@@ -1,0 +1,141 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "poll_ms": 5,
+  "timeout_ms": 120000,
+  "native_rounds": 11,
+  "probe_sha256": "159ca08d50bb8cf20e88f86b2186af422e094e7c14ebe98a42bed7adc2d6b186",
+  "deadline_percent": [
+    85,
+    100,
+    115
+  ],
+  "cases": [
+    {
+      "case_id": "wall/phase_envelopes",
+      "program": "wall",
+      "variant": "phase_envelopes",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "a9a2df1ade516cebcd4afa89705db83fc1425fc5db29a9bd3956386670d98210",
+      "stdin_sha256": "6af470e30662c618cb2921139112cefcc0c7bed384df9abfe20337430be83253",
+      "stdout_sha256": "04e76bc7348c85f69942b4b9ab0c971dad0c62f6b0126336621867eff76324d0",
+      "fixed_limits_ms": [
+        50,
+        100,
+        200,
+        400
+      ]
+    },
+    {
+      "case_id": "wall/scatter_repairs",
+      "program": "wall",
+      "variant": "scatter_repairs",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "a9a2df1ade516cebcd4afa89705db83fc1425fc5db29a9bd3956386670d98210",
+      "stdin_sha256": "d279dddb0bab630bf1b518a5c20138d97658428cbb1e82d25a2409dfc83c0d61",
+      "stdout_sha256": "015d4e061ecfd6cf157ecc08a951b29f1c0a11a9e496d54f4746561f69e97342",
+      "fixed_limits_ms": [
+        50,
+        100,
+        200,
+        400
+      ]
+    },
+    {
+      "case_id": "scrivener/interwoven_pages",
+      "program": "scrivener",
+      "variant": "interwoven_pages",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "5a918d9eb725f4a0492ed3f891a155e6c08a3a30092215c9036648e8e3e9a60e",
+      "stdin_sha256": "8edb596d806e8a2e62f28a04c840f9f715bdd9fc453f0caf085d5abe2ac6be9d",
+      "stdout_sha256": "40b8afdc4e2e691ec6365447ce02ba0c76bdc54b548b87dfe3d21f7f5977c570",
+      "fixed_limits_ms": [
+        50,
+        100,
+        200,
+        400
+      ]
+    },
+    {
+      "case_id": "scrivener/bookmarked_chapters",
+      "program": "scrivener",
+      "variant": "bookmarked_chapters",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "5a918d9eb725f4a0492ed3f891a155e6c08a3a30092215c9036648e8e3e9a60e",
+      "stdin_sha256": "e1f31742176cea0297294a97cce1e73de870b3bdf4764e65a4a6711f6a1ff10b",
+      "stdout_sha256": "8053891dca0e98f52fc0b747004eb5179fc3a77954d6e1837fd3a90a803fd8a1",
+      "fixed_limits_ms": [
+        50,
+        100,
+        200,
+        400
+      ]
+    },
+    {
+      "case_id": "money/terraced_bids",
+      "program": "money",
+      "variant": "terraced_bids",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "cf323f0570bff64969254ad20f90fcaca929d52bb7edf8df0c37b6cd25058d00",
+      "stdin_sha256": "bba9c24f8c3e95d80713c90ae6919515ab31e105d23843263c966f34597d7b6a",
+      "stdout_sha256": "b60311a518fbf66b1f5e47eeb576b319837840ca2cc26a3352e7da7fbb524116",
+      "fixed_limits_ms": [
+        50,
+        100,
+        200,
+        400
+      ]
+    },
+    {
+      "case_id": "money/warehouse_lots",
+      "program": "money",
+      "variant": "warehouse_lots",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "cf323f0570bff64969254ad20f90fcaca929d52bb7edf8df0c37b6cd25058d00",
+      "stdin_sha256": "698ba85d2d94877e21f653ba87faff1a695d48ad38fa29b8fe4f68a362104a04",
+      "stdout_sha256": "0f13f21653062747d096b83f9d197f86af109c2b122f3fa60e17f8b7fff528e5",
+      "fixed_limits_ms": [
+        50,
+        100,
+        200,
+        400
+      ]
+    },
+    {
+      "case_id": "wall/crossed_intervals",
+      "program": "wall",
+      "variant": "crossed_intervals",
+      "split": "holdout",
+      "cohort": "previous",
+      "binary_sha256": "a9a2df1ade516cebcd4afa89705db83fc1425fc5db29a9bd3956386670d98210",
+      "stdin_sha256": "9cc911accf2965645c3b086605e1898088a3f92c03b366f7c4e7176b89f600da",
+      "stdout_sha256": "f8b0bc9fba18a2afc33170386becd25b8d0c31fa3259be0a74351bd087014ea9",
+      "fixed_limits_ms": [
+        12,
+        13,
+        14
+      ]
+    },
+    {
+      "case_id": "scrivener/prefix_forks",
+      "program": "scrivener",
+      "variant": "prefix_forks",
+      "split": "holdout",
+      "cohort": "previous",
+      "binary_sha256": "5a918d9eb725f4a0492ed3f891a155e6c08a3a30092215c9036648e8e3e9a60e",
+      "stdin_sha256": "9ab113b126c3a8de7e50dac83614cd2f21b17672b8c349e33b8834ae70d2fcf7",
+      "stdout_sha256": "29c97d4eabee8426834952b319dec08c4253d843a66a9bb4804c0857e17ad8ba",
+      "fixed_limits_ms": [
+        12,
+        13,
+        14
+      ]
+    }
+  ]
+}
