@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "probe_sha256": "159ca08d50bb8cf20e88f86b2186af422e094e7c14ebe98a42bed7adc2d6b186",
+  "baseline": "The released #85 spatial and temporal admission checks, with one shared combined profile per exact ELF/input pair.",
+  "candidate": "Require every baseline check. For every site with at least 1/20 of eligible loads in either capture, if either observed span reaches 1048576 bytes, require the larger span to be at most 3/2 of the smaller, flooring each at 4096 bytes.",
+  "selection": "In plan order take the oldest previously paid and compatible anchor for the same ELF and method. Otherwise pay one native execution on this exact input. Share that observation if both arms request it, charging each strategy for its own selections.",
+  "enforcement": "Run both arms with the exact-input-bound live wrapper at all registered holdout limits, alternating which arm goes first by case index plus limit index. Count strict greater-than crossings; use the independent 120 s watchdog.",
+  "references": "After all decisions collect nine direct wait4 native user plus system CPU observations per holdout. Sort holdout IDs by SHA-256 and rotate by round. Retain all rounds; compare durations to medians and separate unanimous native boundary outcomes from mixed ones.",
+  "cost": "Report combined profiling CPU and each strategy's paid native CPU separately. Exclude independent reference rounds from operating cost.",
+  "cohorts": "The twofold footprint change in fenwick/expanded motivated the rule. Report previously observed and prospective ELF/input pairs separately. No post-hoc removal of noisy cases."
+}
