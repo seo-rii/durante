@@ -1,0 +1,1470 @@
+{
+  "schema": 1,
+  "kind": "exploratory_model_implied_seed_clock",
+  "summary_sha256": "40d020c7db2566889bc32d6870ef8e7981ac43df7be93cd3002981229d145078",
+  "plan_sha256": "b6944543bffd6d9500e022109195902b80fae766cec8cdc0a1d0d08decf2f3f7",
+  "seeds": {
+    "rice/uniform": {
+      "policy_sha256": "9b29cd49cea61d7a2664d824d7325e30ec3b009ab317d3c1eae127221973d406",
+      "native_cpu_ns": 4099000,
+      "profile_cpu_ns": 235568000
+    },
+    "wall/aligned_tiles": {
+      "policy_sha256": "df8800c7bf25afa02cf7da30d82bddaf85731a8da9e61d20dd511bbd88ea3111",
+      "native_cpu_ns": 8130000,
+      "profile_cpu_ns": 798001000
+    },
+    "money/mixed_frontiers": {
+      "policy_sha256": "2839b386886a4a01c337354fc763ad431b9a93da4c5677c3c03ec88e9e53131d",
+      "native_cpu_ns": 5812000,
+      "profile_cpu_ns": 260472000
+    },
+    "plane/layered": {
+      "policy_sha256": "52f9d3e9246127bdbfe18d0294326be1b9ddac0c74709f98dbb4210d7377206a",
+      "native_cpu_ns": 5286000,
+      "profile_cpu_ns": 335014000
+    }
+  },
+  "projection_totals": {
+    "cases": 12,
+    "within_20pct": 12,
+    "median_absolute_error_ppm": 39799.5,
+    "max_absolute_error_ppm": 92260,
+    "all": {
+      "limits": 64,
+      "majority_matches": 62,
+      "agreement": 59,
+      "false_tle": 0,
+      "false_accept": 1,
+      "mixed_native": 4
+    },
+    "fixed": {
+      "limits": 36,
+      "majority_matches": 36,
+      "agreement": 35,
+      "false_tle": 0,
+      "false_accept": 0,
+      "mixed_native": 1
+    },
+    "adaptive": {
+      "limits": 32,
+      "majority_matches": 30,
+      "agreement": 28,
+      "false_tle": 0,
+      "false_accept": 1,
+      "mixed_native": 3
+    },
+    "overlap": {
+      "limits": 4,
+      "majority_matches": 4,
+      "agreement": 4,
+      "false_tle": 0,
+      "false_accept": 0,
+      "mixed_native": 0
+    }
+  },
+  "observed_baseline_comparisons": 24,
+  "observed_refusal_reasons": {
+    "shape/insufficient_material_coverage": 24,
+    "temporal/no_temporal_material": 19,
+    "footprint/no_material_sites": 19,
+    "temporal/insufficient_temporal_windows": 4,
+    "shape/site_shares_changed": 5
+  },
+  "cases": {
+    "wall/scattered_points": {
+      "seed": "wall/aligned_tiles",
+      "native_reference_ns": [
+        9879000,
+        9762000,
+        9568000,
+        9558000,
+        9579000,
+        9559000,
+        9540000,
+        9555000,
+        9553000
+      ],
+      "observed": {
+        "profile_cpu_ns": 813979000,
+        "baseline_paid_cpu_ns": 9759000,
+        "extra_exact_cpu_ns": 0,
+        "baseline_prediction_ns": 9759000,
+        "exact_prediction_ns": 9759000,
+        "baseline_comparisons": 2,
+        "refusal_reasons": {
+          "shape/insufficient_material_coverage": 2,
+          "temporal/no_temporal_material": 2,
+          "footprint/no_material_sites": 2
+        },
+        "deadlines": [
+          {
+            "limit_ms": 4,
+            "baseline_tle": true,
+            "exact_tle": true
+          },
+          {
+            "limit_ms": 9,
+            "baseline_tle": true,
+            "exact_tle": true
+          },
+          {
+            "limit_ms": 10,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 12,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 32,
+            "baseline_tle": false,
+            "exact_tle": false
+          }
+        ]
+      },
+      "seed_projection": {
+        "prediction_ns": 9357846,
+        "signed_error_ppm": -21043,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 4,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 9,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 10,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 12,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 32,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          }
+        ]
+      }
+    },
+    "rice/scattered_gaps": {
+      "seed": "rice/uniform",
+      "native_reference_ns": [
+        4328000,
+        4199000,
+        4240000,
+        4216000,
+        4254000,
+        4239000,
+        4179000,
+        4236000,
+        4232000
+      ],
+      "observed": {
+        "profile_cpu_ns": 231126000,
+        "baseline_paid_cpu_ns": 4288000,
+        "extra_exact_cpu_ns": 0,
+        "baseline_prediction_ns": 4288000,
+        "exact_prediction_ns": 4288000,
+        "baseline_comparisons": 2,
+        "refusal_reasons": {
+          "shape/insufficient_material_coverage": 2,
+          "temporal/insufficient_temporal_windows": 1
+        },
+        "deadlines": [
+          {
+            "limit_ms": 4,
+            "baseline_tle": true,
+            "exact_tle": true
+          },
+          {
+            "limit_ms": 5,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 12,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 32,
+            "baseline_tle": false,
+            "exact_tle": false
+          }
+        ]
+      },
+      "seed_projection": {
+        "prediction_ns": 4474929,
+        "signed_error_ppm": 56404,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 4,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 5,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 12,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 32,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          }
+        ]
+      }
+    },
+    "rice/duplicate_clusters": {
+      "seed": "rice/uniform",
+      "native_reference_ns": [
+        4122000,
+        4411000,
+        4219000,
+        4725000,
+        4166000,
+        4161000,
+        4096000,
+        4096000,
+        4092000
+      ],
+      "observed": {
+        "profile_cpu_ns": 234143000,
+        "baseline_paid_cpu_ns": 4284000,
+        "extra_exact_cpu_ns": 0,
+        "baseline_prediction_ns": 4284000,
+        "exact_prediction_ns": 4284000,
+        "baseline_comparisons": 1,
+        "refusal_reasons": {
+          "shape/insufficient_material_coverage": 1,
+          "temporal/insufficient_temporal_windows": 1
+        },
+        "deadlines": [
+          {
+            "limit_ms": 4,
+            "baseline_tle": true,
+            "exact_tle": true
+          },
+          {
+            "limit_ms": 5,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 12,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 32,
+            "baseline_tle": false,
+            "exact_tle": false
+          }
+        ]
+      },
+      "seed_projection": {
+        "prediction_ns": 4312494,
+        "signed_error_ppm": 36408,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 4,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 5,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 12,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 32,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          }
+        ]
+      }
+    },
+    "wall/crossed_intervals": {
+      "seed": "wall/aligned_tiles",
+      "native_reference_ns": [
+        12022000,
+        14824000,
+        12058000,
+        11964000,
+        11983000,
+        11923000,
+        11932000,
+        11976000,
+        11937000
+      ],
+      "observed": {
+        "profile_cpu_ns": 826517000,
+        "baseline_paid_cpu_ns": 12113000,
+        "extra_exact_cpu_ns": 0,
+        "baseline_prediction_ns": 12113000,
+        "exact_prediction_ns": 12113000,
+        "baseline_comparisons": 1,
+        "refusal_reasons": {
+          "shape/insufficient_material_coverage": 1,
+          "shape/site_shares_changed": 1,
+          "temporal/no_temporal_material": 1,
+          "footprint/no_material_sites": 1
+        },
+        "deadlines": [
+          {
+            "limit_ms": 4,
+            "baseline_tle": true,
+            "exact_tle": true
+          },
+          {
+            "limit_ms": 11,
+            "baseline_tle": true,
+            "exact_tle": true
+          },
+          {
+            "limit_ms": 12,
+            "baseline_tle": true,
+            "exact_tle": true
+          },
+          {
+            "limit_ms": 13,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 14,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 32,
+            "baseline_tle": false,
+            "exact_tle": false
+          }
+        ]
+      },
+      "seed_projection": {
+        "prediction_ns": 11446929,
+        "signed_error_ppm": -44178,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 4,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 11,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 12,
+            "native_tle_reps": 3,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "mixed_native",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 13,
+            "native_tle_reps": 1,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "mixed_native",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 14,
+            "native_tle_reps": 1,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "mixed_native",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 32,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          }
+        ]
+      }
+    },
+    "plane/tight_transfers": {
+      "seed": "plane/layered",
+      "native_reference_ns": [
+        5524000,
+        5673000,
+        5516000,
+        5491000,
+        5503000,
+        5459000,
+        5474000,
+        5474000,
+        5496000
+      ],
+      "observed": {
+        "profile_cpu_ns": 322629000,
+        "baseline_paid_cpu_ns": 5612000,
+        "extra_exact_cpu_ns": 0,
+        "baseline_prediction_ns": 5612000,
+        "exact_prediction_ns": 5612000,
+        "baseline_comparisons": 2,
+        "refusal_reasons": {
+          "shape/insufficient_material_coverage": 2,
+          "temporal/no_temporal_material": 2,
+          "footprint/no_material_sites": 2
+        },
+        "deadlines": [
+          {
+            "limit_ms": 4,
+            "baseline_tle": true,
+            "exact_tle": true
+          },
+          {
+            "limit_ms": 5,
+            "baseline_tle": true,
+            "exact_tle": true
+          },
+          {
+            "limit_ms": 6,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 7,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 12,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 32,
+            "baseline_tle": false,
+            "exact_tle": false
+          }
+        ]
+      },
+      "seed_projection": {
+        "prediction_ns": 4988940,
+        "signed_error_ppm": -92260,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 4,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 5,
+            "native_tle_reps": 9,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "false_accept",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": false
+          },
+          {
+            "limit_ms": 6,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 7,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 12,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 32,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          }
+        ]
+      }
+    },
+    "wall/nested_ranges": {
+      "seed": "wall/aligned_tiles",
+      "native_reference_ns": [
+        10637000,
+        10750000,
+        10724000,
+        10580000,
+        10660000,
+        10656000,
+        10609000,
+        10550000,
+        10599000
+      ],
+      "observed": {
+        "profile_cpu_ns": 817704000,
+        "baseline_paid_cpu_ns": 10764000,
+        "extra_exact_cpu_ns": 0,
+        "baseline_prediction_ns": 10764000,
+        "exact_prediction_ns": 10764000,
+        "baseline_comparisons": 3,
+        "refusal_reasons": {
+          "shape/insufficient_material_coverage": 3,
+          "shape/site_shares_changed": 1,
+          "temporal/no_temporal_material": 3,
+          "footprint/no_material_sites": 3
+        },
+        "deadlines": [
+          {
+            "limit_ms": 4,
+            "baseline_tle": true,
+            "exact_tle": true
+          },
+          {
+            "limit_ms": 10,
+            "baseline_tle": true,
+            "exact_tle": true
+          },
+          {
+            "limit_ms": 11,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 12,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 13,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 32,
+            "baseline_tle": false,
+            "exact_tle": false
+          }
+        ]
+      },
+      "seed_projection": {
+        "prediction_ns": 10966297,
+        "signed_error_ppm": 30958,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 4,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 10,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 11,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 12,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 13,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 32,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          }
+        ]
+      }
+    },
+    "plane/simultaneous": {
+      "seed": "plane/layered",
+      "native_reference_ns": [
+        5401000,
+        5490000,
+        5477000,
+        5400000,
+        5383000,
+        5387000,
+        5303000,
+        5414000,
+        5370000
+      ],
+      "observed": {
+        "profile_cpu_ns": 337824000,
+        "baseline_paid_cpu_ns": 5464000,
+        "extra_exact_cpu_ns": 0,
+        "baseline_prediction_ns": 5464000,
+        "exact_prediction_ns": 5464000,
+        "baseline_comparisons": 1,
+        "refusal_reasons": {
+          "shape/insufficient_material_coverage": 1,
+          "temporal/no_temporal_material": 1,
+          "footprint/no_material_sites": 1
+        },
+        "deadlines": [
+          {
+            "limit_ms": 4,
+            "baseline_tle": true,
+            "exact_tle": true
+          },
+          {
+            "limit_ms": 5,
+            "baseline_tle": true,
+            "exact_tle": true
+          },
+          {
+            "limit_ms": 6,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 7,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 12,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 32,
+            "baseline_tle": false,
+            "exact_tle": false
+          }
+        ]
+      },
+      "seed_projection": {
+        "prediction_ns": 5520163,
+        "signed_error_ppm": 22252,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 4,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 5,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 6,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 7,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 12,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 32,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          }
+        ]
+      }
+    },
+    "money/dense_scrambled": {
+      "seed": "money/mixed_frontiers",
+      "native_reference_ns": [
+        5966000,
+        6001000,
+        6034000,
+        5928000,
+        6174000,
+        5940000,
+        5952000,
+        5956000,
+        5908000
+      ],
+      "observed": {
+        "profile_cpu_ns": 263325000,
+        "baseline_paid_cpu_ns": 6300000,
+        "extra_exact_cpu_ns": 0,
+        "baseline_prediction_ns": 6300000,
+        "exact_prediction_ns": 6300000,
+        "baseline_comparisons": 1,
+        "refusal_reasons": {
+          "shape/insufficient_material_coverage": 1,
+          "temporal/no_temporal_material": 1,
+          "footprint/no_material_sites": 1
+        },
+        "deadlines": [
+          {
+            "limit_ms": 4,
+            "baseline_tle": true,
+            "exact_tle": true
+          },
+          {
+            "limit_ms": 6,
+            "baseline_tle": true,
+            "exact_tle": true
+          },
+          {
+            "limit_ms": 7,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 8,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 12,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 32,
+            "baseline_tle": false,
+            "exact_tle": false
+          }
+        ]
+      },
+      "seed_projection": {
+        "prediction_ns": 6213246,
+        "signed_error_ppm": 43191,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 4,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 6,
+            "native_tle_reps": 3,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "mixed_native",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": false
+          },
+          {
+            "limit_ms": 7,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 8,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 12,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 32,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          }
+        ]
+      }
+    },
+    "plane/scattered_services": {
+      "seed": "plane/layered",
+      "native_reference_ns": [
+        6788000,
+        6785000,
+        6789000,
+        6700000,
+        6781000,
+        6750000,
+        6678000,
+        6754000,
+        6672000
+      ],
+      "observed": {
+        "profile_cpu_ns": 352099000,
+        "baseline_paid_cpu_ns": 6824000,
+        "extra_exact_cpu_ns": 0,
+        "baseline_prediction_ns": 6824000,
+        "exact_prediction_ns": 6824000,
+        "baseline_comparisons": 3,
+        "refusal_reasons": {
+          "shape/insufficient_material_coverage": 3,
+          "temporal/no_temporal_material": 3,
+          "footprint/no_material_sites": 3
+        },
+        "deadlines": [
+          {
+            "limit_ms": 4,
+            "baseline_tle": true,
+            "exact_tle": true
+          },
+          {
+            "limit_ms": 6,
+            "baseline_tle": true,
+            "exact_tle": true
+          },
+          {
+            "limit_ms": 7,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 8,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 12,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 32,
+            "baseline_tle": false,
+            "exact_tle": false
+          }
+        ]
+      },
+      "seed_projection": {
+        "prediction_ns": 6166029,
+        "signed_error_ppm": -87055,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 4,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 6,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 7,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 8,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 12,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 32,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          }
+        ]
+      }
+    },
+    "money/mostly_dominated": {
+      "seed": "money/mixed_frontiers",
+      "native_reference_ns": [
+        5398000,
+        5405000,
+        5356000,
+        5317000,
+        5328000,
+        5360000,
+        5380000,
+        5415000,
+        5451000
+      ],
+      "observed": {
+        "profile_cpu_ns": 254870000,
+        "baseline_paid_cpu_ns": 5442000,
+        "extra_exact_cpu_ns": 0,
+        "baseline_prediction_ns": 5442000,
+        "exact_prediction_ns": 5442000,
+        "baseline_comparisons": 2,
+        "refusal_reasons": {
+          "shape/insufficient_material_coverage": 2,
+          "temporal/no_temporal_material": 2,
+          "footprint/no_material_sites": 2
+        },
+        "deadlines": [
+          {
+            "limit_ms": 4,
+            "baseline_tle": true,
+            "exact_tle": true
+          },
+          {
+            "limit_ms": 5,
+            "baseline_tle": true,
+            "exact_tle": true
+          },
+          {
+            "limit_ms": 6,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 7,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 12,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 32,
+            "baseline_tle": false,
+            "exact_tle": false
+          }
+        ]
+      },
+      "seed_projection": {
+        "prediction_ns": 5366510,
+        "signed_error_ppm": -2507,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 4,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 5,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 6,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 7,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 12,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 32,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          }
+        ]
+      }
+    },
+    "money/narrow_windows": {
+      "seed": "money/mixed_frontiers",
+      "native_reference_ns": [
+        5853000,
+        5786000,
+        5788000,
+        5773000,
+        5812000,
+        5781000,
+        5788000,
+        5813000,
+        5788000
+      ],
+      "observed": {
+        "profile_cpu_ns": 261179000,
+        "baseline_paid_cpu_ns": 5904000,
+        "extra_exact_cpu_ns": 0,
+        "baseline_prediction_ns": 5904000,
+        "exact_prediction_ns": 5904000,
+        "baseline_comparisons": 3,
+        "refusal_reasons": {
+          "shape/insufficient_material_coverage": 3,
+          "temporal/no_temporal_material": 3,
+          "footprint/no_material_sites": 3
+        },
+        "deadlines": [
+          {
+            "limit_ms": 4,
+            "baseline_tle": true,
+            "exact_tle": true
+          },
+          {
+            "limit_ms": 6,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 7,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 12,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 32,
+            "baseline_tle": false,
+            "exact_tle": false
+          }
+        ]
+      },
+      "seed_projection": {
+        "prediction_ns": 5929671,
+        "signed_error_ppm": 24477,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 4,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 6,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 7,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 12,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 32,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          }
+        ]
+      }
+    },
+    "rice/wide_coordinates": {
+      "seed": "rice/uniform",
+      "native_reference_ns": [
+        3549000,
+        3535000,
+        3509000,
+        3541000,
+        3550000,
+        3519000,
+        3476000,
+        3513000,
+        3473000
+      ],
+      "observed": {
+        "profile_cpu_ns": 221639000,
+        "baseline_paid_cpu_ns": 3542000,
+        "extra_exact_cpu_ns": 0,
+        "baseline_prediction_ns": 3542000,
+        "exact_prediction_ns": 3542000,
+        "baseline_comparisons": 3,
+        "refusal_reasons": {
+          "shape/insufficient_material_coverage": 3,
+          "shape/site_shares_changed": 3,
+          "temporal/no_temporal_material": 1,
+          "footprint/no_material_sites": 1,
+          "temporal/insufficient_temporal_windows": 2
+        },
+        "deadlines": [
+          {
+            "limit_ms": 4,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 5,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 12,
+            "baseline_tle": false,
+            "exact_tle": false
+          },
+          {
+            "limit_ms": 32,
+            "baseline_tle": false,
+            "exact_tle": false
+          }
+        ]
+      },
+      "seed_projection": {
+        "prediction_ns": 3707369,
+        "signed_error_ppm": 53529,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 4,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 5,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": false,
+            "adaptive": true,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 12,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          },
+          {
+            "limit_ms": 32,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement",
+            "fixed": true,
+            "adaptive": false,
+            "majority_match": true
+          }
+        ]
+      }
+    }
+  }
+}

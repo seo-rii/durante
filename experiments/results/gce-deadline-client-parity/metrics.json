@@ -1,0 +1,867 @@
+{
+  "schema": 1,
+  "verified_pids": 120,
+  "steal_ticks": 0,
+  "cases": {
+    "csr_frontier/ordered": {
+      "counts": {
+        "released": [
+          [
+            86704625,
+            0,
+            632
+          ],
+          [
+            86704625,
+            0,
+            632
+          ],
+          [
+            86704625,
+            0,
+            632
+          ]
+        ],
+        "candidate": [
+          [
+            86704625,
+            0,
+            632
+          ],
+          [
+            86704625,
+            0,
+            632
+          ],
+          [
+            86704625,
+            0,
+            632
+          ]
+        ]
+      },
+      "median_difference_ppm": 0.0,
+      "median_exact": true,
+      "all_instruction_counts_equal": true,
+      "rep_consistent": true,
+      "within_tolerance": true
+    },
+    "fenwick/eleven_mib_repeat": {
+      "counts": {
+        "released": [
+          [
+            406893766,
+            0,
+            632
+          ],
+          [
+            406893766,
+            0,
+            632
+          ],
+          [
+            406893766,
+            0,
+            632
+          ]
+        ],
+        "candidate": [
+          [
+            406893766,
+            0,
+            632
+          ],
+          [
+            406893766,
+            0,
+            632
+          ],
+          [
+            406893766,
+            0,
+            632
+          ]
+        ]
+      },
+      "median_difference_ppm": 0.0,
+      "median_exact": true,
+      "all_instruction_counts_equal": true,
+      "rep_consistent": true,
+      "within_tolerance": true
+    },
+    "threshold_runs/blocked_longer": {
+      "counts": {
+        "released": [
+          [
+            273465576,
+            0,
+            632
+          ],
+          [
+            273465576,
+            0,
+            632
+          ],
+          [
+            273465576,
+            0,
+            632
+          ]
+        ],
+        "candidate": [
+          [
+            273465576,
+            0,
+            632
+          ],
+          [
+            273465576,
+            0,
+            632
+          ],
+          [
+            273465576,
+            0,
+            632
+          ]
+        ]
+      },
+      "median_difference_ppm": 0.0,
+      "median_exact": true,
+      "all_instruction_counts_equal": true,
+      "rep_consistent": true,
+      "within_tolerance": true
+    },
+    "successor_walk/more_steps": {
+      "counts": {
+        "released": [
+          [
+            98401599,
+            0,
+            632
+          ],
+          [
+            98401599,
+            0,
+            632
+          ],
+          [
+            98401599,
+            0,
+            632
+          ]
+        ],
+        "candidate": [
+          [
+            98401599,
+            0,
+            632
+          ],
+          [
+            98401599,
+            0,
+            632
+          ],
+          [
+            98401599,
+            0,
+            632
+          ]
+        ]
+      },
+      "median_difference_ppm": 0.0,
+      "median_exact": true,
+      "all_instruction_counts_equal": true,
+      "rep_consistent": true,
+      "within_tolerance": true
+    },
+    "threshold_runs/short_blocks": {
+      "counts": {
+        "released": [
+          [
+            215793641,
+            0,
+            632
+          ],
+          [
+            215793641,
+            0,
+            632
+          ],
+          [
+            215793641,
+            0,
+            632
+          ]
+        ],
+        "candidate": [
+          [
+            215793641,
+            0,
+            632
+          ],
+          [
+            215793641,
+            0,
+            632
+          ],
+          [
+            215793641,
+            0,
+            632
+          ]
+        ]
+      },
+      "median_difference_ppm": 0.0,
+      "median_exact": true,
+      "all_instruction_counts_equal": true,
+      "rep_consistent": true,
+      "within_tolerance": true
+    },
+    "fenwick/five_mib_repeat": {
+      "counts": {
+        "released": [
+          [
+            391895763,
+            0,
+            632
+          ],
+          [
+            391895763,
+            0,
+            632
+          ],
+          [
+            391895763,
+            0,
+            632
+          ]
+        ],
+        "candidate": [
+          [
+            391895763,
+            0,
+            632
+          ],
+          [
+            391895763,
+            0,
+            632
+          ],
+          [
+            391895763,
+            0,
+            632
+          ]
+        ]
+      },
+      "median_difference_ppm": 0.0,
+      "median_exact": true,
+      "all_instruction_counts_equal": true,
+      "rep_consistent": true,
+      "within_tolerance": true
+    },
+    "rational_gcd/wide_divisors": {
+      "counts": {
+        "released": [
+          [
+            165689831,
+            0,
+            632
+          ],
+          [
+            165689831,
+            0,
+            632
+          ],
+          [
+            165689831,
+            0,
+            632
+          ]
+        ],
+        "candidate": [
+          [
+            165689831,
+            0,
+            632
+          ],
+          [
+            165689831,
+            0,
+            632
+          ],
+          [
+            165689831,
+            0,
+            632
+          ]
+        ]
+      },
+      "median_difference_ppm": 0.0,
+      "median_exact": true,
+      "all_instruction_counts_equal": true,
+      "rep_consistent": true,
+      "within_tolerance": true
+    },
+    "fenwick/large": {
+      "counts": {
+        "released": [
+          [
+            263732434,
+            0,
+            632
+          ],
+          [
+            263732434,
+            0,
+            632
+          ],
+          [
+            263732434,
+            0,
+            632
+          ]
+        ],
+        "candidate": [
+          [
+            263732434,
+            0,
+            632
+          ],
+          [
+            263732434,
+            0,
+            632
+          ],
+          [
+            263732434,
+            0,
+            632
+          ]
+        ]
+      },
+      "median_difference_ppm": 0.0,
+      "median_exact": true,
+      "all_instruction_counts_equal": true,
+      "rep_consistent": true,
+      "within_tolerance": true
+    },
+    "csr_frontier/large_relabeled": {
+      "counts": {
+        "released": [
+          [
+            165089622,
+            0,
+            632
+          ],
+          [
+            165089622,
+            0,
+            632
+          ],
+          [
+            165089622,
+            0,
+            632
+          ]
+        ],
+        "candidate": [
+          [
+            165089622,
+            0,
+            632
+          ],
+          [
+            165089622,
+            0,
+            632
+          ],
+          [
+            165089622,
+            0,
+            632
+          ]
+        ]
+      },
+      "median_difference_ppm": 0.0,
+      "median_exact": true,
+      "all_instruction_counts_equal": true,
+      "rep_consistent": true,
+      "within_tolerance": true
+    },
+    "threshold_runs/blocked": {
+      "counts": {
+        "released": [
+          [
+            172801846,
+            0,
+            632
+          ],
+          [
+            172801846,
+            0,
+            632
+          ],
+          [
+            172801846,
+            0,
+            632
+          ]
+        ],
+        "candidate": [
+          [
+            172801846,
+            0,
+            632
+          ],
+          [
+            172801846,
+            0,
+            632
+          ],
+          [
+            172801846,
+            0,
+            632
+          ]
+        ]
+      },
+      "median_difference_ppm": 0.0,
+      "median_exact": true,
+      "all_instruction_counts_equal": true,
+      "rep_consistent": true,
+      "within_tolerance": true
+    },
+    "rational_gcd/fibonacci": {
+      "counts": {
+        "released": [
+          [
+            176168252,
+            0,
+            632
+          ],
+          [
+            176168252,
+            0,
+            632
+          ],
+          [
+            176168252,
+            0,
+            632
+          ]
+        ],
+        "candidate": [
+          [
+            176168252,
+            0,
+            632
+          ],
+          [
+            176168252,
+            0,
+            632
+          ],
+          [
+            176168252,
+            0,
+            632
+          ]
+        ]
+      },
+      "median_difference_ppm": 0.0,
+      "median_exact": true,
+      "all_instruction_counts_equal": true,
+      "rep_consistent": true,
+      "within_tolerance": true
+    },
+    "successor_walk/small_blocks": {
+      "counts": {
+        "released": [
+          [
+            68401549,
+            0,
+            632
+          ],
+          [
+            68401549,
+            0,
+            632
+          ],
+          [
+            68401549,
+            0,
+            632
+          ]
+        ],
+        "candidate": [
+          [
+            68401565,
+            0,
+            632
+          ],
+          [
+            68401549,
+            0,
+            632
+          ],
+          [
+            68401549,
+            0,
+            632
+          ]
+        ]
+      },
+      "median_difference_ppm": 0.0,
+      "median_exact": true,
+      "all_instruction_counts_equal": false,
+      "rep_consistent": true,
+      "within_tolerance": true
+    },
+    "csr_frontier/relabeled": {
+      "counts": {
+        "released": [
+          [
+            88539624,
+            0,
+            632
+          ],
+          [
+            88539624,
+            0,
+            632
+          ],
+          [
+            88539624,
+            0,
+            632
+          ]
+        ],
+        "candidate": [
+          [
+            88539624,
+            0,
+            632
+          ],
+          [
+            88539624,
+            0,
+            632
+          ],
+          [
+            88539624,
+            0,
+            632
+          ]
+        ]
+      },
+      "median_difference_ppm": 0.0,
+      "median_exact": true,
+      "all_instruction_counts_equal": true,
+      "rep_consistent": true,
+      "within_tolerance": true
+    },
+    "threshold_runs/random": {
+      "counts": {
+        "released": [
+          [
+            173326122,
+            0,
+            632
+          ],
+          [
+            173326122,
+            0,
+            632
+          ],
+          [
+            173326122,
+            0,
+            632
+          ]
+        ],
+        "candidate": [
+          [
+            173326122,
+            0,
+            632
+          ],
+          [
+            173326122,
+            0,
+            632
+          ],
+          [
+            173326122,
+            0,
+            632
+          ]
+        ]
+      },
+      "median_difference_ppm": 0.0,
+      "median_exact": true,
+      "all_instruction_counts_equal": true,
+      "rep_consistent": true,
+      "within_tolerance": true
+    },
+    "fenwick/intermediate_low": {
+      "counts": {
+        "released": [
+          [
+            520375711,
+            0,
+            632
+          ],
+          [
+            520375711,
+            0,
+            632
+          ],
+          [
+            520375711,
+            0,
+            632
+          ]
+        ],
+        "candidate": [
+          [
+            520375711,
+            0,
+            632
+          ],
+          [
+            520375711,
+            0,
+            632
+          ],
+          [
+            520375711,
+            0,
+            632
+          ]
+        ]
+      },
+      "median_difference_ppm": 0.0,
+      "median_exact": true,
+      "all_instruction_counts_equal": true,
+      "rep_consistent": true,
+      "within_tolerance": true
+    },
+    "successor_walk/global_shuffle": {
+      "counts": {
+        "released": [
+          [
+            68401568,
+            0,
+            632
+          ],
+          [
+            68401568,
+            0,
+            632
+          ],
+          [
+            68401568,
+            0,
+            632
+          ]
+        ],
+        "candidate": [
+          [
+            68401568,
+            0,
+            632
+          ],
+          [
+            68401568,
+            0,
+            632
+          ],
+          [
+            68401568,
+            0,
+            632
+          ]
+        ]
+      },
+      "median_difference_ppm": 0.0,
+      "median_exact": true,
+      "all_instruction_counts_equal": true,
+      "rep_consistent": true,
+      "within_tolerance": true
+    },
+    "rational_gcd/narrow_divisors": {
+      "counts": {
+        "released": [
+          [
+            68486545,
+            0,
+            632
+          ],
+          [
+            68486545,
+            0,
+            632
+          ],
+          [
+            68486545,
+            0,
+            632
+          ]
+        ],
+        "candidate": [
+          [
+            68486545,
+            0,
+            632
+          ],
+          [
+            68486545,
+            0,
+            632
+          ],
+          [
+            68486545,
+            0,
+            632
+          ]
+        ]
+      },
+      "median_difference_ppm": 0.0,
+      "median_exact": true,
+      "all_instruction_counts_equal": true,
+      "rep_consistent": true,
+      "within_tolerance": true
+    },
+    "successor_walk/large_shuffle": {
+      "counts": {
+        "released": [
+          [
+            344127037,
+            0,
+            632
+          ],
+          [
+            344127037,
+            0,
+            632
+          ],
+          [
+            344127037,
+            0,
+            632
+          ]
+        ],
+        "candidate": [
+          [
+            344127037,
+            0,
+            632
+          ],
+          [
+            344127037,
+            0,
+            632
+          ],
+          [
+            344127037,
+            0,
+            632
+          ]
+        ]
+      },
+      "median_difference_ppm": 0.0,
+      "median_exact": true,
+      "all_instruction_counts_equal": true,
+      "rep_consistent": true,
+      "within_tolerance": true
+    },
+    "rational_gcd/more_pairs": {
+      "counts": {
+        "released": [
+          [
+            114122815,
+            0,
+            632
+          ],
+          [
+            114122815,
+            0,
+            632
+          ],
+          [
+            114122815,
+            0,
+            632
+          ]
+        ],
+        "candidate": [
+          [
+            114122815,
+            0,
+            632
+          ],
+          [
+            114122815,
+            0,
+            632
+          ],
+          [
+            114122815,
+            0,
+            632
+          ]
+        ]
+      },
+      "median_difference_ppm": 0.0,
+      "median_exact": true,
+      "all_instruction_counts_equal": true,
+      "rep_consistent": true,
+      "within_tolerance": true
+    },
+    "csr_frontier/more_roots": {
+      "counts": {
+        "released": [
+          [
+            140706444,
+            0,
+            632
+          ],
+          [
+            140706444,
+            0,
+            632
+          ],
+          [
+            140706444,
+            0,
+            632
+          ]
+        ],
+        "candidate": [
+          [
+            140706444,
+            0,
+            632
+          ],
+          [
+            140706444,
+            0,
+            632
+          ],
+          [
+            140706444,
+            0,
+            632
+          ]
+        ]
+      },
+      "median_difference_ppm": 0.0,
+      "median_exact": true,
+      "all_instruction_counts_equal": true,
+      "rep_consistent": true,
+      "within_tolerance": true
+    }
+  }
+}

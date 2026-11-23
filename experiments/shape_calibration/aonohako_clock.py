@@ -5,6 +5,7 @@ from heapq import nsmallest
 import json
 from math import lcm
 from pathlib import Path
+import subprocess
 import sys
 
 HERE = Path(__file__).resolve().parent
@@ -63,6 +64,10 @@ def rounded_candidates(instruction, rep, denominator, largest, upper):
 
 
 
+class ProjectionUnavailable(ValueError):
+    """The bounded search did not certify one clock for the given limits."""
+
+
 def project(instruction_ns, rep_ns, limits_ms):
     deadlines = budgets(limits_ms)
     require(all(isinstance(value, Fraction) and value > 0 and
@@ -83,7 +88,7 @@ def project(instruction_ns, rep_ns, limits_ms):
             # nested. Equal counts prove equal decisions for every pair, including ties.
             if all(count_within(a, b, t * d) == expected for t, expected in zip(deadlines, exact_counts)):
                 return a, b, d
-    raise ValueError("bounded search found no certified uint64 clock for these deadlines")
+    raise ProjectionUnavailable("bounded search found no certified uint64 clock for these deadlines")
 
 
 def export(selection_file, current, policy_file, elf, stdin, limits_ms):
@@ -111,6 +116,21 @@ def export(selection_file, current, policy_file, elf, stdin, limits_ms):
             "reference_sha256": policy["reference_sha256"], "limits_ms": [t // NS_PER_MS for t in deadlines],
             "weights": {"method": "weighted-work-nanoseconds-v1", "instruction_ns_numerator": a,
                         "rep_byte_ns_numerator": b, "ns_denominator": d}}
+
+
+def replay_live(reference, projection, wrapped, elf, stdin, limit_ms):
+    """Check a bound, non-overflowing Durante observation with the public Go reference CLI."""
+    observed = read_json(wrapped.read_bytes())
+    require(observed["limit_ms"] == limit_ms and observed["status"] in ("within_budget", "budget_exceeded"),
+            "expected a certified live observation at the requested deadline")
+    cmd = [reference, "replay-input-deadline", "--projection", projection, "--live", wrapped,
+           "--elf", elf, "--stdin", stdin, "--limit-ms", str(limit_ms)]
+    result = subprocess.run(cmd, check=True, stdout=subprocess.PIPE)
+    expected = {k: observed[k] for k in ("schema", "authority", "selection_sha256", "policy_sha256",
+                                          "limit_ms", "pid", "status")}
+    expected["exceeded"] = observed["status"] == "budget_exceeded"
+    require(read_json(result.stdout) == expected, f"unexpected Aonohako decision for {wrapped} at {limit_ms} ms")
+    return observed["status"]
 
 
 if __name__ == "__main__":

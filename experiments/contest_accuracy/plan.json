@@ -1,0 +1,239 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "poll_ms": 5,
+  "timeout_ms": 120000,
+  "native_rounds": 9,
+  "probe_sha256": "159ca08d50bb8cf20e88f86b2186af422e094e7c14ebe98a42bed7adc2d6b186",
+  "deadline_percent": [
+    85,
+    100,
+    115
+  ],
+  "cases": [
+    {
+      "case_id": "rice/uniform",
+      "program": "rice",
+      "variant": "uniform",
+      "split": "calibration",
+      "cohort": "calibration",
+      "binary_sha256": "09ee94739944972a9eb66005f7b95a943d6fbe5a932bb1acfeca73c957cee036",
+      "stdin_sha256": "440ebbf70ee5f2d8385193b215d6c7100b3fc741d4e7eb87ec79b9ce04562f73",
+      "stdout_sha256": "dd0cb592970e98d8449d5dcc2b92c296084d2d3c769266bbf421b93d59de6572",
+      "fixed_limits_ms": []
+    },
+    {
+      "case_id": "rice/duplicate_clusters",
+      "program": "rice",
+      "variant": "duplicate_clusters",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "09ee94739944972a9eb66005f7b95a943d6fbe5a932bb1acfeca73c957cee036",
+      "stdin_sha256": "05229b9dc521c37e33fac8d0075fdca724533b8781ddd0b3839a115e22b81c72",
+      "stdout_sha256": "46b9d3a6b593718297df7eb071f0725bcf72fe988f1a5cfe099ea20ceeb016bd",
+      "fixed_limits_ms": [
+        4,
+        12,
+        32
+      ]
+    },
+    {
+      "case_id": "rice/scattered_gaps",
+      "program": "rice",
+      "variant": "scattered_gaps",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "09ee94739944972a9eb66005f7b95a943d6fbe5a932bb1acfeca73c957cee036",
+      "stdin_sha256": "93bc7151395e694487d9805dd909fd16a15f3f9f016cd29926554721a46f2890",
+      "stdout_sha256": "9c79abe04f020b049757b7c73b30ac90d4c487eb536c4bfeb8fddceb6ab1361b",
+      "fixed_limits_ms": [
+        4,
+        12,
+        32
+      ]
+    },
+    {
+      "case_id": "rice/wide_coordinates",
+      "program": "rice",
+      "variant": "wide_coordinates",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "09ee94739944972a9eb66005f7b95a943d6fbe5a932bb1acfeca73c957cee036",
+      "stdin_sha256": "0adb013f9df9cb1399d17ffd8137a872c14117225f322078d92100360eb54b73",
+      "stdout_sha256": "87dd8e76775fe4e13423ff97b216fc893ff1d7c825fa139be271d8620a380119",
+      "fixed_limits_ms": [
+        4,
+        12,
+        32
+      ]
+    },
+    {
+      "case_id": "wall/aligned_tiles",
+      "program": "wall",
+      "variant": "aligned_tiles",
+      "split": "calibration",
+      "cohort": "calibration",
+      "binary_sha256": "a9a2df1ade516cebcd4afa89705db83fc1425fc5db29a9bd3956386670d98210",
+      "stdin_sha256": "0f30f46bd871d5bc923419a920f510de74e02dabacc32d51a1f210c7f4f7dfe6",
+      "stdout_sha256": "55bdb0a6f2054b31649175cc33acb77db11aa0680f3657f34e3c4f9249a0baad",
+      "fixed_limits_ms": []
+    },
+    {
+      "case_id": "wall/crossed_intervals",
+      "program": "wall",
+      "variant": "crossed_intervals",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "a9a2df1ade516cebcd4afa89705db83fc1425fc5db29a9bd3956386670d98210",
+      "stdin_sha256": "9cc911accf2965645c3b086605e1898088a3f92c03b366f7c4e7176b89f600da",
+      "stdout_sha256": "f8b0bc9fba18a2afc33170386becd25b8d0c31fa3259be0a74351bd087014ea9",
+      "fixed_limits_ms": [
+        4,
+        12,
+        32
+      ]
+    },
+    {
+      "case_id": "wall/scattered_points",
+      "program": "wall",
+      "variant": "scattered_points",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "a9a2df1ade516cebcd4afa89705db83fc1425fc5db29a9bd3956386670d98210",
+      "stdin_sha256": "cda51b50e6bd22d683c4a2ffa0cb749471e68b29c09d5de14b15ae9e8df15aa5",
+      "stdout_sha256": "f3fcaa102ba120910fb221de32e4d97a2dd37030ae169dfa773baa8e86b4b2c9",
+      "fixed_limits_ms": [
+        4,
+        12,
+        32
+      ]
+    },
+    {
+      "case_id": "wall/nested_ranges",
+      "program": "wall",
+      "variant": "nested_ranges",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "a9a2df1ade516cebcd4afa89705db83fc1425fc5db29a9bd3956386670d98210",
+      "stdin_sha256": "69503abff7c6d8db790ecef9d6f6f63633da08349edfa3a9e04a5d34a10a3033",
+      "stdout_sha256": "4c4574e46e6897c1f34e702cb25655ff34dc28af2bb2058e70bd2128bab20cee",
+      "fixed_limits_ms": [
+        4,
+        12,
+        32
+      ]
+    },
+    {
+      "case_id": "money/mixed_frontiers",
+      "program": "money",
+      "variant": "mixed_frontiers",
+      "split": "calibration",
+      "cohort": "calibration",
+      "binary_sha256": "cf323f0570bff64969254ad20f90fcaca929d52bb7edf8df0c37b6cd25058d00",
+      "stdin_sha256": "1f5ef8d55fe5ae9bc6b3426789715697e34fb4a777170bd81d711b2711f69f44",
+      "stdout_sha256": "369049984ae294c08ec2a57275ca1cd0d3f556365560d6d6756ca48db90e3bca",
+      "fixed_limits_ms": []
+    },
+    {
+      "case_id": "money/dense_scrambled",
+      "program": "money",
+      "variant": "dense_scrambled",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "cf323f0570bff64969254ad20f90fcaca929d52bb7edf8df0c37b6cd25058d00",
+      "stdin_sha256": "8b088af29a24f516cc504193bdeecf88732a283539b407b8e5971ba734021e9f",
+      "stdout_sha256": "f7bd7eb4921d32a40e87e838c4c3773b3b749fbe4f2b0fdeee54c40e0bab0e49",
+      "fixed_limits_ms": [
+        4,
+        12,
+        32
+      ]
+    },
+    {
+      "case_id": "money/mostly_dominated",
+      "program": "money",
+      "variant": "mostly_dominated",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "cf323f0570bff64969254ad20f90fcaca929d52bb7edf8df0c37b6cd25058d00",
+      "stdin_sha256": "ea3efb223e5c0f62d86014f651896b375ad28b76d69729157682bbbf0d3e57a0",
+      "stdout_sha256": "67f66a15d2580df0e4b62402bbf6ffb8d0e309e7961bb7540bb93895abe68315",
+      "fixed_limits_ms": [
+        4,
+        12,
+        32
+      ]
+    },
+    {
+      "case_id": "money/narrow_windows",
+      "program": "money",
+      "variant": "narrow_windows",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "cf323f0570bff64969254ad20f90fcaca929d52bb7edf8df0c37b6cd25058d00",
+      "stdin_sha256": "0030269273c547e25a55662c369f29d7115143981a08a905cbf7b9e406483813",
+      "stdout_sha256": "703d2c10fa601276a4dd96193faed68902a642a44eb5b01b40d6fc8499e12822",
+      "fixed_limits_ms": [
+        4,
+        12,
+        32
+      ]
+    },
+    {
+      "case_id": "plane/layered",
+      "program": "plane",
+      "variant": "layered",
+      "split": "calibration",
+      "cohort": "calibration",
+      "binary_sha256": "f3ebbd641bdc59483ae41efc7d45791b46bf990b7b2e9a1129091f8600a5bb13",
+      "stdin_sha256": "22690af1383a99250c886477029db5ee89a59588617891fa36c7675680c4b7c9",
+      "stdout_sha256": "709dfaef7b7aa1e635d3a103530f1fbf8780e715ff8faff131864ea65f1f237c",
+      "fixed_limits_ms": []
+    },
+    {
+      "case_id": "plane/simultaneous",
+      "program": "plane",
+      "variant": "simultaneous",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "f3ebbd641bdc59483ae41efc7d45791b46bf990b7b2e9a1129091f8600a5bb13",
+      "stdin_sha256": "74eda47203cbb39cc915170a0f1fad14f06a49404a0419e5d94bd76aba07defb",
+      "stdout_sha256": "95fa45d1126292e42e3a9f16fb9fd7bf9b2ed2f16f2ac74bfaa9762105758644",
+      "fixed_limits_ms": [
+        4,
+        12,
+        32
+      ]
+    },
+    {
+      "case_id": "plane/tight_transfers",
+      "program": "plane",
+      "variant": "tight_transfers",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "f3ebbd641bdc59483ae41efc7d45791b46bf990b7b2e9a1129091f8600a5bb13",
+      "stdin_sha256": "a800343bfbc1722990e783d5338f334b4108285d3c7b911cc7692f22be91669c",
+      "stdout_sha256": "4384a2660b3c6cbe191764e6a58a7d8b29b74631f8d8e50b307bfbf1560d84b5",
+      "fixed_limits_ms": [
+        4,
+        12,
+        32
+      ]
+    },
+    {
+      "case_id": "plane/scattered_services",
+      "program": "plane",
+      "variant": "scattered_services",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "f3ebbd641bdc59483ae41efc7d45791b46bf990b7b2e9a1129091f8600a5bb13",
+      "stdin_sha256": "6cc40ae884d0e230a0890e1428974387ec19dad3eeeef97712b6debb458dedcb",
+      "stdout_sha256": "a0874a167532ba56d501d572a535a5a396f77706e1109c610e0a4a2070aa5f14",
+      "fixed_limits_ms": [
+        4,
+        12,
+        32
+      ]
+    }
+  ]
+}

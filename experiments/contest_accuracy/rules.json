@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "probe_sha256": "159ca08d50bb8cf20e88f86b2186af422e094e7c14ebe98a42bed7adc2d6b186",
+  "baseline": "Seed a new footprint bank per executable on the guest. On each full exact-input profile take the earliest compatible prior paid anchor or pay for one current native observation.",
+  "candidate": "Use the first native observation of this exact capture for all its deadlines. Reuse the just-paid current observation or collect one extra on this pinned CPU and boot. The exact-only payment cannot enter the baseline bank.",
+  "corpus": "Four new static C++20 contest solutions. One calibration input and then three prospective exact stdin/stdout pairs per executable. Generate text outside the target. Include the entire solution, parser and printing in every timed target run. All numbers in milliseconds are benchmark limits.",
+  "schedule": "On each holdout run both live arms at the distinct union of fixed whole-ms limits 4, 12, 32 and ceil(85%, 100%, 115% of its full baseline estimate). Alternate first arm by case index plus limit index parity. Record every decision before any independent native reference. Use a separate 120 s watchdog.",
+  "evaluation": "Nine direct native wait4 user+system CPU observations per holdout in rotating order on CPU 1 of a single-thread-per-core GCE AMD Milan VM. Count false accepts and false timeouts against unanimous native references, mixed separately and all-limit majority agreement. Report fixed and adaptive limits (deduplicate overlap), duration errors per problem, payments and CPU cost, and Aonohako replay coverage. Keep all inputs and report regressions."
+}

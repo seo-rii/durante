@@ -1,0 +1,269 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "poll_ms": 5,
+  "timeout_ms": 120000,
+  "native_rounds": 9,
+  "probe_sha256": "159ca08d50bb8cf20e88f86b2186af422e094e7c14ebe98a42bed7adc2d6b186",
+  "deadline_percent": [
+    60,
+    85,
+    100,
+    115,
+    150
+  ],
+  "schedule": "Sorted distinct union of fixed positive millisecond deadlines and max(1, ceil(baseline_prediction_ns * percent / 100000000)). Register percentages and fixed deadlines before collection. Compute all adaptive deadlines before consulting the gate or any independent references for the case.",
+  "provenance": "Four new executable sources and two prospective Fenwick stdin values. The Fenwick seed and intermediate_low are exact registered ELF/input pairs from Durante #86. Each program has one seed followed by three holdouts in the specified order.",
+  "cases": [
+    {
+      "case_id": "threshold_runs/blocked",
+      "program": "threshold_runs",
+      "split": "calibration",
+      "cohort": "calibration",
+      "stdin": "262144 80 0\n",
+      "stdout": "64 340787200\n",
+      "binary_sha256": "fe4569ce2ce87554fda2c1ccff4d17a40156c0bd38e06c455cee2093e32c9810",
+      "fixed_limits_ms": [],
+      "shape_label": "Run lengths of 64 at each value"
+    },
+    {
+      "case_id": "threshold_runs/blocked_longer",
+      "program": "threshold_runs",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "262144 128 0\n",
+      "stdout": "64 545259520\n",
+      "binary_sha256": "fe4569ce2ce87554fda2c1ccff4d17a40156c0bd38e06c455cee2093e32c9810",
+      "fixed_limits_ms": [
+        75
+      ],
+      "shape_label": "More passes over an unchanged blocked stream"
+    },
+    {
+      "case_id": "threshold_runs/random",
+      "program": "threshold_runs",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "262144 80 1\n",
+      "stdout": "17 20917840\n",
+      "binary_sha256": "fe4569ce2ce87554fda2c1ccff4d17a40156c0bd38e06c455cee2093e32c9810",
+      "fixed_limits_ms": [
+        75
+      ],
+      "shape_label": "Input-seeded pseudorandom binary events"
+    },
+    {
+      "case_id": "threshold_runs/short_blocks",
+      "program": "threshold_runs",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "262144 100 2\n",
+      "stdout": "5 39321000\n",
+      "binary_sha256": "fe4569ce2ce87554fda2c1ccff4d17a40156c0bd38e06c455cee2093e32c9810",
+      "fixed_limits_ms": [
+        75
+      ],
+      "shape_label": "Alternating runs of five events"
+    },
+    {
+      "case_id": "successor_walk/small_blocks",
+      "program": "successor_walk",
+      "split": "calibration",
+      "cohort": "calibration",
+      "stdin": "20 10 8000000\n",
+      "stdout": "659972 4066066368772\n",
+      "binary_sha256": "d95590f472e7118547a4d6e0cd1ee25d288a3451e730790b6a4db21bcca14921",
+      "fixed_limits_ms": [],
+      "shape_label": "Four-MiB cycle, permutation within four-KiB blocks"
+    },
+    {
+      "case_id": "successor_walk/more_steps",
+      "program": "successor_walk",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "20 10 13000000\n",
+      "stdout": "417090 6684044996770\n",
+      "binary_sha256": "d95590f472e7118547a4d6e0cd1ee25d288a3451e730790b6a4db21bcca14921",
+      "fixed_limits_ms": [
+        150
+      ],
+      "shape_label": "Same four-MiB cycle, more dependent steps"
+    },
+    {
+      "case_id": "successor_walk/global_shuffle",
+      "program": "successor_walk",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "20 20 8000000\n",
+      "stdout": "1023399 4194303831303\n",
+      "binary_sha256": "d95590f472e7118547a4d6e0cd1ee25d288a3451e730790b6a4db21bcca14921",
+      "fixed_limits_ms": [
+        150
+      ],
+      "shape_label": "Permute the entire four-MiB cycle"
+    },
+    {
+      "case_id": "successor_walk/large_shuffle",
+      "program": "successor_walk",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "24 24 3000000\n",
+      "stdout": "13517379 25165705853355\n",
+      "binary_sha256": "d95590f472e7118547a4d6e0cd1ee25d288a3451e730790b6a4db21bcca14921",
+      "fixed_limits_ms": [
+        150
+      ],
+      "shape_label": "Permute a 64-MiB cycle; dependent successor reads"
+    },
+    {
+      "case_id": "rational_gcd/narrow_divisors",
+      "program": "rational_gcd",
+      "split": "calibration",
+      "cohort": "calibration",
+      "stdin": "1200000 0\n",
+      "stdout": "3630452\n",
+      "binary_sha256": "f655d7acf61f1f48786c3b23f1d4ed79d1bbe70a51663955a61744457c0f4478",
+      "fixed_limits_ms": [],
+      "shape_label": "Small odd denominators, full-width numerators"
+    },
+    {
+      "case_id": "rational_gcd/more_pairs",
+      "program": "rational_gcd",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "2000000 0\n",
+      "stdout": "6043728\n",
+      "binary_sha256": "f655d7acf61f1f48786c3b23f1d4ed79d1bbe70a51663955a61744457c0f4478",
+      "fixed_limits_ms": [
+        75
+      ],
+      "shape_label": "More pairs from the anchor distribution"
+    },
+    {
+      "case_id": "rational_gcd/wide_divisors",
+      "program": "rational_gcd",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "650000 1\n",
+      "stdout": "3415432\n",
+      "binary_sha256": "f655d7acf61f1f48786c3b23f1d4ed79d1bbe70a51663955a61744457c0f4478",
+      "fixed_limits_ms": [
+        75
+      ],
+      "shape_label": "Two full-width pseudorandom operands"
+    },
+    {
+      "case_id": "rational_gcd/fibonacci",
+      "program": "rational_gcd",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "650000 2\n",
+      "stdout": "340797564673\n",
+      "binary_sha256": "f655d7acf61f1f48786c3b23f1d4ed79d1bbe70a51663955a61744457c0f4478",
+      "fixed_limits_ms": [
+        75
+      ],
+      "shape_label": "Scaled consecutive Fibonacci operands"
+    },
+    {
+      "case_id": "csr_frontier/ordered",
+      "program": "csr_frontier",
+      "split": "calibration",
+      "cohort": "calibration",
+      "stdin": "17 12 0\n",
+      "stdout": "647812261\n",
+      "binary_sha256": "37d18c42d5cf615eee919f6a8a749d7a7854b859646ffa5f5f8604b08db56132",
+      "fixed_limits_ms": [],
+      "shape_label": "CSR BFS with local numbering"
+    },
+    {
+      "case_id": "csr_frontier/more_roots",
+      "program": "csr_frontier",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "17 20 0\n",
+      "stdout": "1079674891\n",
+      "binary_sha256": "37d18c42d5cf615eee919f6a8a749d7a7854b859646ffa5f5f8604b08db56132",
+      "fixed_limits_ms": [
+        75
+      ],
+      "shape_label": "Same CSR graph, additional roots"
+    },
+    {
+      "case_id": "csr_frontier/relabeled",
+      "program": "csr_frontier",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "17 12 1\n",
+      "stdout": "647812261\n",
+      "binary_sha256": "37d18c42d5cf615eee919f6a8a749d7a7854b859646ffa5f5f8604b08db56132",
+      "fixed_limits_ms": [
+        75
+      ],
+      "shape_label": "Permute vertex identifiers, preserve graph and roots"
+    },
+    {
+      "case_id": "csr_frontier/large_relabeled",
+      "program": "csr_frontier",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "19 5 1\n",
+      "stdout": "4300771862\n",
+      "binary_sha256": "37d18c42d5cf615eee919f6a8a749d7a7854b859646ffa5f5f8604b08db56132",
+      "fixed_limits_ms": [
+        75
+      ],
+      "shape_label": "Increase the scrambled graph to 524288 vertices"
+    },
+    {
+      "case_id": "fenwick/large",
+      "program": "fenwick",
+      "split": "calibration",
+      "cohort": "calibration",
+      "stdin": "1048576 3000000\n",
+      "stdout": "30280526504372768\n",
+      "binary_sha256": "604edfbb56cfcdf621b0a22398d4556c65c0e442bfffdf98b8205782ac96ae9f",
+      "fixed_limits_ms": [],
+      "shape_label": "Previously paid four-MiB seed from #86"
+    },
+    {
+      "case_id": "fenwick/intermediate_low",
+      "program": "fenwick",
+      "split": "holdout",
+      "cohort": "previous",
+      "stdin": "1441792 6000000\n",
+      "stdout": "61860571588709060\n",
+      "binary_sha256": "604edfbb56cfcdf621b0a22398d4556c65c0e442bfffdf98b8205782ac96ae9f",
+      "fixed_limits_ms": [
+        175
+      ],
+      "shape_label": "Previously mixed 175 ms boundary from #86"
+    },
+    {
+      "case_id": "fenwick/five_mib_repeat",
+      "program": "fenwick",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "1310720 4500000\n",
+      "stdout": "45821534433398732\n",
+      "binary_sha256": "604edfbb56cfcdf621b0a22398d4556c65c0e442bfffdf98b8205782ac96ae9f",
+      "fixed_limits_ms": [
+        150
+      ],
+      "shape_label": "New five-MiB tree in the earlier reuse range"
+    },
+    {
+      "case_id": "fenwick/eleven_mib_repeat",
+      "program": "fenwick",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "2883584 4500000\n",
+      "stdout": "46553396124826192\n",
+      "binary_sha256": "604edfbb56cfcdf621b0a22398d4556c65c0e442bfffdf98b8205782ac96ae9f",
+      "fixed_limits_ms": [
+        150
+      ],
+      "shape_label": "New eleven-MiB tree beyond the seed reuse range"
+    }
+  ]
+}

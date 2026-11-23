@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "rounds": 3,
+  "client_sha256": {
+    "released": "902ac894e62a5a7c88139e7aeffca977719c8d60b514b01e45bb1a2baa80abc9",
+    "candidate": "3560ab32dc8a01dcbc17cf9230561a2d4be64b83beed55833a6269c3b48aaf12"
+  },
+  "candidate_source_sha256": "4ebb8af9e6a770918cbfb7da18cbaa85cd9c4ded1b3342a4c59800a1dc2bc0e1",
+  "absolute_instruction_tolerance": 32,
+  "median_tolerance_ppm": 50,
+  "evaluation": "Run both clients on all 20 exact input/ELF pairs three times each with the same registered runtime and x86-64-v2 profile. Require correct stdout and bit-for-bit equality between each run's live page and terminal instruction, MOVS and STOS record. Report exact agreement across repetitions, changes in each median, and matches against max(32 instructions, 50 ppm of the released median). Require identical REP bytes across clients and all repeats. This measures counter parity independently of deadline accuracy or elapsed performance."
+}
