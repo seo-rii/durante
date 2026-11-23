@@ -67,3 +67,5 @@ python3 -B experiments/deadline_accuracy/replay_aonohako.py "$tmp/output" --cont
   --binaries "$tmp/guest/binaries" --reference "$aonohako_reference" --output "$tmp/go.json"
 cmp "$tmp/go.json" "$data/aonohako.json"
 ```
+
+The [follow-up calibration study](GCE_CONTEST_WARM_CLOCK.md) adds three contest programs and compares two ways to repeat exact-input measurements on fresh CPU-pinned guests.
