@@ -1,0 +1,40 @@
+{
+  "platform": {
+    "creation": "2026-11-23T15:12:36.276956+00:00",
+    "zone": "asia-northeast3-a",
+    "machine_type": "n2d-standard-4",
+    "threads_per_core": 1,
+    "cpu_platform": "AMD Milan",
+    "image": "debian-12-bookworm-v20261117",
+    "disk_auto_delete": true,
+    "external_ip": false,
+    "service_account": false
+  },
+  "cleanup": {
+    "instance_http": 404,
+    "boot_disk_http": 404,
+    "key_removed": true,
+    "verified_at": "2026-11-23T15:15:44.583165+00:00"
+  },
+  "freeze": {
+    "plan_sha256": "d37610c6856b968fb00094dd72c075474b8a68e80e1e5681ab51bcaf5fb1feb0",
+    "hashes": {
+      "rice": "09ee94739944972a9eb66005f7b95a943d6fbe5a932bb1acfeca73c957cee036",
+      "rice_window": "394ed54865b73c59a2abddba552fb0e246eb5dd8c259771565c5095ec5ff7510",
+      "scrivener": "5a918d9eb725f4a0492ed3f891a155e6c08a3a30092215c9036648e8e3e9a60e",
+      "scrivener_lifting": "9f79bdb4bd631018fd950801d5fddcc58423ce264193ca91b5d99b7d80cb6246"
+    },
+    "runtime_sha256": "5aa6e028ba197f9f9aec092a21dd50a95b7e35418590ef5ec646f056b37b2a8d",
+    "checksums_sha256": "813507a0b373c2696e0062916f4169e45aba50a7f1df865c1044eef99bfadb0a",
+    "payload_sha256": "65adc1e81a4285e2ff8a2324a9ca044d004be60004b2006b0e13dd22e3fd6bc6",
+    "study_files": {
+      "bench.py": "4f949ff34b05bd684c350cf4a76785515d08af7d0bc8eef1c8f31a8226a28407",
+      "plan.json": "d37610c6856b968fb00094dd72c075474b8a68e80e1e5681ab51bcaf5fb1feb0",
+      "rice_window.cpp": "72397462eb10b8036fd049137d7756d75004f2c2a7ecba3762c7d7d3aaf1fae6",
+      "score.py": "8487f3da3df8da43058316cf6c7d6686540a2a05b9b0e7e869ee291481ea5e4e",
+      "scrivener_lifting.cpp": "b003e63647488806f79a9bb8f2b07d3649269a238e2af69155e4fbf3ebdaca4c"
+    },
+    "source_head": "4f8537e84c0f22837e59a3ca7d56bfa5bb84fc20"
+  },
+  "output_sha256": "b9241dccbbf4adc57f6cccb4d7204c9d8931a7e8f21a84357d1170c89a70621e"
+}
