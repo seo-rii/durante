@@ -124,7 +124,8 @@ def native_once(elf, stdin):
         return {"pid": pid, "user_us": user, "sys_us": system, "cpu_ns": 1000 * (user + system),
                 "stdout_sha256": hashlib.file_digest(stdout, "sha256").hexdigest(), "affinity": affinity,
                 "single_cpu": len(affinity) == 1,
-                "machine": platform.machine(), "kernel": platform.release()}
+                "machine": platform.machine(), "kernel": platform.release(),
+                "boot_sha256": elf_digest(Path("/proc/sys/kernel/random/boot_id"))}
 
 
 def calibration_digest(anchor, native):
@@ -168,14 +169,16 @@ class CalibratedClock:
 
 
 def load_clock(policy_file, elf):
-    raw = policy_file.read_bytes()
+    return clock_from_raw(policy_file.read_bytes(), static_elf(elf))
+
+
+def clock_from_raw(raw, digest_elf):
     policy = read_json(raw)
     w = weights()
     require(type(policy["schema"]) is int and policy["schema"] == 1 and policy["authority"] == "diagnostic_only"
             and policy["reference_sha256"] == REFERENCE_SHA and policy["combined_reference_weights"] == w,
             "unsupported anchor policy or clock coefficients")
     anchor, native = policy["anchor"], policy["native"]
-    digest_elf = static_elf(elf)
     require(policy["calibration_sha256"] == calibration_digest(anchor, native), "changed calibration record")
     require(all(type(anchor[k]) is int and 0 <= anchor[k] < 2**64
                 for k in ("instructions", "movs_bytes", "stos_bytes"))
