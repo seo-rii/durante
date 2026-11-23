@@ -81,3 +81,5 @@ cmp "$scratch/metrics.json" "$data/metrics.json"
 ```
 
 To replay the paired CPU comparison, extract `experiments/results/gce-shape-combined/output.tar.xz` into a new directory and run `verify_combined.py` there with the extracted `output` directory as its argument. It also verifies the first capture against the reference archive SHA-256 in the comparison plan. To rebuild the sampler use CMake Release with DynamoRIO 11.3.0-1, the study's `probe` source directory and the SDK's `cmake` directory as `DynamoRIO_DIR`. The two guest payloads use `prepare.py OUT --runtime PAYLOAD --probe LIB` and the same command with `--combined-benchmark`. [Verification code](../experiments/shape_calibration/verify_combined.py)
+
+The [large-footprint follow-up](GCE_FOOTPRINT_ADMISSION.md) tests a stricter reuse rule on nine prospective inputs and compares both clocks at 52 real deadlines.

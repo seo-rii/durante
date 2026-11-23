@@ -1,0 +1,38 @@
+{
+  "platform": {
+    "creation": "2026-11-23T04:35:45.386463+00:00",
+    "zone": "asia-northeast3-a",
+    "machine_type": "n2d-standard-4",
+    "threads_per_core": 1,
+    "cpu_platform": "AMD Milan",
+    "image": "debian-12-bookworm-v20261117",
+    "disk_auto_delete": true,
+    "external_ip": false,
+    "service_account": false
+  },
+  "cleanup": {
+    "instance_http": 404,
+    "boot_disk_http": 404,
+    "key_removed": true,
+    "verified_at": "2026-11-23T04:39:19.222984+00:00"
+  },
+  "input_sources_sha256": {
+    "experiments/footprint_admission/plan.json": "263cafeaa2916a1e4271d4327e5f5bc72fa10fbfc298b970d50f83490da02ce2",
+    "experiments/footprint_admission/rules.json": "664d70dcfa2347e66851baa2d4e6f1786406c553196b530bd3cc2c625a6b299e",
+    "experiments/footprint_admission/admission.py": "9d332fe0864e9cf5c27ace1d8d28f66802ed3f6bb7112170acb5c2b9c40c9162",
+    "experiments/footprint_admission/bench.py": "6f2f681fb06c42e6253bb7efda813d1ab2401952e565f510f6a0bc6bd2cd7faf",
+    "experiments/shape_calibration/run.py": "2e97b76018d7cf025b72c2fa39f07e78db812867a395062007432884d700c0f7",
+    "experiments/shape_calibration/select_policy.py": "7e9a35da6f362fcdfb28ed40611093f9f3e29a4e799e81e40728cdbd814a718b",
+    "experiments/shape_calibration/shape.py": "b4c56062ba6468ec57d0b18f7a50ce5032552e4261f554b8ad8b6806a0f72fc2",
+    "experiments/shape_calibration/temporal.py": "b4c178170b2652ba178ffb881820ccd4efc3f802d9a504dd323200d057578da1",
+    "experiments/shape_calibration/combined.py": "71eaf766e470cb2d6d13add53d876fcc76be6286a60383a7e4ee1de2c81d503e",
+    "experiments/shape_calibration/bench.py": "af1c23cdb38915bab1b4a43fe0831663e5533be671323f7d21e26f610b08f0ba",
+    "experiments/shape_calibration/window.cpp": "ceb5d6472dff150596a8b9f8293a93d6f3a23e88f46d49e771f9bfeb9035b76a",
+    "experiments/calibrated_limits/fenwick.cpp": "63da21c7ff3ad70c64742e117578b43871244631fade5575901e130085623c61",
+    "experiments/calibrated_limits/lookup.cpp": "5c93d9c7dbcea91a6afb7f951b86f849a60b7688cef501a6d9844689b7e3a336",
+    "experiments/guarded_native/anchor.py": "a0a877c8a9eb56b8e0655ad2a31da0ef41a94d84a6ae2c7b84d7edd157092652",
+    "experiments/guarded_native/live.py": "a6d6a391e75c51e9bb9f25bb22013be2c49d4a2847d2ad34281540b832c2e0b3",
+    "collect.py": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a"
+  },
+  "output_sha256": "e239cfab072a5b4929265adf8bc8c07d93d1567d81eaa449506862a79f8b3cdc"
+}
