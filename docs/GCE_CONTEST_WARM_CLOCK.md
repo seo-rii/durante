@@ -120,3 +120,5 @@ taskset -c "$cpu" python3 -B experiments/deadline_accuracy/gate.py --strategy wa
 ```
 
 Reusing the same ordered items and complete batch verifies the manifest without buying new native observations. Passing the batch manifest requires a published member and checks its binding to the current capture, ELF, stdin, boot and CPU. The Durante work budget enforces the selected limit and the wall timeout serves as an independent guard.
+
+The [larger-input study](GCE_CONTEST_SCALE_CLOCK.md) tests the same interleaved calibration on six new contest inputs and records when the three calibration samples straddle a requested limit.
