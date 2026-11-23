@@ -1,0 +1,243 @@
+{
+  "schema": 1,
+  "native_rounds": 9,
+  "poll_ms": 5,
+  "timeout_ms": 120000,
+  "control_limit_ms": 60000,
+  "cases": [
+    {
+      "case_id": "integer/1",
+      "program": "integer",
+      "split": "calibration",
+      "stdin": "33554432 81985529216486895\n",
+      "stdout": "7648774604356046319\n",
+      "binary_sha256": "13b1e1ba33375676c1c6071b2d0bb41c0148e2ee7d90f1c4085d3eb95124f29d",
+      "cohort": "previous",
+      "limits_ms": []
+    },
+    {
+      "case_id": "integer/2",
+      "program": "integer",
+      "split": "holdout",
+      "stdin": "67108864 81985529216486895\n",
+      "stdout": "5095975316794101231\n",
+      "binary_sha256": "13b1e1ba33375676c1c6071b2d0bb41c0148e2ee7d90f1c4085d3eb95124f29d",
+      "cohort": "previous",
+      "limits_ms": [
+        67,
+        102
+      ]
+    },
+    {
+      "case_id": "integer/4",
+      "program": "integer",
+      "split": "holdout",
+      "stdin": "134217728 81985529216486895\n",
+      "stdout": "6525099800984800751\n",
+      "binary_sha256": "13b1e1ba33375676c1c6071b2d0bb41c0148e2ee7d90f1c4085d3eb95124f29d",
+      "cohort": "previous",
+      "limits_ms": [
+        134,
+        202
+      ]
+    },
+    {
+      "case_id": "branch/1",
+      "program": "branch",
+      "split": "calibration",
+      "stdin": "16777216 44257\n",
+      "stdout": "15692098880723300352\n",
+      "binary_sha256": "d383e4da2a1953bc72d54fccac0fe98fe575fef2474e469edcf2567d18ece37c",
+      "cohort": "previous",
+      "limits_ms": []
+    },
+    {
+      "case_id": "branch/2",
+      "program": "branch",
+      "split": "holdout",
+      "stdin": "33554432 44257\n",
+      "stdout": "12937453687737049088\n",
+      "binary_sha256": "d383e4da2a1953bc72d54fccac0fe98fe575fef2474e469edcf2567d18ece37c",
+      "cohort": "previous",
+      "limits_ms": [
+        51,
+        78
+      ]
+    },
+    {
+      "case_id": "branch/4",
+      "program": "branch",
+      "split": "holdout",
+      "stdin": "67108864 44257\n",
+      "stdout": "7428163301764546560\n",
+      "binary_sha256": "d383e4da2a1953bc72d54fccac0fe98fe575fef2474e469edcf2567d18ece37c",
+      "cohort": "previous",
+      "limits_ms": [
+        103,
+        155
+      ]
+    },
+    {
+      "case_id": "rep_fill/1",
+      "program": "rep_fill",
+      "split": "calibration",
+      "stdin": "4194304 512\n",
+      "stdout": "1776811231089408\n",
+      "binary_sha256": "316549bd773f5dba0b5978f423ba8fc93f9fb881339478e030f22b1b2f9d1bc7",
+      "cohort": "previous",
+      "limits_ms": []
+    },
+    {
+      "case_id": "rep_fill/2",
+      "program": "rep_fill",
+      "split": "holdout",
+      "stdin": "4194304 1024\n",
+      "stdout": "1776811281491456\n",
+      "binary_sha256": "316549bd773f5dba0b5978f423ba8fc93f9fb881339478e030f22b1b2f9d1bc7",
+      "cohort": "previous",
+      "limits_ms": [
+        67,
+        101
+      ]
+    },
+    {
+      "case_id": "rep_fill/4",
+      "program": "rep_fill",
+      "split": "holdout",
+      "stdin": "4194304 2048\n",
+      "stdout": "1776811482565632\n",
+      "binary_sha256": "316549bd773f5dba0b5978f423ba8fc93f9fb881339478e030f22b1b2f9d1bc7",
+      "cohort": "previous",
+      "limits_ms": [
+        100,
+        151
+      ]
+    },
+    {
+      "case_id": "mod_inverse/1",
+      "program": "mod_inverse",
+      "split": "calibration",
+      "stdin": "262144\n",
+      "stdout": "17166535288972062\n",
+      "binary_sha256": "5b79d00a4ec728e4583f44b467b083a0d16132ad389787f431d3f12391e59e37",
+      "cohort": "previous",
+      "limits_ms": []
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "program": "mod_inverse",
+      "split": "holdout",
+      "stdin": "524288\n",
+      "stdout": "68936931397083385\n",
+      "binary_sha256": "5b79d00a4ec728e4583f44b467b083a0d16132ad389787f431d3f12391e59e37",
+      "cohort": "previous",
+      "limits_ms": [
+        22,
+        34
+      ]
+    },
+    {
+      "case_id": "branch_scan/1",
+      "program": "branch_scan",
+      "split": "calibration",
+      "stdin": "1048576 8\n",
+      "stdout": "1536469202220674048\n",
+      "binary_sha256": "a5fdcae80f726045fbaa3db32933536ef60ad51922292469366946b62a06f028",
+      "cohort": "previous",
+      "limits_ms": []
+    },
+    {
+      "case_id": "branch_scan/2",
+      "program": "branch_scan",
+      "split": "holdout",
+      "stdin": "1048576 16\n",
+      "stdout": "3072938467625353216\n",
+      "binary_sha256": "a5fdcae80f726045fbaa3db32933536ef60ad51922292469366946b62a06f028",
+      "cohort": "previous",
+      "limits_ms": [
+        76,
+        115
+      ]
+    },
+    {
+      "case_id": "fenwick/train",
+      "program": "fenwick",
+      "split": "calibration",
+      "stdin": "16384 3000000\n",
+      "stdout": "22499227907698312\n",
+      "binary_sha256": "604edfbb56cfcdf621b0a22398d4556c65c0e442bfffdf98b8205782ac96ae9f",
+      "cohort": "new",
+      "limits_ms": []
+    },
+    {
+      "case_id": "fenwick/long",
+      "program": "fenwick",
+      "split": "holdout",
+      "stdin": "16384 9000000\n",
+      "stdout": "67592974333836570\n",
+      "binary_sha256": "604edfbb56cfcdf621b0a22398d4556c65c0e442bfffdf98b8205782ac96ae9f",
+      "cohort": "new",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ]
+    },
+    {
+      "case_id": "fenwick/large",
+      "program": "fenwick",
+      "split": "holdout",
+      "stdin": "1048576 3000000\n",
+      "stdout": "30280526504372768\n",
+      "binary_sha256": "604edfbb56cfcdf621b0a22398d4556c65c0e442bfffdf98b8205782ac96ae9f",
+      "cohort": "new",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ]
+    },
+    {
+      "case_id": "lookup/train",
+      "program": "lookup",
+      "split": "calibration",
+      "stdin": "65536 1500000 0\n",
+      "stdout": "48091683072\n",
+      "binary_sha256": "a6675e774bb206112e1d578655908154de0b106c511705c5f3888f23ea9c06c8",
+      "cohort": "new",
+      "limits_ms": []
+    },
+    {
+      "case_id": "lookup/long",
+      "program": "lookup",
+      "split": "holdout",
+      "stdin": "65536 4500000 0\n",
+      "stdout": "146503082240\n",
+      "binary_sha256": "a6675e774bb206112e1d578655908154de0b106c511705c5f3888f23ea9c06c8",
+      "cohort": "new",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ]
+    },
+    {
+      "case_id": "lookup/shuffled",
+      "program": "lookup",
+      "split": "holdout",
+      "stdin": "65536 1500000 1\n",
+      "stdout": "49114908191\n",
+      "binary_sha256": "a6675e774bb206112e1d578655908154de0b106c511705c5f3888f23ea9c06c8",
+      "cohort": "new",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ]
+    }
+  ]
+}

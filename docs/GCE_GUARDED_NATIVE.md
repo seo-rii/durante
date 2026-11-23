@@ -70,3 +70,5 @@ python3 "$study/anchor.py" predict --elf "$elf" --run "$next_run_dir" \
 ```
 
 Specify a CPU available to the local worker. The policy records the inherited affinity and whether it was restricted to one CPU. The GCE study obtained its one native observation on a fresh guest. The standalone CLI takes its observation after the first guarded-run record is available. The saved anchor is scoped to the exact executable and the host used for its native reference. The project has not qualified a production grading policy from this corpus.
+
+The [calibrated live-limit experiment](GCE_CALIBRATED_LIMITS.md) applies this policy while the next program is running and compares actual stops against complete reports and native timings on earlier and new C++ workloads.

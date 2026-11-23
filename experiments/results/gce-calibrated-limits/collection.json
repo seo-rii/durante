@@ -1,0 +1,27 @@
+{
+  "platform": {
+    "creation": "2026-11-23T01:30:56.526279+00:00",
+    "zone": "asia-northeast3-a",
+    "machine_type": "n2d-standard-4",
+    "threads_per_core": 1,
+    "cpu_platform": "AMD Milan",
+    "image": "debian-12-bookworm-v20261117",
+    "disk_auto_delete": true,
+    "external_ip": false,
+    "service_account": false
+  },
+  "cleanup": {
+    "instance_http": 404,
+    "boot_disk_http": 404,
+    "key_removed": true,
+    "verified_at": "2026-11-23T01:33:53.364911+00:00"
+  },
+  "input_sources_sha256": {
+    "experiments/calibrated_limits/bench.py": "f2e3fd61f9faf33bb31387ecb8862e8f4621a78f75587aa76f4bf26b16c7f45a",
+    "experiments/calibrated_limits/plan.json": "39c299069c59c22ffb887a93ccf5ba6fb8bac2c4c2223fa0f8989d7239fd3979",
+    "experiments/guarded_native/live.py": "a6d6a391e75c51e9bb9f25bb22013be2c49d4a2847d2ad34281540b832c2e0b3",
+    "experiments/guarded_native/anchor.py": "a0a877c8a9eb56b8e0655ad2a31da0ef41a94d84a6ae2c7b84d7edd157092652",
+    "collect.py": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a"
+  },
+  "output_sha256": "312052005735c2b2f913e5b92298857203fabea9c543d3ff72a16d044c36190d"
+}
