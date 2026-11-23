@@ -269,10 +269,13 @@ if __name__ == "__main__":
     cli = argparse.ArgumentParser(description=__doc__)
     cli.add_argument("directory", type=Path)
     cli.add_argument("--output", type=Path)
-    cli.add_argument("--strategy", choices=("near-three", "exact-one"), default="near-three")
-    cli.add_argument("--contest", action="store_true", help="use the contest exact-one registration")
+    cli.add_argument("--strategy", choices=("near-three", "exact-one"))
+    cli.add_argument("--contest", action="store_true", help="use the contest registration and its exact-one clock")
     args = cli.parse_args()
-    metrics = verify(args.directory, args.strategy, args.contest)
+    strategy = args.strategy or ("exact-one" if args.contest else "near-three")
+    if args.contest and strategy != "exact-one":
+        cli.error("the contest study requires exact-one")
+    metrics = verify(args.directory, strategy, args.contest)
     if args.output:
         args.output.write_text(json.dumps(metrics, indent=2) + "\n")
     print(json.dumps(metrics["totals"], indent=2))
