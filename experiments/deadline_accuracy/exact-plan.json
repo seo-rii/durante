@@ -1,0 +1,240 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "poll_ms": 5,
+  "timeout_ms": 120000,
+  "native_rounds": 9,
+  "probe_sha256": "159ca08d50bb8cf20e88f86b2186af422e094e7c14ebe98a42bed7adc2d6b186",
+  "deadline_percent": [
+    85,
+    100,
+    115
+  ],
+  "schedule": "Sorted distinct union of fixed external whole-ms deadlines and max(1, ceil(baseline_prediction_ns * percent / 100000000)). Both arms execute for every limit, including limits far from the footprint estimate. Native reference rounds follow all clock decisions.",
+  "provenance": "Ten new exact ELF/stdin pairs on the five primary-study programs, two previously observed discordant controls, and one existing starting calibration per ELF. No runtime measurements of the new inputs informed this registration.",
+  "cases": [
+    {
+      "case_id": "threshold_runs/blocked",
+      "program": "threshold_runs",
+      "split": "calibration",
+      "cohort": "calibration",
+      "stdin": "262144 80 0\n",
+      "stdout": "64 340787200\n",
+      "binary_sha256": "fe4569ce2ce87554fda2c1ccff4d17a40156c0bd38e06c455cee2093e32c9810",
+      "fixed_limits_ms": [],
+      "shape_label": "Run lengths of 64 at each value"
+    },
+    {
+      "case_id": "threshold_runs/random",
+      "program": "threshold_runs",
+      "split": "holdout",
+      "cohort": "previous",
+      "stdin": "262144 80 1\n",
+      "stdout": "17 20917840\n",
+      "binary_sha256": "fe4569ce2ce87554fda2c1ccff4d17a40156c0bd38e06c455cee2093e32c9810",
+      "fixed_limits_ms": [
+        23,
+        75
+      ],
+      "shape_label": "Previous far deadline misses"
+    },
+    {
+      "case_id": "threshold_runs/random_larger_stream",
+      "program": "threshold_runs",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "524288 64 1\n",
+      "stdout": "21 33518080\n",
+      "binary_sha256": "fe4569ce2ce87554fda2c1ccff4d17a40156c0bd38e06c455cee2093e32c9810",
+      "fixed_limits_ms": [
+        23,
+        75
+      ],
+      "shape_label": "Random events in a larger stream"
+    },
+    {
+      "case_id": "threshold_runs/short_blocks_smaller",
+      "program": "threshold_runs",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "131072 144 2\n",
+      "stdout": "5 28311120\n",
+      "binary_sha256": "fe4569ce2ce87554fda2c1ccff4d17a40156c0bd38e06c455cee2093e32c9810",
+      "fixed_limits_ms": [
+        25,
+        75
+      ],
+      "shape_label": "Short predictable runs in a smaller stream"
+    },
+    {
+      "case_id": "successor_walk/small_blocks",
+      "program": "successor_walk",
+      "split": "calibration",
+      "cohort": "calibration",
+      "stdin": "20 10 8000000\n",
+      "stdout": "659972 4066066368772\n",
+      "binary_sha256": "d95590f472e7118547a4d6e0cd1ee25d288a3451e730790b6a4db21bcca14921",
+      "fixed_limits_ms": [],
+      "shape_label": "Four-MiB cycle, permutation within four-KiB blocks"
+    },
+    {
+      "case_id": "successor_walk/eight_mib_shuffle",
+      "program": "successor_walk",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "21 21 4500000\n",
+      "stdout": "822541 4718587602819\n",
+      "binary_sha256": "d95590f472e7118547a4d6e0cd1ee25d288a3451e730790b6a4db21bcca14921",
+      "fixed_limits_ms": [
+        75,
+        150
+      ],
+      "shape_label": "Eight-MiB globally permuted cycle"
+    },
+    {
+      "case_id": "successor_walk/thirtytwo_mib_blocks",
+      "program": "successor_walk",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "23 11 8300000\n",
+      "stdout": "8300527 34445004560869\n",
+      "binary_sha256": "d95590f472e7118547a4d6e0cd1ee25d288a3451e730790b6a4db21bcca14921",
+      "fixed_limits_ms": [
+        40,
+        150
+      ],
+      "shape_label": "32-MiB cycle with local eight-KiB permutations"
+    },
+    {
+      "case_id": "rational_gcd/narrow_divisors",
+      "program": "rational_gcd",
+      "split": "calibration",
+      "cohort": "calibration",
+      "stdin": "1200000 0\n",
+      "stdout": "3630452\n",
+      "binary_sha256": "f655d7acf61f1f48786c3b23f1d4ed79d1bbe70a51663955a61744457c0f4478",
+      "fixed_limits_ms": [],
+      "shape_label": "Small odd denominators, full-width numerators"
+    },
+    {
+      "case_id": "rational_gcd/wide_new_count",
+      "program": "rational_gcd",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "900000 1\n",
+      "stdout": "4735422\n",
+      "binary_sha256": "f655d7acf61f1f48786c3b23f1d4ed79d1bbe70a51663955a61744457c0f4478",
+      "fixed_limits_ms": [
+        75,
+        150
+      ],
+      "shape_label": "Full-width random denominators, a new workload length"
+    },
+    {
+      "case_id": "rational_gcd/long_quotient_series",
+      "program": "rational_gcd",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "1800000 2\n",
+      "stdout": "944155702715\n",
+      "binary_sha256": "f655d7acf61f1f48786c3b23f1d4ed79d1bbe70a51663955a61744457c0f4478",
+      "fixed_limits_ms": [
+        75,
+        150
+      ],
+      "shape_label": "Longer series of scaled Fibonacci fractions"
+    },
+    {
+      "case_id": "csr_frontier/ordered",
+      "program": "csr_frontier",
+      "split": "calibration",
+      "cohort": "calibration",
+      "stdin": "17 12 0\n",
+      "stdout": "647812261\n",
+      "binary_sha256": "37d18c42d5cf615eee919f6a8a749d7a7854b859646ffa5f5f8604b08db56132",
+      "fixed_limits_ms": [],
+      "shape_label": "CSR BFS with local numbering"
+    },
+    {
+      "case_id": "csr_frontier/intermediate_relabel",
+      "program": "csr_frontier",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "18 10 1\n",
+      "stdout": "2153328732\n",
+      "binary_sha256": "37d18c42d5cf615eee919f6a8a749d7a7854b859646ffa5f5f8604b08db56132",
+      "fixed_limits_ms": [
+        40,
+        75
+      ],
+      "shape_label": "Mid-sized relabeled directed graph with ten roots"
+    },
+    {
+      "case_id": "csr_frontier/large_ordered",
+      "program": "csr_frontier",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "19 5 0\n",
+      "stdout": "4300771862\n",
+      "binary_sha256": "37d18c42d5cf615eee919f6a8a749d7a7854b859646ffa5f5f8604b08db56132",
+      "fixed_limits_ms": [
+        40,
+        75
+      ],
+      "shape_label": "Large graph in logical order"
+    },
+    {
+      "case_id": "fenwick/large",
+      "program": "fenwick",
+      "split": "calibration",
+      "cohort": "calibration",
+      "stdin": "1048576 3000000\n",
+      "stdout": "30280526504372768\n",
+      "binary_sha256": "604edfbb56cfcdf621b0a22398d4556c65c0e442bfffdf98b8205782ac96ae9f",
+      "fixed_limits_ms": [],
+      "shape_label": "Previously paid four-MiB seed from #86"
+    },
+    {
+      "case_id": "fenwick/eleven_mib_repeat",
+      "program": "fenwick",
+      "split": "holdout",
+      "cohort": "previous",
+      "stdin": "2883584 4500000\n",
+      "stdout": "46553396124826192\n",
+      "binary_sha256": "604edfbb56cfcdf621b0a22398d4556c65c0e442bfffdf98b8205782ac96ae9f",
+      "fixed_limits_ms": [
+        150,
+        169
+      ],
+      "shape_label": "Previous unanimous 169 ms false accept"
+    },
+    {
+      "case_id": "fenwick/four_half_mib",
+      "program": "fenwick",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "1179648 5000000\n",
+      "stdout": "51060069003346908\n",
+      "binary_sha256": "604edfbb56cfcdf621b0a22398d4556c65c0e442bfffdf98b8205782ac96ae9f",
+      "fixed_limits_ms": [
+        150,
+        175
+      ],
+      "shape_label": "New 4.5-MiB tree, five million operations"
+    },
+    {
+      "case_id": "fenwick/seven_half_mib",
+      "program": "fenwick",
+      "split": "holdout",
+      "cohort": "prospective",
+      "stdin": "1966080 5500000\n",
+      "stdout": "57618755609332390\n",
+      "binary_sha256": "604edfbb56cfcdf621b0a22398d4556c65c0e442bfffdf98b8205782ac96ae9f",
+      "fixed_limits_ms": [
+        150,
+        175
+      ],
+      "shape_label": "New 7.5-MiB tree, 5.5 million operations"
+    }
+  ]
+}
