@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "purpose": "Test two changes to the cost of collecting sampled address spans with the live v11 meter: a compact binary report retaining every sampled site and instrumenting only previously selected sites on the same executable.",
+  "cases_sha256": "59c2f485befb67578bcf65f99c7efec106500002bd69ecbf441756c6d1bdd036",
+  "profiles_sha256": "ff6db18f098e867771693f3060265bcef3776ec846c32ce490cf0987f74a0951",
+  "profile_selection": "Per executable SHA-256, rank main-module offsets by summed loads, descending, then offset ascending for ties. Use only the six archived #78 live_span observations for each of its seven cases. Take the smallest prefix covering 95% of eligible visits or stop at 64. Freeze the sorted offsets in profiles.json. Exclude all current guest measurements from selection.",
+  "cases": {
+    "repeat": ["cycle_walk/32KiB", "cycle_walk/128KiB", "cycle_walk/2MiB", "cycle_walk/16MiB", "cycle_walk/64MiB", "sort/1", "rep_copy/1"],
+    "holdout": ["cycle_walk/256KiB", "sort/2", "rep_copy/2"],
+    "scope": "The three additional inputs were held out from profile selection and reuse the three known executables. The two scaled controls use the canonical input and stdout from Aonohako #154."
+  },
+  "arms": ["live", "catalog", "gate", "full", "packed", "profiled"],
+  "schedule": "On CPU 1 of the pinned AMD Milan guest, one excluded native warmup per input, followed by six balanced repetitions of all six live-clock arms per input. Keep every scored run and pair arms by input and repetition.",
+  "comparisons": [["live","catalog"],["catalog","gate"],["gate","full"],["live","full"],["full","packed"],["live","packed"],["full","profiled"],["live","profiled"]],
+  "cost": "Direct wait4 user plus system CPU of the child, including startup, translation, execution and report output. For each [base,candidate], report summed CPU and candidate-minus-base CPU, paired difference and ratio min/median/max, and ratio of summed candidate CPU to summed base CPU. Report all 10 inputs and pools for the seven repeats, three holdouts and all ten. catalog_vs_live includes site discovery, registration and report emission; gate_vs_catalog also changes execution instrumentation and report contents. Do not treat these as pure per-visit or translation costs.",
+  "decision": "Score packed and profiled independently. For a speed improvement over full, require the overall CPU ratio <=0.97 AND every input ratio <=1.02. For live overhead, require the overall CPU ratio <=1.05 AND every input ratio <=1.10. Apply these tests to all ten together and separately to the seven repeat and three held-out inputs. Compare using raw CPU sums before rounding. Report counter/coverage and timing decisions independently.",
+  "receipts": "Check the canonical v11 process report against its terminal live clock on every scored execution. Independently check the catalog's unique sorted translated offsets, gate per-site cadence, schema-2 full JSON, documented binary packed layout and schema-2 profiled JSON. The catalog may include never-executed translated sites; require it to contain every full executed offset and disclose additional translated offsets.",
+  "site_integrity": "For each input and matched repetition require the same ordered (offset, loads, pairs) vectors in gate, full and decoded packed reports. Require profiled to equal the projection of full onto the frozen offsets for this exact ELF. Compare the near/far classification and sampled address span of each corresponding common site for packed versus full and profiled versus full. Report non-oracle differences descriptively: independent processes can have different virtual addresses. For each comparison also report exact paired differences in v11 instructions, REP MOVS bytes and REP STOS bytes.",
+  "walk_oracles": {
+    "hot_offset": 6656,
+    "cold_offset": 7600,
+    "hot": "For each of the six walk inputs use the independent LCG oracle in cases.json for 2,097,573 visits, 2,049 pairs, alignment-compatible near/far counts and exact span. The hot offset is required in the catalog and in every execution sampler, including profiled.",
+    "cold": "At module offset 7600, mov (%rdi),%rax at the entry of std::_Vector_base<unsigned int>::~_Vector_base reads the vector pointer once when main destroys the one allocated vector. Catalog, gate, full and packed must include it; gate/full/packed must report one visit and zero pairs, full/packed must report near=far=span=0. Profiled must omit it because it is outside the frozen walk profile."
+  },
+  "coverage": "In each matched repetition and input divide observed profiled visits by all eligible full-sampler visits. Require >=90% using exact counts on every one of the six repetitions for each of the ten cases. Report visit totals and minimum, pooled and maximum coverage by input and each population. A projection match does not imply complete coverage of unselected sites.",
+  "authority": "Research-only on three frozen single-threaded C++20 ELFs on one CPU-pinned guest. No training on new inputs, no clock coefficient fitting and no native-time accuracy or grading qualification."
+}

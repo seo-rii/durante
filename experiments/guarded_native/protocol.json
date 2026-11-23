@@ -1,0 +1,921 @@
+{
+  "schema": 1,
+  "guarded_protocol_sha256": "acbd8e208427813106120528edb7c9873b884a3f825154755c60efee0117a479",
+  "cpu": 1,
+  "trial_timeout_s": 120,
+  "tools_sha256": {
+    "bench.py": "6fa78ee53e35ce70d9996501c49bc355cdeb45d1f69b11fcc31561fe156ca922",
+    "guest.sh": "d7433aa155fcaeed940d07bf8aa7c428801e8bf15c6218ad4347e0104da52e0e",
+    "production_reader.py": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a",
+    "cases.json": "ebb621b4a5457e56fb7ef3d63120ec1f18d5b1b262d7620ed7b26350e18950af",
+    "bin/integer": "13b1e1ba33375676c1c6071b2d0bb41c0148e2ee7d90f1c4085d3eb95124f29d",
+    "bin/branch": "d383e4da2a1953bc72d54fccac0fe98fe575fef2474e469edcf2567d18ece37c",
+    "bin/rep_fill": "316549bd773f5dba0b5978f423ba8fc93f9fb881339478e030f22b1b2f9d1bc7",
+    "bin/mod_inverse": "5b79d00a4ec728e4583f44b467b083a0d16132ad389787f431d3f12391e59e37",
+    "bin/branch_scan": "a5fdcae80f726045fbaa3db32933536ef60ad51922292469366946b62a06f028",
+    "bin/path_switch": "f507857b15e8b6c665087d93c87f962b221bf9a72808283bc66cb6737b8cbddf",
+    "bin/path_mix": "193f9146f5c58f414d6c6bae5907c8750c7071886b67337f76af8c263a740a54"
+  },
+  "schedule": [
+    {
+      "case_id": "branch/1",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "path_switch/train",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "branch_scan/1",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "path_mix/train",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "integer/1",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "mod_inverse/1",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "rep_fill/1",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "path_mix/shift",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 1,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 1,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch/1",
+      "rep": 1,
+      "arm": "native"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 1,
+      "arm": "native"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 1,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 1,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_switch/train",
+      "rep": 1,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch_scan/1",
+      "rep": 1,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_mix/train",
+      "rep": 1,
+      "arm": "native"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 1,
+      "arm": "native"
+    },
+    {
+      "case_id": "integer/1",
+      "rep": 1,
+      "arm": "native"
+    },
+    {
+      "case_id": "mod_inverse/1",
+      "rep": 1,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_mix/shift",
+      "rep": 1,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 1,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 1,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 1,
+      "arm": "native"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 1,
+      "arm": "native"
+    },
+    {
+      "case_id": "rep_fill/1",
+      "rep": 1,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch/1",
+      "rep": 2,
+      "arm": "native"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 2,
+      "arm": "native"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 2,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 2,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_switch/train",
+      "rep": 2,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch_scan/1",
+      "rep": 2,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_mix/train",
+      "rep": 2,
+      "arm": "native"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 2,
+      "arm": "native"
+    },
+    {
+      "case_id": "integer/1",
+      "rep": 2,
+      "arm": "native"
+    },
+    {
+      "case_id": "mod_inverse/1",
+      "rep": 2,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_mix/shift",
+      "rep": 2,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 2,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 2,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 2,
+      "arm": "native"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 2,
+      "arm": "native"
+    },
+    {
+      "case_id": "rep_fill/1",
+      "rep": 2,
+      "arm": "native"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 2,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 2,
+      "arm": "native"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 3,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 3,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_switch/train",
+      "rep": 3,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch_scan/1",
+      "rep": 3,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_mix/train",
+      "rep": 3,
+      "arm": "native"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 3,
+      "arm": "native"
+    },
+    {
+      "case_id": "integer/1",
+      "rep": 3,
+      "arm": "native"
+    },
+    {
+      "case_id": "mod_inverse/1",
+      "rep": 3,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_mix/shift",
+      "rep": 3,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 3,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 3,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 3,
+      "arm": "native"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 3,
+      "arm": "native"
+    },
+    {
+      "case_id": "rep_fill/1",
+      "rep": 3,
+      "arm": "native"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 3,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 3,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch/1",
+      "rep": 3,
+      "arm": "native"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 3,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_switch/train",
+      "rep": 4,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch_scan/1",
+      "rep": 4,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_mix/train",
+      "rep": 4,
+      "arm": "native"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 4,
+      "arm": "native"
+    },
+    {
+      "case_id": "integer/1",
+      "rep": 4,
+      "arm": "native"
+    },
+    {
+      "case_id": "mod_inverse/1",
+      "rep": 4,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_mix/shift",
+      "rep": 4,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 4,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 4,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 4,
+      "arm": "native"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 4,
+      "arm": "native"
+    },
+    {
+      "case_id": "rep_fill/1",
+      "rep": 4,
+      "arm": "native"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 4,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 4,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch/1",
+      "rep": 4,
+      "arm": "native"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 4,
+      "arm": "native"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 4,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 4,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_mix/train",
+      "rep": 5,
+      "arm": "native"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 5,
+      "arm": "native"
+    },
+    {
+      "case_id": "integer/1",
+      "rep": 5,
+      "arm": "native"
+    },
+    {
+      "case_id": "mod_inverse/1",
+      "rep": 5,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_mix/shift",
+      "rep": 5,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 5,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 5,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 5,
+      "arm": "native"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 5,
+      "arm": "native"
+    },
+    {
+      "case_id": "rep_fill/1",
+      "rep": 5,
+      "arm": "native"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 5,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 5,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch/1",
+      "rep": 5,
+      "arm": "native"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 5,
+      "arm": "native"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 5,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 5,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_switch/train",
+      "rep": 5,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch_scan/1",
+      "rep": 5,
+      "arm": "native"
+    },
+    {
+      "case_id": "integer/1",
+      "rep": 6,
+      "arm": "native"
+    },
+    {
+      "case_id": "mod_inverse/1",
+      "rep": 6,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_mix/shift",
+      "rep": 6,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 6,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 6,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 6,
+      "arm": "native"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 6,
+      "arm": "native"
+    },
+    {
+      "case_id": "rep_fill/1",
+      "rep": 6,
+      "arm": "native"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 6,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 6,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch/1",
+      "rep": 6,
+      "arm": "native"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 6,
+      "arm": "native"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 6,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 6,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_switch/train",
+      "rep": 6,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch_scan/1",
+      "rep": 6,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_mix/train",
+      "rep": 6,
+      "arm": "native"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 6,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_mix/shift",
+      "rep": 7,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 7,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 7,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 7,
+      "arm": "native"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 7,
+      "arm": "native"
+    },
+    {
+      "case_id": "rep_fill/1",
+      "rep": 7,
+      "arm": "native"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 7,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 7,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch/1",
+      "rep": 7,
+      "arm": "native"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 7,
+      "arm": "native"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 7,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 7,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_switch/train",
+      "rep": 7,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch_scan/1",
+      "rep": 7,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_mix/train",
+      "rep": 7,
+      "arm": "native"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 7,
+      "arm": "native"
+    },
+    {
+      "case_id": "integer/1",
+      "rep": 7,
+      "arm": "native"
+    },
+    {
+      "case_id": "mod_inverse/1",
+      "rep": 7,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 8,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 8,
+      "arm": "native"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 8,
+      "arm": "native"
+    },
+    {
+      "case_id": "rep_fill/1",
+      "rep": 8,
+      "arm": "native"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 8,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 8,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch/1",
+      "rep": 8,
+      "arm": "native"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 8,
+      "arm": "native"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 8,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 8,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_switch/train",
+      "rep": 8,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch_scan/1",
+      "rep": 8,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_mix/train",
+      "rep": 8,
+      "arm": "native"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 8,
+      "arm": "native"
+    },
+    {
+      "case_id": "integer/1",
+      "rep": 8,
+      "arm": "native"
+    },
+    {
+      "case_id": "mod_inverse/1",
+      "rep": 8,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_mix/shift",
+      "rep": 8,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 8,
+      "arm": "native"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 9,
+      "arm": "native"
+    },
+    {
+      "case_id": "rep_fill/1",
+      "rep": 9,
+      "arm": "native"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 9,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 9,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch/1",
+      "rep": 9,
+      "arm": "native"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 9,
+      "arm": "native"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 9,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 9,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_switch/train",
+      "rep": 9,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch_scan/1",
+      "rep": 9,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_mix/train",
+      "rep": 9,
+      "arm": "native"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 9,
+      "arm": "native"
+    },
+    {
+      "case_id": "integer/1",
+      "rep": 9,
+      "arm": "native"
+    },
+    {
+      "case_id": "mod_inverse/1",
+      "rep": 9,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_mix/shift",
+      "rep": 9,
+      "arm": "native"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 9,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 9,
+      "arm": "native"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 9,
+      "arm": "native"
+    }
+  ]
+}

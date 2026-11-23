@@ -1,0 +1,1890 @@
+{
+  "schema": 1,
+  "cpu": 1,
+  "work_budget": 100000000000,
+  "poll_interval_ms": 5,
+  "trial_timeout_s": 120,
+  "tools_sha256": {
+    "base/bench.py": "6fa78ee53e35ce70d9996501c49bc355cdeb45d1f69b11fcc31561fe156ca922",
+    "base/schedule.py": "1223f950fb28140fb0aeaf26e5a8666babae45a1a363cdc7a1bbbf6df2df5694",
+    "bench.py": "724e4a329a1d19868f99ef112099b0d0d734181d4e78ede6eef332de93083d9c",
+    "bin/cycle_walk": "ecf2c6d2ae86980640e884929410f95a0df1a2f2ae4625cd75b3698f896f95b2",
+    "bin/rep_copy": "255445d9e1311d5872c4da62e12df42c199012cfbc9b8c5dc6e8a8646cab2100",
+    "bin/sort": "d96565357cdd163ea7de5eb145aaf915b0b0ba9e238a46718e9e1352e51c4b75",
+    "cases.json": "59c2f485befb67578bcf65f99c7efec106500002bd69ecbf441756c6d1bdd036",
+    "catalog.so": "e68a1f10238dd14f2ac4e00595bc31176cc97407edf9c86c678c32ff4a34ec7e",
+    "cost_bench.py": "23f9149384ca347ee7537de26d6055996e7abce43c98c37b2798c58b0f94d10e",
+    "design.json": "666870aacd43dae55bb41ad1aa2045f041f885c7860b9fed0827b1949d67c0de",
+    "dynamorio/.durante-runtime.json": "264db0658f5f453a562cf0c702a820cd3c2d1be461ba796c134628d664cc4cde",
+    "dynamorio/bin64/drrun": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "dynamorio/ext/lib64/debug/libdrmgr.so": "0011d0732cebbefcded9afdbe2094e799d6aae80017eca5aab3401bd31f79500",
+    "dynamorio/ext/lib64/release/libdrmgr.so": "372cc1f1f95ffa29a1f11de4be14f99de5938bbcae11294a38d0a7932069429a",
+    "dynamorio/lib32/debug/libdynamorio.so": "f12fb2006a9c3c5ae74ce2a6edf58f3b2404835b24fc41fbb46a2475d6639bb8",
+    "dynamorio/lib32/release/libdynamorio.so": "08c166e09ea8c97d579e8f6a1bc5ebf5bf39cbd937eb357fe0797066ec1afa63",
+    "dynamorio/lib64/debug/libdrpreload.so": "0cf77ae7149ed7bcfc7d2105fccf34ff9077c06566dde2475f31532a5b41b98f",
+    "dynamorio/lib64/debug/libdynamorio.so": "99b1274200bfdc1413b14b9253efa2fbabd613459500dbab7a32984fb02c6991",
+    "dynamorio/lib64/release/libdrpreload.so": "fd220281583ecc7de1395d63a82338f265b46fda1af8acfbeeabdf33c88e6113",
+    "dynamorio/lib64/release/libdynamorio.so": "fd1c5645b9fc70a7dcb71459b4b94782d2e016a2aa4ceffcfcab2ade962cdf5b",
+    "gate.so": "7f4f037131f6d63d0f04e82bdf00e0b6e8cfa2c0db3f52e9ffac474245432e86",
+    "guest.sh": "d7433aa155fcaeed940d07bf8aa7c428801e8bf15c6218ad4347e0104da52e0e",
+    "packed.so": "67c957af6ebfaccba75ca451350eb1d7d66ed8b65ca8f0599a9a0c50f9b32486",
+    "production_reader.py": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a",
+    "profiled.so": "b8e4cd97aab2520dcf3a218289f9782d2801ead1187b007b38432f882bfb8ff9",
+    "profiles.json": "ff6db18f098e867771693f3060265bcef3776ec846c32ce490cf0987f74a0951",
+    "schedule.py": "b0eb4f7212b73923bdaaa65773d9d1ac457e87b99b8d8fc0fc8e59db825b4ed2",
+    "span.so": "2662243b216f8738517374ed20efa61b32e591dd3a92e74c1fe2fdcd4a96530c",
+    "v11.so": "902ac894e62a5a7c88139e7aeffca977719c8d60b514b01e45bb1a2baa80abc9"
+  },
+  "schedule": [
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 0,
+      "arm": "warmup"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 1,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 1,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 1,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 1,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 1,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 1,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 1,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 1,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 1,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 1,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 1,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 1,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 1,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 1,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 1,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 1,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 1,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 1,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 1,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 1,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 1,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 1,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 1,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 1,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 1,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 1,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 1,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 1,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 1,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 1,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 1,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 1,
+      "arm": "live"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 1,
+      "arm": "packed"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 1,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 1,
+      "arm": "full"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 1,
+      "arm": "gate"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 1,
+      "arm": "live"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 1,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 1,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 1,
+      "arm": "gate"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 1,
+      "arm": "packed"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 1,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 1,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 1,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 1,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 1,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 1,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 1,
+      "arm": "packed"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 1,
+      "arm": "gate"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 1,
+      "arm": "full"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 1,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 1,
+      "arm": "packed"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 1,
+      "arm": "live"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 1,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 1,
+      "arm": "full"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 1,
+      "arm": "packed"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 1,
+      "arm": "gate"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 1,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 1,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 1,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 2,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 2,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 2,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 2,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 2,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 2,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 2,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 2,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 2,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 2,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 2,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 2,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 2,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 2,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 2,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 2,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 2,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 2,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 2,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 2,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 2,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 2,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 2,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 2,
+      "arm": "gate"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 2,
+      "arm": "live"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 2,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 2,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 2,
+      "arm": "gate"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 2,
+      "arm": "packed"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 2,
+      "arm": "full"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 2,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 2,
+      "arm": "gate"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 2,
+      "arm": "live"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 2,
+      "arm": "full"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 2,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 2,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 2,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 2,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 2,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 2,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 2,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 2,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 2,
+      "arm": "full"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 2,
+      "arm": "packed"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 2,
+      "arm": "gate"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 2,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 2,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 2,
+      "arm": "live"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 2,
+      "arm": "packed"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 2,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 2,
+      "arm": "full"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 2,
+      "arm": "live"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 2,
+      "arm": "gate"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 2,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 2,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 2,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 2,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 2,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 2,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 2,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 3,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 3,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 3,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 3,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 3,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 3,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 3,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 3,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 3,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 3,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 3,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 3,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 3,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 3,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 3,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 3,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 3,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 3,
+      "arm": "full"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 3,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 3,
+      "arm": "gate"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 3,
+      "arm": "live"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 3,
+      "arm": "full"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 3,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 3,
+      "arm": "packed"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 3,
+      "arm": "gate"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 3,
+      "arm": "full"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 3,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 3,
+      "arm": "packed"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 3,
+      "arm": "live"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 3,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 3,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 3,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 3,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 3,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 3,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 3,
+      "arm": "live"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 3,
+      "arm": "packed"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 3,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 3,
+      "arm": "full"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 3,
+      "arm": "live"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 3,
+      "arm": "gate"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 3,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 3,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 3,
+      "arm": "live"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 3,
+      "arm": "packed"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 3,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 3,
+      "arm": "full"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 3,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 3,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 3,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 3,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 3,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 3,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 3,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 3,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 3,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 3,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 3,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 3,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 3,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 4,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 4,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 4,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 4,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 4,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 4,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 4,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 4,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 4,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 4,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 4,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 4,
+      "arm": "packed"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 4,
+      "arm": "gate"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 4,
+      "arm": "full"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 4,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 4,
+      "arm": "packed"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 4,
+      "arm": "live"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 4,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 4,
+      "arm": "full"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 4,
+      "arm": "packed"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 4,
+      "arm": "gate"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 4,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 4,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 4,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 4,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 4,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 4,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 4,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 4,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 4,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 4,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 4,
+      "arm": "live"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 4,
+      "arm": "packed"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 4,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 4,
+      "arm": "full"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 4,
+      "arm": "gate"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 4,
+      "arm": "live"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 4,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 4,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 4,
+      "arm": "gate"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 4,
+      "arm": "packed"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 4,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 4,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 4,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 4,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 4,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 4,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 4,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 4,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 4,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 4,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 4,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 4,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 4,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 4,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 4,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 4,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 4,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 4,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 4,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 5,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 5,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 5,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 5,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 5,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 5,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 5,
+      "arm": "full"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 5,
+      "arm": "packed"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 5,
+      "arm": "gate"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 5,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 5,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 5,
+      "arm": "live"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 5,
+      "arm": "packed"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 5,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 5,
+      "arm": "full"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 5,
+      "arm": "live"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 5,
+      "arm": "gate"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 5,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 5,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 5,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 5,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 5,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 5,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 5,
+      "arm": "gate"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 5,
+      "arm": "live"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 5,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 5,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 5,
+      "arm": "gate"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 5,
+      "arm": "packed"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 5,
+      "arm": "full"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 5,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 5,
+      "arm": "gate"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 5,
+      "arm": "live"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 5,
+      "arm": "full"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 5,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 5,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 5,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 5,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 5,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 5,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 5,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 5,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 5,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 5,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 5,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 5,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 5,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 5,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 5,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 5,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 5,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 5,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 5,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 5,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 5,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 5,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 5,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 5,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 5,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 5,
+      "arm": "packed"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 6,
+      "arm": "packed"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 6,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 6,
+      "arm": "full"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 6,
+      "arm": "live"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 6,
+      "arm": "gate"
+    },
+    {
+      "case_id": "sort/1",
+      "rep": 6,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 6,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 6,
+      "arm": "live"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 6,
+      "arm": "packed"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 6,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 6,
+      "arm": "full"
+    },
+    {
+      "case_id": "rep_copy/1",
+      "rep": 6,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 6,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 6,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 6,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 6,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 6,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/256KiB",
+      "rep": 6,
+      "arm": "full"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 6,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 6,
+      "arm": "gate"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 6,
+      "arm": "live"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 6,
+      "arm": "full"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 6,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "sort/2",
+      "rep": 6,
+      "arm": "packed"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 6,
+      "arm": "gate"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 6,
+      "arm": "full"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 6,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 6,
+      "arm": "packed"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 6,
+      "arm": "live"
+    },
+    {
+      "case_id": "rep_copy/2",
+      "rep": 6,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 6,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 6,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 6,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 6,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 6,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/32KiB",
+      "rep": 6,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 6,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 6,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 6,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 6,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 6,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/128KiB",
+      "rep": 6,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 6,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 6,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 6,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 6,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 6,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/2MiB",
+      "rep": 6,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 6,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 6,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 6,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 6,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 6,
+      "arm": "live"
+    },
+    {
+      "case_id": "cycle_walk/16MiB",
+      "rep": 6,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 6,
+      "arm": "full"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 6,
+      "arm": "packed"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 6,
+      "arm": "gate"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 6,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 6,
+      "arm": "catalog"
+    },
+    {
+      "case_id": "cycle_walk/64MiB",
+      "rep": 6,
+      "arm": "live"
+    }
+  ]
+}

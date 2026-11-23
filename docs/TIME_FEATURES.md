@@ -22,6 +22,9 @@ A second comparison reuses those Rust executables to measure the cost and
 predictive accuracy of the production latency and memory operand counters.
 [Pinned Rust memory operand study](GCE_RUST_OPERAND_BYTES.md)
 
+The C++20 pointer-walk study tests sampled address span across five table ranges
+and measures the extra CPU with the v11 live clock enabled. [Measurements and raw receipts](GCE_CPP20_LOCALITY.md)
+
 ## Method
 
 The fixed corpus in `experiments/time_features/work.c` has 18 kernels, each

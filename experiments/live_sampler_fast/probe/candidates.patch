@@ -1,0 +1,62 @@
+--- a/access_span.c
++++ b/candidate.c
+@@ -28,0 +29,4 @@
++#ifdef SAMPLER_PROFILED
++#include "profile.h"
++#endif
++
+@@ -44,0 +49 @@
++#ifndef SAMPLER_CATALOG
+@@ -69,0 +75,2 @@
++#endif
++
+@@ -103,0 +111 @@
++#ifndef SAMPLER_CATALOG
+@@ -124,0 +133,2 @@
++#endif
++
+@@ -132,2 +142,12 @@
+-    if (pc < module_start || pc >= module_end || !eligible(where, &mem))
+-        return DR_EMIT_DEFAULT;
++    if (pc < module_start || pc >= module_end)
++        return DR_EMIT_DEFAULT;
++#ifdef SAMPLER_PROFILED
++    if (!selected((uintptr_t)pc - (uintptr_t)module_start))
++        return DR_EMIT_DEFAULT;
++#endif
++    if (!eligible(where, &mem))
++        return DR_EMIT_DEFAULT;
++#ifdef SAMPLER_CATALOG
++    (void)ctx; (void)bb;
++    site_for(pc);
++#else
+@@ -161,0 +182 @@
++#endif
+@@ -175,0 +197 @@
++#ifndef SAMPLER_CATALOG
+@@ -184,0 +207,6 @@
++#endif
++
++#ifdef SAMPLER_PACKED
++#include "packed.h"
++#endif
++
+@@ -194,0 +223,8 @@
++#if defined(SAMPLER_CATALOG)
++    dr_fprintf(output, "{\"schema\":1,\"arm\":\"catalog\",\"pid\":%u,\"threads\":1,\"sites\":[", (unsigned)owner);
++    for (unsigned i = 0; i < used; ++i)
++        dr_fprintf(output, "%s%llu", i ? "," : "", (unsigned long long)(sites[i].pc - module_start));
++    dr_fprintf(output, "]}\n");
++#elif defined(SAMPLER_PACKED)
++    write_packed();
++#else
+@@ -223,0 +260 @@
++#endif
+@@ -231,0 +269,5 @@
++#ifdef SAMPLER_PROFILED
++    if (argc != 5 || strcmp(argv[1], "-out") || strcmp(argv[3], "-sites"))
++        fail("expected -out <new file> -sites <sorted decimal offsets>");
++    parse_sites(argv[4]);
++#else
+@@ -233,0 +276 @@
++#endif

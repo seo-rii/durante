@@ -1,0 +1,1344 @@
+{
+  "schema": 1,
+  "protocol_sha256": "178211845c752e750a5a134eaf250929da74646e0220eaf6df432f46ffd10b6b",
+  "design_sha256": "0dd4f8e7bdba9dfea113817ac3726514ff906870405ad059aebd2868cdcf65b0",
+  "dataset_sha256": "5d0451dd3246886f0e23f68dfd5e3ea5b94fc6db3d2f07467c20241de71a94c8",
+  "receipts_sha256": "2036660eadcde9928e70703e4d64f333e69c0849ef02c55ac8439e36b21fb9b3",
+  "native_ns": {
+    "cycle_walk/32KiB": {
+      "min": 18325000,
+      "median": 18708500,
+      "max": 19450000
+    },
+    "cycle_walk/128KiB": {
+      "min": 22296000,
+      "median": 22700500,
+      "max": 23316000
+    },
+    "cycle_walk/2MiB": {
+      "min": 42678000,
+      "median": 45216500,
+      "max": 51042000
+    },
+    "cycle_walk/16MiB": {
+      "min": 81358000,
+      "median": 115446000,
+      "max": 129002000
+    },
+    "cycle_walk/64MiB": {
+      "min": 222206000,
+      "median": 229038500,
+      "max": 242476000
+    },
+    "sort/1": {
+      "min": 32714000,
+      "median": 32784500,
+      "max": 32888000
+    },
+    "rep_copy/1": {
+      "min": 61612000,
+      "median": 67329000,
+      "max": 83865000
+    }
+  },
+  "integrity": {
+    "cases": {
+      "cycle_walk/32KiB": {
+        "gate_vs_full_equal": 6,
+        "full_vs_fused_equal": 6,
+        "hot_oracles_checked": 18,
+        "descriptive_non_oracle_site_comparisons": 4158,
+        "descriptive_classification_differences": 0,
+        "descriptive_span_differences": 6
+      },
+      "cycle_walk/128KiB": {
+        "gate_vs_full_equal": 6,
+        "full_vs_fused_equal": 6,
+        "hot_oracles_checked": 18,
+        "descriptive_non_oracle_site_comparisons": 4158,
+        "descriptive_classification_differences": 0,
+        "descriptive_span_differences": 6
+      },
+      "cycle_walk/2MiB": {
+        "gate_vs_full_equal": 6,
+        "full_vs_fused_equal": 6,
+        "hot_oracles_checked": 18,
+        "descriptive_non_oracle_site_comparisons": 4158,
+        "descriptive_classification_differences": 0,
+        "descriptive_span_differences": 6
+      },
+      "cycle_walk/16MiB": {
+        "gate_vs_full_equal": 6,
+        "full_vs_fused_equal": 6,
+        "hot_oracles_checked": 18,
+        "descriptive_non_oracle_site_comparisons": 4158,
+        "descriptive_classification_differences": 0,
+        "descriptive_span_differences": 6
+      },
+      "cycle_walk/64MiB": {
+        "gate_vs_full_equal": 6,
+        "full_vs_fused_equal": 6,
+        "hot_oracles_checked": 18,
+        "descriptive_non_oracle_site_comparisons": 4158,
+        "descriptive_classification_differences": 0,
+        "descriptive_span_differences": 6
+      },
+      "sort/1": {
+        "gate_vs_full_equal": 6,
+        "full_vs_fused_equal": 6,
+        "hot_oracles_checked": 0,
+        "descriptive_non_oracle_site_comparisons": 4260,
+        "descriptive_classification_differences": 0,
+        "descriptive_span_differences": 6
+      },
+      "rep_copy/1": {
+        "gate_vs_full_equal": 6,
+        "full_vs_fused_equal": 6,
+        "hot_oracles_checked": 0,
+        "descriptive_non_oracle_site_comparisons": 4230,
+        "descriptive_classification_differences": 0,
+        "descriptive_span_differences": 0
+      }
+    },
+    "failures": [],
+    "pass": true
+  },
+  "work_differences": {
+    "cycle_walk/32KiB": {
+      "all_three_equal_pairs": 6,
+      "signed_differences": {
+        "instructions": {
+          "min": 0,
+          "max": 0,
+          "equal_pairs": 6
+        },
+        "movs_bytes": {
+          "min": 0,
+          "max": 0,
+          "equal_pairs": 6
+        },
+        "stos_bytes": {
+          "min": 0,
+          "max": 0,
+          "equal_pairs": 6
+        }
+      }
+    },
+    "cycle_walk/128KiB": {
+      "all_three_equal_pairs": 6,
+      "signed_differences": {
+        "instructions": {
+          "min": 0,
+          "max": 0,
+          "equal_pairs": 6
+        },
+        "movs_bytes": {
+          "min": 0,
+          "max": 0,
+          "equal_pairs": 6
+        },
+        "stos_bytes": {
+          "min": 0,
+          "max": 0,
+          "equal_pairs": 6
+        }
+      }
+    },
+    "cycle_walk/2MiB": {
+      "all_three_equal_pairs": 6,
+      "signed_differences": {
+        "instructions": {
+          "min": 0,
+          "max": 0,
+          "equal_pairs": 6
+        },
+        "movs_bytes": {
+          "min": 0,
+          "max": 0,
+          "equal_pairs": 6
+        },
+        "stos_bytes": {
+          "min": 0,
+          "max": 0,
+          "equal_pairs": 6
+        }
+      }
+    },
+    "cycle_walk/16MiB": {
+      "all_three_equal_pairs": 5,
+      "signed_differences": {
+        "instructions": {
+          "min": -16,
+          "max": 0,
+          "equal_pairs": 5
+        },
+        "movs_bytes": {
+          "min": 0,
+          "max": 0,
+          "equal_pairs": 6
+        },
+        "stos_bytes": {
+          "min": 0,
+          "max": 0,
+          "equal_pairs": 6
+        }
+      }
+    },
+    "cycle_walk/64MiB": {
+      "all_three_equal_pairs": 6,
+      "signed_differences": {
+        "instructions": {
+          "min": 0,
+          "max": 0,
+          "equal_pairs": 6
+        },
+        "movs_bytes": {
+          "min": 0,
+          "max": 0,
+          "equal_pairs": 6
+        },
+        "stos_bytes": {
+          "min": 0,
+          "max": 0,
+          "equal_pairs": 6
+        }
+      }
+    },
+    "sort/1": {
+      "all_three_equal_pairs": 6,
+      "signed_differences": {
+        "instructions": {
+          "min": 0,
+          "max": 0,
+          "equal_pairs": 6
+        },
+        "movs_bytes": {
+          "min": 0,
+          "max": 0,
+          "equal_pairs": 6
+        },
+        "stos_bytes": {
+          "min": 0,
+          "max": 0,
+          "equal_pairs": 6
+        }
+      }
+    },
+    "rep_copy/1": {
+      "all_three_equal_pairs": 6,
+      "signed_differences": {
+        "instructions": {
+          "min": 0,
+          "max": 0,
+          "equal_pairs": 6
+        },
+        "movs_bytes": {
+          "min": 0,
+          "max": 0,
+          "equal_pairs": 6
+        },
+        "stos_bytes": {
+          "min": 0,
+          "max": 0,
+          "equal_pairs": 6
+        }
+      }
+    }
+  },
+  "cost": {
+    "empty_vs_live": {
+      "base": "live",
+      "candidate": "empty",
+      "by_case": {
+        "cycle_walk/32KiB": {
+          "pairs": 6,
+          "base_cpu_ns": 692997000,
+          "candidate_cpu_ns": 699165000,
+          "pooled_delta_ns": 6168000,
+          "pooled_ratio_ppm": 1008900,
+          "paired_delta_ns": {
+            "min": -486000,
+            "median": 1142000.0,
+            "max": 1893000
+          },
+          "paired_ratio_ppm": {
+            "min": 995830,
+            "median": 1009930,
+            "max": 1016361
+          }
+        },
+        "cycle_walk/128KiB": {
+          "pairs": 6,
+          "base_cpu_ns": 711416000,
+          "candidate_cpu_ns": 714303000,
+          "pooled_delta_ns": 2887000,
+          "pooled_ratio_ppm": 1004058,
+          "paired_delta_ns": {
+            "min": -386000,
+            "median": 600000.0,
+            "max": 1114000
+          },
+          "paired_ratio_ppm": {
+            "min": 996762,
+            "median": 1005067,
+            "max": 1009395
+          }
+        },
+        "cycle_walk/2MiB": {
+          "pairs": 6,
+          "base_cpu_ns": 867778000,
+          "candidate_cpu_ns": 866660000,
+          "pooled_delta_ns": -1118000,
+          "pooled_ratio_ppm": 998712,
+          "paired_delta_ns": {
+            "min": -2254000,
+            "median": -203000.0,
+            "max": 1965000
+          },
+          "paired_ratio_ppm": {
+            "min": 984538,
+            "median": 998599,
+            "max": 1013725
+          }
+        },
+        "cycle_walk/16MiB": {
+          "pairs": 6,
+          "base_cpu_ns": 1274998000,
+          "candidate_cpu_ns": 1280396000,
+          "pooled_delta_ns": 5398000,
+          "pooled_ratio_ppm": 1004234,
+          "paired_delta_ns": {
+            "min": -60325000,
+            "median": -4853500.0,
+            "max": 88387000
+          },
+          "paired_ratio_ppm": {
+            "min": 782102,
+            "median": 977116,
+            "max": 1455317
+          }
+        },
+        "cycle_walk/64MiB": {
+          "pairs": 6,
+          "base_cpu_ns": 1902547000,
+          "candidate_cpu_ns": 1910648000,
+          "pooled_delta_ns": 8101000,
+          "pooled_ratio_ppm": 1004258,
+          "paired_delta_ns": {
+            "min": -12973000,
+            "median": 2264000.0,
+            "max": 14315000
+          },
+          "paired_ratio_ppm": {
+            "min": 960604,
+            "median": 1007153,
+            "max": 1045933
+          }
+        },
+        "sort/1": {
+          "pairs": 6,
+          "base_cpu_ns": 901145000,
+          "candidate_cpu_ns": 905569000,
+          "pooled_delta_ns": 4424000,
+          "pooled_ratio_ppm": 1004909,
+          "paired_delta_ns": {
+            "min": -69000,
+            "median": 373500.0,
+            "max": 2626000
+          },
+          "paired_ratio_ppm": {
+            "min": 999542,
+            "median": 1002486,
+            "max": 1017461
+          }
+        },
+        "rep_copy/1": {
+          "pairs": 6,
+          "base_cpu_ns": 1015936000,
+          "candidate_cpu_ns": 1002035000,
+          "pooled_delta_ns": -13901000,
+          "pooled_ratio_ppm": 986317,
+          "paired_delta_ns": {
+            "min": -16579000,
+            "median": -211000.0,
+            "max": 3437000
+          },
+          "paired_ratio_ppm": {
+            "min": 908016,
+            "median": 998748,
+            "max": 1021137
+          }
+        }
+      },
+      "pooled": {
+        "walks": {
+          "pairs": 30,
+          "base_cpu_ns": 5449736000,
+          "candidate_cpu_ns": 5471172000,
+          "pooled_delta_ns": 21436000,
+          "pooled_ratio_ppm": 1003933,
+          "paired_delta_ns": {
+            "min": -60325000,
+            "median": 656500.0,
+            "max": 88387000
+          },
+          "paired_ratio_ppm": {
+            "min": 782102,
+            "median": 1005615,
+            "max": 1455317
+          }
+        },
+        "controls": {
+          "pairs": 12,
+          "base_cpu_ns": 1917081000,
+          "candidate_cpu_ns": 1907604000,
+          "pooled_delta_ns": -9477000,
+          "pooled_ratio_ppm": 995057,
+          "paired_delta_ns": {
+            "min": -16579000,
+            "median": 373500.0,
+            "max": 3437000
+          },
+          "paired_ratio_ppm": {
+            "min": 908016,
+            "median": 1002486,
+            "max": 1021137
+          }
+        },
+        "all": {
+          "pairs": 42,
+          "base_cpu_ns": 7366817000,
+          "candidate_cpu_ns": 7378776000,
+          "pooled_delta_ns": 11959000,
+          "pooled_ratio_ppm": 1001623,
+          "paired_delta_ns": {
+            "min": -60325000,
+            "median": 559500.0,
+            "max": 88387000
+          },
+          "paired_ratio_ppm": {
+            "min": 782102,
+            "median": 1004795,
+            "max": 1455317
+          }
+        }
+      }
+    },
+    "gate_vs_empty": {
+      "base": "empty",
+      "candidate": "gate",
+      "by_case": {
+        "cycle_walk/32KiB": {
+          "pairs": 6,
+          "base_cpu_ns": 699165000,
+          "candidate_cpu_ns": 795076000,
+          "pooled_delta_ns": 95911000,
+          "pooled_ratio_ppm": 1137179,
+          "paired_delta_ns": {
+            "min": 14585000,
+            "median": 16122000.0,
+            "max": 16671000
+          },
+          "paired_ratio_ppm": {
+            "min": 1124025,
+            "median": 1138789,
+            "max": 1143642
+          }
+        },
+        "cycle_walk/128KiB": {
+          "pairs": 6,
+          "base_cpu_ns": 714303000,
+          "candidate_cpu_ns": 812614000,
+          "pooled_delta_ns": 98311000,
+          "pooled_ratio_ppm": 1137632,
+          "paired_delta_ns": {
+            "min": 15793000,
+            "median": 16425500.0,
+            "max": 16816000
+          },
+          "paired_ratio_ppm": {
+            "min": 1131953,
+            "median": 1138196,
+            "max": 1141531
+          }
+        },
+        "cycle_walk/2MiB": {
+          "pairs": 6,
+          "base_cpu_ns": 866660000,
+          "candidate_cpu_ns": 966688000,
+          "pooled_delta_ns": 100028000,
+          "pooled_ratio_ppm": 1115418,
+          "paired_delta_ns": {
+            "min": 15307000,
+            "median": 16709000.0,
+            "max": 18454000
+          },
+          "paired_ratio_ppm": {
+            "min": 1105465,
+            "median": 1116030,
+            "max": 1128302
+          }
+        },
+        "cycle_walk/16MiB": {
+          "pairs": 6,
+          "base_cpu_ns": 1280396000,
+          "candidate_cpu_ns": 1441248000,
+          "pooled_delta_ns": 160852000,
+          "pooled_ratio_ppm": 1125627,
+          "paired_delta_ns": {
+            "min": -11246000,
+            "median": 24760000.0,
+            "max": 73081000
+          },
+          "paired_ratio_ppm": {
+            "min": 942742,
+            "median": 1118878,
+            "max": 1323289
+          }
+        },
+        "cycle_walk/64MiB": {
+          "pairs": 6,
+          "base_cpu_ns": 1910648000,
+          "candidate_cpu_ns": 2008576000,
+          "pooled_delta_ns": 97928000,
+          "pooled_ratio_ppm": 1051254,
+          "paired_delta_ns": {
+            "min": 1928000,
+            "median": 15739500.0,
+            "max": 29108000
+          },
+          "paired_ratio_ppm": {
+            "min": 1005915,
+            "median": 1049403,
+            "max": 1093270
+          }
+        },
+        "sort/1": {
+          "pairs": 6,
+          "base_cpu_ns": 905569000,
+          "candidate_cpu_ns": 1036645000,
+          "pooled_delta_ns": 131076000,
+          "pooled_ratio_ppm": 1144744,
+          "paired_delta_ns": {
+            "min": 18567000,
+            "median": 22111000.0,
+            "max": 23835000
+          },
+          "paired_ratio_ppm": {
+            "min": 1121335,
+            "median": 1146899,
+            "max": 1158239
+          }
+        },
+        "rep_copy/1": {
+          "pairs": 6,
+          "base_cpu_ns": 1002035000,
+          "candidate_cpu_ns": 1116960000,
+          "pooled_delta_ns": 114925000,
+          "pooled_ratio_ppm": 1114692,
+          "paired_delta_ns": {
+            "min": 15628000,
+            "median": 19228000.0,
+            "max": 21690000
+          },
+          "paired_ratio_ppm": {
+            "min": 1094998,
+            "median": 1118014,
+            "max": 1130630
+          }
+        }
+      },
+      "pooled": {
+        "walks": {
+          "pairs": 30,
+          "base_cpu_ns": 5471172000,
+          "candidate_cpu_ns": 6024202000,
+          "pooled_delta_ns": 553030000,
+          "pooled_ratio_ppm": 1101081,
+          "paired_delta_ns": {
+            "min": -11246000,
+            "median": 16371500.0,
+            "max": 73081000
+          },
+          "paired_ratio_ppm": {
+            "min": 942742,
+            "median": 1126164,
+            "max": 1323289
+          }
+        },
+        "controls": {
+          "pairs": 12,
+          "base_cpu_ns": 1907604000,
+          "candidate_cpu_ns": 2153605000,
+          "pooled_delta_ns": 246001000,
+          "pooled_ratio_ppm": 1128958,
+          "paired_delta_ns": {
+            "min": 15628000,
+            "median": 20908000.0,
+            "max": 23835000
+          },
+          "paired_ratio_ppm": {
+            "min": 1094998,
+            "median": 1129272,
+            "max": 1158239
+          }
+        },
+        "all": {
+          "pairs": 42,
+          "base_cpu_ns": 7378776000,
+          "candidate_cpu_ns": 8177807000,
+          "pooled_delta_ns": 799031000,
+          "pooled_ratio_ppm": 1108288,
+          "paired_delta_ns": {
+            "min": -11246000,
+            "median": 16721500.0,
+            "max": 73081000
+          },
+          "paired_ratio_ppm": {
+            "min": 942742,
+            "median": 1128108,
+            "max": 1323289
+          }
+        }
+      }
+    },
+    "full_vs_gate": {
+      "base": "gate",
+      "candidate": "full",
+      "by_case": {
+        "cycle_walk/32KiB": {
+          "pairs": 6,
+          "base_cpu_ns": 795076000,
+          "candidate_cpu_ns": 815320000,
+          "pooled_delta_ns": 20244000,
+          "pooled_ratio_ppm": 1025462,
+          "paired_delta_ns": {
+            "min": 2004000,
+            "median": 3407500.0,
+            "max": 4691000
+          },
+          "paired_ratio_ppm": {
+            "min": 1015003,
+            "median": 1025821,
+            "max": 1035363
+          }
+        },
+        "cycle_walk/128KiB": {
+          "pairs": 6,
+          "base_cpu_ns": 812614000,
+          "candidate_cpu_ns": 833905000,
+          "pooled_delta_ns": 21291000,
+          "pooled_ratio_ppm": 1026201,
+          "paired_delta_ns": {
+            "min": 3236000,
+            "median": 3461000.0,
+            "max": 4335000
+          },
+          "paired_ratio_ppm": {
+            "min": 1023858,
+            "median": 1025553,
+            "max": 1032040
+          }
+        },
+        "cycle_walk/2MiB": {
+          "pairs": 6,
+          "base_cpu_ns": 966688000,
+          "candidate_cpu_ns": 984136000,
+          "pooled_delta_ns": 17448000,
+          "pooled_ratio_ppm": 1018049,
+          "paired_delta_ns": {
+            "min": 1543000,
+            "median": 2931500.0,
+            "max": 4861000
+          },
+          "paired_ratio_ppm": {
+            "min": 1009508,
+            "median": 1018177,
+            "max": 1030333
+          }
+        },
+        "cycle_walk/16MiB": {
+          "pairs": 6,
+          "base_cpu_ns": 1441248000,
+          "candidate_cpu_ns": 1418262000,
+          "pooled_delta_ns": -22986000,
+          "pooled_ratio_ppm": 984051,
+          "paired_delta_ns": {
+            "min": -57787000,
+            "median": -7427000.0,
+            "max": 45919000
+          },
+          "paired_ratio_ppm": {
+            "min": 804274,
+            "median": 968647,
+            "max": 1247994
+          }
+        },
+        "cycle_walk/64MiB": {
+          "pairs": 6,
+          "base_cpu_ns": 2008576000,
+          "candidate_cpu_ns": 2047182000,
+          "pooled_delta_ns": 38606000,
+          "pooled_ratio_ppm": 1019221,
+          "paired_delta_ns": {
+            "min": -10039000,
+            "median": 7117000.0,
+            "max": 25975000
+          },
+          "paired_ratio_ppm": {
+            "min": 970577,
+            "median": 1021470,
+            "max": 1079035
+          }
+        },
+        "sort/1": {
+          "pairs": 6,
+          "base_cpu_ns": 1036645000,
+          "candidate_cpu_ns": 1057136000,
+          "pooled_delta_ns": 20491000,
+          "pooled_ratio_ppm": 1019767,
+          "paired_delta_ns": {
+            "min": 1972000,
+            "median": 3312000.0,
+            "max": 4914000
+          },
+          "paired_ratio_ppm": {
+            "min": 1011303,
+            "median": 1019188,
+            "max": 1028660
+          }
+        },
+        "rep_copy/1": {
+          "pairs": 6,
+          "base_cpu_ns": 1116960000,
+          "candidate_cpu_ns": 1154104000,
+          "pooled_delta_ns": 37144000,
+          "pooled_ratio_ppm": 1033255,
+          "paired_delta_ns": {
+            "min": 1694000,
+            "median": 4697000.0,
+            "max": 17639000
+          },
+          "paired_ratio_ppm": {
+            "min": 1008381,
+            "median": 1025781,
+            "max": 1093959
+          }
+        }
+      },
+      "pooled": {
+        "walks": {
+          "pairs": 30,
+          "base_cpu_ns": 6024202000,
+          "candidate_cpu_ns": 6098805000,
+          "pooled_delta_ns": 74603000,
+          "pooled_ratio_ppm": 1012384,
+          "paired_delta_ns": {
+            "min": -57787000,
+            "median": 3287500.0,
+            "max": 45919000
+          },
+          "paired_ratio_ppm": {
+            "min": 804274,
+            "median": 1024611,
+            "max": 1247994
+          }
+        },
+        "controls": {
+          "pairs": 12,
+          "base_cpu_ns": 2153605000,
+          "candidate_cpu_ns": 2211240000,
+          "pooled_delta_ns": 57635000,
+          "pooled_ratio_ppm": 1026762,
+          "paired_delta_ns": {
+            "min": 1694000,
+            "median": 3883500.0,
+            "max": 17639000
+          },
+          "paired_ratio_ppm": {
+            "min": 1008381,
+            "median": 1021906,
+            "max": 1093959
+          }
+        },
+        "all": {
+          "pairs": 42,
+          "base_cpu_ns": 8177807000,
+          "candidate_cpu_ns": 8310045000,
+          "pooled_delta_ns": 132238000,
+          "pooled_ratio_ppm": 1016170,
+          "paired_delta_ns": {
+            "min": -57787000,
+            "median": 3352000.0,
+            "max": 45919000
+          },
+          "paired_ratio_ppm": {
+            "min": 804274,
+            "median": 1024045,
+            "max": 1247994
+          }
+        }
+      }
+    },
+    "full_vs_live": {
+      "base": "live",
+      "candidate": "full",
+      "by_case": {
+        "cycle_walk/32KiB": {
+          "pairs": 6,
+          "base_cpu_ns": 692997000,
+          "candidate_cpu_ns": 815320000,
+          "pooled_delta_ns": 122323000,
+          "pooled_ratio_ppm": 1176513,
+          "paired_delta_ns": {
+            "min": 19242000,
+            "median": 20223000.0,
+            "max": 21860000
+          },
+          "paired_ratio_ppm": {
+            "min": 1165104,
+            "median": 1175245,
+            "max": 1189292
+          }
+        },
+        "cycle_walk/128KiB": {
+          "pairs": 6,
+          "base_cpu_ns": 711416000,
+          "candidate_cpu_ns": 833905000,
+          "pooled_delta_ns": 122489000,
+          "pooled_ratio_ppm": 1172176,
+          "paired_delta_ns": {
+            "min": 19953000,
+            "median": 20421500.0,
+            "max": 21240000
+          },
+          "paired_ratio_ppm": {
+            "min": 1167390,
+            "median": 1172355,
+            "max": 1179399
+          }
+        },
+        "cycle_walk/2MiB": {
+          "pairs": 6,
+          "base_cpu_ns": 867778000,
+          "candidate_cpu_ns": 984136000,
+          "pooled_delta_ns": 116358000,
+          "pooled_ratio_ppm": 1134087,
+          "paired_delta_ns": {
+            "min": 18912000,
+            "median": 19404500.0,
+            "max": 19835000
+          },
+          "paired_ratio_ppm": {
+            "min": 1129290,
+            "median": 1134650,
+            "max": 1137428
+          }
+        },
+        "cycle_walk/16MiB": {
+          "pairs": 6,
+          "base_cpu_ns": 1274998000,
+          "candidate_cpu_ns": 1418262000,
+          "pooled_delta_ns": 143264000,
+          "pooled_ratio_ppm": 1112364,
+          "paired_delta_ns": {
+            "min": -17297000,
+            "median": 27549500.0,
+            "max": 56746000
+          },
+          "paired_ratio_ppm": {
+            "min": 937522,
+            "median": 1140591,
+            "max": 1325500
+          }
+        },
+        "cycle_walk/64MiB": {
+          "pairs": 6,
+          "base_cpu_ns": 1902547000,
+          "candidate_cpu_ns": 2047182000,
+          "pooled_delta_ns": 144635000,
+          "pooled_ratio_ppm": 1076022,
+          "paired_delta_ns": {
+            "min": 3743000,
+            "median": 25120500.0,
+            "max": 39134000
+          },
+          "paired_ratio_ppm": {
+            "min": 1011367,
+            "median": 1079376,
+            "max": 1124041
+          }
+        },
+        "sort/1": {
+          "pairs": 6,
+          "base_cpu_ns": 901145000,
+          "candidate_cpu_ns": 1057136000,
+          "pooled_delta_ns": 155991000,
+          "pooled_ratio_ppm": 1173103,
+          "paired_delta_ns": {
+            "min": 25449000,
+            "median": 25984500.0,
+            "max": 26559000
+          },
+          "paired_ratio_ppm": {
+            "min": 1169114,
+            "median": 1173099,
+            "max": 1177491
+          }
+        },
+        "rep_copy/1": {
+          "pairs": 6,
+          "base_cpu_ns": 1015936000,
+          "candidate_cpu_ns": 1154104000,
+          "pooled_delta_ns": 138168000,
+          "pooled_ratio_ppm": 1136001,
+          "paired_delta_ns": {
+            "min": 5359000,
+            "median": 23458500.0,
+            "max": 42766000
+          },
+          "paired_ratio_ppm": {
+            "min": 1029733,
+            "median": 1136787,
+            "max": 1263007
+          }
+        }
+      },
+      "pooled": {
+        "walks": {
+          "pairs": 30,
+          "base_cpu_ns": 5449736000,
+          "candidate_cpu_ns": 6098805000,
+          "pooled_delta_ns": 649069000,
+          "pooled_ratio_ppm": 1119101,
+          "paired_delta_ns": {
+            "min": -17297000,
+            "median": 20135500.0,
+            "max": 56746000
+          },
+          "paired_ratio_ppm": {
+            "min": 937522,
+            "median": 1151266,
+            "max": 1325500
+          }
+        },
+        "controls": {
+          "pairs": 12,
+          "base_cpu_ns": 1917081000,
+          "candidate_cpu_ns": 2211240000,
+          "pooled_delta_ns": 294159000,
+          "pooled_ratio_ppm": 1153441,
+          "paired_delta_ns": {
+            "min": 5359000,
+            "median": 25593500.0,
+            "max": 42766000
+          },
+          "paired_ratio_ppm": {
+            "min": 1029733,
+            "median": 1169954,
+            "max": 1263007
+          }
+        },
+        "all": {
+          "pairs": 42,
+          "base_cpu_ns": 7366817000,
+          "candidate_cpu_ns": 8310045000,
+          "pooled_delta_ns": 943228000,
+          "pooled_ratio_ppm": 1128037,
+          "paired_delta_ns": {
+            "min": -17297000,
+            "median": 20436000.0,
+            "max": 56746000
+          },
+          "paired_ratio_ppm": {
+            "min": 937522,
+            "median": 1166247,
+            "max": 1325500
+          }
+        }
+      }
+    },
+    "fused_vs_full": {
+      "base": "full",
+      "candidate": "fused",
+      "by_case": {
+        "cycle_walk/32KiB": {
+          "pairs": 6,
+          "base_cpu_ns": 815320000,
+          "candidate_cpu_ns": 812935000,
+          "pooled_delta_ns": -2385000,
+          "pooled_ratio_ppm": 997075,
+          "paired_delta_ns": {
+            "min": -1984000,
+            "median": -322500.0,
+            "max": 733000
+          },
+          "paired_ratio_ppm": {
+            "min": 985554,
+            "median": 997625,
+            "max": 1005413
+          }
+        },
+        "cycle_walk/128KiB": {
+          "pairs": 6,
+          "base_cpu_ns": 833905000,
+          "candidate_cpu_ns": 833645000,
+          "pooled_delta_ns": -260000,
+          "pooled_ratio_ppm": 999688,
+          "paired_delta_ns": {
+            "min": -1782000,
+            "median": -86500.0,
+            "max": 1721000
+          },
+          "paired_ratio_ppm": {
+            "min": 987238,
+            "median": 999377,
+            "max": 1012381
+          }
+        },
+        "cycle_walk/2MiB": {
+          "pairs": 6,
+          "base_cpu_ns": 984136000,
+          "candidate_cpu_ns": 984138000,
+          "pooled_delta_ns": 2000,
+          "pooled_ratio_ppm": 1000002,
+          "paired_delta_ns": {
+            "min": -1289000,
+            "median": -29000.0,
+            "max": 1589000
+          },
+          "paired_ratio_ppm": {
+            "min": 992193,
+            "median": 999821,
+            "max": 1009699
+          }
+        },
+        "cycle_walk/16MiB": {
+          "pairs": 6,
+          "base_cpu_ns": 1418262000,
+          "candidate_cpu_ns": 1388935000,
+          "pooled_delta_ns": -29327000,
+          "pooled_ratio_ppm": 979322,
+          "paired_delta_ns": {
+            "min": -46948000,
+            "median": -8557000.0,
+            "max": 33385000
+          },
+          "paired_ratio_ppm": {
+            "min": 819120,
+            "median": 965709,
+            "max": 1161608
+          }
+        },
+        "cycle_walk/64MiB": {
+          "pairs": 6,
+          "base_cpu_ns": 2047182000,
+          "candidate_cpu_ns": 2007427000,
+          "pooled_delta_ns": -39755000,
+          "pooled_ratio_ppm": 980581,
+          "paired_delta_ns": {
+            "min": -23905000,
+            "median": -7170000.0,
+            "max": 4317000
+          },
+          "paired_ratio_ppm": {
+            "min": 932591,
+            "median": 979011,
+            "max": 1013036
+          }
+        },
+        "sort/1": {
+          "pairs": 6,
+          "base_cpu_ns": 1057136000,
+          "candidate_cpu_ns": 1056408000,
+          "pooled_delta_ns": -728000,
+          "pooled_ratio_ppm": 999311,
+          "paired_delta_ns": {
+            "min": -901000,
+            "median": -97500.0,
+            "max": 619000
+          },
+          "paired_ratio_ppm": {
+            "min": 994892,
+            "median": 999446,
+            "max": 1003513
+          }
+        },
+        "rep_copy/1": {
+          "pairs": 6,
+          "base_cpu_ns": 1154104000,
+          "candidate_cpu_ns": 1163739000,
+          "pooled_delta_ns": 9635000,
+          "pooled_ratio_ppm": 1008348,
+          "paired_delta_ns": {
+            "min": -2979000,
+            "median": 664000.0,
+            "max": 7866000
+          },
+          "paired_ratio_ppm": {
+            "min": 984144,
+            "median": 1003346,
+            "max": 1042382
+          }
+        }
+      },
+      "pooled": {
+        "walks": {
+          "pairs": 30,
+          "base_cpu_ns": 6098805000,
+          "candidate_cpu_ns": 6027080000,
+          "pooled_delta_ns": -71725000,
+          "pooled_ratio_ppm": 988239,
+          "paired_delta_ns": {
+            "min": -46948000,
+            "median": -363500.0,
+            "max": 33385000
+          },
+          "paired_ratio_ppm": {
+            "min": 819120,
+            "median": 997338,
+            "max": 1161608
+          }
+        },
+        "controls": {
+          "pairs": 12,
+          "base_cpu_ns": 2211240000,
+          "candidate_cpu_ns": 2220147000,
+          "pooled_delta_ns": 8907000,
+          "pooled_ratio_ppm": 1004028,
+          "paired_delta_ns": {
+            "min": -2979000,
+            "median": 74000.0,
+            "max": 7866000
+          },
+          "paired_ratio_ppm": {
+            "min": 984144,
+            "median": 1000420,
+            "max": 1042382
+          }
+        },
+        "all": {
+          "pairs": 42,
+          "base_cpu_ns": 8310045000,
+          "candidate_cpu_ns": 8247227000,
+          "pooled_delta_ns": -62818000,
+          "pooled_ratio_ppm": 992441,
+          "paired_delta_ns": {
+            "min": -46948000,
+            "median": -154500.0,
+            "max": 33385000
+          },
+          "paired_ratio_ppm": {
+            "min": 819120,
+            "median": 998957,
+            "max": 1161608
+          }
+        }
+      },
+      "optimization_gate": {
+        "pooled_pass": false,
+        "case_pass": {
+          "cycle_walk/32KiB": true,
+          "cycle_walk/128KiB": true,
+          "cycle_walk/2MiB": true,
+          "cycle_walk/16MiB": true,
+          "cycle_walk/64MiB": true,
+          "sort/1": true,
+          "rep_copy/1": true
+        },
+        "pass": false
+      }
+    },
+    "fused_vs_live": {
+      "base": "live",
+      "candidate": "fused",
+      "by_case": {
+        "cycle_walk/32KiB": {
+          "pairs": 6,
+          "base_cpu_ns": 692997000,
+          "candidate_cpu_ns": 812935000,
+          "pooled_delta_ns": 119938000,
+          "pooled_ratio_ppm": 1173071,
+          "paired_delta_ns": {
+            "min": 18607000,
+            "median": 20156500.0,
+            "max": 20849000
+          },
+          "paired_ratio_ppm": {
+            "min": 1159655,
+            "median": 1174691,
+            "max": 1180843
+          }
+        },
+        "cycle_walk/128KiB": {
+          "pairs": 6,
+          "base_cpu_ns": 711416000,
+          "candidate_cpu_ns": 833645000,
+          "pooled_delta_ns": 122229000,
+          "pooled_ratio_ppm": 1171811,
+          "paired_delta_ns": {
+            "min": 18882000,
+            "median": 20125500.0,
+            "max": 22146000
+          },
+          "paired_ratio_ppm": {
+            "min": 1158405,
+            "median": 1169962,
+            "max": 1186771
+          }
+        },
+        "cycle_walk/2MiB": {
+          "pairs": 6,
+          "base_cpu_ns": 867778000,
+          "candidate_cpu_ns": 984138000,
+          "pooled_delta_ns": 116360000,
+          "pooled_ratio_ppm": 1134090,
+          "paired_delta_ns": {
+            "min": 17763000,
+            "median": 19398000.0,
+            "max": 21004000
+          },
+          "paired_ratio_ppm": {
+            "min": 1121435,
+            "median": 1135186,
+            "max": 1145443
+          }
+        },
+        "cycle_walk/16MiB": {
+          "pairs": 6,
+          "base_cpu_ns": 1274998000,
+          "candidate_cpu_ns": 1388935000,
+          "pooled_delta_ns": 113937000,
+          "pooled_ratio_ppm": 1089362,
+          "paired_delta_ns": {
+            "min": -64245000,
+            "median": 32983500.0,
+            "max": 43983000
+          },
+          "paired_ratio_ppm": {
+            "min": 767943,
+            "median": 1162926,
+            "max": 1252290
+          }
+        },
+        "cycle_walk/64MiB": {
+          "pairs": 6,
+          "base_cpu_ns": 1902547000,
+          "candidate_cpu_ns": 2007427000,
+          "pooled_delta_ns": 104880000,
+          "pooled_ratio_ppm": 1055126,
+          "paired_delta_ns": {
+            "min": 5924000,
+            "median": 17950500.0,
+            "max": 25521000
+          },
+          "paired_ratio_ppm": {
+            "min": 1017990,
+            "median": 1056721,
+            "max": 1081891
+          }
+        },
+        "sort/1": {
+          "pairs": 6,
+          "base_cpu_ns": 901145000,
+          "candidate_cpu_ns": 1056408000,
+          "pooled_delta_ns": 155263000,
+          "pooled_ratio_ppm": 1172295,
+          "paired_delta_ns": {
+            "min": 25375000,
+            "median": 25704000.0,
+            "max": 27178000
+          },
+          "paired_ratio_ppm": {
+            "min": 1168604,
+            "median": 1170906,
+            "max": 1181627
+          }
+        },
+        "rep_copy/1": {
+          "pairs": 6,
+          "base_cpu_ns": 1015936000,
+          "candidate_cpu_ns": 1163739000,
+          "pooled_delta_ns": 147803000,
+          "pooled_ratio_ppm": 1145485,
+          "paired_delta_ns": {
+            "min": 13225000,
+            "median": 22452500.0,
+            "max": 40845000
+          },
+          "paired_ratio_ppm": {
+            "min": 1073375,
+            "median": 1130332,
+            "max": 1251193
+          }
+        }
+      },
+      "pooled": {
+        "walks": {
+          "pairs": 30,
+          "base_cpu_ns": 5449736000,
+          "candidate_cpu_ns": 6027080000,
+          "pooled_delta_ns": 577344000,
+          "pooled_ratio_ppm": 1105940,
+          "paired_delta_ns": {
+            "min": -64245000,
+            "median": 20125500.0,
+            "max": 43983000
+          },
+          "paired_ratio_ppm": {
+            "min": 767943,
+            "median": 1151924,
+            "max": 1252290
+          }
+        },
+        "controls": {
+          "pairs": 12,
+          "base_cpu_ns": 1917081000,
+          "candidate_cpu_ns": 2220147000,
+          "pooled_delta_ns": 303066000,
+          "pooled_ratio_ppm": 1158087,
+          "paired_delta_ns": {
+            "min": 13225000,
+            "median": 25468000.0,
+            "max": 40845000
+          },
+          "paired_ratio_ppm": {
+            "min": 1073375,
+            "median": 1169348,
+            "max": 1251193
+          }
+        },
+        "all": {
+          "pairs": 42,
+          "base_cpu_ns": 7366817000,
+          "candidate_cpu_ns": 8247227000,
+          "pooled_delta_ns": 880410000,
+          "pooled_ratio_ppm": 1119510,
+          "paired_delta_ns": {
+            "min": -64245000,
+            "median": 20796500.0,
+            "max": 43983000
+          },
+          "paired_ratio_ppm": {
+            "min": 767943,
+            "median": 1162002,
+            "max": 1252290
+          }
+        }
+      },
+      "overhead_gate": {
+        "pooled_pass": false,
+        "case_pass": {
+          "cycle_walk/32KiB": false,
+          "cycle_walk/128KiB": false,
+          "cycle_walk/2MiB": false,
+          "cycle_walk/16MiB": true,
+          "cycle_walk/64MiB": true,
+          "sort/1": false,
+          "rep_copy/1": false
+        },
+        "pass": false
+      }
+    }
+  }
+}

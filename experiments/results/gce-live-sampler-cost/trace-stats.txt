@@ -1,0 +1,16 @@
+entries: 14
+overrun: 0
+commit overrun: 0
+bytes: 688
+oldest event ts:    11.268512
+now ts:    55.787210
+dropped events: 0
+read events: 0
+entries: 471
+overrun: 0
+commit overrun: 0
+bytes: 39412
+oldest event ts:    11.295304
+now ts:    55.788517
+dropped events: 0
+read events: 0

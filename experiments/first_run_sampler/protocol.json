@@ -1,0 +1,969 @@
+{
+  "schema": 1,
+  "cpu": 1,
+  "work_budget": 100000000000,
+  "poll_interval_ms": 5,
+  "trial_timeout_s": 120,
+  "tools_sha256": {
+    "base/bench.py": "6fa78ee53e35ce70d9996501c49bc355cdeb45d1f69b11fcc31561fe156ca922",
+    "bench.py": "b03bc7e3e466ba273e0c48ea5eaa269feecca651ea0d802dbaa55d9e73fba425",
+    "bin/branch": "d383e4da2a1953bc72d54fccac0fe98fe575fef2474e469edcf2567d18ece37c",
+    "bin/branch_scan": "a5fdcae80f726045fbaa3db32933536ef60ad51922292469366946b62a06f028",
+    "bin/integer": "13b1e1ba33375676c1c6071b2d0bb41c0148e2ee7d90f1c4085d3eb95124f29d",
+    "bin/mod_inverse": "5b79d00a4ec728e4583f44b467b083a0d16132ad389787f431d3f12391e59e37",
+    "bin/path_switch": "f507857b15e8b6c665087d93c87f962b221bf9a72808283bc66cb6737b8cbddf",
+    "bin/rep_fill": "316549bd773f5dba0b5978f423ba8fc93f9fb881339478e030f22b1b2f9d1bc7",
+    "cases.json": "0bf24c2e195846f7f912b2a0c85f3c9ff537b62da1c088c5e8472d305a519ef7",
+    "cost_bench.py": "23f9149384ca347ee7537de26d6055996e7abce43c98c37b2798c58b0f94d10e",
+    "design.json": "62f493462b5c619356b91248233e991ffe1aaafed281235df958b4ca78f4fb25",
+    "dynamorio/.durante-runtime.json": "264db0658f5f453a562cf0c702a820cd3c2d1be461ba796c134628d664cc4cde",
+    "dynamorio/bin64/drrun": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "dynamorio/ext/lib64/debug/libdrmgr.so": "0011d0732cebbefcded9afdbe2094e799d6aae80017eca5aab3401bd31f79500",
+    "dynamorio/ext/lib64/release/libdrmgr.so": "372cc1f1f95ffa29a1f11de4be14f99de5938bbcae11294a38d0a7932069429a",
+    "dynamorio/lib32/debug/libdynamorio.so": "f12fb2006a9c3c5ae74ce2a6edf58f3b2404835b24fc41fbb46a2475d6639bb8",
+    "dynamorio/lib32/release/libdynamorio.so": "08c166e09ea8c97d579e8f6a1bc5ebf5bf39cbd937eb357fe0797066ec1afa63",
+    "dynamorio/lib64/debug/libdrpreload.so": "0cf77ae7149ed7bcfc7d2105fccf34ff9077c06566dde2475f31532a5b41b98f",
+    "dynamorio/lib64/debug/libdynamorio.so": "99b1274200bfdc1413b14b9253efa2fbabd613459500dbab7a32984fb02c6991",
+    "dynamorio/lib64/release/libdrpreload.so": "fd220281583ecc7de1395d63a82338f265b46fda1af8acfbeeabdf33c88e6113",
+    "dynamorio/lib64/release/libdynamorio.so": "fd1c5645b9fc70a7dcb71459b4b94782d2e016a2aa4ceffcfcab2ade962cdf5b",
+    "guest.sh": "d7433aa155fcaeed940d07bf8aa7c428801e8bf15c6218ad4347e0104da52e0e",
+    "production_reader.py": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a",
+    "profile.py": "d8e88ca83880f04d2809defba74fed9667ba4d7d8c9cc25b4260cf0dc24e2e0a",
+    "profiled.so": "b8e4cd97aab2520dcf3a218289f9782d2801ead1187b007b38432f882bfb8ff9",
+    "schedule.py": "90993faf856a1862ea6775858e7b2ffeb388f8eeb7b3fe530b2512671ce17067",
+    "span.so": "2662243b216f8738517374ed20efa61b32e591dd3a92e74c1fe2fdcd4a96530c",
+    "v11.so": "902ac894e62a5a7c88139e7aeffca977719c8d60b514b01e45bb1a2baa80abc9"
+  },
+  "schedule": [
+    {
+      "case_id": "integer/1",
+      "rep": 0,
+      "arm": "calibration"
+    },
+    {
+      "case_id": "branch/1",
+      "rep": 0,
+      "arm": "calibration"
+    },
+    {
+      "case_id": "rep_fill/1",
+      "rep": 0,
+      "arm": "calibration"
+    },
+    {
+      "case_id": "mod_inverse/1",
+      "rep": 0,
+      "arm": "calibration"
+    },
+    {
+      "case_id": "branch_scan/1",
+      "rep": 0,
+      "arm": "calibration"
+    },
+    {
+      "case_id": "path_switch/train",
+      "rep": 0,
+      "arm": "calibration"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 1,
+      "arm": "live"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 1,
+      "arm": "full"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 1,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 1,
+      "arm": "live"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 1,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 1,
+      "arm": "full"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 1,
+      "arm": "full"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 1,
+      "arm": "live"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 1,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 1,
+      "arm": "full"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 1,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 1,
+      "arm": "live"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 1,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 1,
+      "arm": "live"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 1,
+      "arm": "full"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 1,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 1,
+      "arm": "full"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 1,
+      "arm": "live"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 1,
+      "arm": "live"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 1,
+      "arm": "full"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 1,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 1,
+      "arm": "live"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 1,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 1,
+      "arm": "full"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 1,
+      "arm": "full"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 1,
+      "arm": "live"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 1,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 1,
+      "arm": "full"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 1,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 1,
+      "arm": "live"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 2,
+      "arm": "full"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 2,
+      "arm": "live"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 2,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 2,
+      "arm": "full"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 2,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 2,
+      "arm": "live"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 2,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 2,
+      "arm": "live"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 2,
+      "arm": "full"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 2,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 2,
+      "arm": "full"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 2,
+      "arm": "live"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 2,
+      "arm": "live"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 2,
+      "arm": "full"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 2,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 2,
+      "arm": "live"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 2,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 2,
+      "arm": "full"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 2,
+      "arm": "full"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 2,
+      "arm": "live"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 2,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 2,
+      "arm": "full"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 2,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 2,
+      "arm": "live"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 2,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 2,
+      "arm": "live"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 2,
+      "arm": "full"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 2,
+      "arm": "live"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 2,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 2,
+      "arm": "full"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 3,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 3,
+      "arm": "live"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 3,
+      "arm": "full"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 3,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 3,
+      "arm": "full"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 3,
+      "arm": "live"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 3,
+      "arm": "live"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 3,
+      "arm": "full"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 3,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 3,
+      "arm": "live"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 3,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 3,
+      "arm": "full"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 3,
+      "arm": "full"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 3,
+      "arm": "live"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 3,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 3,
+      "arm": "full"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 3,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 3,
+      "arm": "live"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 3,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 3,
+      "arm": "live"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 3,
+      "arm": "full"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 3,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 3,
+      "arm": "full"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 3,
+      "arm": "live"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 3,
+      "arm": "full"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 3,
+      "arm": "live"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 3,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 3,
+      "arm": "full"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 3,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 3,
+      "arm": "live"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 4,
+      "arm": "live"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 4,
+      "arm": "full"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 4,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 4,
+      "arm": "live"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 4,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 4,
+      "arm": "full"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 4,
+      "arm": "full"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 4,
+      "arm": "live"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 4,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 4,
+      "arm": "full"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 4,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 4,
+      "arm": "live"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 4,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 4,
+      "arm": "live"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 4,
+      "arm": "full"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 4,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 4,
+      "arm": "full"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 4,
+      "arm": "live"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 4,
+      "arm": "live"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 4,
+      "arm": "full"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 4,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 4,
+      "arm": "full"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 4,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 4,
+      "arm": "live"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 4,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 4,
+      "arm": "live"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 4,
+      "arm": "full"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 4,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 4,
+      "arm": "full"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 4,
+      "arm": "live"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 5,
+      "arm": "full"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 5,
+      "arm": "live"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 5,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 5,
+      "arm": "full"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 5,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 5,
+      "arm": "live"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 5,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 5,
+      "arm": "live"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 5,
+      "arm": "full"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 5,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 5,
+      "arm": "full"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 5,
+      "arm": "live"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 5,
+      "arm": "live"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 5,
+      "arm": "full"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 5,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 5,
+      "arm": "live"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 5,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 5,
+      "arm": "full"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 5,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 5,
+      "arm": "live"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 5,
+      "arm": "full"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 5,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 5,
+      "arm": "full"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 5,
+      "arm": "live"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 5,
+      "arm": "live"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 5,
+      "arm": "full"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 5,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 5,
+      "arm": "live"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 5,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 5,
+      "arm": "full"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 6,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 6,
+      "arm": "live"
+    },
+    {
+      "case_id": "rep_fill/4",
+      "rep": 6,
+      "arm": "full"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 6,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 6,
+      "arm": "full"
+    },
+    {
+      "case_id": "mod_inverse/2",
+      "rep": 6,
+      "arm": "live"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 6,
+      "arm": "live"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 6,
+      "arm": "full"
+    },
+    {
+      "case_id": "branch_scan/2",
+      "rep": 6,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 6,
+      "arm": "live"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 6,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "path_switch/same",
+      "rep": 6,
+      "arm": "full"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 6,
+      "arm": "full"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 6,
+      "arm": "live"
+    },
+    {
+      "case_id": "path_switch/switch",
+      "rep": 6,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 6,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 6,
+      "arm": "full"
+    },
+    {
+      "case_id": "integer/2",
+      "rep": 6,
+      "arm": "live"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 6,
+      "arm": "live"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 6,
+      "arm": "full"
+    },
+    {
+      "case_id": "integer/4",
+      "rep": 6,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 6,
+      "arm": "live"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 6,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "branch/2",
+      "rep": 6,
+      "arm": "full"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 6,
+      "arm": "full"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 6,
+      "arm": "live"
+    },
+    {
+      "case_id": "branch/4",
+      "rep": 6,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 6,
+      "arm": "full"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 6,
+      "arm": "profiled"
+    },
+    {
+      "case_id": "rep_fill/2",
+      "rep": 6,
+      "arm": "live"
+    }
+  ]
+}

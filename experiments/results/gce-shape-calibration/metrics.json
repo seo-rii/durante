@@ -1,0 +1,2249 @@
+{
+  "schema": 1,
+  "plan_sha256": "35ba3f6b8a6fe51a7ba9dcef263e66c4e2bc73e1f10531cfde52627f644a2feb",
+  "rules_sha256": "24bd66b246d25caac99dbad6e52620139e02c2d1edd53919765333f19835845b",
+  "probe_sha256": "159ca08d50bb8cf20e88f86b2186af422e094e7c14ebe98a42bed7adc2d6b186",
+  "summary_sha256": "b302584c02b33049ccd477c90ab808f2e5c69f940fb702ac626fdb3662f8c238",
+  "cpu": 1,
+  "steal_ticks": 0,
+  "pids_verified": 175,
+  "native_runs": 90,
+  "physical_native_calibrations": 6,
+  "initial_cost_ns": {
+    "fenwick": {
+      "full_profile": 172997000,
+      "temporal_profile": 174139000,
+      "native": 47762000,
+      "plain_meter": 152205000
+    },
+    "lookup": {
+      "full_profile": 214288000,
+      "temporal_profile": 217618000,
+      "native": 48045000,
+      "plain_meter": 193619000
+    },
+    "window": {
+      "full_profile": 195999000,
+      "temporal_profile": 197945000,
+      "native": 25426000,
+      "plain_meter": 156227000
+    }
+  },
+  "totals": {
+    "previous": {
+      "inputs": 4,
+      "paired_plain_meter_cpu_ns": 1267646000,
+      "always_reuse": {
+        "within_20pct": 2,
+        "median_absolute_error_ppm": 106724.5,
+        "max_absolute_error_ppm": 646951,
+        "limits": 16,
+        "agreement": 14,
+        "false_tle": 0,
+        "false_accept": 2,
+        "mixed_native": 0,
+        "new_native_anchors": 0,
+        "reused_anchors": 4,
+        "reused_outside_20pct": 2,
+        "full_profile_cpu_ns": 0,
+        "temporal_profile_cpu_ns": 0,
+        "paid_native_ns": 0,
+        "profile_plus_new_native_cpu_ns": 0,
+        "preflight_to_plain_target_cpu_ratio": "0"
+      },
+      "shape": {
+        "within_20pct": 3,
+        "median_absolute_error_ppm": 12166.0,
+        "max_absolute_error_ppm": 646951,
+        "limits": 16,
+        "agreement": 15,
+        "false_tle": 0,
+        "false_accept": 1,
+        "mixed_native": 0,
+        "new_native_anchors": 1,
+        "reused_anchors": 3,
+        "reused_outside_20pct": 1,
+        "full_profile_cpu_ns": 1364827000,
+        "temporal_profile_cpu_ns": 0,
+        "paid_native_ns": 77916000,
+        "profile_plus_new_native_cpu_ns": 1442743000,
+        "preflight_to_plain_target_cpu_ratio": "1442743/1267646"
+      },
+      "temporal": {
+        "within_20pct": 4,
+        "median_absolute_error_ppm": 3385.0,
+        "max_absolute_error_ppm": 19024,
+        "limits": 16,
+        "agreement": 16,
+        "false_tle": 0,
+        "false_accept": 0,
+        "mixed_native": 0,
+        "new_native_anchors": 2,
+        "reused_anchors": 2,
+        "reused_outside_20pct": 0,
+        "full_profile_cpu_ns": 1364827000,
+        "temporal_profile_cpu_ns": 1403323000,
+        "paid_native_ns": 214245000,
+        "profile_plus_new_native_cpu_ns": 2982395000,
+        "preflight_to_plain_target_cpu_ratio": "2982395/1267646"
+      },
+      "live": {
+        "limits": 16,
+        "agreement": 16,
+        "false_tle": 0,
+        "false_accept": 0,
+        "mixed_native": 0,
+        "live_kills": 8,
+        "terminal_exceeded": 0,
+        "completed_within": 8,
+        "control_disagreements": 0
+      },
+      "native_reference_median_ns": 502034000
+    },
+    "prospective": {
+      "inputs": 6,
+      "paired_plain_meter_cpu_ns": 1872076000,
+      "always_reuse": {
+        "within_20pct": 3,
+        "median_absolute_error_ppm": 188298.5,
+        "max_absolute_error_ppm": 646929,
+        "limits": 24,
+        "agreement": 22,
+        "false_tle": 0,
+        "false_accept": 2,
+        "mixed_native": 0,
+        "new_native_anchors": 0,
+        "reused_anchors": 6,
+        "reused_outside_20pct": 3,
+        "full_profile_cpu_ns": 0,
+        "temporal_profile_cpu_ns": 0,
+        "paid_native_ns": 0,
+        "profile_plus_new_native_cpu_ns": 0,
+        "preflight_to_plain_target_cpu_ratio": "0"
+      },
+      "shape": {
+        "within_20pct": 4,
+        "median_absolute_error_ppm": 5172.5,
+        "max_absolute_error_ppm": 646929,
+        "limits": 24,
+        "agreement": 23,
+        "false_tle": 0,
+        "false_accept": 1,
+        "mixed_native": 0,
+        "new_native_anchors": 1,
+        "reused_anchors": 5,
+        "reused_outside_20pct": 2,
+        "full_profile_cpu_ns": 2081137000,
+        "temporal_profile_cpu_ns": 0,
+        "paid_native_ns": 67984000,
+        "profile_plus_new_native_cpu_ns": 2149121000,
+        "preflight_to_plain_target_cpu_ratio": "2149121/1872076"
+      },
+      "temporal": {
+        "within_20pct": 5,
+        "median_absolute_error_ppm": 3758.0,
+        "max_absolute_error_ppm": 222985,
+        "limits": 24,
+        "agreement": 24,
+        "false_tle": 0,
+        "false_accept": 0,
+        "mixed_native": 0,
+        "new_native_anchors": 1,
+        "reused_anchors": 5,
+        "reused_outside_20pct": 1,
+        "full_profile_cpu_ns": 2081137000,
+        "temporal_profile_cpu_ns": 2073203000,
+        "paid_native_ns": 67984000,
+        "profile_plus_new_native_cpu_ns": 4222324000,
+        "preflight_to_plain_target_cpu_ratio": "1055581/468019"
+      },
+      "live": {
+        "limits": 24,
+        "agreement": 24,
+        "false_tle": 0,
+        "false_accept": 0,
+        "mixed_native": 0,
+        "live_kills": 12,
+        "terminal_exceeded": 0,
+        "completed_within": 12,
+        "control_disagreements": 0
+      },
+      "native_reference_median_ns": 781380000
+    },
+    "all": {
+      "inputs": 10,
+      "paired_plain_meter_cpu_ns": 3139722000,
+      "always_reuse": {
+        "within_20pct": 5,
+        "median_absolute_error_ppm": 106724.5,
+        "max_absolute_error_ppm": 646951,
+        "limits": 40,
+        "agreement": 36,
+        "false_tle": 0,
+        "false_accept": 4,
+        "mixed_native": 0,
+        "new_native_anchors": 0,
+        "reused_anchors": 10,
+        "reused_outside_20pct": 5,
+        "full_profile_cpu_ns": 0,
+        "temporal_profile_cpu_ns": 0,
+        "paid_native_ns": 0,
+        "profile_plus_new_native_cpu_ns": 0,
+        "preflight_to_plain_target_cpu_ratio": "0"
+      },
+      "shape": {
+        "within_20pct": 7,
+        "median_absolute_error_ppm": 5918.5,
+        "max_absolute_error_ppm": 646951,
+        "limits": 40,
+        "agreement": 38,
+        "false_tle": 0,
+        "false_accept": 2,
+        "mixed_native": 0,
+        "new_native_anchors": 2,
+        "reused_anchors": 8,
+        "reused_outside_20pct": 3,
+        "full_profile_cpu_ns": 3445964000,
+        "temporal_profile_cpu_ns": 0,
+        "paid_native_ns": 145900000,
+        "profile_plus_new_native_cpu_ns": 3591864000,
+        "preflight_to_plain_target_cpu_ratio": "22172/19381"
+      },
+      "temporal": {
+        "within_20pct": 9,
+        "median_absolute_error_ppm": 3758.0,
+        "max_absolute_error_ppm": 222985,
+        "limits": 40,
+        "agreement": 40,
+        "false_tle": 0,
+        "false_accept": 0,
+        "mixed_native": 0,
+        "new_native_anchors": 3,
+        "reused_anchors": 7,
+        "reused_outside_20pct": 1,
+        "full_profile_cpu_ns": 3445964000,
+        "temporal_profile_cpu_ns": 3476526000,
+        "paid_native_ns": 282229000,
+        "profile_plus_new_native_cpu_ns": 7204719000,
+        "preflight_to_plain_target_cpu_ratio": "2401573/1046574"
+      },
+      "live": {
+        "limits": 40,
+        "agreement": 40,
+        "false_tle": 0,
+        "false_accept": 0,
+        "mixed_native": 0,
+        "live_kills": 20,
+        "terminal_exceeded": 0,
+        "completed_within": 20,
+        "control_disagreements": 0
+      },
+      "native_reference_median_ns": 1283414000
+    }
+  },
+  "cases": {
+    "lookup/long": {
+      "cohort": "previous",
+      "shape_label": "ordered queries, more queries",
+      "native_ns": [
+        143092000,
+        143430000,
+        144780000,
+        144578000,
+        143960000,
+        143232000,
+        143995000,
+        143221000,
+        144223000
+      ],
+      "min_ns": 143092000,
+      "median_ns": 143960000,
+      "max_ns": 144780000,
+      "full_profile_cpu_ns": 476187000,
+      "temporal_profile_cpu_ns": 511442000,
+      "plain_meter_cpu_ns": 449631000,
+      "live": [
+        {
+          "limit_ms": 25,
+          "prediction_ns": 25674753,
+          "observation": "live",
+          "tle": true,
+          "pid": 1162,
+          "wall_ns": 118538906,
+          "native_exceeded": 9,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 75,
+          "prediction_ns": 75519783,
+          "observation": "live",
+          "tle": true,
+          "pid": 1164,
+          "wall_ns": 261549785,
+          "native_exceeded": 9,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 150,
+          "prediction_ns": 144019372,
+          "observation": "terminal",
+          "tle": false,
+          "pid": 1166,
+          "wall_ns": 451756526,
+          "native_exceeded": 0,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 300,
+          "prediction_ns": 144019372,
+          "observation": "terminal",
+          "tle": false,
+          "pid": 1168,
+          "wall_ns": 461036289,
+          "native_exceeded": 0,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        }
+      ],
+      "selected_prediction_from_plain_ns": 144019372,
+      "shape": {
+        "prediction_ns": 144019372,
+        "signed_error_ppm": 412,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "lookup/train",
+        "action": "reuse",
+        "paid_native_ns": 0,
+        "comparisons": [
+          {
+            "anchor_case": "lookup/train",
+            "shape_reasons": [],
+            "temporal_reasons": null
+          }
+        ]
+      },
+      "temporal": {
+        "prediction_ns": 144019372,
+        "signed_error_ppm": 412,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "lookup/train",
+        "action": "reuse",
+        "paid_native_ns": 0,
+        "comparisons": [
+          {
+            "anchor_case": "lookup/train",
+            "shape_reasons": [],
+            "temporal_reasons": []
+          }
+        ]
+      },
+      "always_reuse": {
+        "prediction_ns": 144019372,
+        "signed_error_ppm": 412,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "lookup/train",
+        "action": "reuse",
+        "paid_native_ns": 0
+      }
+    },
+    "lookup/shuffled_pair": {
+      "cohort": "prospective",
+      "shape_label": "shuffled queries, more queries",
+      "native_ns": [
+        272433000,
+        270070000,
+        275027000,
+        274328000,
+        270818000,
+        271934000,
+        272277000,
+        270224000,
+        272037000
+      ],
+      "min_ns": 270070000,
+      "median_ns": 272037000,
+      "max_ns": 275027000,
+      "full_profile_cpu_ns": 543899000,
+      "temporal_profile_cpu_ns": 529066000,
+      "plain_meter_cpu_ns": 504334000,
+      "live": [
+        {
+          "limit_ms": 25,
+          "prediction_ns": 26950031,
+          "observation": "live",
+          "tle": true,
+          "pid": 1197,
+          "wall_ns": 92934122,
+          "native_exceeded": 9,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 75,
+          "prediction_ns": 75124671,
+          "observation": "live",
+          "tle": true,
+          "pid": 1199,
+          "wall_ns": 169501558,
+          "native_exceeded": 9,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 150,
+          "prediction_ns": 152571379,
+          "observation": "live",
+          "tle": true,
+          "pid": 1201,
+          "wall_ns": 297164864,
+          "native_exceeded": 9,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 300,
+          "prediction_ns": 272451690,
+          "observation": "terminal",
+          "tle": false,
+          "pid": 1203,
+          "wall_ns": 510790601,
+          "native_exceeded": 0,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        }
+      ],
+      "selected_prediction_from_plain_ns": 272451690,
+      "shape": {
+        "prediction_ns": 96048436,
+        "signed_error_ppm": -646929,
+        "within_20pct": false,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 9,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "false_accept"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "lookup/train",
+        "action": "reuse",
+        "paid_native_ns": 0,
+        "comparisons": [
+          {
+            "anchor_case": "lookup/train",
+            "shape_reasons": [],
+            "temporal_reasons": null
+          }
+        ]
+      },
+      "temporal": {
+        "prediction_ns": 272451699,
+        "signed_error_ppm": 1524,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "lookup/shuffled",
+        "action": "reuse",
+        "paid_native_ns": 0,
+        "comparisons": [
+          {
+            "anchor_case": "lookup/train",
+            "shape_reasons": [],
+            "temporal_reasons": [
+              "exact_hits_changed"
+            ]
+          },
+          {
+            "anchor_case": "lookup/shuffled",
+            "shape_reasons": [],
+            "temporal_reasons": []
+          }
+        ]
+      },
+      "always_reuse": {
+        "prediction_ns": 96048436,
+        "signed_error_ppm": -646929,
+        "within_20pct": false,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 9,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "false_accept"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "lookup/train",
+        "action": "reuse",
+        "paid_native_ns": 0
+      }
+    },
+    "window/expanded": {
+      "cohort": "prospective",
+      "shape_label": "larger category table, same event count",
+      "native_ns": [
+        67691000,
+        67543000,
+        67814000,
+        66963000,
+        67142000,
+        66647000,
+        67662000,
+        70244000,
+        66367000
+      ],
+      "min_ns": 66367000,
+      "median_ns": 67543000,
+      "max_ns": 70244000,
+      "full_profile_cpu_ns": 254847000,
+      "temporal_profile_cpu_ns": 257584000,
+      "plain_meter_cpu_ns": 207287000,
+      "live": [
+        {
+          "limit_ms": 25,
+          "prediction_ns": 27393985,
+          "observation": "live",
+          "tle": true,
+          "pid": 1226,
+          "wall_ns": 108479014,
+          "native_exceeded": 9,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 75,
+          "prediction_ns": 67984000,
+          "observation": "terminal",
+          "tle": false,
+          "pid": 1228,
+          "wall_ns": 212327127,
+          "native_exceeded": 0,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 150,
+          "prediction_ns": 67984000,
+          "observation": "terminal",
+          "tle": false,
+          "pid": 1230,
+          "wall_ns": 213269539,
+          "native_exceeded": 0,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 300,
+          "prediction_ns": 67984000,
+          "observation": "terminal",
+          "tle": false,
+          "pid": 1232,
+          "wall_ns": 210081642,
+          "native_exceeded": 0,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        }
+      ],
+      "selected_prediction_from_plain_ns": 67984000,
+      "shape": {
+        "prediction_ns": 67984000,
+        "signed_error_ppm": 6529,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "window/expanded",
+        "action": "calibrate",
+        "paid_native_ns": 67984000,
+        "comparisons": [
+          {
+            "anchor_case": "window/train",
+            "shape_reasons": [
+              "span_changed"
+            ],
+            "temporal_reasons": null
+          }
+        ]
+      },
+      "temporal": {
+        "prediction_ns": 67984000,
+        "signed_error_ppm": 6529,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "window/expanded",
+        "action": "calibrate",
+        "paid_native_ns": 67984000,
+        "comparisons": [
+          {
+            "anchor_case": "window/train",
+            "shape_reasons": [
+              "span_changed"
+            ],
+            "temporal_reasons": [
+              "radius_hits_changed"
+            ]
+          }
+        ]
+      },
+      "always_reuse": {
+        "prediction_ns": 25455354,
+        "signed_error_ppm": -623124,
+        "within_20pct": false,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "window/train",
+        "action": "reuse",
+        "paid_native_ns": 0
+      }
+    },
+    "fenwick/large": {
+      "cohort": "previous",
+      "shape_label": "larger tree, same operation count",
+      "native_ns": [
+        79427000,
+        80757000,
+        79939000,
+        82474000,
+        77995000,
+        77259000,
+        76875000,
+        81340000,
+        77008000
+      ],
+      "min_ns": 76875000,
+      "median_ns": 79427000,
+      "max_ns": 82474000,
+      "full_profile_cpu_ns": 226187000,
+      "temporal_profile_cpu_ns": 229990000,
+      "plain_meter_cpu_ns": 205625000,
+      "live": [
+        {
+          "limit_ms": 25,
+          "prediction_ns": 25320514,
+          "observation": "live",
+          "tle": true,
+          "pid": 1117,
+          "wall_ns": 98275107,
+          "native_exceeded": 9,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 75,
+          "prediction_ns": 77331585,
+          "observation": "live",
+          "tle": true,
+          "pid": 1119,
+          "wall_ns": 190294367,
+          "native_exceeded": 9,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 150,
+          "prediction_ns": 77916000,
+          "observation": "terminal",
+          "tle": false,
+          "pid": 1121,
+          "wall_ns": 219350162,
+          "native_exceeded": 0,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 300,
+          "prediction_ns": 77916000,
+          "observation": "terminal",
+          "tle": false,
+          "pid": 1123,
+          "wall_ns": 211470380,
+          "native_exceeded": 0,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        }
+      ],
+      "selected_prediction_from_plain_ns": 77916000,
+      "shape": {
+        "prediction_ns": 77916000,
+        "signed_error_ppm": -19024,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "fenwick/large",
+        "action": "calibrate",
+        "paid_native_ns": 77916000,
+        "comparisons": [
+          {
+            "anchor_case": "fenwick/train",
+            "shape_reasons": [
+              "far_fraction_changed",
+              "span_changed"
+            ],
+            "temporal_reasons": null
+          }
+        ]
+      },
+      "temporal": {
+        "prediction_ns": 77916000,
+        "signed_error_ppm": -19024,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "fenwick/large",
+        "action": "calibrate",
+        "paid_native_ns": 77916000,
+        "comparisons": [
+          {
+            "anchor_case": "fenwick/train",
+            "shape_reasons": [
+              "far_fraction_changed",
+              "span_changed"
+            ],
+            "temporal_reasons": [
+              "exact_hits_changed",
+              "radius_hits_changed"
+            ]
+          }
+        ]
+      },
+      "always_reuse": {
+        "prediction_ns": 62895010,
+        "signed_error_ppm": -208141,
+        "within_20pct": false,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 9,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "false_accept"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "fenwick/train",
+        "action": "reuse",
+        "paid_native_ns": 0
+      }
+    },
+    "fenwick/scale": {
+      "cohort": "prospective",
+      "shape_label": "original tree, more operations",
+      "native_ns": [
+        96223000,
+        95112000,
+        95116000,
+        95058000,
+        95155000,
+        95761000,
+        95675000,
+        95071000,
+        95642000
+      ],
+      "min_ns": 95058000,
+      "median_ns": 95155000,
+      "max_ns": 96223000,
+      "full_profile_cpu_ns": 263102000,
+      "temporal_profile_cpu_ns": 265220000,
+      "plain_meter_cpu_ns": 238697000,
+      "live": [
+        {
+          "limit_ms": 25,
+          "prediction_ns": 26880147,
+          "observation": "live",
+          "tle": true,
+          "pid": 1128,
+          "wall_ns": 98074331,
+          "native_exceeded": 9,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 75,
+          "prediction_ns": 76779755,
+          "observation": "live",
+          "tle": true,
+          "pid": 1130,
+          "wall_ns": 189945106,
+          "native_exceeded": 9,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 150,
+          "prediction_ns": 95518155,
+          "observation": "terminal",
+          "tle": false,
+          "pid": 1132,
+          "wall_ns": 244859145,
+          "native_exceeded": 0,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 300,
+          "prediction_ns": 95518155,
+          "observation": "terminal",
+          "tle": false,
+          "pid": 1134,
+          "wall_ns": 243745813,
+          "native_exceeded": 0,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        }
+      ],
+      "selected_prediction_from_plain_ns": 95518155,
+      "shape": {
+        "prediction_ns": 95518155,
+        "signed_error_ppm": 3816,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "fenwick/train",
+        "action": "reuse",
+        "paid_native_ns": 0,
+        "comparisons": [
+          {
+            "anchor_case": "fenwick/train",
+            "shape_reasons": [],
+            "temporal_reasons": null
+          }
+        ]
+      },
+      "temporal": {
+        "prediction_ns": 95518155,
+        "signed_error_ppm": 3816,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "fenwick/train",
+        "action": "reuse",
+        "paid_native_ns": 0,
+        "comparisons": [
+          {
+            "anchor_case": "fenwick/train",
+            "shape_reasons": [],
+            "temporal_reasons": []
+          }
+        ]
+      },
+      "always_reuse": {
+        "prediction_ns": 95518155,
+        "signed_error_ppm": 3816,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "fenwick/train",
+        "action": "reuse",
+        "paid_native_ns": 0
+      }
+    },
+    "fenwick/long": {
+      "cohort": "previous",
+      "shape_label": "original tree, more operations",
+      "native_ns": [
+        142313000,
+        142517000,
+        144174000,
+        142125000,
+        142204000,
+        143471000,
+        143222000,
+        142245000,
+        142711000
+      ],
+      "min_ns": 142125000,
+      "median_ns": 142517000,
+      "max_ns": 144174000,
+      "full_profile_cpu_ns": 353903000,
+      "temporal_profile_cpu_ns": 357071000,
+      "plain_meter_cpu_ns": 327497000,
+      "live": [
+        {
+          "limit_ms": 25,
+          "prediction_ns": 25980768,
+          "observation": "live",
+          "tle": true,
+          "pid": 1103,
+          "wall_ns": 98068376,
+          "native_exceeded": 9,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 75,
+          "prediction_ns": 76628229,
+          "observation": "live",
+          "tle": true,
+          "pid": 1107,
+          "wall_ns": 190033524,
+          "native_exceeded": 9,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 150,
+          "prediction_ns": 143273447,
+          "observation": "terminal",
+          "tle": false,
+          "pid": 1109,
+          "wall_ns": 330071865,
+          "native_exceeded": 0,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 300,
+          "prediction_ns": 143273447,
+          "observation": "terminal",
+          "tle": false,
+          "pid": 1111,
+          "wall_ns": 335969305,
+          "native_exceeded": 0,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        }
+      ],
+      "selected_prediction_from_plain_ns": 143273447,
+      "shape": {
+        "prediction_ns": 143273447,
+        "signed_error_ppm": 5308,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "fenwick/train",
+        "action": "reuse",
+        "paid_native_ns": 0,
+        "comparisons": [
+          {
+            "anchor_case": "fenwick/train",
+            "shape_reasons": [],
+            "temporal_reasons": null
+          }
+        ]
+      },
+      "temporal": {
+        "prediction_ns": 143273447,
+        "signed_error_ppm": 5308,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "fenwick/train",
+        "action": "reuse",
+        "paid_native_ns": 0,
+        "comparisons": [
+          {
+            "anchor_case": "fenwick/train",
+            "shape_reasons": [],
+            "temporal_reasons": []
+          }
+        ]
+      },
+      "always_reuse": {
+        "prediction_ns": 143273447,
+        "signed_error_ppm": 5308,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "fenwick/train",
+        "action": "reuse",
+        "paid_native_ns": 0
+      }
+    },
+    "lookup/shuffled": {
+      "cohort": "previous",
+      "shape_label": "shuffled queries, same query count",
+      "native_ns": [
+        135490000,
+        137609000,
+        136785000,
+        137786000,
+        135318000,
+        136397000,
+        136130000,
+        136124000,
+        135220000
+      ],
+      "min_ns": 135220000,
+      "median_ns": 136130000,
+      "max_ns": 137786000,
+      "full_profile_cpu_ns": 308550000,
+      "temporal_profile_cpu_ns": 304820000,
+      "plain_meter_cpu_ns": 284893000,
+      "live": [
+        {
+          "limit_ms": 25,
+          "prediction_ns": 26532496,
+          "observation": "live",
+          "tle": true,
+          "pid": 1174,
+          "wall_ns": 92933823,
+          "native_exceeded": 9,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 75,
+          "prediction_ns": 77344653,
+          "observation": "live",
+          "tle": true,
+          "pid": 1176,
+          "wall_ns": 174630139,
+          "native_exceeded": 9,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 150,
+          "prediction_ns": 136329000,
+          "observation": "terminal",
+          "tle": false,
+          "pid": 1178,
+          "wall_ns": 287726461,
+          "native_exceeded": 0,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 300,
+          "prediction_ns": 136329000,
+          "observation": "terminal",
+          "tle": false,
+          "pid": 1180,
+          "wall_ns": 288424022,
+          "native_exceeded": 0,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        }
+      ],
+      "selected_prediction_from_plain_ns": 136329000,
+      "shape": {
+        "prediction_ns": 48060582,
+        "signed_error_ppm": -646951,
+        "within_20pct": false,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 9,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "false_accept"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "lookup/train",
+        "action": "reuse",
+        "paid_native_ns": 0,
+        "comparisons": [
+          {
+            "anchor_case": "lookup/train",
+            "shape_reasons": [],
+            "temporal_reasons": null
+          }
+        ]
+      },
+      "temporal": {
+        "prediction_ns": 136329000,
+        "signed_error_ppm": 1462,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "lookup/shuffled",
+        "action": "calibrate",
+        "paid_native_ns": 136329000,
+        "comparisons": [
+          {
+            "anchor_case": "lookup/train",
+            "shape_reasons": [],
+            "temporal_reasons": [
+              "exact_hits_changed"
+            ]
+          }
+        ]
+      },
+      "always_reuse": {
+        "prediction_ns": 48060582,
+        "signed_error_ppm": -646951,
+        "within_20pct": false,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 9,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "false_accept"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "lookup/train",
+        "action": "reuse",
+        "paid_native_ns": 0
+      }
+    },
+    "fenwick/expanded": {
+      "cohort": "prospective",
+      "shape_label": "larger tree, more operations",
+      "native_ns": [
+        242645000,
+        220979000,
+        227223000,
+        208017000,
+        203140000,
+        208272000,
+        205316000,
+        212359000,
+        208523000
+      ],
+      "min_ns": 203140000,
+      "median_ns": 208523000,
+      "max_ns": 242645000,
+      "full_profile_cpu_ns": 402584000,
+      "temporal_profile_cpu_ns": 391710000,
+      "plain_meter_cpu_ns": 381495000,
+      "live": [
+        {
+          "limit_ms": 25,
+          "prediction_ns": 26794342,
+          "observation": "live",
+          "tle": true,
+          "pid": 1139,
+          "wall_ns": 103416286,
+          "native_exceeded": 9,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 75,
+          "prediction_ns": 75006139,
+          "observation": "live",
+          "tle": true,
+          "pid": 1141,
+          "wall_ns": 200468609,
+          "native_exceeded": 9,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 150,
+          "prediction_ns": 151520976,
+          "observation": "live",
+          "tle": true,
+          "pid": 1143,
+          "wall_ns": 348540376,
+          "native_exceeded": 9,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 300,
+          "prediction_ns": 162025492,
+          "observation": "terminal",
+          "tle": false,
+          "pid": 1145,
+          "wall_ns": 381770081,
+          "native_exceeded": 0,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        }
+      ],
+      "selected_prediction_from_plain_ns": 162025492,
+      "shape": {
+        "prediction_ns": 162025492,
+        "signed_error_ppm": -222985,
+        "within_20pct": false,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "fenwick/large",
+        "action": "reuse",
+        "paid_native_ns": 0,
+        "comparisons": [
+          {
+            "anchor_case": "fenwick/train",
+            "shape_reasons": [
+              "far_fraction_changed",
+              "span_changed"
+            ],
+            "temporal_reasons": null
+          },
+          {
+            "anchor_case": "fenwick/large",
+            "shape_reasons": [],
+            "temporal_reasons": null
+          }
+        ]
+      },
+      "temporal": {
+        "prediction_ns": 162025492,
+        "signed_error_ppm": -222985,
+        "within_20pct": false,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "fenwick/large",
+        "action": "reuse",
+        "paid_native_ns": 0,
+        "comparisons": [
+          {
+            "anchor_case": "fenwick/train",
+            "shape_reasons": [
+              "far_fraction_changed",
+              "span_changed"
+            ],
+            "temporal_reasons": [
+              "exact_hits_changed",
+              "radius_hits_changed"
+            ]
+          },
+          {
+            "anchor_case": "fenwick/large",
+            "shape_reasons": [],
+            "temporal_reasons": []
+          }
+        ]
+      },
+      "always_reuse": {
+        "prediction_ns": 130789502,
+        "signed_error_ppm": -372781,
+        "within_20pct": false,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 9,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "false_accept"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "fenwick/train",
+        "action": "reuse",
+        "paid_native_ns": 0
+      }
+    },
+    "lookup/ordered_pair": {
+      "cohort": "prospective",
+      "shape_label": "ordered queries, more queries",
+      "native_ns": [
+        95616000,
+        96788000,
+        95622000,
+        96638000,
+        95568000,
+        95872000,
+        95459000,
+        95685000,
+        96439000
+      ],
+      "min_ns": 95459000,
+      "median_ns": 95685000,
+      "max_ns": 96788000,
+      "full_profile_cpu_ns": 347856000,
+      "temporal_profile_cpu_ns": 355196000,
+      "plain_meter_cpu_ns": 321076000,
+      "live": [
+        {
+          "limit_ms": 25,
+          "prediction_ns": 25294319,
+          "observation": "live",
+          "tle": true,
+          "pid": 1185,
+          "wall_ns": 118491656,
+          "native_exceeded": 9,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 75,
+          "prediction_ns": 76599968,
+          "observation": "live",
+          "tle": true,
+          "pid": 1187,
+          "wall_ns": 256307249,
+          "native_exceeded": 9,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 150,
+          "prediction_ns": 96039074,
+          "observation": "terminal",
+          "tle": false,
+          "pid": 1189,
+          "wall_ns": 324379928,
+          "native_exceeded": 0,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 300,
+          "prediction_ns": 96039074,
+          "observation": "terminal",
+          "tle": false,
+          "pid": 1191,
+          "wall_ns": 324854219,
+          "native_exceeded": 0,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        }
+      ],
+      "selected_prediction_from_plain_ns": 96039074,
+      "shape": {
+        "prediction_ns": 96039074,
+        "signed_error_ppm": 3700,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "lookup/train",
+        "action": "reuse",
+        "paid_native_ns": 0,
+        "comparisons": [
+          {
+            "anchor_case": "lookup/train",
+            "shape_reasons": [],
+            "temporal_reasons": null
+          }
+        ]
+      },
+      "temporal": {
+        "prediction_ns": 96039074,
+        "signed_error_ppm": 3700,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "lookup/train",
+        "action": "reuse",
+        "paid_native_ns": 0,
+        "comparisons": [
+          {
+            "anchor_case": "lookup/train",
+            "shape_reasons": [],
+            "temporal_reasons": []
+          }
+        ]
+      },
+      "always_reuse": {
+        "prediction_ns": 96039074,
+        "signed_error_ppm": 3700,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "lookup/train",
+        "action": "reuse",
+        "paid_native_ns": 0
+      }
+    },
+    "window/scale": {
+      "cohort": "prospective",
+      "shape_label": "original category table, more events",
+      "native_ns": [
+        42611000,
+        42400000,
+        42377000,
+        42437000,
+        42497000,
+        41960000,
+        42021000,
+        42654000,
+        43025000
+      ],
+      "min_ns": 41960000,
+      "median_ns": 42437000,
+      "max_ns": 43025000,
+      "full_profile_cpu_ns": 268849000,
+      "temporal_profile_cpu_ns": 274427000,
+      "plain_meter_cpu_ns": 219187000,
+      "live": [
+        {
+          "limit_ms": 25,
+          "prediction_ns": 25902211,
+          "observation": "live",
+          "tle": true,
+          "pid": 1214,
+          "wall_ns": 144030798,
+          "native_exceeded": 9,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 75,
+          "prediction_ns": 42378061,
+          "observation": "terminal",
+          "tle": false,
+          "pid": 1216,
+          "wall_ns": 222625932,
+          "native_exceeded": 0,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 150,
+          "prediction_ns": 42378061,
+          "observation": "terminal",
+          "tle": false,
+          "pid": 1218,
+          "wall_ns": 220094172,
+          "native_exceeded": 0,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        },
+        {
+          "limit_ms": 300,
+          "prediction_ns": 42378061,
+          "observation": "terminal",
+          "tle": false,
+          "pid": 1220,
+          "wall_ns": 222444047,
+          "native_exceeded": 0,
+          "native_class": "agreement",
+          "agrees_with_complete": true
+        }
+      ],
+      "selected_prediction_from_plain_ns": 42378061,
+      "shape": {
+        "prediction_ns": 42378061,
+        "signed_error_ppm": -1389,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "window/train",
+        "action": "reuse",
+        "paid_native_ns": 0,
+        "comparisons": [
+          {
+            "anchor_case": "window/train",
+            "shape_reasons": [],
+            "temporal_reasons": null
+          }
+        ]
+      },
+      "temporal": {
+        "prediction_ns": 42378061,
+        "signed_error_ppm": -1389,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "window/train",
+        "action": "reuse",
+        "paid_native_ns": 0,
+        "comparisons": [
+          {
+            "anchor_case": "window/train",
+            "shape_reasons": [],
+            "temporal_reasons": []
+          }
+        ]
+      },
+      "always_reuse": {
+        "prediction_ns": 42378061,
+        "signed_error_ppm": -1389,
+        "within_20pct": true,
+        "limits": [
+          {
+            "limit_ms": 25,
+            "native_tle_reps": 9,
+            "model_tle_reps": 1,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 75,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 150,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          },
+          {
+            "limit_ms": 300,
+            "native_tle_reps": 0,
+            "model_tle_reps": 0,
+            "mixed_predictions": false,
+            "classification": "agreement"
+          }
+        ],
+        "anchor_case": "window/train",
+        "action": "reuse",
+        "paid_native_ns": 0
+      }
+    }
+  }
+}
