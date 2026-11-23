@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "summary_sha256": "9bde6da4b0b88a545456884f52db5c4b25b2cd7f1395cfca781cd13aac2b6275",
+  "bindings": 28,
+  "certified_projections": 28,
+  "arms": {
+    "baseline": {
+      "budget_exceeded": 27,
+      "within_budget": 61
+    },
+    "warm": {
+      "budget_exceeded": 30,
+      "within_budget": 58
+    }
+  },
+  "unavailable": [],
+  "strategy": "warm-three"
+}
