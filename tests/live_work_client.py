@@ -107,12 +107,21 @@ def check_boundary_signal(gdb, prefix, work, client, exe, point):
     environment = dict(os.environ, DURANTE_GDB_CLIENT=str(client), DURANTE_GDB_POINT=point,
                        DURANTE_GDB_RESULT=str(result), DURANTE_GDB_CALLBACK_BYTES=text.hex(),
                        **{"DURANTE_GDB_" + name: hex(value) for name, value in addresses.items()})
+    target = [*prefix, "-outdir", str(records), "-rep_bytes", "-live_work_v1", str(page), "--", exe]
+    # A library path meant for the target can replace the libpython the
+    # debugger is linked with, as setup-python's does in CI. Keep it from the
+    # debugger and give it back to the target.
+    library_path = environment.pop("LD_LIBRARY_PATH", None)
+    if library_path is not None:
+        target = ["env", "LD_LIBRARY_PATH=" + library_path, *target]
+    transcript = directory / "debugger.log"
     # The debugger waits for its inferior with SIGCHLD, which main() blocks.
-    proc = subprocess.Popen([gdb, "-nx", "-batch", "-x", ROOT / "tests/live_boundary_gdb.py", "--args",
-                             *prefix, "-outdir", str(records), "-rep_bytes", "-live_work_v1", str(page),
-                             "--", exe], start_new_session=True, cwd=directory, env=environment,
-                            preexec_fn=lambda: signal.pthread_sigmask(signal.SIG_UNBLOCK, {signal.SIGCHLD}),
-                            stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    with transcript.open("wb") as output:
+        proc = subprocess.Popen(
+            [gdb, "-nx", "-batch", "-x", ROOT / "tests/live_boundary_gdb.py", "--args", *target],
+            start_new_session=True, cwd=directory, env=environment,
+            preexec_fn=lambda: signal.pthread_sigmask(signal.SIG_UNBLOCK, {signal.SIGCHLD}),
+            stdin=subprocess.DEVNULL, stdout=output, stderr=subprocess.STDOUT)
     try:
         proc.wait(timeout=4 * TIMEOUT)
     finally:
@@ -121,7 +130,11 @@ def check_boundary_signal(gdb, prefix, work, client, exe, point):
             proc.wait()
         if not cleanup_orphans():
             raise RuntimeError(f"boundary signal at {point}: failed to reap fixture")
-    report = json.loads(result.read_text()) if result.is_file() else {"error": "no debugger report"}
+    if result.is_file():
+        report = json.loads(result.read_text())
+    else:
+        report = {"error": "no debugger report", "debugger_status": proc.returncode,
+                  "debugger_output": transcript.read_bytes()[-2000:].decode(errors="replace")}
     if report.get("error") or report["stopped"] != report["target"] or report["exit_code"] != 0:
         raise RuntimeError(f"boundary signal at {point}: {report}")
     # Only the routine's first and last instructions run on the application's
