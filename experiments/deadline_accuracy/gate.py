@@ -91,11 +91,39 @@ def exact_json(left, right):
     return json.dumps(left, sort_keys=True) == json.dumps(right, sort_keys=True)
 
 
-def prepare(elf, stdin, capture, selection, policy, packet_dir, limit_ms, strategy="near-three"):
+def batch_member(path, directory, origin, context):
+    """Verify the requested packet's membership in a published interleaved calibration batch."""
+    from contest_batch.batch import rounds
+
+    path = Path(path).resolve(strict=True)
+    case_id = directory.resolve(strict=True).relative_to(path.parent).as_posix()
+    raw = path.read_bytes()
+    manifest = read_json(raw)
+    fields = {"schema", "authority", "strategy", "placement", "cases", "rounds"}
+    require(isinstance(manifest, dict) and manifest.keys() == fields
+            and type(manifest["schema"]) is int and manifest["schema"] == 1
+            and manifest["authority"] == "diagnostic_only" and manifest["strategy"] == "interleaved-warm-three"
+            and exact_json(manifest["placement"], origin), "unexpected batch manifest or pinned context")
+    entries = manifest["cases"]
+    require(isinstance(entries, list) and len(entries) >= 2, "batch requires multiple cases")
+    ids = [entry["id"] for entry in entries]
+    require(all(isinstance(name, str) for name in ids) and len(set(ids)) == len(ids)
+            and case_id in ids and manifest["rounds"] == rounds(ids), "invalid batch membership or round schedule")
+    binding = {key: value for key, value in context.items() if key not in origin}
+    expected = dict(binding, id=case_id, packet_sha256=elf_digest(directory / "packet.json"),
+                    selection_sha256=elf_digest(directory / "selection.json"))
+    require(exact_json(entries[ids.index(case_id)], expected), "batch member differs from the current evidence")
+    return dict(batch_manifest_sha256=sha(raw), batch_case_id=case_id)
+
+
+def prepare(elf, stdin, capture, selection, policy, packet_dir, limit_ms, strategy="near-three", *, batch_manifest=None):
     """Return selection and policy paths for one fresh enforcement. Share packet_dir across limits of one strategy."""
     count = observation_count(strategy)
     elf, stdin, capture, selection, policy = (Path(p).resolve() for p in (elf, stdin, capture, selection, policy))
     packet_dir = Path(packet_dir)
+    if batch_manifest is not None:
+        require(strategy == "warm-three", "batch manifests require the warm-three strategy")
+        require(packet_dir.is_dir(), "precomputed batch member is missing")
     origin = placement()
     selection_raw, source_raw = selection.read_bytes(), policy.read_bytes()
     selected, source = read_json(selection_raw), read_json(source_raw)
@@ -117,7 +145,7 @@ def prepare(elf, stdin, capture, selection, policy, packet_dir, limit_ms, strate
     fd = os.open(packet_dir.parent, os.O_RDONLY | os.O_DIRECTORY)
     try:
         fcntl.flock(fd, fcntl.LOCK_EX)
-        if not packet_dir.exists():
+        if batch_manifest is None and not packet_dir.exists():
             with tempfile.TemporaryDirectory(dir=packet_dir.parent) as tmp:
                 draft = Path(tmp) / "packet"
                 draft.mkdir(mode=0o700)
@@ -135,27 +163,34 @@ def prepare(elf, stdin, capture, selection, policy, packet_dir, limit_ms, strate
         require(exact_json(read_json((packet_dir / "packet.json").read_bytes()), manifest)
                 and exact_json(read_json((packet_dir / "selection.json").read_bytes()), candidate),
                 "stored packet differs from current evidence")
+        membership = {}
+        if batch_manifest is not None:
+            require(manifest["reused_original"] and selected["action"] == "calibrate",
+                    "batch requires the current input's paid footprint selection")
+            membership = batch_member(batch_manifest, packet_dir, origin, context)
         require(placement() == origin, "placement changed while obtaining the calibration")
     finally:
         os.close(fd)
     index = manifest["median_index"] if strategy == "near-three" else manifest["selected_index"]
     return dict(near=is_near, selection=packet_dir / "selection.json",
                 policy=packet_dir / f"policy-{index}.json",
-                prediction_ns=candidate["prediction_ns"], packet=packet_dir / "packet.json")
+                prediction_ns=candidate["prediction_ns"], packet=packet_dir / "packet.json", **membership)
 
 
 def enforce(payload, elf, stdin, capture, selection, policy, packet_dir, out, limit_ms, timeout_ms=120000,
-            poll_ms=5, strategy="near-three"):
+            poll_ms=5, strategy="near-three", *, batch_manifest=None):
     out.mkdir(mode=0o700)
     try:
         require(all(type(v) is int and v > 0 for v in (limit_ms, timeout_ms, poll_ms)), "invalid deadline or watchdog")
-        choice = prepare(elf, stdin, capture, selection, policy, packet_dir, limit_ms, strategy)
+        choice = prepare(elf, stdin, capture, selection, policy, packet_dir, limit_ms, strategy, batch_manifest=batch_manifest)
         receipt = dict(near=choice["near"], limit_ms=limit_ms,
                         prediction_ns=choice["prediction_ns"], source_selection_sha256=elf_digest(selection),
                         source_policy_sha256=elf_digest(policy), selected_policy_sha256=elf_digest(choice["policy"]),
                         packet_sha256=elf_digest(choice["packet"]) if choice["packet"] is not None else None)
         if strategy != "near-three":
             receipt["strategy"] = strategy
+        if batch_manifest is not None:
+            receipt.update(batch_manifest_sha256=choice["batch_manifest_sha256"], batch_case_id=choice["batch_case_id"])
         anchor.save_new(out / "gate.json", receipt)
         result = run.run(payload, choice["selection"], capture, choice["policy"], elf, stdin, out / "enforced",
                          limit_ms, timeout_ms, poll_ms)
@@ -171,13 +206,15 @@ if __name__ == "__main__":
         cli.add_argument("--" + flag, required=True, type=Path)
     cli.add_argument("--limit-ms", required=True, type=int)
     cli.add_argument("--strategy", choices=VOTING_INDICES, default="near-three")
+    cli.add_argument("--batch-manifest", type=Path,
+                     help="require an existing warm-three packet bound to this interleaved batch manifest")
     cli.add_argument("--timeout-ms", type=int, default=120000)
     cli.add_argument("--poll-ms", type=int, default=5)
     args = cli.parse_args()
     try:
         result = enforce(args.payload.resolve(), args.elf.resolve(), args.stdin, args.capture, args.selection,
                          args.policy, args.packet_dir, args.out.resolve(), args.limit_ms, args.timeout_ms, args.poll_ms,
-                         args.strategy)
+                         args.strategy, batch_manifest=args.batch_manifest)
     except (ValueError, OSError) as error:
         result = dict(schema=1, authority="diagnostic_only", status="unavailable", pid=None, reason=str(error))
     print(json.dumps(result))
