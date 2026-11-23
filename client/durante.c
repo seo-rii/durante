@@ -71,6 +71,10 @@ typedef struct {
   uint64_t rep_movs_bytes, rep_stos_bytes, rep_movs_entries, rep_stos_entries;
   uint64_t published_instructions, published_movs, published_stos;
   uint64_t fast_until; /* Exclusive pre-charge threshold; zero forces the callback. */
+  /* Flat live entries: fast_until - instructions - 1, kept by each inline entry.
+   * A negative value takes the boundary callback. It may run low after replay
+   * or relocation, which only adds a callback; the callback recomputes it. */
+  int64_t live_room;
   /* Flat inline accounting (no live clock): the value of instructions before
    * the most recent block entry, and its value just after a RETRY rollback. */
   uint64_t entry_base, restart_base;
@@ -299,6 +303,16 @@ static void add_live_delta(uint64_t *counter, uint64_t delta, uint64_t overflow_
 }
 
 enum { LIVE_WORK_BATCH = 4096 };
+
+static void set_fast_until(thread_data_t *d, uint64_t until) {
+  d->fast_until = until;
+  if (until <= d->instructions)
+    d->live_room = -1;
+  else
+    d->live_room = until - d->instructions - 1 > (uint64_t)INT64_MAX
+                       ? INT64_MAX
+                       : (int64_t)(until - d->instructions - 1);
+}
 
 static bool invalid_thread_work(const thread_data_t *d) {
   return d->signals || d->rep_error || d->replay_error || d->cpuid_error ||
@@ -647,6 +661,7 @@ static void thread_init(void *ctx) {
   if (!drmgr_set_tls_field(ctx, tls_index, d))
     fail("TLS init failed");
   set_raw_accounting_state(d);
+  set_fast_until(d, 0);
   process_id_t process = dr_get_process_id();
   if (process != owner_pid) {
     /* DR models CLONE_VM/vfork before exec as a separate drcontext sharing the
@@ -783,7 +798,7 @@ static void observe_rep(app_pc pc, int opcode, int bytes, int count_reg) {
   if (data == NULL)
     fail("REP observation without thread state");
   settle_restart(data);
-  data->fast_until = 0;
+  set_fast_until(data, 0);
   uint64_t repeats = 0;
   if (bytes != 0) {
     dr_mcontext_t mc = {0};
@@ -948,15 +963,15 @@ static void charge_boundary(int count, app_pc first_pc) {
   thread_data_t *d = charge_block(count, first_pc);
   if (!d)
     return;
-  d->fast_until = 0;
+  set_fast_until(d, 0);
   if (d->restart_pc || d->instructions > UINT64_MAX - INT32_MAX - LIVE_WORK_BATCH)
     return;
   /* A permanently invalid thread can no longer publish. Other threads sharing
    * its page still publish their own deltas. Reserve room for the largest BB. */
   if (!live_work || invalid_thread_work(d))
-    d->fast_until = UINT64_MAX - INT32_MAX;
+    set_fast_until(d, UINT64_MAX - INT32_MAX);
   else if (d->published_instructions <= d->instructions)
-    d->fast_until = d->published_instructions + LIVE_WORK_BATCH;
+    set_fast_until(d, d->published_instructions + LIVE_WORK_BATCH);
 }
 
 static opnd_t raw_slot(uint slot) {
@@ -972,11 +987,18 @@ static opnd_t state_field(size_t offset) {
  * scratch registers are restored before the first application instruction.
  * Both guard paths precede the charge store and the final RCX restore, so
  * restore_state() can recognize partial entries by those two instructions. */
-static void insert_flat_charge(void *ctx, instrlist_t *bb, instr_t *where, int count) {
+enum { FLAT_PREFIX = 1, FLAT_BODY = 2, FLAT_SUFFIX = 4, FLAT_ALL = 7 };
+
+/* With live, the prefix leaves ECX zero when live_room is negative, which the
+ * caller branches on, and the body also counts live_room down. */
+static void emit_flat_parts(void *ctx, instrlist_t *bb, instr_t *where, int count, int parts,
+                            bool live) {
   opnd_t value = opnd_create_reg(DR_REG_RCX), state = opnd_create_reg(DR_REG_R11);
   opnd_t low_reg = opnd_create_reg(DR_REG_ECX);
+#define INSERT(i) \
+  (where ? instrlist_meta_preinsert(bb, where, (i)) : instrlist_meta_append(bb, (i)))
+  if (parts & FLAT_PREFIX) {
   instr_t *wrapped = INSTR_CREATE_label(ctx), *checked = INSTR_CREATE_label(ctx);
-#define INSERT(i) instrlist_meta_preinsert(bb, where, (i))
   INSERT(INSTR_CREATE_mov_st(ctx, raw_slot(RAW_TLS_SPILL_RCX), value));
   INSERT(INSTR_CREATE_mov_st(ctx, raw_slot(RAW_TLS_SPILL_R11), state));
   INSERT(INSTR_CREATE_mov_ld(ctx, state, raw_slot(RAW_TLS_STATE)));
@@ -995,16 +1017,141 @@ static void insert_flat_charge(void *ctx, instrlist_t *bb, instr_t *where, int c
   INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, counter_overflows)),
                              OPND_CREATE_INT32(1)));
   INSERT(checked);
+  if (live) {
+    /* Both the slow callback and the inline body may charge this entry.
+     * Save the base before taking either branch so relocation can undo the
+     * charge even immediately after returning from the callback. */
+    INSERT(INSTR_CREATE_mov_ld(ctx, value, state_field(offsetof(thread_data_t, instructions))));
+    INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, entry_base)), value));
+    /* live_room is far below 2^56 in magnitude, so its top byte is 0xff
+     * exactly when it is negative. ECX = (top byte + 1) & 0xff is then zero. */
+    INSERT(INSTR_CREATE_movzx(ctx, low_reg,
+                              OPND_CREATE_MEM8(DR_REG_R11, offsetof(thread_data_t, live_room) + 7)));
+    INSERT(INSTR_CREATE_lea(ctx, low_reg,
+                            opnd_create_base_disp(DR_REG_ECX, DR_REG_NULL, 0, 1, OPSZ_lea)));
+    INSERT(INSTR_CREATE_movzx(ctx, low_reg, opnd_create_reg(DR_REG_CL)));
+  }
+  }
+  if (parts & FLAT_BODY) {
+  if (live) {
+    INSERT(INSTR_CREATE_mov_ld(ctx, value, state_field(offsetof(thread_data_t, live_room))));
+    INSERT(INSTR_CREATE_lea(ctx, value,
+                            opnd_create_base_disp(DR_REG_RCX, DR_REG_NULL, 0, -count, OPSZ_lea)));
+    INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, live_room)), value));
+  }
   INSERT(INSTR_CREATE_mov_ld(ctx, value, state_field(offsetof(thread_data_t, instructions))));
-  INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, entry_base)), value));
+  if (!live)
+    INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, entry_base)), value));
   INSERT(INSTR_CREATE_lea(ctx, value,
                           opnd_create_base_disp(DR_REG_RCX, DR_REG_NULL, 0, count, OPSZ_lea)));
   INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, instructions)), value));
   INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, write_pc)),
                              OPND_CREATE_INT32(0)));
+  }
+  if (parts & FLAT_SUFFIX) {
   INSERT(INSTR_CREATE_mov_ld(ctx, state, raw_slot(RAW_TLS_SPILL_R11)));
   INSERT(INSTR_CREATE_mov_ld(ctx, value, raw_slot(RAW_TLS_SPILL_RCX)));
+  }
 #undef INSERT
+}
+
+static void emit_flat_charge(void *ctx, instrlist_t *bb, instr_t *where, int count) {
+  emit_flat_parts(ctx, bb, where, count, FLAT_ALL, false);
+}
+
+/* The runtime re-encodes every meta instruction of each new block, which
+ * dominates block building for interpreters and generated code. These
+ * sequences depend only on the block size or on a write's immediates, so they
+ * are encoded once and inserted as one raw copy. A valid opcode and an empty
+ * operand list keep the runtime from decoding the bundle; restore_state()
+ * decodes the code cache itself. */
+enum { FLAT_ENTRY_CACHE = 1024, SEQUENCE_BYTES = 128 };
+typedef struct {
+  uint length;
+  byte bytes[SEQUENCE_BYTES];
+} encoded_sequence_t;
+static encoded_sequence_t *flat_entries[FLAT_ENTRY_CACHE + 1];
+/* Live entries: one prefix and suffix, and a body per block size. */
+static encoded_sequence_t *flat_live_prefix, *flat_live_suffix;
+static encoded_sequence_t *flat_live_bodies[FLAT_ENTRY_CACHE + 1];
+
+static uint encode_sequence(void *ctx, instrlist_t *ilist, byte *buf) {
+  byte *end = instrlist_encode(ctx, ilist, buf, true);
+  if (!end || end - buf > SEQUENCE_BYTES)
+    fail("cannot pre-encode instrumentation");
+  return (uint)(end - buf);
+}
+
+static void insert_bundle(void *ctx, instrlist_t *bb, instr_t *where, const byte *bytes,
+                          uint length) {
+  instr_t *bundle = instr_build_bits(ctx, OP_mov_st, length);
+  instr_set_raw_bytes(bundle, (byte *)bytes, length);
+  /* No operands: mangling's RIP-relative scan must not decode the bundle,
+   * which would cut its raw bits down to the first instruction. */
+  instr_set_operands_valid(bundle, true);
+  instrlist_meta_preinsert(bb, where, bundle);
+}
+
+static encoded_sequence_t *cached_flat_parts(void *ctx, encoded_sequence_t **slot, int count,
+                                             int parts, bool live) {
+  encoded_sequence_t *entry = __atomic_load_n(slot, __ATOMIC_ACQUIRE);
+  if (entry)
+    return entry;
+  encoded_sequence_t *fresh = dr_global_alloc(sizeof(*fresh));
+  instrlist_t *ilist = instrlist_create(ctx);
+  emit_flat_parts(ctx, ilist, NULL, count, parts, live);
+  fresh->length = encode_sequence(ctx, ilist, fresh->bytes);
+  instrlist_clear_and_destroy(ctx, ilist);
+  if (__atomic_compare_exchange_n(slot, &entry, fresh, false, __ATOMIC_ACQ_REL,
+                                  __ATOMIC_ACQUIRE))
+    return fresh;
+  dr_global_free(fresh, sizeof(*fresh));
+  return entry;
+}
+
+static void insert_flat_charge(void *ctx, instrlist_t *bb, instr_t *where, int count) {
+  if (count <= 0 || count > FLAT_ENTRY_CACHE) {
+    emit_flat_charge(ctx, bb, where, count);
+    return;
+  }
+  encoded_sequence_t *entry = cached_flat_parts(ctx, &flat_entries[count], count, FLAT_ALL,
+                                                false);
+  insert_bundle(ctx, bb, where, entry->bytes, entry->length);
+}
+
+static void insert_flat_part(void *ctx, instrlist_t *bb, instr_t *where,
+                             encoded_sequence_t **slot, int count, int parts) {
+  if (count <= 0 || count > FLAT_ENTRY_CACHE) {
+    emit_flat_parts(ctx, bb, where, count, parts, true);
+    return;
+  }
+  encoded_sequence_t *entry = cached_flat_parts(ctx, slot, count, parts, true);
+  insert_bundle(ctx, bb, where, entry->bytes, entry->length);
+}
+
+/* Live clock: the flag-free entry also counts live_room down and takes the
+ * existing boundary callback when it is negative, so publication happens at
+ * the same block entries as on the callback path. The prefix checkpoints
+ * the count while the scratch registers are spilled. Relocation can roll
+ * either path back until the suffix restores RCX. */
+static void insert_flat_live_charge(void *ctx, instrlist_t *bb, instr_t *where, int count,
+                                    app_pc first_pc) {
+  instr_t *slow = INSTR_CREATE_label(ctx), *fast = INSTR_CREATE_label(ctx);
+  instr_t *resume = INSTR_CREATE_label(ctx);
+  insert_flat_part(ctx, bb, where, &flat_live_prefix, 1, FLAT_PREFIX);
+  instrlist_meta_preinsert(bb, where, INSTR_CREATE_jecxz(ctx, opnd_create_instr(slow)));
+  instrlist_meta_preinsert(bb, where, INSTR_CREATE_jmp(ctx, opnd_create_instr(fast)));
+  instrlist_meta_preinsert(bb, where, slow);
+  dr_insert_clean_call_ex(ctx, bb, where, (void *)charge_boundary,
+                          DR_CLEANCALL_ALWAYS_OUT_OF_LINE, 2, OPND_CREATE_INT32(count),
+                          OPND_CREATE_INTPTR(first_pc));
+  instrlist_meta_preinsert(bb, where, INSTR_CREATE_jmp(ctx, opnd_create_instr(resume)));
+  instrlist_meta_preinsert(bb, where, fast);
+  insert_flat_part(ctx, bb, where,
+                   count > 0 && count <= FLAT_ENTRY_CACHE ? &flat_live_bodies[count] : NULL,
+                   count, FLAT_BODY);
+  instrlist_meta_preinsert(bb, where, resume);
+  insert_flat_part(ctx, bb, where, &flat_live_suffix, 1, FLAT_SUFFIX);
 }
 
 static bool is_raw_slot(opnd_t opnd, uint slot) {
@@ -1034,7 +1181,7 @@ static bool restore_state(void *drcontext, bool restore_memory, dr_restore_state
   if (!d || !d->raw_tls_base)
     return true;
   byte *pc = info->fragment_info.cache_start_pc, *stop = info->raw_mcontext->pc;
-  bool spilled_rcx = false, spilled_r11 = false, charged = false;
+  bool spilled_rcx = false, spilled_r11 = false, checkpointed = false;
   instr_t ins;
   instr_init(drcontext, &ins);
   for (uint n = 0; pc != NULL && pc < stop && n < 4096; ++n) {
@@ -1052,13 +1199,13 @@ static bool restore_state(void *drcontext, bool restore_memory, dr_restore_state
       else if (flat_inline && spilled_rcx && spilled_r11 && is_reg(src, DR_REG_RCX) &&
                opnd_is_base_disp(dst) && opnd_get_base(dst) == DR_REG_R11 &&
                opnd_get_index(dst) == DR_REG_NULL &&
-               opnd_get_disp(dst) == (int)offsetof(thread_data_t, instructions))
-        charged = true;
+               opnd_get_disp(dst) == (int)offsetof(thread_data_t, entry_base))
+        checkpointed = true;
     } else if (op == OP_mov_ld && instr_num_dsts(&ins) == 1 && instr_num_srcs(&ins) == 1) {
       opnd_t dst = instr_get_dst(&ins, 0), src = instr_get_src(&ins, 0);
       if (is_raw_slot(src, RAW_TLS_SPILL_RCX) && is_reg(dst, DR_REG_RCX)) {
         spilled_rcx = false;
-        charged = false; /* The entry sequence is complete. */
+        checkpointed = false; /* The entry sequence is complete. */
       } else if (is_raw_slot(src, RAW_TLS_SPILL_R11) && is_reg(dst, DR_REG_R11)) {
         spilled_r11 = false;
       }
@@ -1071,8 +1218,17 @@ static bool restore_state(void *drcontext, bool restore_memory, dr_restore_state
     info->mcontext->xcx = slots[RAW_TLS_SPILL_RCX];
   if (spilled_r11)
     info->mcontext->r11 = slots[RAW_TLS_SPILL_R11];
-  if (charged && restore_memory)
+  if (checkpointed && restore_memory && d->instructions != d->entry_base) {
     d->instructions = d->entry_base;
+    if (live_work) {
+      /* The boundary callback may have admitted a pending REP retry before
+       * relocation. Its first resumed block will enter again. Keep already
+       * published prior work and re-evaluate the boundary for this entry. */
+      if (d->restart_pc && d->restart_rep && d->instructions == d->restart_base)
+        d->restart_entered = false;
+      set_fast_until(d, 0);
+    }
+  }
   return true;
 }
 
@@ -1182,8 +1338,76 @@ static void before_write_memory(app_pc pc, app_pc next_pc, int suffix,
  * directly with flag-neutral moves. The scratch register is always restored
  * before the application instruction, even when normal liveness treats it
  * as dead: a synchronous signal handler may read every saved register. */
+/* Raw-TLS write checkpoint: a fixed layout whose five 32-bit immediates are
+ * patched per write. Both pointers always use two 32-bit stores. */
+enum { CHECKPOINT_PC_LO, CHECKPOINT_PC_HI, CHECKPOINT_NEXT_LO, CHECKPOINT_NEXT_HI,
+       CHECKPOINT_SUFFIX, CHECKPOINT_IMMEDIATES };
+typedef struct {
+  encoded_sequence_t code;
+  uint immediate[CHECKPOINT_IMMEDIATES];
+} checkpoint_template_t;
+static checkpoint_template_t *checkpoint_template;
+
+static checkpoint_template_t *write_checkpoint_template(void *ctx) {
+  checkpoint_template_t *t = __atomic_load_n(&checkpoint_template, __ATOMIC_ACQUIRE);
+  if (t)
+    return t;
+  checkpoint_template_t *fresh = dr_global_alloc(sizeof(*fresh));
+  const reg_id_t data = DR_REG_R11;
+  instrlist_t *ilist = instrlist_create(ctx);
+  instr_t *imm[CHECKPOINT_IMMEDIATES];
+  instrlist_meta_append(ilist, INSTR_CREATE_mov_st(ctx, raw_slot(RAW_TLS_SPILL_R11),
+                                                    opnd_create_reg(data)));
+  instrlist_meta_append(ilist, INSTR_CREATE_mov_ld(ctx, opnd_create_reg(data),
+                                                    raw_slot(RAW_TLS_STATE)));
+  static const size_t fields[CHECKPOINT_IMMEDIATES] = {
+      offsetof(thread_data_t, write_pc), offsetof(thread_data_t, write_pc) + 4,
+      offsetof(thread_data_t, write_next_pc), offsetof(thread_data_t, write_next_pc) + 4,
+      offsetof(thread_data_t, write_suffix)};
+  for (int i = 0; i < CHECKPOINT_IMMEDIATES; ++i) {
+    opnd_t dst = i == CHECKPOINT_SUFFIX ? OPND_CREATE_MEM64(data, (int)fields[i])
+                                        : OPND_CREATE_MEM32(data, (int)fields[i]);
+    imm[i] = INSTR_CREATE_mov_st(ctx, dst, OPND_CREATE_INT32(0x7fffffff));
+    instrlist_meta_append(ilist, imm[i]);
+  }
+  instrlist_meta_append(ilist, INSTR_CREATE_mov_st(ctx, OPND_CREATE_MEM8(data,
+                                                    offsetof(thread_data_t, write_rep)),
+                                                    OPND_CREATE_INT8(0)));
+  instrlist_meta_append(ilist, INSTR_CREATE_mov_ld(ctx, opnd_create_reg(data),
+                                                    raw_slot(RAW_TLS_SPILL_R11)));
+  fresh->code.length = encode_sequence(ctx, ilist, fresh->code.bytes);
+  uint offset = 0;
+  int index = 0;
+  for (instr_t *in = instrlist_first(ilist); in; in = instr_get_next(in)) {
+    offset += instr_length(ctx, in);
+    if (index < CHECKPOINT_IMMEDIATES && in == imm[index])
+      fresh->immediate[index++] = offset - 4; /* imm32 is each store's last field */
+  }
+  instrlist_clear_and_destroy(ctx, ilist);
+  if (index != CHECKPOINT_IMMEDIATES || offset != fresh->code.length)
+    fail("cannot lay out the write checkpoint");
+  if (__atomic_compare_exchange_n(&checkpoint_template, &t, fresh, false, __ATOMIC_ACQ_REL,
+                                  __ATOMIC_ACQUIRE))
+    return fresh;
+  dr_global_free(fresh, sizeof(*fresh));
+  return t;
+}
+
 static void insert_write_checkpoint(void *ctx, instrlist_t *bb, instr_t *where,
                                     app_pc pc, app_pc next_pc, int suffix) {
+  if (raw_tls_enabled) {
+    const checkpoint_template_t *t = write_checkpoint_template(ctx);
+    byte code[SEQUENCE_BYTES];
+    memcpy(code, t->code.bytes, t->code.length);
+    const uint32_t value[CHECKPOINT_IMMEDIATES] = {
+        (uint32_t)(ptr_uint_t)pc, (uint32_t)((ptr_uint_t)pc >> 32),
+        (uint32_t)(ptr_uint_t)next_pc, (uint32_t)((ptr_uint_t)next_pc >> 32),
+        (uint32_t)suffix};
+    for (int i = 0; i < CHECKPOINT_IMMEDIATES; ++i)
+      memcpy(code + t->immediate[i], &value[i], sizeof(value[i]));
+    insert_bundle(ctx, bb, where, code, t->code.length);
+    return;
+  }
   const reg_id_t data = DR_REG_R11;
   if (raw_tls_enabled)
     instrlist_meta_preinsert(bb, where, INSTR_CREATE_mov_st(ctx, raw_slot(RAW_TLS_SPILL_R11),
@@ -1223,7 +1447,7 @@ static void code_replay(void *ctx, int reason, app_pc source_pc,
   }
   check_flat_counter(d);
   settle_restart(d);
-  d->fast_until = 0;
+  set_fast_until(d, 0);
   if (reason == DR_DURANTE_REPLAY_ENTRY) {
     /* Cache validation ran before client entry instrumentation. Nothing was
      * charged; a pending retry still belongs to the same logical instruction. */
@@ -1429,6 +1653,9 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
                            OPND_CREATE_INT32(count),
                            OPND_CREATE_INTPTR(first ? instr_get_app_pc(first) : NULL),
                            OPND_CREATE_INT32((int)(uint32_t)(packed >> 32)));
+    else if (flat_inline && live_work)
+      insert_flat_live_charge(drcontext, bb, where, count,
+                              first ? instr_get_app_pc(first) : NULL);
     else if (flat_inline)
       insert_flat_charge(drcontext, bb, where, count);
     else if (inline_block) {
@@ -1719,6 +1946,7 @@ static void fork_init(void *ctx) {
     fail("fork without surviving TLS");
   memset(d, 0, sizeof(*d));
   set_raw_accounting_state(d);
+  set_fast_until(d, 0);
   open_stream("fork", parent, previous);
 }
 static void pre_detach(void) {
@@ -1769,6 +1997,20 @@ static void process_exit(void) {
 #endif
   drmgr_exit();
   dr_mutex_destroy(state_lock);
+  for (int i = 0; i <= FLAT_ENTRY_CACHE; ++i) {
+    if (flat_entries[i])
+      dr_global_free(flat_entries[i], sizeof(*flat_entries[i]));
+  }
+  for (int i = 0; i <= FLAT_ENTRY_CACHE; ++i) {
+    if (flat_live_bodies[i])
+      dr_global_free(flat_live_bodies[i], sizeof(*flat_live_bodies[i]));
+  }
+  if (flat_live_prefix)
+    dr_global_free(flat_live_prefix, sizeof(*flat_live_prefix));
+  if (flat_live_suffix)
+    dr_global_free(flat_live_suffix, sizeof(*flat_live_suffix));
+  if (checkpoint_template)
+    dr_global_free(checkpoint_template, sizeof(*checkpoint_template));
   if (live_work)
     dr_unmap_file(live_work, sizeof(*live_work));
   if (cpu_policy_exit_pc)
@@ -1865,7 +2107,7 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
 #ifdef DURANTE_TEST_COUNT_LOCATIONS
   const bool flat_candidate = false; /* The location profile needs entry callbacks. */
 #else
-  const bool flat_candidate = !live_work && !latency_bound_enabled && !cache_probe_enabled();
+  const bool flat_candidate = !latency_bound_enabled && !cache_probe_enabled();
 #endif
   raw_tls_enabled = (static_text_end != 0 || flat_candidate) &&
                     dr_raw_tls_calloc(&raw_tls_register, &raw_tls_offset, RAW_TLS_SLOTS, 0);
