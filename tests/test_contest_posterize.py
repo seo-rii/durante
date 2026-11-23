@@ -36,6 +36,14 @@ class PosterizeCases(unittest.TestCase):
                 text = f"{len(histogram)} {k}\n" + "".join(f"{r} {p}\n" for r, p in histogram)
                 self.assertEqual(subprocess.check_output([self.binary], input=text, text=True), f"{expected}\n")
 
+    def test_every_intensity_can_be_represented_exactly(self):
+        for values in ([173], [0, 127, 255], list(range(256))):
+            with self.subTest(levels=len(values)):
+                histogram = [(v, 2**26) for v in values]
+                self.assertEqual(posterize.palette_error(histogram, len(values)), 0)
+                data = f"{len(values)} {len(values)}\n" + "".join(f"{v} {n}\n" for v, n in histogram)
+                self.assertEqual(subprocess.check_output([self.binary], input=data, text=True), "0\n")
+
     def test_full_histograms_and_bounds(self):
         for name in posterize.CASES:
             with self.subTest(name=name):
