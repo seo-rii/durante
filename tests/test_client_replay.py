@@ -1022,6 +1022,37 @@ static void check_boundary_relocation(void *ctx, byte *start, byte *stop) {
     live_work = NULL;
 }
 
+/* Relocating a thread stopped at the slow path's jump to the boundary
+ * routine recovers both scratch registers and leaves the entry uncharged. */
+static void check_slow_path_relocation(void *ctx, byte *start, byte *stop) {
+    reg_t slots[RAW_TLS_SLOTS] = {0, 21, 22};
+    thread_data_t d = {.instructions = 60, .entry_base = 60, .raw_tls_base = (byte *)slots};
+    dr_mcontext_t raw = {.pc = stop}, app = {0};
+    dr_restore_state_info_t info = { .raw_mcontext = &raw, .mcontext = &app };
+    info.fragment_info.cache_start_pc = start;
+    restoring = &d;
+    flat_inline = raw_tls_enabled = true;
+    assert(restore_state(ctx, true, &info));
+    assert(app.xcx == 21 && app.r11 == 22 && d.instructions == 60 && d.entry_base == 60);
+    restoring = NULL;
+}
+
+/* Call an emitted sequence that returns its final RCX in RAX and R11 in RDX.
+ * The call steps over the red zone; the sequence itself uses no stack. */
+static void run_entry(byte *code, reg_t rcx, reg_t r11, reg_t *out_rcx, reg_t *out_r11) {
+    register reg_t c asm("rcx") = rcx;
+    register reg_t s asm("r11") = r11;
+    reg_t a, d;
+    __asm__ volatile("lea -128(%%rsp), %%rsp\n\tcall *%4\n\tlea 128(%%rsp), %%rsp"
+                     : "=a"(a), "=d"(d), "+r"(c), "+r"(s)
+                     : "r"(code)
+                     : "rsi", "rdi", "r8", "r9", "r10", "memory");
+    *out_rcx = a;
+    *out_r11 = d;
+}
+
+#define ENTRY_PC ((app_pc)(ptr_uint_t)UINT64_C(0x123456789abc))
+
 int main(void) {
     void *ctx = dr_standalone_init();
     raw_tls_register = DR_SEG_GS;
@@ -1076,8 +1107,47 @@ int main(void) {
     end = instrlist_encode(ctx, bb, sign_code, true);
     assert(end && end <= code + page);
     instrlist_clear_and_destroy(ctx, bb);
+    /* The complete live entry. A stand-in for the shared boundary routine
+     * records the resume address the entry passes in RCX and returns there. */
+    byte *entry = mmap(NULL, page, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    assert(entry != MAP_FAILED);
+    byte *routine = entry + page / 2;
+    instrlist_t *stub = instrlist_create(ctx);
+    instrlist_append(stub, INSTR_CREATE_mov_st(ctx,
+        OPND_CREATE_MEMPTR(DR_REG_R11, offsetof(thread_data_t, write_next_pc)),
+        opnd_create_reg(DR_REG_RCX)));
+    instrlist_append(stub, INSTR_CREATE_jmp_ind(ctx, opnd_create_reg(DR_REG_RCX)));
+    assert(instrlist_encode(ctx, stub, routine, true));
+    instrlist_clear_and_destroy(ctx, stub);
+    bb = instrlist_create(ctx);
+    ret = INSTR_CREATE_ret(ctx);
+    instrlist_append(bb, ret);
+    instr_t *report = XINST_CREATE_move(ctx, opnd_create_reg(DR_REG_RAX), opnd_create_reg(DR_REG_RCX));
+    instrlist_meta_preinsert(bb, ret, report);
+    instrlist_meta_preinsert(bb, ret, XINST_CREATE_move(ctx, opnd_create_reg(DR_REG_RDX),
+                                                        opnd_create_reg(DR_REG_R11)));
+    insert_flat_live_entry(ctx, bb, report, 5, ENTRY_PC, routine);
+    for (instr_t *ins = instrlist_first(bb); ins != report; ins = instr_get_next(ins))
+        assert(!(instr_get_arith_flags(ins, DR_QUERY_DEFAULT) & (EFLAGS_READ_6 | EFLAGS_WRITE_6)));
+    byte *entry_end = instrlist_encode(ctx, bb, entry, true);
+    assert(entry_end && entry_end <= routine);
+    instrlist_clear_and_destroy(ctx, bb);
+    byte *jump = NULL;
+    for (byte *pc = entry; pc != NULL && pc < entry_end;) {
+        instr_t in;
+        instr_init(ctx, &in);
+        byte *next = decode(ctx, pc, &in);
+        if (next && instr_get_opcode(&in) == OP_jmp && opnd_is_pc(instr_get_target(&in)) &&
+            opnd_get_pc(instr_get_target(&in)) == routine)
+            jump = pc;
+        instr_free(ctx, &in);
+        pc = next;
+    }
+    assert(jump);
+    check_slow_path_relocation(ctx, entry, jump);
     dr_standalone_exit();
     assert(mprotect(code, page, PROT_READ | PROT_EXEC) == 0);
+    assert(mprotect(entry, page, PROT_READ | PROT_EXEC) == 0);
 
     /* The emitted sequence uses GS-relative raw TLS on x86-64 Linux. Execute
      * it against an isolated slot array, with the same production layout. */
@@ -1114,8 +1184,27 @@ int main(void) {
         assert((d.write_suffix == 0) == (rooms[i] < 0));
         assert(d.instructions == 10 && d.live_room == rooms[i]);
     }
+    /* A negative countdown passes this block to the boundary routine, which
+     * resumes at the suffix without the fast body's charge. Otherwise the
+     * body counts down and charges. Both paths restore RCX and R11. */
+    for (int slow = 0; slow < 2; ++slow) {
+        thread_data_t d = {.instructions = 50, .live_room = slow ? -1 : 9};
+        slots[RAW_TLS_STATE] = (reg_t)&d;
+        reg_t rcx, r11;
+        run_entry(entry, 0x1111, 0x2222, &rcx, &r11);
+        assert(rcx == 0x1111 && r11 == 0x2222 && d.entry_base == 50);
+        if (slow) {
+            assert(d.boundary_count == 5 && d.boundary_pc == ENTRY_PC);
+            assert(d.write_next_pc > entry && d.write_next_pc < entry_end);
+            assert(d.instructions == 50 && d.live_room == -1);
+        } else {
+            assert(d.instructions == 55 && d.live_room == 4);
+            assert(d.boundary_count == 0 && d.boundary_pc == NULL && d.write_next_pc == NULL);
+        }
+    }
     assert(syscall(SYS_arch_prctl, ARCH_SET_GS, original_gs) == 0);
     assert(munmap(code, page) == 0);
+    assert(munmap(entry, page) == 0);
     puts("flat-charge-ok");
     return 0;
 }
