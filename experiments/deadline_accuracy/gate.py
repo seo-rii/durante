@@ -15,9 +15,14 @@ from guarded_native import anchor, live
 from shape_calibration import run, select_policy, temporal
 
 
+# Indices are chronological. Warm-three retains the first receipt for accounting,
+# then estimates CPU time from three subsequent processes on the same input.
+VOTING_INDICES = {"near-three": (0, 1, 2), "exact-one": (0,), "warm-three": (1, 2, 3)}
+
+
 def observation_count(strategy):
-    require(strategy in ("near-three", "exact-one"), "unknown exact-input calibration strategy")
-    return 3 if strategy == "near-three" else 1
+    require(strategy in VOTING_INDICES, "unknown exact-input calibration strategy")
+    return VOTING_INDICES[strategy][-1] + 1
 
 
 def near(prediction_ns, limit_ms):
@@ -69,12 +74,12 @@ def packet_evidence(directory, obs, context, source_raw, strategy="near-three"):
         require(hashes[0] == context["source_policy_sha256"], "first observation differs from paid current calibration")
     manifest = dict(schema=1, authority="diagnostic_only", context=context, reused_original=reused,
                     policy_sha256=hashes)
+    votes = VOTING_INDICES[strategy]
+    # A stable sort breaks CPU-time ties by their chronological packet index.
+    index = sorted(votes, key=samples.__getitem__)[len(votes) // 2]
     if strategy == "near-three":
-        # Sorting is stable. A tie selects the chronological middle of the three ordered observations.
-        index = sorted(range(count), key=samples.__getitem__)[1]
         manifest["median_index"] = index
     else:
-        index = 0
         manifest.update(schema=2, strategy=strategy, selected_index=index)
     selected = dict(schema=1, method="footprint", action="calibrate", reference_index=None, comparisons=[],
                     policy_sha256=hashes[index], prediction_ns=samples[index], current_sample_sha256=obs["sample_sha256"])
@@ -149,7 +154,7 @@ def enforce(payload, elf, stdin, capture, selection, policy, packet_dir, out, li
                         prediction_ns=choice["prediction_ns"], source_selection_sha256=elf_digest(selection),
                         source_policy_sha256=elf_digest(policy), selected_policy_sha256=elf_digest(choice["policy"]),
                         packet_sha256=elf_digest(choice["packet"]) if choice["packet"] is not None else None)
-        if strategy == "exact-one":
+        if strategy != "near-three":
             receipt["strategy"] = strategy
         anchor.save_new(out / "gate.json", receipt)
         result = run.run(payload, choice["selection"], capture, choice["policy"], elf, stdin, out / "enforced",
@@ -165,7 +170,7 @@ if __name__ == "__main__":
     for flag in ("payload", "elf", "stdin", "capture", "selection", "policy", "packet-dir", "out"):
         cli.add_argument("--" + flag, required=True, type=Path)
     cli.add_argument("--limit-ms", required=True, type=int)
-    cli.add_argument("--strategy", choices=("near-three", "exact-one"), default="near-three")
+    cli.add_argument("--strategy", choices=VOTING_INDICES, default="near-three")
     cli.add_argument("--timeout-ms", type=int, default=120000)
     cli.add_argument("--poll-ms", type=int, default=5)
     args = cli.parse_args()
