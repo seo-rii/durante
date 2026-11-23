@@ -1,0 +1,9 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "probe_sha256": "159ca08d50bb8cf20e88f86b2186af422e094e7c14ebe98a42bed7adc2d6b186",
+  "baseline": "Use the same oldest-compatible paid footprint bank as the primary registration. Pay one native run for current input when no earlier anchor qualifies. Exact-only observations never enter the baseline bank.",
+  "candidate": "For every heldout input use the first native observation of that physical complete capture on the pinned CPU and boot to scale all deadlines. Reuse the baseline observation if it belongs to this capture; otherwise pay one extra exact-input native execution. Never choose an observation by its value, never use independent references, and share the exact payment across deadlines.",
+  "schedule": "Collect the current exact-input observation before either arm runs its first registered deadline. Alternate first live arm by case sequence plus deadline index parity. Derive adaptive deadlines solely from the full baseline preflight. Keep the primary 25% band only as a reporting subgroup.",
+  "scoring": "After all deadlines run nine direct CPU references per heldout input in the registered rotating order. Evaluate each actually observed strict deadline against unanimous and majority native outcomes. Report prospective and previously observed control inputs separately and distinguish fixed versus baseline-derived limits. Report all additional native payments and CPU cost."
+}

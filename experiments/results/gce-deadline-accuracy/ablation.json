@@ -1,0 +1,2761 @@
+{
+  "schema": 1,
+  "kind": "exploratory_model_implied_verdicts",
+  "summary_sha256": "3d269a5e2e19f83bf41dbff1dfe403cc21f6880072234b4ba8bc4fa2f09fbf25",
+  "groups": {
+    "all": {
+      "cases": 15,
+      "packets": 15,
+      "duration": {
+        "baseline": {
+          "cases": 15,
+          "within_20pct": 13,
+          "median_abs_ppm": 73173,
+          "max_abs_ppm": 811748
+        },
+        "first": {
+          "cases": 15,
+          "within_20pct": 15,
+          "median_abs_ppm": 13197,
+          "max_abs_ppm": 109508
+        },
+        "median": {
+          "cases": 15,
+          "within_20pct": 15,
+          "median_abs_ppm": 10728,
+          "max_abs_ppm": 106672
+        }
+      },
+      "near_decisions": {
+        "limits": 50,
+        "exact_native_ties": 0,
+        "changed_baseline_to_first": 8,
+        "changed_first_to_median": 1,
+        "baseline": {
+          "agreement": 36,
+          "false_tle": 1,
+          "false_accept": 4,
+          "mixed_native": 9,
+          "mixed_majority_disagreements": 6
+        },
+        "first": {
+          "agreement": 40,
+          "false_tle": 0,
+          "false_accept": 1,
+          "mixed_native": 9,
+          "mixed_majority_disagreements": 2
+        },
+        "median": {
+          "agreement": 40,
+          "false_tle": 0,
+          "false_accept": 1,
+          "mixed_native": 9,
+          "mixed_majority_disagreements": 3
+        }
+      },
+      "far_decisions": {
+        "limits": 39,
+        "exact_native_ties": 0,
+        "changed_baseline_to_first": 0,
+        "changed_first_to_median": 0,
+        "baseline": {
+          "agreement": 37,
+          "false_tle": 0,
+          "false_accept": 2,
+          "mixed_native": 0,
+          "mixed_majority_disagreements": 0
+        },
+        "first": {
+          "agreement": 37,
+          "false_tle": 0,
+          "false_accept": 2,
+          "mixed_native": 0,
+          "mixed_majority_disagreements": 0
+        },
+        "median": {
+          "agreement": 37,
+          "false_tle": 0,
+          "false_accept": 2,
+          "mixed_native": 0,
+          "mixed_majority_disagreements": 0
+        }
+      }
+    },
+    "current": {
+      "cases": 8,
+      "packets": 8,
+      "duration": {
+        "baseline": {
+          "cases": 8,
+          "within_20pct": 8,
+          "median_abs_ppm": 34294.0,
+          "max_abs_ppm": 109508
+        },
+        "first": {
+          "cases": 8,
+          "within_20pct": 8,
+          "median_abs_ppm": 34294.0,
+          "max_abs_ppm": 109508
+        },
+        "median": {
+          "cases": 8,
+          "within_20pct": 8,
+          "median_abs_ppm": 9907.0,
+          "max_abs_ppm": 106672
+        }
+      },
+      "near_decisions": {
+        "limits": 27,
+        "exact_native_ties": 0,
+        "changed_baseline_to_first": 0,
+        "changed_first_to_median": 0,
+        "baseline": {
+          "agreement": 22,
+          "false_tle": 0,
+          "false_accept": 1,
+          "mixed_native": 4,
+          "mixed_majority_disagreements": 2
+        },
+        "first": {
+          "agreement": 22,
+          "false_tle": 0,
+          "false_accept": 1,
+          "mixed_native": 4,
+          "mixed_majority_disagreements": 2
+        },
+        "median": {
+          "agreement": 22,
+          "false_tle": 0,
+          "false_accept": 1,
+          "mixed_native": 4,
+          "mixed_majority_disagreements": 2
+        }
+      },
+      "far_decisions": {
+        "limits": 20,
+        "exact_native_ties": 0,
+        "changed_baseline_to_first": 0,
+        "changed_first_to_median": 0,
+        "baseline": {
+          "agreement": 20,
+          "false_tle": 0,
+          "false_accept": 0,
+          "mixed_native": 0,
+          "mixed_majority_disagreements": 0
+        },
+        "first": {
+          "agreement": 20,
+          "false_tle": 0,
+          "false_accept": 0,
+          "mixed_native": 0,
+          "mixed_majority_disagreements": 0
+        },
+        "median": {
+          "agreement": 20,
+          "false_tle": 0,
+          "false_accept": 0,
+          "mixed_native": 0,
+          "mixed_majority_disagreements": 0
+        }
+      }
+    },
+    "transferred": {
+      "cases": 7,
+      "packets": 7,
+      "duration": {
+        "baseline": {
+          "cases": 7,
+          "within_20pct": 5,
+          "median_abs_ppm": 110194,
+          "max_abs_ppm": 811748
+        },
+        "first": {
+          "cases": 7,
+          "within_20pct": 7,
+          "median_abs_ppm": 13197,
+          "max_abs_ppm": 38401
+        },
+        "median": {
+          "cases": 7,
+          "within_20pct": 7,
+          "median_abs_ppm": 15384,
+          "max_abs_ppm": 38401
+        }
+      },
+      "near_decisions": {
+        "limits": 23,
+        "exact_native_ties": 0,
+        "changed_baseline_to_first": 8,
+        "changed_first_to_median": 1,
+        "baseline": {
+          "agreement": 14,
+          "false_tle": 1,
+          "false_accept": 3,
+          "mixed_native": 5,
+          "mixed_majority_disagreements": 4
+        },
+        "first": {
+          "agreement": 18,
+          "false_tle": 0,
+          "false_accept": 0,
+          "mixed_native": 5,
+          "mixed_majority_disagreements": 0
+        },
+        "median": {
+          "agreement": 18,
+          "false_tle": 0,
+          "false_accept": 0,
+          "mixed_native": 5,
+          "mixed_majority_disagreements": 1
+        }
+      },
+      "far_decisions": {
+        "limits": 19,
+        "exact_native_ties": 0,
+        "changed_baseline_to_first": 0,
+        "changed_first_to_median": 0,
+        "baseline": {
+          "agreement": 17,
+          "false_tle": 0,
+          "false_accept": 2,
+          "mixed_native": 0,
+          "mixed_majority_disagreements": 0
+        },
+        "first": {
+          "agreement": 17,
+          "false_tle": 0,
+          "false_accept": 2,
+          "mixed_native": 0,
+          "mixed_majority_disagreements": 0
+        },
+        "median": {
+          "agreement": 17,
+          "false_tle": 0,
+          "false_accept": 2,
+          "mixed_native": 0,
+          "mixed_majority_disagreements": 0
+        }
+      }
+    },
+    "prospective": {
+      "cases": 14,
+      "packets": 14,
+      "duration": {
+        "baseline": {
+          "cases": 14,
+          "within_20pct": 12,
+          "median_abs_ppm": 69674.5,
+          "max_abs_ppm": 811748
+        },
+        "first": {
+          "cases": 14,
+          "within_20pct": 14,
+          "median_abs_ppm": 11784.0,
+          "max_abs_ppm": 109508
+        },
+        "median": {
+          "cases": 14,
+          "within_20pct": 14,
+          "median_abs_ppm": 13056.0,
+          "max_abs_ppm": 106672
+        }
+      },
+      "near_decisions": {
+        "limits": 46,
+        "exact_native_ties": 0,
+        "changed_baseline_to_first": 6,
+        "changed_first_to_median": 1,
+        "baseline": {
+          "agreement": 34,
+          "false_tle": 1,
+          "false_accept": 4,
+          "mixed_native": 7,
+          "mixed_majority_disagreements": 4
+        },
+        "first": {
+          "agreement": 38,
+          "false_tle": 0,
+          "false_accept": 1,
+          "mixed_native": 7,
+          "mixed_majority_disagreements": 2
+        },
+        "median": {
+          "agreement": 38,
+          "false_tle": 0,
+          "false_accept": 1,
+          "mixed_native": 7,
+          "mixed_majority_disagreements": 3
+        }
+      },
+      "far_decisions": {
+        "limits": 37,
+        "exact_native_ties": 0,
+        "changed_baseline_to_first": 0,
+        "changed_first_to_median": 0,
+        "baseline": {
+          "agreement": 35,
+          "false_tle": 0,
+          "false_accept": 2,
+          "mixed_native": 0,
+          "mixed_majority_disagreements": 0
+        },
+        "first": {
+          "agreement": 35,
+          "false_tle": 0,
+          "false_accept": 2,
+          "mixed_native": 0,
+          "mixed_majority_disagreements": 0
+        },
+        "median": {
+          "agreement": 35,
+          "false_tle": 0,
+          "false_accept": 2,
+          "mixed_native": 0,
+          "mixed_majority_disagreements": 0
+        }
+      }
+    }
+  },
+  "cases": {
+    "fenwick/eleven_mib_repeat": {
+      "cohort": "prospective",
+      "source": "current",
+      "reused_original_observation": true,
+      "packet_samples_ns": [
+        168310000,
+        180316000,
+        166277000
+      ],
+      "reference_ns": [
+        180506000,
+        181598000,
+        181076000,
+        183865000,
+        182822000,
+        180213000,
+        177187000,
+        183036000,
+        182565000
+      ],
+      "reference_range_ns": [
+        177187000,
+        183865000
+      ],
+      "duration": {
+        "baseline": {
+          "prediction_ns": 168310000,
+          "within_20pct": true,
+          "signed_error_ppm": -73173
+        },
+        "first": {
+          "prediction_ns": 168310000,
+          "within_20pct": true,
+          "signed_error_ppm": -73173
+        },
+        "median": {
+          "prediction_ns": 168310000,
+          "within_20pct": true,
+          "signed_error_ppm": -73173
+        }
+      },
+      "deadlines": [
+        {
+          "limit_ms": 101,
+          "near": false,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 144,
+          "near": true,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 150,
+          "near": true,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 169,
+          "near": true,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "false_accept"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "false_accept"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "false_accept"
+            }
+          }
+        },
+        {
+          "limit_ms": 194,
+          "near": true,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 253,
+          "near": false,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        }
+      ]
+    },
+    "threshold_runs/blocked_longer": {
+      "cohort": "prospective",
+      "source": "transferred",
+      "reused_original_observation": false,
+      "packet_samples_ns": [
+        22839000,
+        22626000,
+        22749000
+      ],
+      "reference_ns": [
+        22851000,
+        22911000,
+        22778000,
+        22993000,
+        23013000,
+        22670000,
+        23237000,
+        22695000,
+        22862000
+      ],
+      "reference_range_ns": [
+        22670000,
+        23237000
+      ],
+      "duration": {
+        "baseline": {
+          "prediction_ns": 23226915,
+          "within_20pct": true,
+          "signed_error_ppm": 15962
+        },
+        "first": {
+          "prediction_ns": 22839000,
+          "within_20pct": true,
+          "signed_error_ppm": -1006
+        },
+        "median": {
+          "prediction_ns": 22749000,
+          "within_20pct": true,
+          "signed_error_ppm": -4943
+        }
+      },
+      "deadlines": [
+        {
+          "limit_ms": 14,
+          "near": false,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 20,
+          "near": true,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 24,
+          "near": true,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 27,
+          "near": true,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 35,
+          "near": false,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 75,
+          "near": false,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        }
+      ]
+    },
+    "successor_walk/more_steps": {
+      "cohort": "prospective",
+      "source": "transferred",
+      "reused_original_observation": false,
+      "packet_samples_ns": [
+        25806000,
+        25746000,
+        25759000
+      ],
+      "reference_ns": [
+        26287000,
+        25798000,
+        26765000,
+        26444000,
+        26479000,
+        26677000,
+        27860000,
+        26491000,
+        27109000
+      ],
+      "reference_range_ns": [
+        25798000,
+        27860000
+      ],
+      "duration": {
+        "baseline": {
+          "prediction_ns": 24737941,
+          "within_20pct": true,
+          "signed_error_ppm": -66176
+        },
+        "first": {
+          "prediction_ns": 25806000,
+          "within_20pct": true,
+          "signed_error_ppm": -25858
+        },
+        "median": {
+          "prediction_ns": 25759000,
+          "within_20pct": true,
+          "signed_error_ppm": -27632
+        }
+      },
+      "deadlines": [
+        {
+          "limit_ms": 15,
+          "near": false,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 22,
+          "near": true,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 25,
+          "near": true,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "false_accept"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 29,
+          "near": true,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 38,
+          "near": false,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 150,
+          "near": false,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        }
+      ]
+    },
+    "threshold_runs/short_blocks": {
+      "cohort": "prospective",
+      "source": "transferred",
+      "reused_original_observation": false,
+      "packet_samples_ns": [
+        14851000,
+        14146000,
+        14593000
+      ],
+      "reference_ns": [
+        14171000,
+        14716000,
+        15437000,
+        14302000,
+        15258000,
+        14821000,
+        14932000,
+        15054000,
+        14819000
+      ],
+      "reference_range_ns": [
+        14171000,
+        15437000
+      ],
+      "duration": {
+        "baseline": {
+          "prediction_ns": 18328526,
+          "within_20pct": false,
+          "signed_error_ppm": 236659
+        },
+        "first": {
+          "prediction_ns": 14851000,
+          "within_20pct": true,
+          "signed_error_ppm": 2024
+        },
+        "median": {
+          "prediction_ns": 14593000,
+          "within_20pct": true,
+          "signed_error_ppm": -15384
+        }
+      },
+      "deadlines": [
+        {
+          "limit_ms": 11,
+          "near": false,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 16,
+          "near": true,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "false_tle"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 19,
+          "near": true,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 22,
+          "near": true,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 28,
+          "near": false,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 75,
+          "near": false,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        }
+      ]
+    },
+    "fenwick/five_mib_repeat": {
+      "cohort": "prospective",
+      "source": "transferred",
+      "reused_original_observation": false,
+      "packet_samples_ns": [
+        148180000,
+        151217000,
+        150968000
+      ],
+      "reference_ns": [
+        147135000,
+        150663000,
+        150990000,
+        117483000,
+        115759000,
+        117674000,
+        114541000,
+        146250000,
+        148006000
+      ],
+      "reference_range_ns": [
+        114541000,
+        150990000
+      ],
+      "duration": {
+        "baseline": {
+          "prediction_ns": 125110366,
+          "within_20pct": true,
+          "signed_error_ppm": -144545
+        },
+        "first": {
+          "prediction_ns": 148180000,
+          "within_20pct": true,
+          "signed_error_ppm": 13197
+        },
+        "median": {
+          "prediction_ns": 150968000,
+          "within_20pct": true,
+          "signed_error_ppm": 32260
+        }
+      },
+      "deadlines": [
+        {
+          "limit_ms": 76,
+          "near": false,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 107,
+          "near": true,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 126,
+          "near": true,
+          "native_tle_reps": 5,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "mixed_native"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "mixed_native"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "mixed_native"
+            }
+          }
+        },
+        {
+          "limit_ms": 144,
+          "near": true,
+          "native_tle_reps": 5,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "mixed_native"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "mixed_native"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "mixed_native"
+            }
+          }
+        },
+        {
+          "limit_ms": 150,
+          "near": true,
+          "native_tle_reps": 2,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "mixed_native"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "mixed_native"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "mixed_native"
+            }
+          }
+        },
+        {
+          "limit_ms": 188,
+          "near": false,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        }
+      ]
+    },
+    "rational_gcd/wide_divisors": {
+      "cohort": "prospective",
+      "source": "current",
+      "reused_original_observation": true,
+      "packet_samples_ns": [
+        87351000,
+        87331000,
+        87368000
+      ],
+      "reference_ns": [
+        87219000,
+        87208000,
+        87203000,
+        87230000,
+        87233000,
+        87354000,
+        87383000,
+        87368000,
+        87218000
+      ],
+      "reference_range_ns": [
+        87203000,
+        87383000
+      ],
+      "duration": {
+        "baseline": {
+          "prediction_ns": 87351000,
+          "within_20pct": true,
+          "signed_error_ppm": 1387
+        },
+        "first": {
+          "prediction_ns": 87351000,
+          "within_20pct": true,
+          "signed_error_ppm": 1387
+        },
+        "median": {
+          "prediction_ns": 87351000,
+          "within_20pct": true,
+          "signed_error_ppm": 1387
+        }
+      },
+      "deadlines": [
+        {
+          "limit_ms": 53,
+          "near": false,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 75,
+          "near": true,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 88,
+          "near": true,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 101,
+          "near": true,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 132,
+          "near": false,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        }
+      ]
+    },
+    "csr_frontier/large_relabeled": {
+      "cohort": "prospective",
+      "source": "current",
+      "reused_original_observation": true,
+      "packet_samples_ns": [
+        44215000,
+        44102000,
+        39067000
+      ],
+      "reference_ns": [
+        38625000,
+        39851000,
+        44554000,
+        44070000,
+        39708000,
+        39913000,
+        38899000,
+        44630000,
+        39681000
+      ],
+      "reference_range_ns": [
+        38625000,
+        44630000
+      ],
+      "duration": {
+        "baseline": {
+          "prediction_ns": 44215000,
+          "within_20pct": true,
+          "signed_error_ppm": 109508
+        },
+        "first": {
+          "prediction_ns": 44215000,
+          "within_20pct": true,
+          "signed_error_ppm": 109508
+        },
+        "median": {
+          "prediction_ns": 44102000,
+          "within_20pct": true,
+          "signed_error_ppm": 106672
+        }
+      },
+      "deadlines": [
+        {
+          "limit_ms": 27,
+          "near": false,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 38,
+          "near": true,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 45,
+          "near": true,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 51,
+          "near": true,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 67,
+          "near": false,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 75,
+          "near": false,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        }
+      ]
+    },
+    "rational_gcd/fibonacci": {
+      "cohort": "prospective",
+      "source": "current",
+      "reused_original_observation": true,
+      "packet_samples_ns": [
+        58934000,
+        59185000,
+        58987000
+      ],
+      "reference_ns": [
+        58944000,
+        58897000,
+        58965000,
+        58930000,
+        58934000,
+        58894000,
+        58901000,
+        58971000,
+        58965000
+      ],
+      "reference_range_ns": [
+        58894000,
+        58971000
+      ],
+      "duration": {
+        "baseline": {
+          "prediction_ns": 58934000,
+          "within_20pct": true,
+          "signed_error_ppm": 0
+        },
+        "first": {
+          "prediction_ns": 58934000,
+          "within_20pct": true,
+          "signed_error_ppm": 0
+        },
+        "median": {
+          "prediction_ns": 58987000,
+          "within_20pct": true,
+          "signed_error_ppm": 899
+        }
+      },
+      "deadlines": [
+        {
+          "limit_ms": 36,
+          "near": false,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 51,
+          "near": true,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 59,
+          "near": true,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 68,
+          "near": true,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 75,
+          "near": true,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 89,
+          "near": false,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        }
+      ]
+    },
+    "csr_frontier/relabeled": {
+      "cohort": "prospective",
+      "source": "current",
+      "reused_original_observation": true,
+      "packet_samples_ns": [
+        20571000,
+        21023000,
+        20411000
+      ],
+      "reference_ns": [
+        23272000,
+        21338000,
+        22473000,
+        22746000,
+        22785000,
+        22870000,
+        22021000,
+        22907000,
+        20982000
+      ],
+      "reference_range_ns": [
+        20982000,
+        23272000
+      ],
+      "duration": {
+        "baseline": {
+          "prediction_ns": 20571000,
+          "within_20pct": true,
+          "signed_error_ppm": -95621
+        },
+        "first": {
+          "prediction_ns": 20571000,
+          "within_20pct": true,
+          "signed_error_ppm": -95621
+        },
+        "median": {
+          "prediction_ns": 20571000,
+          "within_20pct": true,
+          "signed_error_ppm": -95621
+        }
+      },
+      "deadlines": [
+        {
+          "limit_ms": 13,
+          "near": false,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 18,
+          "near": true,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 21,
+          "near": true,
+          "native_tle_reps": 8,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "mixed_native"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "mixed_native"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "mixed_native"
+            }
+          }
+        },
+        {
+          "limit_ms": 24,
+          "near": true,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 31,
+          "near": false,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 75,
+          "near": false,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        }
+      ]
+    },
+    "threshold_runs/random": {
+      "cohort": "prospective",
+      "source": "transferred",
+      "reused_original_observation": false,
+      "packet_samples_ns": [
+        78293000,
+        78292000,
+        78247000
+      ],
+      "reference_ns": [
+        78201000,
+        78200000,
+        78264000,
+        78395000,
+        78152000,
+        78214000,
+        78095000,
+        78292000,
+        78172000
+      ],
+      "reference_range_ns": [
+        78095000,
+        78395000
+      ],
+      "duration": {
+        "baseline": {
+          "prediction_ns": 14721530,
+          "within_20pct": false,
+          "signed_error_ppm": -811748
+        },
+        "first": {
+          "prediction_ns": 78293000,
+          "within_20pct": true,
+          "signed_error_ppm": 1176
+        },
+        "median": {
+          "prediction_ns": 78292000,
+          "within_20pct": true,
+          "signed_error_ppm": 1164
+        }
+      },
+      "deadlines": [
+        {
+          "limit_ms": 9,
+          "near": false,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 13,
+          "near": true,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 15,
+          "near": true,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "false_accept"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 17,
+          "near": true,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "false_accept"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 23,
+          "near": false,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "false_accept"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "false_accept"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "false_accept"
+            }
+          }
+        },
+        {
+          "limit_ms": 75,
+          "near": false,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "false_accept"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "false_accept"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "false_accept"
+            }
+          }
+        }
+      ]
+    },
+    "fenwick/intermediate_low": {
+      "cohort": "previous",
+      "source": "transferred",
+      "reused_original_observation": false,
+      "packet_samples_ns": [
+        190838000,
+        187869000,
+        148326000
+      ],
+      "reference_ns": [
+        186905000,
+        184786000,
+        154165000,
+        189575000,
+        187727000,
+        187957000,
+        184236000,
+        185987000,
+        186700000
+      ],
+      "reference_range_ns": [
+        154165000,
+        189575000
+      ],
+      "duration": {
+        "baseline": {
+          "prediction_ns": 166126810,
+          "within_20pct": true,
+          "signed_error_ppm": -110194
+        },
+        "first": {
+          "prediction_ns": 190838000,
+          "within_20pct": true,
+          "signed_error_ppm": 22164
+        },
+        "median": {
+          "prediction_ns": 187869000,
+          "within_20pct": true,
+          "signed_error_ppm": 6261
+        }
+      },
+      "deadlines": [
+        {
+          "limit_ms": 100,
+          "near": false,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 142,
+          "near": true,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 167,
+          "near": true,
+          "native_tle_reps": 8,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "mixed_native"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "mixed_native"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "mixed_native"
+            }
+          }
+        },
+        {
+          "limit_ms": 175,
+          "near": true,
+          "native_tle_reps": 8,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "mixed_native"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "mixed_native"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "mixed_native"
+            }
+          }
+        },
+        {
+          "limit_ms": 192,
+          "near": true,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 250,
+          "near": false,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        }
+      ]
+    },
+    "successor_walk/global_shuffle": {
+      "cohort": "prospective",
+      "source": "current",
+      "reused_original_observation": true,
+      "packet_samples_ns": [
+        127675000,
+        127629000,
+        127379000
+      ],
+      "reference_ns": [
+        128575000,
+        129599000,
+        128897000,
+        129753000,
+        129262000,
+        128771000,
+        127470000,
+        133293000,
+        129013000
+      ],
+      "reference_range_ns": [
+        127470000,
+        133293000
+      ],
+      "duration": {
+        "baseline": {
+          "prediction_ns": 127675000,
+          "within_20pct": true,
+          "signed_error_ppm": -10371
+        },
+        "first": {
+          "prediction_ns": 127675000,
+          "within_20pct": true,
+          "signed_error_ppm": -10371
+        },
+        "median": {
+          "prediction_ns": 127629000,
+          "within_20pct": true,
+          "signed_error_ppm": -10728
+        }
+      },
+      "deadlines": [
+        {
+          "limit_ms": 77,
+          "near": false,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 109,
+          "near": true,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 128,
+          "near": true,
+          "native_tle_reps": 8,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "mixed_native"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "mixed_native"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "mixed_native"
+            }
+          }
+        },
+        {
+          "limit_ms": 147,
+          "near": true,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 150,
+          "near": true,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 192,
+          "near": false,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        }
+      ]
+    },
+    "successor_walk/large_shuffle": {
+      "cohort": "prospective",
+      "source": "current",
+      "reused_original_observation": true,
+      "packet_samples_ns": [
+        404953000,
+        377769000,
+        379198000
+      ],
+      "reference_ns": [
+        364200000,
+        389128000,
+        375738000,
+        384517000,
+        374432000,
+        382675000,
+        337423000,
+        384308000,
+        394280000
+      ],
+      "reference_range_ns": [
+        337423000,
+        394280000
+      ],
+      "duration": {
+        "baseline": {
+          "prediction_ns": 404953000,
+          "within_20pct": true,
+          "signed_error_ppm": 58217
+        },
+        "first": {
+          "prediction_ns": 404953000,
+          "within_20pct": true,
+          "signed_error_ppm": 58217
+        },
+        "median": {
+          "prediction_ns": 379198000,
+          "within_20pct": true,
+          "signed_error_ppm": -9086
+        }
+      },
+      "deadlines": [
+        {
+          "limit_ms": 150,
+          "near": false,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 243,
+          "near": false,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 345,
+          "near": true,
+          "native_tle_reps": 8,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "mixed_native"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "mixed_native"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "mixed_native"
+            }
+          }
+        },
+        {
+          "limit_ms": 405,
+          "near": true,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 466,
+          "near": true,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 608,
+          "near": false,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        }
+      ]
+    },
+    "rational_gcd/more_pairs": {
+      "cohort": "prospective",
+      "source": "current",
+      "reused_original_observation": true,
+      "packet_samples_ns": [
+        54831000,
+        55385000,
+        54810000
+      ],
+      "reference_ns": [
+        54898000,
+        54804000,
+        54865000,
+        54861000,
+        54807000,
+        54791000,
+        54765000,
+        54866000,
+        55016000
+      ],
+      "reference_range_ns": [
+        54765000,
+        55016000
+      ],
+      "duration": {
+        "baseline": {
+          "prediction_ns": 54831000,
+          "within_20pct": true,
+          "signed_error_ppm": -547
+        },
+        "first": {
+          "prediction_ns": 54831000,
+          "within_20pct": true,
+          "signed_error_ppm": -547
+        },
+        "median": {
+          "prediction_ns": 54831000,
+          "within_20pct": true,
+          "signed_error_ppm": -547
+        }
+      },
+      "deadlines": [
+        {
+          "limit_ms": 33,
+          "near": false,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 47,
+          "near": true,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 55,
+          "near": true,
+          "native_tle_reps": 1,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "mixed_native"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "mixed_native"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "mixed_native"
+            }
+          }
+        },
+        {
+          "limit_ms": 64,
+          "near": true,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 75,
+          "near": false,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 83,
+          "near": false,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        }
+      ]
+    },
+    "csr_frontier/more_roots": {
+      "cohort": "prospective",
+      "source": "transferred",
+      "reused_original_observation": false,
+      "packet_samples_ns": [
+        14521000,
+        15226000,
+        14140000
+      ],
+      "reference_ns": [
+        13939000,
+        14029000,
+        13984000,
+        13828000,
+        13977000,
+        14024000,
+        14380000,
+        13922000,
+        14237000
+      ],
+      "reference_range_ns": [
+        13828000,
+        14380000
+      ],
+      "duration": {
+        "baseline": {
+          "prediction_ns": 15272403,
+          "within_20pct": true,
+          "signed_error_ppm": 92134
+        },
+        "first": {
+          "prediction_ns": 14521000,
+          "within_20pct": true,
+          "signed_error_ppm": 38401
+        },
+        "median": {
+          "prediction_ns": 14521000,
+          "within_20pct": true,
+          "signed_error_ppm": 38401
+        }
+      },
+      "deadlines": [
+        {
+          "limit_ms": 10,
+          "near": false,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 13,
+          "near": true,
+          "native_tle_reps": 9,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": true,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": true,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 16,
+          "near": true,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 18,
+          "near": true,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 23,
+          "near": false,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        },
+        {
+          "limit_ms": 75,
+          "near": false,
+          "native_tle_reps": 0,
+          "native_equal_reps": 0,
+          "verdicts": {
+            "baseline": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "first": {
+              "tle": false,
+              "native_class": "agreement"
+            },
+            "median": {
+              "tle": false,
+              "native_class": "agreement"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
