@@ -57,7 +57,8 @@ def export(job, out, mode="primary"):
         sources.add(path)
     sources.update(("collect.py", "experiments/shape_calibration/bench.py",
                     "experiments/guarded_sampler/protocol.json", "experiments/guarded_native/archived_reference.json"))
-    publish(job, out, select_pids=pids, sources=sorted(sources), plan_name=base + plan_name)
+    publish(job, out, select_pids=pids, sources=sorted(sources), plan_name=base + plan_name,
+            group_duplicate_files=(mode == "scale"))
 
 
 if __name__ == "__main__":
