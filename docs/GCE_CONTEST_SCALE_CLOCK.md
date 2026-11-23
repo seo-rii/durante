@@ -66,3 +66,5 @@ for name in gce-contest-scale gce-contest-scale-repeat; do
 done
 python3 -B -m unittest discover -s tests -p 'test_contest_scale*.py' -v
 ```
+
+A subsequent [cross-submission study](GCE_CONTEST_SUBMISSIONS.md) compares two independent solutions to each of two IOI problems. Its predictions are fixed before the new submissions run natively.
