@@ -1,0 +1,6253 @@
+{
+  "schema": 1,
+  "combined_plan_sha256": "6b9a82c591a9fcd44102ad4e3ca3aeb4d5c3db16c3fbc07fcda341cf89895347",
+  "corpus_sha256": "35ba3f6b8a6fe51a7ba9dcef263e66c4e2bc73e1f10531cfde52627f644a2feb",
+  "reference_archive_sha256": "83f69cf503211adaaa41755b8254aabc822e1e4dccab8a6effcf71f40f4a01ff",
+  "summary_sha256": "84be4fba12e9e30668be8b2a9fe762039dc5bd8c2b6dd8ce87a69624c7d3283e",
+  "pids_verified": 117,
+  "steal_ticks": 0,
+  "cpu": 1,
+  "totals": {
+    "all": {
+      "pairs": 39,
+      "case_count": 13,
+      "distinct_limits": 40,
+      "separate_cpu_ns": 24170087000,
+      "combined_cpu_ns": 13371496000,
+      "saved_cpu_ns": 10798591000,
+      "aggregate_saving_ppm": 446775,
+      "pairs_faster": 39,
+      "min_saving_ppm": 383899,
+      "median_saving_ppm": 453242,
+      "max_saving_ppm": 497039,
+      "paired_selections_different": 0,
+      "selections_different_from_prior": {
+        "separate": 0,
+        "combined": 0
+      },
+      "spatial_material_rejections": 0,
+      "temporal_material_rejections": 0,
+      "max_eligible_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "max_site_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "cutoffs": {
+        "paired": {
+          "decisions": 120,
+          "different": 0,
+          "uncovered": 0
+        },
+        "separate_to_prior": {
+          "decisions": 120,
+          "different": 0,
+          "uncovered": 0
+        },
+        "combined_to_prior": {
+          "decisions": 120,
+          "different": 0,
+          "uncovered": 0
+        }
+      }
+    },
+    "holdout": {
+      "pairs": 30,
+      "case_count": 10,
+      "distinct_limits": 40,
+      "separate_cpu_ns": 20654169000,
+      "combined_cpu_ns": 11354972000,
+      "saved_cpu_ns": 9299197000,
+      "aggregate_saving_ppm": 450233,
+      "pairs_faster": 30,
+      "min_saving_ppm": 383899,
+      "median_saving_ppm": 455856.5,
+      "max_saving_ppm": 497039,
+      "paired_selections_different": 0,
+      "selections_different_from_prior": {
+        "separate": 0,
+        "combined": 0
+      },
+      "spatial_material_rejections": 0,
+      "temporal_material_rejections": 0,
+      "max_eligible_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "max_site_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "cutoffs": {
+        "paired": {
+          "decisions": 120,
+          "different": 0,
+          "uncovered": 0
+        },
+        "separate_to_prior": {
+          "decisions": 120,
+          "different": 0,
+          "uncovered": 0
+        },
+        "combined_to_prior": {
+          "decisions": 120,
+          "different": 0,
+          "uncovered": 0
+        }
+      }
+    },
+    "calibration": {
+      "pairs": 9,
+      "case_count": 3,
+      "distinct_limits": 0,
+      "separate_cpu_ns": 3515918000,
+      "combined_cpu_ns": 2016524000,
+      "saved_cpu_ns": 1499394000,
+      "aggregate_saving_ppm": 426459,
+      "pairs_faster": 9,
+      "min_saving_ppm": 390190,
+      "median_saving_ppm": 439216,
+      "max_saving_ppm": 451566,
+      "paired_selections_different": 0,
+      "selections_different_from_prior": {
+        "separate": 0,
+        "combined": 0
+      },
+      "spatial_material_rejections": 0,
+      "temporal_material_rejections": 0,
+      "max_eligible_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "max_site_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "cutoffs": {
+        "paired": {
+          "decisions": 0,
+          "different": 0,
+          "uncovered": 0
+        },
+        "separate_to_prior": {
+          "decisions": 0,
+          "different": 0,
+          "uncovered": 0
+        },
+        "combined_to_prior": {
+          "decisions": 0,
+          "different": 0,
+          "uncovered": 0
+        }
+      }
+    },
+    "previous": {
+      "pairs": 12,
+      "case_count": 4,
+      "distinct_limits": 16,
+      "separate_cpu_ns": 8219078000,
+      "combined_cpu_ns": 4450961000,
+      "saved_cpu_ns": 3768117000,
+      "aggregate_saving_ppm": 458460,
+      "pairs_faster": 12,
+      "min_saving_ppm": 431074,
+      "median_saving_ppm": 459517.5,
+      "max_saving_ppm": 466587,
+      "paired_selections_different": 0,
+      "selections_different_from_prior": {
+        "separate": 0,
+        "combined": 0
+      },
+      "spatial_material_rejections": 0,
+      "temporal_material_rejections": 0,
+      "max_eligible_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "max_site_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "cutoffs": {
+        "paired": {
+          "decisions": 48,
+          "different": 0,
+          "uncovered": 0
+        },
+        "separate_to_prior": {
+          "decisions": 48,
+          "different": 0,
+          "uncovered": 0
+        },
+        "combined_to_prior": {
+          "decisions": 48,
+          "different": 0,
+          "uncovered": 0
+        }
+      }
+    },
+    "prospective": {
+      "pairs": 18,
+      "case_count": 6,
+      "distinct_limits": 24,
+      "separate_cpu_ns": 12435091000,
+      "combined_cpu_ns": 6904011000,
+      "saved_cpu_ns": 5531080000,
+      "aggregate_saving_ppm": 444796,
+      "pairs_faster": 18,
+      "min_saving_ppm": 383899,
+      "median_saving_ppm": 455458.0,
+      "max_saving_ppm": 497039,
+      "paired_selections_different": 0,
+      "selections_different_from_prior": {
+        "separate": 0,
+        "combined": 0
+      },
+      "spatial_material_rejections": 0,
+      "temporal_material_rejections": 0,
+      "max_eligible_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "max_site_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "cutoffs": {
+        "paired": {
+          "decisions": 72,
+          "different": 0,
+          "uncovered": 0
+        },
+        "separate_to_prior": {
+          "decisions": 72,
+          "different": 0,
+          "uncovered": 0
+        },
+        "combined_to_prior": {
+          "decisions": 72,
+          "different": 0,
+          "uncovered": 0
+        }
+      }
+    }
+  },
+  "cases": {
+    "fenwick/train": {
+      "pairs": 3,
+      "case_count": 1,
+      "distinct_limits": 0,
+      "separate_cpu_ns": 1039105000,
+      "combined_cpu_ns": 581446000,
+      "saved_cpu_ns": 457659000,
+      "aggregate_saving_ppm": 440436,
+      "pairs_faster": 3,
+      "min_saving_ppm": 438587,
+      "median_saving_ppm": 439216,
+      "max_saving_ppm": 443502,
+      "paired_selections_different": 0,
+      "selections_different_from_prior": {
+        "separate": 0,
+        "combined": 0
+      },
+      "spatial_material_rejections": 0,
+      "temporal_material_rejections": 0,
+      "max_eligible_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "max_site_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "cutoffs": {
+        "paired": {
+          "decisions": 0,
+          "different": 0,
+          "uncovered": 0
+        },
+        "separate_to_prior": {
+          "decisions": 0,
+          "different": 0,
+          "uncovered": 0
+        },
+        "combined_to_prior": {
+          "decisions": 0,
+          "different": 0,
+          "uncovered": 0
+        }
+      }
+    },
+    "fenwick/long": {
+      "pairs": 3,
+      "case_count": 1,
+      "distinct_limits": 4,
+      "separate_cpu_ns": 2129393000,
+      "combined_cpu_ns": 1144239000,
+      "saved_cpu_ns": 985154000,
+      "aggregate_saving_ppm": 462645,
+      "pairs_faster": 3,
+      "min_saving_ppm": 461335,
+      "median_saving_ppm": 461887,
+      "max_saving_ppm": 464705,
+      "paired_selections_different": 0,
+      "selections_different_from_prior": {
+        "separate": 0,
+        "combined": 0
+      },
+      "spatial_material_rejections": 0,
+      "temporal_material_rejections": 0,
+      "max_eligible_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "max_site_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "cutoffs": {
+        "paired": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        },
+        "separate_to_prior": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        },
+        "combined_to_prior": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        }
+      }
+    },
+    "fenwick/large": {
+      "pairs": 3,
+      "case_count": 1,
+      "distinct_limits": 4,
+      "separate_cpu_ns": 1389310000,
+      "combined_cpu_ns": 767255000,
+      "saved_cpu_ns": 622055000,
+      "aggregate_saving_ppm": 447744,
+      "pairs_faster": 3,
+      "min_saving_ppm": 431074,
+      "median_saving_ppm": 454022,
+      "max_saving_ppm": 457700,
+      "paired_selections_different": 0,
+      "selections_different_from_prior": {
+        "separate": 0,
+        "combined": 0
+      },
+      "spatial_material_rejections": 0,
+      "temporal_material_rejections": 0,
+      "max_eligible_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "max_site_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "cutoffs": {
+        "paired": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        },
+        "separate_to_prior": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        },
+        "combined_to_prior": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        }
+      }
+    },
+    "fenwick/scale": {
+      "pairs": 3,
+      "case_count": 1,
+      "distinct_limits": 4,
+      "separate_cpu_ns": 1593467000,
+      "combined_cpu_ns": 866692000,
+      "saved_cpu_ns": 726775000,
+      "aggregate_saving_ppm": 456097,
+      "pairs_faster": 3,
+      "min_saving_ppm": 455360,
+      "median_saving_ppm": 456460,
+      "max_saving_ppm": 456466,
+      "paired_selections_different": 0,
+      "selections_different_from_prior": {
+        "separate": 0,
+        "combined": 0
+      },
+      "spatial_material_rejections": 0,
+      "temporal_material_rejections": 0,
+      "max_eligible_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "max_site_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "cutoffs": {
+        "paired": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        },
+        "separate_to_prior": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        },
+        "combined_to_prior": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        }
+      }
+    },
+    "fenwick/expanded": {
+      "pairs": 3,
+      "case_count": 1,
+      "distinct_limits": 4,
+      "separate_cpu_ns": 2441058000,
+      "combined_cpu_ns": 1285117000,
+      "saved_cpu_ns": 1155941000,
+      "aggregate_saving_ppm": 473541,
+      "pairs_faster": 3,
+      "min_saving_ppm": 451945,
+      "median_saving_ppm": 469890,
+      "max_saving_ppm": 497039,
+      "paired_selections_different": 0,
+      "selections_different_from_prior": {
+        "separate": 0,
+        "combined": 0
+      },
+      "spatial_material_rejections": 0,
+      "temporal_material_rejections": 0,
+      "max_eligible_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "max_site_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "cutoffs": {
+        "paired": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        },
+        "separate_to_prior": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        },
+        "combined_to_prior": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        }
+      }
+    },
+    "lookup/train": {
+      "pairs": 3,
+      "case_count": 1,
+      "distinct_limits": 0,
+      "separate_cpu_ns": 1297291000,
+      "combined_cpu_ns": 716254000,
+      "saved_cpu_ns": 581037000,
+      "aggregate_saving_ppm": 447885,
+      "pairs_faster": 3,
+      "min_saving_ppm": 442701,
+      "median_saving_ppm": 449379,
+      "max_saving_ppm": 451566,
+      "paired_selections_different": 0,
+      "selections_different_from_prior": {
+        "separate": 0,
+        "combined": 0
+      },
+      "spatial_material_rejections": 0,
+      "temporal_material_rejections": 0,
+      "max_eligible_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "max_site_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "cutoffs": {
+        "paired": {
+          "decisions": 0,
+          "different": 0,
+          "uncovered": 0
+        },
+        "separate_to_prior": {
+          "decisions": 0,
+          "different": 0,
+          "uncovered": 0
+        },
+        "combined_to_prior": {
+          "decisions": 0,
+          "different": 0,
+          "uncovered": 0
+        }
+      }
+    },
+    "lookup/long": {
+      "pairs": 3,
+      "case_count": 1,
+      "distinct_limits": 4,
+      "separate_cpu_ns": 2877212000,
+      "combined_cpu_ns": 1538191000,
+      "saved_cpu_ns": 1339021000,
+      "aggregate_saving_ppm": 465388,
+      "pairs_faster": 3,
+      "min_saving_ppm": 464108,
+      "median_saving_ppm": 465462,
+      "max_saving_ppm": 466587,
+      "paired_selections_different": 0,
+      "selections_different_from_prior": {
+        "separate": 0,
+        "combined": 0
+      },
+      "spatial_material_rejections": 0,
+      "temporal_material_rejections": 0,
+      "max_eligible_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "max_site_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "cutoffs": {
+        "paired": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        },
+        "separate_to_prior": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        },
+        "combined_to_prior": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        }
+      }
+    },
+    "lookup/shuffled": {
+      "pairs": 3,
+      "case_count": 1,
+      "distinct_limits": 4,
+      "separate_cpu_ns": 1823163000,
+      "combined_cpu_ns": 1001276000,
+      "saved_cpu_ns": 821887000,
+      "aggregate_saving_ppm": 450803,
+      "pairs_faster": 3,
+      "min_saving_ppm": 445194,
+      "median_saving_ppm": 452262,
+      "max_saving_ppm": 454933,
+      "paired_selections_different": 0,
+      "selections_different_from_prior": {
+        "separate": 0,
+        "combined": 0
+      },
+      "spatial_material_rejections": 0,
+      "temporal_material_rejections": 0,
+      "max_eligible_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "max_site_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "cutoffs": {
+        "paired": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        },
+        "separate_to_prior": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        },
+        "combined_to_prior": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        }
+      }
+    },
+    "lookup/ordered_pair": {
+      "pairs": 3,
+      "case_count": 1,
+      "distinct_limits": 4,
+      "separate_cpu_ns": 2082976000,
+      "combined_cpu_ns": 1132864000,
+      "saved_cpu_ns": 950112000,
+      "aggregate_saving_ppm": 456132,
+      "pairs_faster": 3,
+      "min_saving_ppm": 455556,
+      "median_saving_ppm": 456157,
+      "max_saving_ppm": 456681,
+      "paired_selections_different": 0,
+      "selections_different_from_prior": {
+        "separate": 0,
+        "combined": 0
+      },
+      "spatial_material_rejections": 0,
+      "temporal_material_rejections": 0,
+      "max_eligible_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "max_site_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "cutoffs": {
+        "paired": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        },
+        "separate_to_prior": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        },
+        "combined_to_prior": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        }
+      }
+    },
+    "lookup/shuffled_pair": {
+      "pairs": 3,
+      "case_count": 1,
+      "distinct_limits": 4,
+      "separate_cpu_ns": 3157406000,
+      "combined_cpu_ns": 1708346000,
+      "saved_cpu_ns": 1449060000,
+      "aggregate_saving_ppm": 458940,
+      "pairs_faster": 3,
+      "min_saving_ppm": 453242,
+      "median_saving_ppm": 460115,
+      "max_saving_ppm": 463469,
+      "paired_selections_different": 0,
+      "selections_different_from_prior": {
+        "separate": 0,
+        "combined": 0
+      },
+      "spatial_material_rejections": 0,
+      "temporal_material_rejections": 0,
+      "max_eligible_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "max_site_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "cutoffs": {
+        "paired": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        },
+        "separate_to_prior": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        },
+        "combined_to_prior": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        }
+      }
+    },
+    "window/train": {
+      "pairs": 3,
+      "case_count": 1,
+      "distinct_limits": 0,
+      "separate_cpu_ns": 1179522000,
+      "combined_cpu_ns": 718824000,
+      "saved_cpu_ns": 460698000,
+      "aggregate_saving_ppm": 390580,
+      "pairs_faster": 3,
+      "min_saving_ppm": 390190,
+      "median_saving_ppm": 390494,
+      "max_saving_ppm": 391058,
+      "paired_selections_different": 0,
+      "selections_different_from_prior": {
+        "separate": 0,
+        "combined": 0
+      },
+      "spatial_material_rejections": 0,
+      "temporal_material_rejections": 0,
+      "max_eligible_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "max_site_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "cutoffs": {
+        "paired": {
+          "decisions": 0,
+          "different": 0,
+          "uncovered": 0
+        },
+        "separate_to_prior": {
+          "decisions": 0,
+          "different": 0,
+          "uncovered": 0
+        },
+        "combined_to_prior": {
+          "decisions": 0,
+          "different": 0,
+          "uncovered": 0
+        }
+      }
+    },
+    "window/scale": {
+      "pairs": 3,
+      "case_count": 1,
+      "distinct_limits": 4,
+      "separate_cpu_ns": 1636905000,
+      "combined_cpu_ns": 1000713000,
+      "saved_cpu_ns": 636192000,
+      "aggregate_saving_ppm": 388655,
+      "pairs_faster": 3,
+      "min_saving_ppm": 383899,
+      "median_saving_ppm": 390914,
+      "max_saving_ppm": 391166,
+      "paired_selections_different": 0,
+      "selections_different_from_prior": {
+        "separate": 0,
+        "combined": 0
+      },
+      "spatial_material_rejections": 0,
+      "temporal_material_rejections": 0,
+      "max_eligible_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "max_site_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "cutoffs": {
+        "paired": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        },
+        "separate_to_prior": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        },
+        "combined_to_prior": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        }
+      }
+    },
+    "window/expanded": {
+      "pairs": 3,
+      "case_count": 1,
+      "distinct_limits": 4,
+      "separate_cpu_ns": 1523279000,
+      "combined_cpu_ns": 910279000,
+      "saved_cpu_ns": 613000000,
+      "aggregate_saving_ppm": 402421,
+      "pairs_faster": 3,
+      "min_saving_ppm": 395844,
+      "median_saving_ppm": 405333,
+      "max_saving_ppm": 406080,
+      "paired_selections_different": 0,
+      "selections_different_from_prior": {
+        "separate": 0,
+        "combined": 0
+      },
+      "spatial_material_rejections": 0,
+      "temporal_material_rejections": 0,
+      "max_eligible_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "max_site_load_delta": {
+        "spatial": 0,
+        "temporal": 0,
+        "inside_combined": 0
+      },
+      "cutoffs": {
+        "paired": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        },
+        "separate_to_prior": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        },
+        "combined_to_prior": {
+          "decisions": 12,
+          "different": 0,
+          "uncovered": 0
+        }
+      }
+    }
+  },
+  "pairs": [
+    {
+      "sequence": 0,
+      "round": 1,
+      "order": [
+        "separate",
+        "combined"
+      ],
+      "case_id": "lookup/long",
+      "cohort": "previous",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 961623000,
+      "combined_cpu_ns": 514024000,
+      "saved_cpu_ns": 447599000,
+      "saving_ppm": 465462,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            72002639,
+            72002639
+          ],
+          "sites": [
+            636,
+            636
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            72002639,
+            72002639
+          ],
+          "sites": [
+            636,
+            636
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            72002639,
+            72002639
+          ],
+          "sites": [
+            636,
+            636
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "reuse",
+        "anchor_case": "lookup/train",
+        "prediction_ns": 144019372,
+        "implied_tle": [
+          true,
+          true,
+          false,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "reuse",
+          "anchor_case": "lookup/train",
+          "covered": true,
+          "prediction_ns": 144019372,
+          "admission": [
+            {
+              "anchor_case": "lookup/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        },
+        "combined": {
+          "action": "reuse",
+          "anchor_case": "lookup/train",
+          "covered": true,
+          "prediction_ns": 144019372,
+          "admission": [
+            {
+              "anchor_case": "lookup/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 1,
+      "round": 1,
+      "order": [
+        "combined",
+        "separate"
+      ],
+      "case_id": "lookup/shuffled_pair",
+      "cohort": "prospective",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 1055477000,
+      "combined_cpu_ns": 577090000,
+      "saved_cpu_ns": 478387000,
+      "saving_ppm": 453242,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            48002601,
+            48002601
+          ],
+          "sites": [
+            628,
+            628
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            48002601,
+            48002601
+          ],
+          "sites": [
+            628,
+            628
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            48002601,
+            48002601
+          ],
+          "sites": [
+            628,
+            628
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "reuse",
+        "anchor_case": "lookup/shuffled",
+        "prediction_ns": 272451699,
+        "implied_tle": [
+          true,
+          true,
+          true,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "reuse",
+          "anchor_case": "lookup/shuffled",
+          "covered": true,
+          "prediction_ns": 272451690,
+          "admission": [
+            {
+              "anchor_case": "lookup/train",
+              "shape_reasons": [],
+              "temporal_reasons": [
+                "exact_hits_changed"
+              ]
+            },
+            {
+              "anchor_case": "lookup/shuffled",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            true,
+            false
+          ]
+        },
+        "combined": {
+          "action": "reuse",
+          "anchor_case": "lookup/shuffled",
+          "covered": true,
+          "prediction_ns": 272451690,
+          "admission": [
+            {
+              "anchor_case": "lookup/train",
+              "shape_reasons": [],
+              "temporal_reasons": [
+                "exact_hits_changed"
+              ]
+            },
+            {
+              "anchor_case": "lookup/shuffled",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            true,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 2,
+      "round": 1,
+      "order": [
+        "separate",
+        "combined"
+      ],
+      "case_id": "window/expanded",
+      "cohort": "prospective",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 507563000,
+      "combined_cpu_ns": 306647000,
+      "saved_cpu_ns": 200916000,
+      "saving_ppm": 395844,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            59986106,
+            59986106
+          ],
+          "sites": [
+            644,
+            644
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            59986106,
+            59986106
+          ],
+          "sites": [
+            644,
+            644
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            59986106,
+            59986106
+          ],
+          "sites": [
+            644,
+            644
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "calibrate",
+        "anchor_case": "window/expanded",
+        "prediction_ns": 67984000,
+        "implied_tle": [
+          true,
+          false,
+          false,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "calibrate",
+          "anchor_case": "window/expanded",
+          "covered": true,
+          "prediction_ns": 67984000,
+          "admission": [
+            {
+              "anchor_case": "window/train",
+              "shape_reasons": [
+                "span_changed"
+              ],
+              "temporal_reasons": [
+                "radius_hits_changed"
+              ]
+            }
+          ],
+          "implied_tle": [
+            true,
+            false,
+            false,
+            false
+          ]
+        },
+        "combined": {
+          "action": "calibrate",
+          "anchor_case": "window/expanded",
+          "covered": true,
+          "prediction_ns": 67984000,
+          "admission": [
+            {
+              "anchor_case": "window/train",
+              "shape_reasons": [
+                "span_changed"
+              ],
+              "temporal_reasons": [
+                "radius_hits_changed"
+              ]
+            }
+          ],
+          "implied_tle": [
+            true,
+            false,
+            false,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 3,
+      "round": 1,
+      "order": [
+        "combined",
+        "separate"
+      ],
+      "case_id": "fenwick/train",
+      "cohort": "calibration",
+      "split": "calibration",
+      "limits_ms": [],
+      "separate_cpu_ns": 346673000,
+      "combined_cpu_ns": 192923000,
+      "saved_cpu_ns": 153750000,
+      "saving_ppm": 443502,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            10502418,
+            10502418
+          ],
+          "sites": [
+            641,
+            641
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            10502418,
+            10502418
+          ],
+          "sites": [
+            641,
+            641
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            10502418,
+            10502418
+          ],
+          "sites": [
+            641,
+            641
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "calibrate",
+        "anchor_case": "fenwick/train",
+        "prediction_ns": 47762000,
+        "implied_tle": []
+      },
+      "policies": {
+        "separate": {
+          "action": "calibrate",
+          "anchor_case": "fenwick/train",
+          "covered": true,
+          "prediction_ns": 47762000,
+          "admission": [],
+          "implied_tle": []
+        },
+        "combined": {
+          "action": "calibrate",
+          "anchor_case": "fenwick/train",
+          "covered": true,
+          "prediction_ns": 47762000,
+          "admission": [],
+          "implied_tle": []
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 0,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 0,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 0,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 4,
+      "round": 1,
+      "order": [
+        "separate",
+        "combined"
+      ],
+      "case_id": "fenwick/large",
+      "cohort": "previous",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 460579000,
+      "combined_cpu_ns": 251466000,
+      "saved_cpu_ns": 209113000,
+      "saving_ppm": 454022,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            15002372,
+            15002372
+          ],
+          "sites": [
+            627,
+            627
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            15002372,
+            15002372
+          ],
+          "sites": [
+            627,
+            627
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            15002372,
+            15002372
+          ],
+          "sites": [
+            627,
+            627
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "calibrate",
+        "anchor_case": "fenwick/large",
+        "prediction_ns": 77916000,
+        "implied_tle": [
+          true,
+          true,
+          false,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "calibrate",
+          "anchor_case": "fenwick/large",
+          "covered": true,
+          "prediction_ns": 77916000,
+          "admission": [
+            {
+              "anchor_case": "fenwick/train",
+              "shape_reasons": [
+                "far_fraction_changed",
+                "span_changed"
+              ],
+              "temporal_reasons": [
+                "exact_hits_changed",
+                "radius_hits_changed"
+              ]
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        },
+        "combined": {
+          "action": "calibrate",
+          "anchor_case": "fenwick/large",
+          "covered": true,
+          "prediction_ns": 77916000,
+          "admission": [
+            {
+              "anchor_case": "fenwick/train",
+              "shape_reasons": [
+                "far_fraction_changed",
+                "span_changed"
+              ],
+              "temporal_reasons": [
+                "exact_hits_changed",
+                "radius_hits_changed"
+              ]
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 5,
+      "round": 1,
+      "order": [
+        "combined",
+        "separate"
+      ],
+      "case_id": "fenwick/scale",
+      "cohort": "prospective",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 529223000,
+      "combined_cpu_ns": 288236000,
+      "saved_cpu_ns": 240987000,
+      "saving_ppm": 455360,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            21002746,
+            21002746
+          ],
+          "sites": [
+            641,
+            641
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            21002746,
+            21002746
+          ],
+          "sites": [
+            641,
+            641
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            21002746,
+            21002746
+          ],
+          "sites": [
+            641,
+            641
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "reuse",
+        "anchor_case": "fenwick/train",
+        "prediction_ns": 95518155,
+        "implied_tle": [
+          true,
+          true,
+          false,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "reuse",
+          "anchor_case": "fenwick/train",
+          "covered": true,
+          "prediction_ns": 95518155,
+          "admission": [
+            {
+              "anchor_case": "fenwick/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        },
+        "combined": {
+          "action": "reuse",
+          "anchor_case": "fenwick/train",
+          "covered": true,
+          "prediction_ns": 95518155,
+          "admission": [
+            {
+              "anchor_case": "fenwick/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 6,
+      "round": 1,
+      "order": [
+        "separate",
+        "combined"
+      ],
+      "case_id": "fenwick/long",
+      "cohort": "previous",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 707850000,
+      "combined_cpu_ns": 381294000,
+      "saved_cpu_ns": 326556000,
+      "saving_ppm": 461335,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            31502673,
+            31502673
+          ],
+          "sites": [
+            641,
+            641
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            31502673,
+            31502673
+          ],
+          "sites": [
+            641,
+            641
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            31502673,
+            31502673
+          ],
+          "sites": [
+            641,
+            641
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "reuse",
+        "anchor_case": "fenwick/train",
+        "prediction_ns": 143273447,
+        "implied_tle": [
+          true,
+          true,
+          false,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "reuse",
+          "anchor_case": "fenwick/train",
+          "covered": true,
+          "prediction_ns": 143273447,
+          "admission": [
+            {
+              "anchor_case": "fenwick/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        },
+        "combined": {
+          "action": "reuse",
+          "anchor_case": "fenwick/train",
+          "covered": true,
+          "prediction_ns": 143273447,
+          "admission": [
+            {
+              "anchor_case": "fenwick/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 7,
+      "round": 1,
+      "order": [
+        "combined",
+        "separate"
+      ],
+      "case_id": "window/train",
+      "cohort": "calibration",
+      "split": "calibration",
+      "limits_ms": [],
+      "separate_cpu_ns": 393394000,
+      "combined_cpu_ns": 239776000,
+      "saved_cpu_ns": 153618000,
+      "saving_ppm": 390494,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            59986104,
+            59986104
+          ],
+          "sites": [
+            649,
+            649
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            59986104,
+            59986104
+          ],
+          "sites": [
+            649,
+            649
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            59986104,
+            59986104
+          ],
+          "sites": [
+            649,
+            649
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "calibrate",
+        "anchor_case": "window/train",
+        "prediction_ns": 25426000,
+        "implied_tle": []
+      },
+      "policies": {
+        "separate": {
+          "action": "calibrate",
+          "anchor_case": "window/train",
+          "covered": true,
+          "prediction_ns": 25426000,
+          "admission": [],
+          "implied_tle": []
+        },
+        "combined": {
+          "action": "calibrate",
+          "anchor_case": "window/train",
+          "covered": true,
+          "prediction_ns": 25426000,
+          "admission": [],
+          "implied_tle": []
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 0,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 0,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 0,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 8,
+      "round": 1,
+      "order": [
+        "separate",
+        "combined"
+      ],
+      "case_id": "lookup/shuffled",
+      "cohort": "previous",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 609232000,
+      "combined_cpu_ns": 332072000,
+      "saved_cpu_ns": 277160000,
+      "saving_ppm": 454933,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            24002560,
+            24002560
+          ],
+          "sites": [
+            628,
+            628
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            24002560,
+            24002560
+          ],
+          "sites": [
+            628,
+            628
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            24002560,
+            24002560
+          ],
+          "sites": [
+            628,
+            628
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "calibrate",
+        "anchor_case": "lookup/shuffled",
+        "prediction_ns": 136329000,
+        "implied_tle": [
+          true,
+          true,
+          false,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "calibrate",
+          "anchor_case": "lookup/shuffled",
+          "covered": true,
+          "prediction_ns": 136329000,
+          "admission": [
+            {
+              "anchor_case": "lookup/train",
+              "shape_reasons": [],
+              "temporal_reasons": [
+                "exact_hits_changed"
+              ]
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        },
+        "combined": {
+          "action": "calibrate",
+          "anchor_case": "lookup/shuffled",
+          "covered": true,
+          "prediction_ns": 136329000,
+          "admission": [
+            {
+              "anchor_case": "lookup/train",
+              "shape_reasons": [],
+              "temporal_reasons": [
+                "exact_hits_changed"
+              ]
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 9,
+      "round": 1,
+      "order": [
+        "combined",
+        "separate"
+      ],
+      "case_id": "fenwick/expanded",
+      "cohort": "prospective",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 851788000,
+      "combined_cpu_ns": 428416000,
+      "saved_cpu_ns": 423372000,
+      "saving_ppm": 497039,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            31503520,
+            31503520
+          ],
+          "sites": [
+            627,
+            627
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            31503520,
+            31503520
+          ],
+          "sites": [
+            627,
+            627
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            31503520,
+            31503520
+          ],
+          "sites": [
+            627,
+            627
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "reuse",
+        "anchor_case": "fenwick/large",
+        "prediction_ns": 162025492,
+        "implied_tle": [
+          true,
+          true,
+          true,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "reuse",
+          "anchor_case": "fenwick/large",
+          "covered": true,
+          "prediction_ns": 162025492,
+          "admission": [
+            {
+              "anchor_case": "fenwick/train",
+              "shape_reasons": [
+                "far_fraction_changed",
+                "span_changed"
+              ],
+              "temporal_reasons": [
+                "exact_hits_changed",
+                "radius_hits_changed"
+              ]
+            },
+            {
+              "anchor_case": "fenwick/large",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            true,
+            false
+          ]
+        },
+        "combined": {
+          "action": "reuse",
+          "anchor_case": "fenwick/large",
+          "covered": true,
+          "prediction_ns": 162025492,
+          "admission": [
+            {
+              "anchor_case": "fenwick/train",
+              "shape_reasons": [
+                "far_fraction_changed",
+                "span_changed"
+              ],
+              "temporal_reasons": [
+                "exact_hits_changed",
+                "radius_hits_changed"
+              ]
+            },
+            {
+              "anchor_case": "fenwick/large",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            true,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 10,
+      "round": 1,
+      "order": [
+        "separate",
+        "combined"
+      ],
+      "case_id": "lookup/ordered_pair",
+      "cohort": "prospective",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 691631000,
+      "combined_cpu_ns": 376139000,
+      "saved_cpu_ns": 315492000,
+      "saving_ppm": 456157,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            48002601,
+            48002601
+          ],
+          "sites": [
+            636,
+            636
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            48002601,
+            48002601
+          ],
+          "sites": [
+            636,
+            636
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            48002601,
+            48002601
+          ],
+          "sites": [
+            636,
+            636
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "reuse",
+        "anchor_case": "lookup/train",
+        "prediction_ns": 96039074,
+        "implied_tle": [
+          true,
+          true,
+          false,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "reuse",
+          "anchor_case": "lookup/train",
+          "covered": true,
+          "prediction_ns": 96039074,
+          "admission": [
+            {
+              "anchor_case": "lookup/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        },
+        "combined": {
+          "action": "reuse",
+          "anchor_case": "lookup/train",
+          "covered": true,
+          "prediction_ns": 96039074,
+          "admission": [
+            {
+              "anchor_case": "lookup/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 11,
+      "round": 1,
+      "order": [
+        "combined",
+        "separate"
+      ],
+      "case_id": "lookup/train",
+      "cohort": "calibration",
+      "split": "calibration",
+      "limits_ms": [],
+      "separate_cpu_ns": 432352000,
+      "combined_cpu_ns": 238062000,
+      "saved_cpu_ns": 194290000,
+      "saving_ppm": 449379,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            24002568,
+            24002568
+          ],
+          "sites": [
+            636,
+            636
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            24002568,
+            24002568
+          ],
+          "sites": [
+            636,
+            636
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            24002568,
+            24002568
+          ],
+          "sites": [
+            636,
+            636
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "calibrate",
+        "anchor_case": "lookup/train",
+        "prediction_ns": 48045000,
+        "implied_tle": []
+      },
+      "policies": {
+        "separate": {
+          "action": "calibrate",
+          "anchor_case": "lookup/train",
+          "covered": true,
+          "prediction_ns": 48045000,
+          "admission": [],
+          "implied_tle": []
+        },
+        "combined": {
+          "action": "calibrate",
+          "anchor_case": "lookup/train",
+          "covered": true,
+          "prediction_ns": 48045000,
+          "admission": [],
+          "implied_tle": []
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 0,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 0,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 0,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 12,
+      "round": 1,
+      "order": [
+        "separate",
+        "combined"
+      ],
+      "case_id": "window/scale",
+      "cohort": "prospective",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 546612000,
+      "combined_cpu_ns": 336768000,
+      "saved_cpu_ns": 209844000,
+      "saving_ppm": 383899,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            99986104,
+            99986104
+          ],
+          "sites": [
+            649,
+            649
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            99986104,
+            99986104
+          ],
+          "sites": [
+            649,
+            649
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            99986104,
+            99986104
+          ],
+          "sites": [
+            649,
+            649
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "reuse",
+        "anchor_case": "window/train",
+        "prediction_ns": 42378061,
+        "implied_tle": [
+          true,
+          false,
+          false,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "reuse",
+          "anchor_case": "window/train",
+          "covered": true,
+          "prediction_ns": 42378061,
+          "admission": [
+            {
+              "anchor_case": "window/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            false,
+            false,
+            false
+          ]
+        },
+        "combined": {
+          "action": "reuse",
+          "anchor_case": "window/train",
+          "covered": true,
+          "prediction_ns": 42378061,
+          "admission": [
+            {
+              "anchor_case": "window/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            false,
+            false,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 13,
+      "round": 2,
+      "order": [
+        "separate",
+        "combined"
+      ],
+      "case_id": "lookup/shuffled_pair",
+      "cohort": "prospective",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 1045031000,
+      "combined_cpu_ns": 564197000,
+      "saved_cpu_ns": 480834000,
+      "saving_ppm": 460115,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            48002601,
+            48002601
+          ],
+          "sites": [
+            628,
+            628
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            48002601,
+            48002601
+          ],
+          "sites": [
+            628,
+            628
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            48002601,
+            48002601
+          ],
+          "sites": [
+            628,
+            628
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "reuse",
+        "anchor_case": "lookup/shuffled",
+        "prediction_ns": 272451699,
+        "implied_tle": [
+          true,
+          true,
+          true,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "reuse",
+          "anchor_case": "lookup/shuffled",
+          "covered": true,
+          "prediction_ns": 272451690,
+          "admission": [
+            {
+              "anchor_case": "lookup/train",
+              "shape_reasons": [],
+              "temporal_reasons": [
+                "exact_hits_changed"
+              ]
+            },
+            {
+              "anchor_case": "lookup/shuffled",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            true,
+            false
+          ]
+        },
+        "combined": {
+          "action": "reuse",
+          "anchor_case": "lookup/shuffled",
+          "covered": true,
+          "prediction_ns": 272451690,
+          "admission": [
+            {
+              "anchor_case": "lookup/train",
+              "shape_reasons": [],
+              "temporal_reasons": [
+                "exact_hits_changed"
+              ]
+            },
+            {
+              "anchor_case": "lookup/shuffled",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            true,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 14,
+      "round": 2,
+      "order": [
+        "combined",
+        "separate"
+      ],
+      "case_id": "window/expanded",
+      "cohort": "prospective",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 510215000,
+      "combined_cpu_ns": 303027000,
+      "saved_cpu_ns": 207188000,
+      "saving_ppm": 406080,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            59986106,
+            59986106
+          ],
+          "sites": [
+            644,
+            644
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            59986106,
+            59986106
+          ],
+          "sites": [
+            644,
+            644
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            59986106,
+            59986106
+          ],
+          "sites": [
+            644,
+            644
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "calibrate",
+        "anchor_case": "window/expanded",
+        "prediction_ns": 67984000,
+        "implied_tle": [
+          true,
+          false,
+          false,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "calibrate",
+          "anchor_case": "window/expanded",
+          "covered": true,
+          "prediction_ns": 67984000,
+          "admission": [
+            {
+              "anchor_case": "window/train",
+              "shape_reasons": [
+                "span_changed"
+              ],
+              "temporal_reasons": [
+                "radius_hits_changed"
+              ]
+            }
+          ],
+          "implied_tle": [
+            true,
+            false,
+            false,
+            false
+          ]
+        },
+        "combined": {
+          "action": "calibrate",
+          "anchor_case": "window/expanded",
+          "covered": true,
+          "prediction_ns": 67984000,
+          "admission": [
+            {
+              "anchor_case": "window/train",
+              "shape_reasons": [
+                "span_changed"
+              ],
+              "temporal_reasons": [
+                "radius_hits_changed"
+              ]
+            }
+          ],
+          "implied_tle": [
+            true,
+            false,
+            false,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 15,
+      "round": 2,
+      "order": [
+        "separate",
+        "combined"
+      ],
+      "case_id": "fenwick/train",
+      "cohort": "calibration",
+      "split": "calibration",
+      "limits_ms": [],
+      "separate_cpu_ns": 345240000,
+      "combined_cpu_ns": 193605000,
+      "saved_cpu_ns": 151635000,
+      "saving_ppm": 439216,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            10502418,
+            10502418
+          ],
+          "sites": [
+            641,
+            641
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            10502418,
+            10502418
+          ],
+          "sites": [
+            641,
+            641
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            10502418,
+            10502418
+          ],
+          "sites": [
+            641,
+            641
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "calibrate",
+        "anchor_case": "fenwick/train",
+        "prediction_ns": 47762000,
+        "implied_tle": []
+      },
+      "policies": {
+        "separate": {
+          "action": "calibrate",
+          "anchor_case": "fenwick/train",
+          "covered": true,
+          "prediction_ns": 47762000,
+          "admission": [],
+          "implied_tle": []
+        },
+        "combined": {
+          "action": "calibrate",
+          "anchor_case": "fenwick/train",
+          "covered": true,
+          "prediction_ns": 47762000,
+          "admission": [],
+          "implied_tle": []
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 0,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 0,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 0,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 16,
+      "round": 2,
+      "order": [
+        "combined",
+        "separate"
+      ],
+      "case_id": "fenwick/large",
+      "cohort": "previous",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 455871000,
+      "combined_cpu_ns": 259357000,
+      "saved_cpu_ns": 196514000,
+      "saving_ppm": 431074,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            15002372,
+            15002372
+          ],
+          "sites": [
+            627,
+            627
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            15002372,
+            15002372
+          ],
+          "sites": [
+            627,
+            627
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            15002372,
+            15002372
+          ],
+          "sites": [
+            627,
+            627
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "calibrate",
+        "anchor_case": "fenwick/large",
+        "prediction_ns": 77916000,
+        "implied_tle": [
+          true,
+          true,
+          false,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "calibrate",
+          "anchor_case": "fenwick/large",
+          "covered": true,
+          "prediction_ns": 77916000,
+          "admission": [
+            {
+              "anchor_case": "fenwick/train",
+              "shape_reasons": [
+                "far_fraction_changed",
+                "span_changed"
+              ],
+              "temporal_reasons": [
+                "exact_hits_changed",
+                "radius_hits_changed"
+              ]
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        },
+        "combined": {
+          "action": "calibrate",
+          "anchor_case": "fenwick/large",
+          "covered": true,
+          "prediction_ns": 77916000,
+          "admission": [
+            {
+              "anchor_case": "fenwick/train",
+              "shape_reasons": [
+                "far_fraction_changed",
+                "span_changed"
+              ],
+              "temporal_reasons": [
+                "exact_hits_changed",
+                "radius_hits_changed"
+              ]
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 17,
+      "round": 2,
+      "order": [
+        "separate",
+        "combined"
+      ],
+      "case_id": "fenwick/scale",
+      "cohort": "prospective",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 536472000,
+      "combined_cpu_ns": 291591000,
+      "saved_cpu_ns": 244881000,
+      "saving_ppm": 456466,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            21002746,
+            21002746
+          ],
+          "sites": [
+            641,
+            641
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            21002746,
+            21002746
+          ],
+          "sites": [
+            641,
+            641
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            21002746,
+            21002746
+          ],
+          "sites": [
+            641,
+            641
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "reuse",
+        "anchor_case": "fenwick/train",
+        "prediction_ns": 95518155,
+        "implied_tle": [
+          true,
+          true,
+          false,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "reuse",
+          "anchor_case": "fenwick/train",
+          "covered": true,
+          "prediction_ns": 95518155,
+          "admission": [
+            {
+              "anchor_case": "fenwick/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        },
+        "combined": {
+          "action": "reuse",
+          "anchor_case": "fenwick/train",
+          "covered": true,
+          "prediction_ns": 95518155,
+          "admission": [
+            {
+              "anchor_case": "fenwick/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 18,
+      "round": 2,
+      "order": [
+        "combined",
+        "separate"
+      ],
+      "case_id": "fenwick/long",
+      "cohort": "previous",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 709885000,
+      "combined_cpu_ns": 381998000,
+      "saved_cpu_ns": 327887000,
+      "saving_ppm": 461887,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            31502673,
+            31502673
+          ],
+          "sites": [
+            641,
+            641
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            31502673,
+            31502673
+          ],
+          "sites": [
+            641,
+            641
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            31502673,
+            31502673
+          ],
+          "sites": [
+            641,
+            641
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "reuse",
+        "anchor_case": "fenwick/train",
+        "prediction_ns": 143273447,
+        "implied_tle": [
+          true,
+          true,
+          false,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "reuse",
+          "anchor_case": "fenwick/train",
+          "covered": true,
+          "prediction_ns": 143273447,
+          "admission": [
+            {
+              "anchor_case": "fenwick/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        },
+        "combined": {
+          "action": "reuse",
+          "anchor_case": "fenwick/train",
+          "covered": true,
+          "prediction_ns": 143273447,
+          "admission": [
+            {
+              "anchor_case": "fenwick/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 19,
+      "round": 2,
+      "order": [
+        "separate",
+        "combined"
+      ],
+      "case_id": "window/train",
+      "cohort": "calibration",
+      "split": "calibration",
+      "limits_ms": [],
+      "separate_cpu_ns": 393598000,
+      "combined_cpu_ns": 240020000,
+      "saved_cpu_ns": 153578000,
+      "saving_ppm": 390190,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            59986104,
+            59986104
+          ],
+          "sites": [
+            649,
+            649
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            59986104,
+            59986104
+          ],
+          "sites": [
+            649,
+            649
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            59986104,
+            59986104
+          ],
+          "sites": [
+            649,
+            649
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "calibrate",
+        "anchor_case": "window/train",
+        "prediction_ns": 25426000,
+        "implied_tle": []
+      },
+      "policies": {
+        "separate": {
+          "action": "calibrate",
+          "anchor_case": "window/train",
+          "covered": true,
+          "prediction_ns": 25426000,
+          "admission": [],
+          "implied_tle": []
+        },
+        "combined": {
+          "action": "calibrate",
+          "anchor_case": "window/train",
+          "covered": true,
+          "prediction_ns": 25426000,
+          "admission": [],
+          "implied_tle": []
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 0,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 0,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 0,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 20,
+      "round": 2,
+      "order": [
+        "combined",
+        "separate"
+      ],
+      "case_id": "lookup/shuffled",
+      "cohort": "previous",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 606704000,
+      "combined_cpu_ns": 336603000,
+      "saved_cpu_ns": 270101000,
+      "saving_ppm": 445194,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            24002560,
+            24002560
+          ],
+          "sites": [
+            628,
+            628
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            24002560,
+            24002560
+          ],
+          "sites": [
+            628,
+            628
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            24002560,
+            24002560
+          ],
+          "sites": [
+            628,
+            628
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "calibrate",
+        "anchor_case": "lookup/shuffled",
+        "prediction_ns": 136329000,
+        "implied_tle": [
+          true,
+          true,
+          false,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "calibrate",
+          "anchor_case": "lookup/shuffled",
+          "covered": true,
+          "prediction_ns": 136329000,
+          "admission": [
+            {
+              "anchor_case": "lookup/train",
+              "shape_reasons": [],
+              "temporal_reasons": [
+                "exact_hits_changed"
+              ]
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        },
+        "combined": {
+          "action": "calibrate",
+          "anchor_case": "lookup/shuffled",
+          "covered": true,
+          "prediction_ns": 136329000,
+          "admission": [
+            {
+              "anchor_case": "lookup/train",
+              "shape_reasons": [],
+              "temporal_reasons": [
+                "exact_hits_changed"
+              ]
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 21,
+      "round": 2,
+      "order": [
+        "separate",
+        "combined"
+      ],
+      "case_id": "fenwick/expanded",
+      "cohort": "prospective",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 792054000,
+      "combined_cpu_ns": 434089000,
+      "saved_cpu_ns": 357965000,
+      "saving_ppm": 451945,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            31503520,
+            31503520
+          ],
+          "sites": [
+            627,
+            627
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            31503520,
+            31503520
+          ],
+          "sites": [
+            627,
+            627
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            31503520,
+            31503520
+          ],
+          "sites": [
+            627,
+            627
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "reuse",
+        "anchor_case": "fenwick/large",
+        "prediction_ns": 162025492,
+        "implied_tle": [
+          true,
+          true,
+          true,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "reuse",
+          "anchor_case": "fenwick/large",
+          "covered": true,
+          "prediction_ns": 162025492,
+          "admission": [
+            {
+              "anchor_case": "fenwick/train",
+              "shape_reasons": [
+                "far_fraction_changed",
+                "span_changed"
+              ],
+              "temporal_reasons": [
+                "exact_hits_changed",
+                "radius_hits_changed"
+              ]
+            },
+            {
+              "anchor_case": "fenwick/large",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            true,
+            false
+          ]
+        },
+        "combined": {
+          "action": "reuse",
+          "anchor_case": "fenwick/large",
+          "covered": true,
+          "prediction_ns": 162025492,
+          "admission": [
+            {
+              "anchor_case": "fenwick/train",
+              "shape_reasons": [
+                "far_fraction_changed",
+                "span_changed"
+              ],
+              "temporal_reasons": [
+                "exact_hits_changed",
+                "radius_hits_changed"
+              ]
+            },
+            {
+              "anchor_case": "fenwick/large",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            true,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 22,
+      "round": 2,
+      "order": [
+        "combined",
+        "separate"
+      ],
+      "case_id": "lookup/ordered_pair",
+      "cohort": "prospective",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 696906000,
+      "combined_cpu_ns": 378642000,
+      "saved_cpu_ns": 318264000,
+      "saving_ppm": 456681,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            48002601,
+            48002601
+          ],
+          "sites": [
+            636,
+            636
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            48002601,
+            48002601
+          ],
+          "sites": [
+            636,
+            636
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            48002601,
+            48002601
+          ],
+          "sites": [
+            636,
+            636
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "reuse",
+        "anchor_case": "lookup/train",
+        "prediction_ns": 96039074,
+        "implied_tle": [
+          true,
+          true,
+          false,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "reuse",
+          "anchor_case": "lookup/train",
+          "covered": true,
+          "prediction_ns": 96039074,
+          "admission": [
+            {
+              "anchor_case": "lookup/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        },
+        "combined": {
+          "action": "reuse",
+          "anchor_case": "lookup/train",
+          "covered": true,
+          "prediction_ns": 96039074,
+          "admission": [
+            {
+              "anchor_case": "lookup/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 23,
+      "round": 2,
+      "order": [
+        "separate",
+        "combined"
+      ],
+      "case_id": "lookup/train",
+      "cohort": "calibration",
+      "split": "calibration",
+      "limits_ms": [],
+      "separate_cpu_ns": 432902000,
+      "combined_cpu_ns": 237418000,
+      "saved_cpu_ns": 195484000,
+      "saving_ppm": 451566,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            24002568,
+            24002568
+          ],
+          "sites": [
+            636,
+            636
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            24002568,
+            24002568
+          ],
+          "sites": [
+            636,
+            636
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            24002568,
+            24002568
+          ],
+          "sites": [
+            636,
+            636
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "calibrate",
+        "anchor_case": "lookup/train",
+        "prediction_ns": 48045000,
+        "implied_tle": []
+      },
+      "policies": {
+        "separate": {
+          "action": "calibrate",
+          "anchor_case": "lookup/train",
+          "covered": true,
+          "prediction_ns": 48045000,
+          "admission": [],
+          "implied_tle": []
+        },
+        "combined": {
+          "action": "calibrate",
+          "anchor_case": "lookup/train",
+          "covered": true,
+          "prediction_ns": 48045000,
+          "admission": [],
+          "implied_tle": []
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 0,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 0,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 0,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 24,
+      "round": 2,
+      "order": [
+        "combined",
+        "separate"
+      ],
+      "case_id": "window/scale",
+      "cohort": "prospective",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 545636000,
+      "combined_cpu_ns": 332202000,
+      "saved_cpu_ns": 213434000,
+      "saving_ppm": 391166,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            99986104,
+            99986104
+          ],
+          "sites": [
+            649,
+            649
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            99986104,
+            99986104
+          ],
+          "sites": [
+            649,
+            649
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            99986104,
+            99986104
+          ],
+          "sites": [
+            649,
+            649
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "reuse",
+        "anchor_case": "window/train",
+        "prediction_ns": 42378061,
+        "implied_tle": [
+          true,
+          false,
+          false,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "reuse",
+          "anchor_case": "window/train",
+          "covered": true,
+          "prediction_ns": 42378061,
+          "admission": [
+            {
+              "anchor_case": "window/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            false,
+            false,
+            false
+          ]
+        },
+        "combined": {
+          "action": "reuse",
+          "anchor_case": "window/train",
+          "covered": true,
+          "prediction_ns": 42378061,
+          "admission": [
+            {
+              "anchor_case": "window/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            false,
+            false,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 25,
+      "round": 2,
+      "order": [
+        "combined",
+        "separate"
+      ],
+      "case_id": "lookup/long",
+      "cohort": "previous",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 954754000,
+      "combined_cpu_ns": 511645000,
+      "saved_cpu_ns": 443109000,
+      "saving_ppm": 464108,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            72002639,
+            72002639
+          ],
+          "sites": [
+            636,
+            636
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            72002639,
+            72002639
+          ],
+          "sites": [
+            636,
+            636
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            72002639,
+            72002639
+          ],
+          "sites": [
+            636,
+            636
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "reuse",
+        "anchor_case": "lookup/train",
+        "prediction_ns": 144019372,
+        "implied_tle": [
+          true,
+          true,
+          false,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "reuse",
+          "anchor_case": "lookup/train",
+          "covered": true,
+          "prediction_ns": 144019372,
+          "admission": [
+            {
+              "anchor_case": "lookup/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        },
+        "combined": {
+          "action": "reuse",
+          "anchor_case": "lookup/train",
+          "covered": true,
+          "prediction_ns": 144019372,
+          "admission": [
+            {
+              "anchor_case": "lookup/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 26,
+      "round": 3,
+      "order": [
+        "separate",
+        "combined"
+      ],
+      "case_id": "window/expanded",
+      "cohort": "prospective",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 505501000,
+      "combined_cpu_ns": 300605000,
+      "saved_cpu_ns": 204896000,
+      "saving_ppm": 405333,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            59986106,
+            59986106
+          ],
+          "sites": [
+            644,
+            644
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            59986106,
+            59986106
+          ],
+          "sites": [
+            644,
+            644
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            59986106,
+            59986106
+          ],
+          "sites": [
+            644,
+            644
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "calibrate",
+        "anchor_case": "window/expanded",
+        "prediction_ns": 67984000,
+        "implied_tle": [
+          true,
+          false,
+          false,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "calibrate",
+          "anchor_case": "window/expanded",
+          "covered": true,
+          "prediction_ns": 67984000,
+          "admission": [
+            {
+              "anchor_case": "window/train",
+              "shape_reasons": [
+                "span_changed"
+              ],
+              "temporal_reasons": [
+                "radius_hits_changed"
+              ]
+            }
+          ],
+          "implied_tle": [
+            true,
+            false,
+            false,
+            false
+          ]
+        },
+        "combined": {
+          "action": "calibrate",
+          "anchor_case": "window/expanded",
+          "covered": true,
+          "prediction_ns": 67984000,
+          "admission": [
+            {
+              "anchor_case": "window/train",
+              "shape_reasons": [
+                "span_changed"
+              ],
+              "temporal_reasons": [
+                "radius_hits_changed"
+              ]
+            }
+          ],
+          "implied_tle": [
+            true,
+            false,
+            false,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 27,
+      "round": 3,
+      "order": [
+        "combined",
+        "separate"
+      ],
+      "case_id": "fenwick/train",
+      "cohort": "calibration",
+      "split": "calibration",
+      "limits_ms": [],
+      "separate_cpu_ns": 347192000,
+      "combined_cpu_ns": 194918000,
+      "saved_cpu_ns": 152274000,
+      "saving_ppm": 438587,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            10502418,
+            10502418
+          ],
+          "sites": [
+            641,
+            641
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            10502418,
+            10502418
+          ],
+          "sites": [
+            641,
+            641
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            10502418,
+            10502418
+          ],
+          "sites": [
+            641,
+            641
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "calibrate",
+        "anchor_case": "fenwick/train",
+        "prediction_ns": 47762000,
+        "implied_tle": []
+      },
+      "policies": {
+        "separate": {
+          "action": "calibrate",
+          "anchor_case": "fenwick/train",
+          "covered": true,
+          "prediction_ns": 47762000,
+          "admission": [],
+          "implied_tle": []
+        },
+        "combined": {
+          "action": "calibrate",
+          "anchor_case": "fenwick/train",
+          "covered": true,
+          "prediction_ns": 47762000,
+          "admission": [],
+          "implied_tle": []
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 0,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 0,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 0,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 28,
+      "round": 3,
+      "order": [
+        "separate",
+        "combined"
+      ],
+      "case_id": "fenwick/large",
+      "cohort": "previous",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 472860000,
+      "combined_cpu_ns": 256432000,
+      "saved_cpu_ns": 216428000,
+      "saving_ppm": 457700,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            15002372,
+            15002372
+          ],
+          "sites": [
+            627,
+            627
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            15002372,
+            15002372
+          ],
+          "sites": [
+            627,
+            627
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            15002372,
+            15002372
+          ],
+          "sites": [
+            627,
+            627
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "calibrate",
+        "anchor_case": "fenwick/large",
+        "prediction_ns": 77916000,
+        "implied_tle": [
+          true,
+          true,
+          false,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "calibrate",
+          "anchor_case": "fenwick/large",
+          "covered": true,
+          "prediction_ns": 77916000,
+          "admission": [
+            {
+              "anchor_case": "fenwick/train",
+              "shape_reasons": [
+                "far_fraction_changed",
+                "span_changed"
+              ],
+              "temporal_reasons": [
+                "exact_hits_changed",
+                "radius_hits_changed"
+              ]
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        },
+        "combined": {
+          "action": "calibrate",
+          "anchor_case": "fenwick/large",
+          "covered": true,
+          "prediction_ns": 77916000,
+          "admission": [
+            {
+              "anchor_case": "fenwick/train",
+              "shape_reasons": [
+                "far_fraction_changed",
+                "span_changed"
+              ],
+              "temporal_reasons": [
+                "exact_hits_changed",
+                "radius_hits_changed"
+              ]
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 29,
+      "round": 3,
+      "order": [
+        "combined",
+        "separate"
+      ],
+      "case_id": "fenwick/scale",
+      "cohort": "prospective",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 527772000,
+      "combined_cpu_ns": 286865000,
+      "saved_cpu_ns": 240907000,
+      "saving_ppm": 456460,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            21002746,
+            21002746
+          ],
+          "sites": [
+            641,
+            641
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            21002746,
+            21002746
+          ],
+          "sites": [
+            641,
+            641
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            21002746,
+            21002746
+          ],
+          "sites": [
+            641,
+            641
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "reuse",
+        "anchor_case": "fenwick/train",
+        "prediction_ns": 95518155,
+        "implied_tle": [
+          true,
+          true,
+          false,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "reuse",
+          "anchor_case": "fenwick/train",
+          "covered": true,
+          "prediction_ns": 95518155,
+          "admission": [
+            {
+              "anchor_case": "fenwick/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        },
+        "combined": {
+          "action": "reuse",
+          "anchor_case": "fenwick/train",
+          "covered": true,
+          "prediction_ns": 95518155,
+          "admission": [
+            {
+              "anchor_case": "fenwick/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 30,
+      "round": 3,
+      "order": [
+        "separate",
+        "combined"
+      ],
+      "case_id": "fenwick/long",
+      "cohort": "previous",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 711658000,
+      "combined_cpu_ns": 380947000,
+      "saved_cpu_ns": 330711000,
+      "saving_ppm": 464705,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            31502673,
+            31502673
+          ],
+          "sites": [
+            641,
+            641
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            31502673,
+            31502673
+          ],
+          "sites": [
+            641,
+            641
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            31502673,
+            31502673
+          ],
+          "sites": [
+            641,
+            641
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "reuse",
+        "anchor_case": "fenwick/train",
+        "prediction_ns": 143273447,
+        "implied_tle": [
+          true,
+          true,
+          false,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "reuse",
+          "anchor_case": "fenwick/train",
+          "covered": true,
+          "prediction_ns": 143273447,
+          "admission": [
+            {
+              "anchor_case": "fenwick/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        },
+        "combined": {
+          "action": "reuse",
+          "anchor_case": "fenwick/train",
+          "covered": true,
+          "prediction_ns": 143273447,
+          "admission": [
+            {
+              "anchor_case": "fenwick/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 31,
+      "round": 3,
+      "order": [
+        "combined",
+        "separate"
+      ],
+      "case_id": "window/train",
+      "cohort": "calibration",
+      "split": "calibration",
+      "limits_ms": [],
+      "separate_cpu_ns": 392530000,
+      "combined_cpu_ns": 239028000,
+      "saved_cpu_ns": 153502000,
+      "saving_ppm": 391058,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            59986104,
+            59986104
+          ],
+          "sites": [
+            649,
+            649
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            59986104,
+            59986104
+          ],
+          "sites": [
+            649,
+            649
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            59986104,
+            59986104
+          ],
+          "sites": [
+            649,
+            649
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "calibrate",
+        "anchor_case": "window/train",
+        "prediction_ns": 25426000,
+        "implied_tle": []
+      },
+      "policies": {
+        "separate": {
+          "action": "calibrate",
+          "anchor_case": "window/train",
+          "covered": true,
+          "prediction_ns": 25426000,
+          "admission": [],
+          "implied_tle": []
+        },
+        "combined": {
+          "action": "calibrate",
+          "anchor_case": "window/train",
+          "covered": true,
+          "prediction_ns": 25426000,
+          "admission": [],
+          "implied_tle": []
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 0,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 0,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 0,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 32,
+      "round": 3,
+      "order": [
+        "separate",
+        "combined"
+      ],
+      "case_id": "lookup/shuffled",
+      "cohort": "previous",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 607227000,
+      "combined_cpu_ns": 332601000,
+      "saved_cpu_ns": 274626000,
+      "saving_ppm": 452262,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            24002560,
+            24002560
+          ],
+          "sites": [
+            628,
+            628
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            24002560,
+            24002560
+          ],
+          "sites": [
+            628,
+            628
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            24002560,
+            24002560
+          ],
+          "sites": [
+            628,
+            628
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "calibrate",
+        "anchor_case": "lookup/shuffled",
+        "prediction_ns": 136329000,
+        "implied_tle": [
+          true,
+          true,
+          false,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "calibrate",
+          "anchor_case": "lookup/shuffled",
+          "covered": true,
+          "prediction_ns": 136329000,
+          "admission": [
+            {
+              "anchor_case": "lookup/train",
+              "shape_reasons": [],
+              "temporal_reasons": [
+                "exact_hits_changed"
+              ]
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        },
+        "combined": {
+          "action": "calibrate",
+          "anchor_case": "lookup/shuffled",
+          "covered": true,
+          "prediction_ns": 136329000,
+          "admission": [
+            {
+              "anchor_case": "lookup/train",
+              "shape_reasons": [],
+              "temporal_reasons": [
+                "exact_hits_changed"
+              ]
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 33,
+      "round": 3,
+      "order": [
+        "combined",
+        "separate"
+      ],
+      "case_id": "fenwick/expanded",
+      "cohort": "prospective",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 797216000,
+      "combined_cpu_ns": 422612000,
+      "saved_cpu_ns": 374604000,
+      "saving_ppm": 469890,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            31503520,
+            31503520
+          ],
+          "sites": [
+            627,
+            627
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            31503520,
+            31503520
+          ],
+          "sites": [
+            627,
+            627
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            31503520,
+            31503520
+          ],
+          "sites": [
+            627,
+            627
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "reuse",
+        "anchor_case": "fenwick/large",
+        "prediction_ns": 162025492,
+        "implied_tle": [
+          true,
+          true,
+          true,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "reuse",
+          "anchor_case": "fenwick/large",
+          "covered": true,
+          "prediction_ns": 162025492,
+          "admission": [
+            {
+              "anchor_case": "fenwick/train",
+              "shape_reasons": [
+                "far_fraction_changed",
+                "span_changed"
+              ],
+              "temporal_reasons": [
+                "exact_hits_changed",
+                "radius_hits_changed"
+              ]
+            },
+            {
+              "anchor_case": "fenwick/large",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            true,
+            false
+          ]
+        },
+        "combined": {
+          "action": "reuse",
+          "anchor_case": "fenwick/large",
+          "covered": true,
+          "prediction_ns": 162025492,
+          "admission": [
+            {
+              "anchor_case": "fenwick/train",
+              "shape_reasons": [
+                "far_fraction_changed",
+                "span_changed"
+              ],
+              "temporal_reasons": [
+                "exact_hits_changed",
+                "radius_hits_changed"
+              ]
+            },
+            {
+              "anchor_case": "fenwick/large",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            true,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 34,
+      "round": 3,
+      "order": [
+        "separate",
+        "combined"
+      ],
+      "case_id": "lookup/ordered_pair",
+      "cohort": "prospective",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 694439000,
+      "combined_cpu_ns": 378083000,
+      "saved_cpu_ns": 316356000,
+      "saving_ppm": 455556,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            48002601,
+            48002601
+          ],
+          "sites": [
+            636,
+            636
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            48002601,
+            48002601
+          ],
+          "sites": [
+            636,
+            636
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            48002601,
+            48002601
+          ],
+          "sites": [
+            636,
+            636
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "reuse",
+        "anchor_case": "lookup/train",
+        "prediction_ns": 96039074,
+        "implied_tle": [
+          true,
+          true,
+          false,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "reuse",
+          "anchor_case": "lookup/train",
+          "covered": true,
+          "prediction_ns": 96039074,
+          "admission": [
+            {
+              "anchor_case": "lookup/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        },
+        "combined": {
+          "action": "reuse",
+          "anchor_case": "lookup/train",
+          "covered": true,
+          "prediction_ns": 96039074,
+          "admission": [
+            {
+              "anchor_case": "lookup/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 35,
+      "round": 3,
+      "order": [
+        "combined",
+        "separate"
+      ],
+      "case_id": "lookup/train",
+      "cohort": "calibration",
+      "split": "calibration",
+      "limits_ms": [],
+      "separate_cpu_ns": 432037000,
+      "combined_cpu_ns": 240774000,
+      "saved_cpu_ns": 191263000,
+      "saving_ppm": 442701,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            24002568,
+            24002568
+          ],
+          "sites": [
+            636,
+            636
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            24002568,
+            24002568
+          ],
+          "sites": [
+            636,
+            636
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            24002568,
+            24002568
+          ],
+          "sites": [
+            636,
+            636
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "calibrate",
+        "anchor_case": "lookup/train",
+        "prediction_ns": 48045000,
+        "implied_tle": []
+      },
+      "policies": {
+        "separate": {
+          "action": "calibrate",
+          "anchor_case": "lookup/train",
+          "covered": true,
+          "prediction_ns": 48045000,
+          "admission": [],
+          "implied_tle": []
+        },
+        "combined": {
+          "action": "calibrate",
+          "anchor_case": "lookup/train",
+          "covered": true,
+          "prediction_ns": 48045000,
+          "admission": [],
+          "implied_tle": []
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 0,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 0,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 0,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 36,
+      "round": 3,
+      "order": [
+        "separate",
+        "combined"
+      ],
+      "case_id": "window/scale",
+      "cohort": "prospective",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 544657000,
+      "combined_cpu_ns": 331743000,
+      "saved_cpu_ns": 212914000,
+      "saving_ppm": 390914,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            99986104,
+            99986104
+          ],
+          "sites": [
+            649,
+            649
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            99986104,
+            99986104
+          ],
+          "sites": [
+            649,
+            649
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            99986104,
+            99986104
+          ],
+          "sites": [
+            649,
+            649
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "reuse",
+        "anchor_case": "window/train",
+        "prediction_ns": 42378061,
+        "implied_tle": [
+          true,
+          false,
+          false,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "reuse",
+          "anchor_case": "window/train",
+          "covered": true,
+          "prediction_ns": 42378062,
+          "admission": [
+            {
+              "anchor_case": "window/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            false,
+            false,
+            false
+          ]
+        },
+        "combined": {
+          "action": "reuse",
+          "anchor_case": "window/train",
+          "covered": true,
+          "prediction_ns": 42378061,
+          "admission": [
+            {
+              "anchor_case": "window/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            false,
+            false,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 37,
+      "round": 3,
+      "order": [
+        "separate",
+        "combined"
+      ],
+      "case_id": "lookup/long",
+      "cohort": "previous",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 960835000,
+      "combined_cpu_ns": 512522000,
+      "saved_cpu_ns": 448313000,
+      "saving_ppm": 466587,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            72002639,
+            72002639
+          ],
+          "sites": [
+            636,
+            636
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            72002639,
+            72002639
+          ],
+          "sites": [
+            636,
+            636
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            72002639,
+            72002639
+          ],
+          "sites": [
+            636,
+            636
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "reuse",
+        "anchor_case": "lookup/train",
+        "prediction_ns": 144019372,
+        "implied_tle": [
+          true,
+          true,
+          false,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "reuse",
+          "anchor_case": "lookup/train",
+          "covered": true,
+          "prediction_ns": 144019372,
+          "admission": [
+            {
+              "anchor_case": "lookup/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        },
+        "combined": {
+          "action": "reuse",
+          "anchor_case": "lookup/train",
+          "covered": true,
+          "prediction_ns": 144019372,
+          "admission": [
+            {
+              "anchor_case": "lookup/train",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            false,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    },
+    {
+      "sequence": 38,
+      "round": 3,
+      "order": [
+        "combined",
+        "separate"
+      ],
+      "case_id": "lookup/shuffled_pair",
+      "cohort": "prospective",
+      "split": "holdout",
+      "limits_ms": [
+        25,
+        75,
+        150,
+        300
+      ],
+      "separate_cpu_ns": 1056898000,
+      "combined_cpu_ns": 567059000,
+      "saved_cpu_ns": 489839000,
+      "saving_ppm": 463469,
+      "eligible_loads": {
+        "spatial": {
+          "loads": [
+            48002601,
+            48002601
+          ],
+          "sites": [
+            628,
+            628
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "temporal": {
+          "loads": [
+            48002601,
+            48002601
+          ],
+          "sites": [
+            628,
+            628
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        },
+        "inside_combined": {
+          "loads": [
+            48002601,
+            48002601
+          ],
+          "sites": [
+            628,
+            628
+          ],
+          "total_delta": 0,
+          "largest_site_delta": 0,
+          "sites_with_different_loads": 0,
+          "sum_absolute_site_deltas": 0
+        }
+      },
+      "material_profile_comparison": {
+        "spatial": [],
+        "temporal": [],
+        "max_far_fraction_delta": "0",
+        "max_span_ratio": "1",
+        "max_exact_fraction_delta": "0",
+        "max_radius_fraction_delta": "0"
+      },
+      "prior": {
+        "action": "reuse",
+        "anchor_case": "lookup/shuffled",
+        "prediction_ns": 272451699,
+        "implied_tle": [
+          true,
+          true,
+          true,
+          false
+        ]
+      },
+      "policies": {
+        "separate": {
+          "action": "reuse",
+          "anchor_case": "lookup/shuffled",
+          "covered": true,
+          "prediction_ns": 272451690,
+          "admission": [
+            {
+              "anchor_case": "lookup/train",
+              "shape_reasons": [],
+              "temporal_reasons": [
+                "exact_hits_changed"
+              ]
+            },
+            {
+              "anchor_case": "lookup/shuffled",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            true,
+            false
+          ]
+        },
+        "combined": {
+          "action": "reuse",
+          "anchor_case": "lookup/shuffled",
+          "covered": true,
+          "prediction_ns": 272451690,
+          "admission": [
+            {
+              "anchor_case": "lookup/train",
+              "shape_reasons": [],
+              "temporal_reasons": [
+                "exact_hits_changed"
+              ]
+            },
+            {
+              "anchor_case": "lookup/shuffled",
+              "shape_reasons": [],
+              "temporal_reasons": []
+            }
+          ],
+          "implied_tle": [
+            true,
+            true,
+            true,
+            false
+          ]
+        }
+      },
+      "cutoff_comparisons": {
+        "paired": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "separate_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        },
+        "combined_to_prior": {
+          "decisions": 4,
+          "uncovered": 0,
+          "different": 0
+        }
+      }
+    }
+  ]
+}
