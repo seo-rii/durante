@@ -116,11 +116,54 @@ class ExactInputConfirmation(ArchivedReplay, unittest.TestCase):
             for p in case["deadlines"]:
                 self.assertEqual(p["exact"]["preflight_ns"], case["packet_exact_ns"])
 
+    def test_exact_fixed_random_branch_and_mixed_fenwick_boundary(self):
+        cases = verify(self.output, self.strategy)["cases"]
+        def deadline(case, ms):
+            return next(p for p in cases[case]["deadlines"] if p["limit_ms"] == ms)
+
+        branch = deadline("threshold_runs/random_larger_stream", 75)
+        self.assertTrue(branch["fixed"])
+        self.assertFalse(branch["near"])
+        self.assertEqual(branch["native_tle_reps"], 9)
+        self.assertEqual((branch["baseline"]["tle"], branch["exact"]["tle"]), (False, True))
+        self.assertEqual((branch["baseline"]["native_class"], branch["exact"]["native_class"]),
+                         ("false_accept", "agreement"))
+
+        fenwick = deadline("fenwick/seven_half_mib", 184)
+        self.assertFalse(fenwick["fixed"])
+        self.assertEqual(fenwick["native_tle_reps"], 5)
+        self.assertEqual((fenwick["baseline"]["tle"], fenwick["exact"]["tle"]), (True, False))
+        self.assertEqual((fenwick["baseline"]["native_class"], fenwick["exact"]["native_class"]),
+                         ("mixed_native", "mixed_native"))
+        self.assertEqual((fenwick["baseline"]["majority_match"], fenwick["exact"]["majority_match"]), (True, False))
+
     def test_requires_exact_payment_even_far_from_baseline(self):
         def change(summary):
             event = next(e for row in summary["rows"] for e in row["limits"] if e["method"] == "exact" and not e["near"])
             event["selection_path"] = "baseline-selection.json"
         self.mutate(self.output / "summary.json", change, "recorded enforcement belongs to a different policy")
+
+    def test_rejects_first_payment_recorded_after_enforcement(self):
+        case = self.output / "cases/threshold_runs/random"
+        policy = json.loads((case / "deadline-packet/policy-0.json").read_text())
+        live = json.loads((case / "limits/exact/00/result.json").read_text())
+        trace = self.output / "exec-trace"
+        original = trace.read_bytes()
+        lines = original.splitlines(keepends=True)
+        def positions(pid):
+            return [i for i, line in enumerate(lines) if f" pid={pid} ".encode() in line]
+
+        (native,) = positions(policy["native"]["pid"])
+        first, last = positions(live["pid"])
+        self.assertLess(native, first)
+        payment = lines.pop(native)
+        lines.insert(last, payment)
+        try:
+            trace.write_bytes(b"".join(lines))
+            with self.assertRaisesRegex(ValueError, "exec trace order differs"):
+                verify(self.output, self.strategy)
+        finally:
+            trace.write_bytes(original)
 
     def test_forbids_a_second_sample_even_when_not_selected(self):
         policy = next((self.output / "cases").rglob("deadline-packet/policy-0.json"))
