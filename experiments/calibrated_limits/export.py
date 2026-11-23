@@ -23,7 +23,7 @@ def limit_pids(summary, files):
 
 
 SOURCES = ("experiments/calibrated_limits/bench.py", "experiments/calibrated_limits/plan.json",
-               "experiments/guarded_native/live.py", "experiments/guarded_native/anchor.py", "collect.py")
+           "experiments/guarded_native/live.py", "experiments/guarded_native/anchor.py", "collect.py")
 
 
 def publish(job, out, *, select_pids=limit_pids, sources=SOURCES, plan_name="experiments/calibrated_limits/plan.json"):
