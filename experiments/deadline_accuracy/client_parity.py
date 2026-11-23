@@ -61,6 +61,22 @@ def collect(payload, binaries, out):
           steal_delta=runtime.base["steal"](1) - start, rows=rows))
 
 
+def compare_counts(case_id, counts, study):
+    released, candidate = ([v[0] for v in counts[arm]] for arm in ("released", "candidate"))
+    reference, measured = median(released), median(candidate)
+    require(reference > 0, f"{case_id}: no released instruction count")
+    difference = measured - reference
+    tolerance = max(study["absolute_instruction_tolerance"],
+                    Fraction(study["median_tolerance_ppm"] * reference, 1_000_000))
+    require(abs(difference) <= tolerance, f"{case_id}: instruction medians differ by {difference}, limit {tolerance}")
+    rep = {(movs, stos) for samples in counts.values() for _, movs, stos in samples}
+    require(len(rep) == 1, f"{case_id}: MOVS/STOS bytes differ across clients or repeats")
+    ppm = Fraction(1_000_000 * difference, reference)
+    return dict(counts=counts, median_difference_ppm=round(float(ppm), 6),
+                median_exact=reference == measured, all_instruction_counts_equal=len(set(released + candidate)) == 1,
+                rep_consistent=True, within_tolerance=True)
+
+
 def verify(root):
     plan = load(HERE / "plan.json")
     study = load(HERE / "client-parity.json")
@@ -86,21 +102,11 @@ def verify(root):
         require(list(events.parent.iterdir()) == [events], "additional target processes")
         verify_counters(events.read_bytes(), record, (folder / "clock.bin").read_bytes(), "live", pid, 3*(2**64-1), reader)
         rep = record["rep_breakdown"]
-        counts[case["case_id"]][arm].append((record["instructions"], rep["movs_bytes"], rep["stos_bytes"]))
+        counts[case["case_id"]][arm].append([record["instructions"], rep["movs_bytes"], rep["stos_bytes"]])
     verify_placement(root, pids)
     trace, _ = parse_trace((root / "exec-trace").read_text())
     require(set(trace) == set(pids), "unexpected measured processes")
-    rows = {}
-    for case_id, values in counts.items():
-        a, b = ([v[0] for v in values[k]] for k in ("released", "candidate"))
-        rep = {v[1:] for samples in values.values() for v in samples}
-        ref, new = median(a), median(b)
-        ppm = Fraction(1_000_000 * (new-ref), ref)
-        rows[case_id] = dict(counts=values, median_difference_ppm=round(float(ppm), 6),
-                median_exact=ref == new, all_instruction_counts_equal=len(set(a+b)) == 1,
-                rep_consistent=len(rep) == 1,
-                within_tolerance=abs(new-ref) <= max(study["absolute_instruction_tolerance"],
-                Fraction(study["median_tolerance_ppm"] * ref, 1_000_000)))
+    rows = {case_id: compare_counts(case_id, values, study) for case_id, values in counts.items()}
     return dict(schema=1, verified_pids=len(pids), steal_ticks=s["steal_delta"], cases=rows)
 
 
