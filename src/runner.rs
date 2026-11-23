@@ -912,10 +912,7 @@ mod tests {
 
     #[test]
     fn root_watch_ends_the_pause_when_the_root_exits() {
-        let mut child = Command::new("/bin/sh")
-            .args(["-c", "sleep 0.05"])
-            .spawn()
-            .unwrap();
+        let mut child = Command::new("/bin/sleep").arg("0.05").spawn().unwrap();
         let mut watch = RootWatch::new(child.id());
         if watch.root.is_none() {
             // No pidfd on this kernel: the watch is interval polling only.
@@ -945,16 +942,14 @@ mod tests {
 
     #[test]
     fn root_watch_waits_out_the_interval_while_the_root_runs() {
-        let mut child = Command::new("/bin/sh")
-            .args(["-c", "sleep 30"])
-            .spawn()
-            .unwrap();
+        let mut child = Command::new("/bin/sleep").arg("30").spawn().unwrap();
         let mut watch = RootWatch::new(child.id());
         let started = Instant::now();
         watch.pause(&WaitState::default(), Duration::from_millis(40));
-        assert!(started.elapsed() >= Duration::from_millis(40));
+        let elapsed = started.elapsed();
         child.kill().unwrap();
         child.wait().unwrap();
+        assert!(elapsed >= Duration::from_millis(40));
     }
 
     #[test]
