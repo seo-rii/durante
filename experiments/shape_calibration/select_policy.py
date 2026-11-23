@@ -9,8 +9,18 @@ import sys
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 from first_run_sampler.profile import digest, read_json, require, sha
+from footprint_admission import admission
 from guarded_native import anchor
 from shape_calibration import combined, shape, temporal
+
+
+METHODS = ("shape", "temporal", "footprint")
+
+
+def permits_reuse(row, method):
+    return (row["shape"]["status"] == "reuse"
+            and (method == "shape" or row["temporal"]["status"] == "reuse")
+            and (method != "footprint" or row["footprint"]["status"] == "reuse"))
 
 
 def profiles(run, elf_sha, probe_sha, method):
@@ -18,7 +28,7 @@ def profiles(run, elf_sha, probe_sha, method):
     obs = full["observation"]
     require(obs["launch_count"] == 1, "selector requires a fresh full capture")
     extra = None
-    if method == "temporal":
+    if method != "shape":
         if (run / "combined.json").is_file():
             extra = combined.inspect_temporal(run, elf_sha, obs["stdin_sha256"], obs["stdout_sha256"], probe_sha)
         else:
@@ -48,7 +58,7 @@ def current_clock(run, elf, full):
 
 
 def resolve(elf, current, references, probe_sha, method):
-    require(method in ("shape", "temporal") and digest(probe_sha), "invalid method or probe digest")
+    require(method in METHODS and digest(probe_sha), "invalid method or probe digest")
     elf = elf.resolve()
     current = current.resolve()
     references = [p.resolve() for p in references]
@@ -65,9 +75,12 @@ def resolve(elf, current, references, probe_sha, method):
                 "the reference is the current physical capture")
         clock = bound_clock(run, elf, previous)
         spatial = shape.compare(previous, full)
-        order = temporal.compare(previous_extra, extra) if method == "temporal" else None
-        comparisons.append({"reference_index": index, "shape": spatial, "temporal": order})
-        if spatial["status"] == "reuse" and (order is None or order["status"] == "reuse"):
+        order = temporal.compare(previous_extra, extra) if method != "shape" else None
+        row = {"reference_index": index, "shape": spatial, "temporal": order}
+        if method == "footprint":
+            row["footprint"] = admission.compare(previous, full, spatial)
+        comparisons.append(row)
+        if permits_reuse(row, method):
             chosen = index
             break
     if chosen is None:
@@ -84,7 +97,7 @@ if __name__ == "__main__":
     parser.add_argument("--run", required=True, type=Path, help="current capture directory")
     parser.add_argument("--reference", action="append", type=Path, default=[],
                         help="previously calibrated capture directory, oldest first (repeatable)")
-    parser.add_argument("--method", required=True, choices=("shape", "temporal"))
+    parser.add_argument("--method", required=True, choices=METHODS)
     parser.add_argument("--probe-sha256", required=True)
     parser.add_argument("--out", type=Path, help="new selection receipt file")
     args = parser.parse_args()
