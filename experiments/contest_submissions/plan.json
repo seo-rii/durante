@@ -1,0 +1,171 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "cpu": 1,
+  "reference_rounds": 3,
+  "submission_rounds": 9,
+  "design": "Two sequential independent fresh AMD Milan N2D boots, one thread per core, CPU 1 affinity and cgroup. Use identical payloads. The eight existing inputs and their oracles are fixed. Only original programs have historical native times. Each new submission is a different implementation solving the same problem.",
+  "order": "Alternate the two profile roles by case in digest order. Rotate one starting position for each full native round. Run three rounds of reference solutions, seal all four predictions and the complete prior journal before any direct native invocation of either new submission. Then collect nine native rounds of submissions. All wall watchdogs are 120 s.",
+  "primary": "Compare median absolute relative duration error (one vote per input) of the combined instruction/REP clock before and after same-input reference-solution scaling on each boot separately. Report worst error, within 20%, per-problem results, false passes, false timeouts, and majority and unanimous matches on distinct fixed limits. Passing equality counts as within budget. A reduction must recur on both boots to claim a replicated improvement.",
+  "secondary": "Repeat the same comparison using frozen latency plus ordinary memory coefficients from Aonohako b938afaa. Score all arms regardless of outcome. Completed instrumented profiles produce offline forecasts. No regression fit or contestant native calibration.",
+  "cases": [
+    {
+      "case_id": "rice/uniform",
+      "program": "rice",
+      "submission": "rice_window",
+      "reference_elf_sha256": "09ee94739944972a9eb66005f7b95a943d6fbe5a932bb1acfeca73c957cee036",
+      "submission_elf_sha256": "394ed54865b73c59a2abddba552fb0e246eb5dd8c259771565c5095ec5ff7510",
+      "stdin_sha256": "440ebbf70ee5f2d8385193b215d6c7100b3fc741d4e7eb87ec79b9ce04562f73",
+      "stdout_sha256": "dd0cb592970e98d8449d5dcc2b92c296084d2d3c769266bbf421b93d59de6572",
+      "fixed_limits_ms": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        10,
+        16
+      ]
+    },
+    {
+      "case_id": "rice/duplicate_clusters",
+      "program": "rice",
+      "submission": "rice_window",
+      "reference_elf_sha256": "09ee94739944972a9eb66005f7b95a943d6fbe5a932bb1acfeca73c957cee036",
+      "submission_elf_sha256": "394ed54865b73c59a2abddba552fb0e246eb5dd8c259771565c5095ec5ff7510",
+      "stdin_sha256": "05229b9dc521c37e33fac8d0075fdca724533b8781ddd0b3839a115e22b81c72",
+      "stdout_sha256": "46b9d3a6b593718297df7eb071f0725bcf72fe988f1a5cfe099ea20ceeb016bd",
+      "fixed_limits_ms": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        10,
+        16
+      ]
+    },
+    {
+      "case_id": "rice/scattered_gaps",
+      "program": "rice",
+      "submission": "rice_window",
+      "reference_elf_sha256": "09ee94739944972a9eb66005f7b95a943d6fbe5a932bb1acfeca73c957cee036",
+      "submission_elf_sha256": "394ed54865b73c59a2abddba552fb0e246eb5dd8c259771565c5095ec5ff7510",
+      "stdin_sha256": "93bc7151395e694487d9805dd909fd16a15f3f9f016cd29926554721a46f2890",
+      "stdout_sha256": "9c79abe04f020b049757b7c73b30ac90d4c487eb536c4bfeb8fddceb6ab1361b",
+      "fixed_limits_ms": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        10,
+        16
+      ]
+    },
+    {
+      "case_id": "rice/wide_coordinates",
+      "program": "rice",
+      "submission": "rice_window",
+      "reference_elf_sha256": "09ee94739944972a9eb66005f7b95a943d6fbe5a932bb1acfeca73c957cee036",
+      "submission_elf_sha256": "394ed54865b73c59a2abddba552fb0e246eb5dd8c259771565c5095ec5ff7510",
+      "stdin_sha256": "0adb013f9df9cb1399d17ffd8137a872c14117225f322078d92100360eb54b73",
+      "stdout_sha256": "87dd8e76775fe4e13423ff97b216fc893ff1d7c825fa139be271d8620a380119",
+      "fixed_limits_ms": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        10,
+        16
+      ]
+    },
+    {
+      "case_id": "scrivener/recent_queries",
+      "program": "scrivener",
+      "submission": "scrivener_lifting",
+      "reference_elf_sha256": "5a918d9eb725f4a0492ed3f891a155e6c08a3a30092215c9036648e8e3e9a60e",
+      "submission_elf_sha256": "9f79bdb4bd631018fd950801d5fddcc58423ce264193ca91b5d99b7d80cb6246",
+      "stdin_sha256": "4fcf3064f814240f24c201a296e8291af3fca412b3c0b61c4c8489ff336fa2bc",
+      "stdout_sha256": "326fbc81279e0dd85c1f6e74ac48e78c18fd1a8cb55778421b2f507e86751992",
+      "fixed_limits_ms": [
+        6,
+        8,
+        10,
+        12,
+        15,
+        20,
+        30,
+        50
+      ]
+    },
+    {
+      "case_id": "scrivener/distant_versions",
+      "program": "scrivener",
+      "submission": "scrivener_lifting",
+      "reference_elf_sha256": "5a918d9eb725f4a0492ed3f891a155e6c08a3a30092215c9036648e8e3e9a60e",
+      "submission_elf_sha256": "9f79bdb4bd631018fd950801d5fddcc58423ce264193ca91b5d99b7d80cb6246",
+      "stdin_sha256": "7a42204886003000bb768b6a3dbb52acb7a9b41aa8728f098ad2544882cde7f0",
+      "stdout_sha256": "283b38434e84236c5de51b5bf3dac02087c6d5b3eb4abdef7aec425c488ca945",
+      "fixed_limits_ms": [
+        6,
+        8,
+        10,
+        12,
+        15,
+        20,
+        30,
+        50
+      ]
+    },
+    {
+      "case_id": "scrivener/interwoven_pages",
+      "program": "scrivener",
+      "submission": "scrivener_lifting",
+      "reference_elf_sha256": "5a918d9eb725f4a0492ed3f891a155e6c08a3a30092215c9036648e8e3e9a60e",
+      "submission_elf_sha256": "9f79bdb4bd631018fd950801d5fddcc58423ce264193ca91b5d99b7d80cb6246",
+      "stdin_sha256": "8edb596d806e8a2e62f28a04c840f9f715bdd9fc453f0caf085d5abe2ac6be9d",
+      "stdout_sha256": "40b8afdc4e2e691ec6365447ce02ba0c76bdc54b548b87dfe3d21f7f5977c570",
+      "fixed_limits_ms": [
+        75,
+        100,
+        125,
+        150,
+        175,
+        200,
+        250,
+        300,
+        400
+      ]
+    },
+    {
+      "case_id": "scrivener/bookmarked_chapters",
+      "program": "scrivener",
+      "submission": "scrivener_lifting",
+      "reference_elf_sha256": "5a918d9eb725f4a0492ed3f891a155e6c08a3a30092215c9036648e8e3e9a60e",
+      "submission_elf_sha256": "9f79bdb4bd631018fd950801d5fddcc58423ce264193ca91b5d99b7d80cb6246",
+      "stdin_sha256": "e1f31742176cea0297294a97cce1e73de870b3bdf4764e65a4a6711f6a1ff10b",
+      "stdout_sha256": "8053891dca0e98f52fc0b747004eb5179fc3a77954d6e1837fd3a90a803fd8a1",
+      "fixed_limits_ms": [
+        75,
+        100,
+        125,
+        150,
+        175,
+        200,
+        250,
+        300,
+        400
+      ]
+    }
+  ]
+}
