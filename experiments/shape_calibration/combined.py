@@ -53,14 +53,19 @@ def inspect_temporal(root, elf_sha, stdin_sha, stdout_sha, probe_sha=temporal.PR
     return temporal_report
 
 
-def capture(payload, probe, elf, stdin, out):
-    payload, probe, elf, stdin, out = (Path(p).resolve() for p in (payload, probe, elf, stdin, out))
-    elf_sha = static_elf(elf)
+def verify_tools(payload, probe):
     require(elf_digest(probe) == temporal.PROBE_SHA, "unregistered temporal sidecar")
     verified_runtime(payload)
     plan = read_json(PROTOCOL.read_bytes())
     for name in ("span.so", "cost_bench.py", "base/bench.py"):
         require(elf_digest(payload / name) == plan["tools_sha256"][name], "different registered component: " + name)
+
+
+def capture(payload, probe, elf, stdin, out):
+    payload, probe, elf, stdin, out = (Path(p).resolve() for p in (payload, probe, elf, stdin, out))
+    elf_sha = static_elf(elf)
+    verify_tools(payload, probe)
+    plan = read_json(PROTOCOL.read_bytes())
     sys.path.insert(0, str(payload))
     try:
         runtime = runpy.run_path(str(payload / "cost_bench.py"))

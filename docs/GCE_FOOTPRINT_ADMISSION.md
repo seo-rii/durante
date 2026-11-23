@@ -31,3 +31,5 @@ cmp "$tmp/metrics.json" "$data/metrics.json"
 ```
 
 For a new trusted run, use the [capture and selection commands](GCE_SHAPE_CALIBRATION.md) with the combined sampler and select `--method footprint`. The [Aonohako projection](../experiments/shape_calibration/aonohako_clock.md) exports bounded integer weights for specified deadlines and binds them to the preflight, policy, ELF and stdin. These measurements support diagnostic use on the tested workloads. The production judging policy remains subject to separate runtime and workload qualification.
+
+The [exact-input session study](GCE_PREFLIGHT_CACHE.md) measures the cost of first and repeated preparation against the same paid bank, with fresh live enforcement for every deadline.

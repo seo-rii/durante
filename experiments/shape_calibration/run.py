@@ -71,6 +71,9 @@ def run(payload, selection_file, current, policy_file, elf, stdin, out, limit_ms
             require(obs["stdin_sha256"] == elf_digest(saved_input) == elf_digest(stdin),
                     "requested stdin differs from the full capture")
             result = live.run(payload, saved_policy, elf, saved_input, out / "live", limit_ms, timeout_ms, poll_ms)
+            if result.get("observation") == "terminal" and result["status"] in ("within_budget", "budget_exceeded"):
+                if result.get("stdout_sha256") != obs["stdout_sha256"]:
+                    result = {**result, "status": "unavailable", "reason": "terminal output differs from the preflight"}
             result = {**result, "selection_sha256": sha(selected_raw), "method": selection["method"],
                       "action": selection["action"], "reference_index": selection["reference_index"],
                       "current_sample_sha256": obs["sample_sha256"], "current_result_sha256": obs["result_sha256"],

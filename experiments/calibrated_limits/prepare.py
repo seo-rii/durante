@@ -45,7 +45,9 @@ def prepare(out, runtime, *, study=HERE, probe=None, benchmark="bench.py", sourc
     new_command = (f'"$PWD/repo/experiments/{study.name}/{benchmark}" '
                    '--payload "$PWD/runtime" --binaries "$PWD/binaries" --out "$PWD/output"')
     if probe is not None:
-        expected = json.loads((study / "rules.json").read_bytes())["probe_sha256"]
+        expected = plan.get("probe_sha256")
+        if expected is None:
+            expected = json.loads((study / "rules.json").read_bytes())["probe_sha256"]
         if digest(probe) != expected:
             raise ValueError("different registered temporal probe")
         shutil.copy2(probe, out / "temporal.so")
@@ -60,5 +62,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("out", type=Path)
     parser.add_argument("--runtime", type=Path, required=True, help="verified #82 payload")
+    parser.add_argument("--study", type=Path, default=HERE, help="study directory under experiments (default: calibrated_limits)")
+    parser.add_argument("--source-dir", type=Path, action="append", default=[], help="additional registered C++ source directory")
+    parser.add_argument("--probe", type=Path, help="temporal sidecar registered by the study")
     args = parser.parse_args()
-    prepare(args.out, args.runtime.resolve())
+    study = args.study.resolve()
+    if study.parent != HERE.parent:
+        parser.error("--study must be a directory under experiments")
+    prepare(args.out, args.runtime.resolve(), study=study, probe=args.probe, source_dirs=args.source_dir)

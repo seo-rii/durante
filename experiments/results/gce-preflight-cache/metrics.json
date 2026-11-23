@@ -1,0 +1,1240 @@
+{
+  "schema": 1,
+  "plan_sha256": "5de8e046b84e768fe15e8790977a131befe31f10b51d2f3d2b5d502ba13b8e23",
+  "summary_sha256": "b4e4db4067a6296cb0cfe1b312a7352524d457e13c08019ca47488303d9f8807",
+  "verified_pids": 70,
+  "implementation_sha256": "275585233757e17a691d1e77b8a57c77af57b4a4758ed2e93b12320939411021",
+  "cache_storage": {
+    "anchor_bytes": 360185,
+    "query_bytes": 483138,
+    "session_metadata_bytes": 79,
+    "total_bytes": 843402,
+    "entries": 7,
+    "entry_bytes": {
+      "5b3a965d96d434cee6675db8991380b0646dcdfa72bacd407ffbc4c7da1ce033": 120008,
+      "a4a5345a436d1a765fa3555107d72cdf39d23dcd108a6020894775201e47d749": 119375,
+      "f5c46f30b74c76a101c2b5f57c9cd06e584342f2ed3717a91795186e6fb12073": 120174,
+      "45b95d146835e0c1636e7084c914513bfde12a23903764578f6cf40459ec8c8b": 121635,
+      "69ae7df4942f107bc8219cc3411ca5349b400b30c5b11591ebb0afdb1984c4ed": 118542,
+      "a1bf8dbef38e6e4ecf6f0e4ef071368c879ab4f4b989a1d15e94cae2b29747b0": 119289,
+      "b63a7c03a46047f2e503af368454f4343d6d5435e2e8636c3a911428016ce518": 124300
+    }
+  },
+  "steal_ticks": 0,
+  "anchors": {
+    "fenwick": {
+      "hit": false,
+      "cache_entry_sha256": "69ae7df4942f107bc8219cc3411ca5349b400b30c5b11591ebb0afdb1984c4ed",
+      "capture_pid": 1089,
+      "action": "calibrate",
+      "policy_sha256": "f5fc1026ca0440ac9a62b8ad8d503f72530fc3d0042e9c57b9458547d4a47fc7",
+      "preflight_prediction_ns": 224830000,
+      "timing": {
+        "wall_ns": 787352366,
+        "self_cpu_ns": 89560000,
+        "children_cpu_ns": 689786000,
+        "cpu_ns": 779346000
+      },
+      "profile_target_cpu_ns": 464955000,
+      "native_target_cpu_ns": 224830000
+    },
+    "lookup": {
+      "hit": false,
+      "cache_entry_sha256": "5b3a965d96d434cee6675db8991380b0646dcdfa72bacd407ffbc4c7da1ce033",
+      "capture_pid": 1091,
+      "action": "calibrate",
+      "policy_sha256": "51f5ecb137340dd13024a196c259357c5bcc17be8536289f6e9520b200a628e4",
+      "preflight_prediction_ns": 48407000,
+      "timing": {
+        "wall_ns": 382235091,
+        "self_cpu_ns": 88747000,
+        "children_cpu_ns": 287190000,
+        "cpu_ns": 375937000
+      },
+      "profile_target_cpu_ns": 238780000,
+      "native_target_cpu_ns": 48407000
+    },
+    "window": {
+      "hit": false,
+      "cache_entry_sha256": "45b95d146835e0c1636e7084c914513bfde12a23903764578f6cf40459ec8c8b",
+      "capture_pid": 1093,
+      "action": "calibrate",
+      "policy_sha256": "1ed6674af22a354daf6c69ae52b9a865236995ddc431e80957db50d68da57b3c",
+      "preflight_prediction_ns": 68061000,
+      "timing": {
+        "wall_ns": 488103130,
+        "self_cpu_ns": 88470000,
+        "children_cpu_ns": 396611000,
+        "cpu_ns": 485081000
+      },
+      "profile_target_cpu_ns": 328548000,
+      "native_target_cpu_ns": 68061000
+    }
+  },
+  "totals": {
+    "cold": {
+      "pairs": 4,
+      "equal_policy_pairs": 4,
+      "equal_verdicts": 8,
+      "limits": 8,
+      "comparable_pairs": 4,
+      "fresh": {
+        "preflight_cpu_ns": 1959054000,
+        "preflight_wall_ns": 1968296564,
+        "live_cpu_ns": 2297847000,
+        "live_wall_ns": 2298203687,
+        "end_to_end_cpu_ns": 4256901000,
+        "end_to_end_wall_ns": 4266500251,
+        "profile_target_cpu_ns": 1538305000,
+        "native_target_cpu_ns": 0,
+        "profile_launches": 4
+      },
+      "session": {
+        "preflight_cpu_ns": 1968917000,
+        "preflight_wall_ns": 1979953114,
+        "live_cpu_ns": 2276009000,
+        "live_wall_ns": 2278599961,
+        "end_to_end_cpu_ns": 4244926000,
+        "end_to_end_wall_ns": 4258553075,
+        "profile_target_cpu_ns": 1521345000,
+        "native_target_cpu_ns": 0,
+        "profile_launches": 4
+      }
+    },
+    "warm": {
+      "pairs": 8,
+      "equal_policy_pairs": 8,
+      "equal_verdicts": 16,
+      "limits": 16,
+      "comparable_pairs": 8,
+      "fresh": {
+        "preflight_cpu_ns": 4024167000,
+        "preflight_wall_ns": 4047408616,
+        "live_cpu_ns": 4742723000,
+        "live_wall_ns": 4743708737,
+        "end_to_end_cpu_ns": 8766890000,
+        "end_to_end_wall_ns": 8791117353,
+        "profile_target_cpu_ns": 3147791000,
+        "native_target_cpu_ns": 0,
+        "profile_launches": 8
+      },
+      "session": {
+        "preflight_cpu_ns": 162476000,
+        "preflight_wall_ns": 162522031,
+        "live_cpu_ns": 4654979000,
+        "live_wall_ns": 4657202258,
+        "end_to_end_cpu_ns": 4817455000,
+        "end_to_end_wall_ns": 4819724289,
+        "profile_target_cpu_ns": 0,
+        "native_target_cpu_ns": 0,
+        "profile_launches": 0
+      }
+    }
+  },
+  "pairs": [
+    {
+      "round": 0,
+      "case_id": "fenwick/expanded",
+      "fresh": {
+        "hit": false,
+        "cache_entry_sha256": null,
+        "capture_pid": 1095,
+        "action": "reuse",
+        "policy_sha256": "f5fc1026ca0440ac9a62b8ad8d503f72530fc3d0042e9c57b9458547d4a47fc7",
+        "preflight_prediction_ns": 224830000,
+        "timing": {
+          "wall_ns": 558840347,
+          "self_cpu_ns": 103753000,
+          "children_cpu_ns": 453051000,
+          "cpu_ns": 556804000
+        },
+        "profile_target_cpu_ns": 453049000,
+        "native_target_cpu_ns": 0,
+        "live": [
+          {
+            "limit_ms": 75,
+            "pid": 1096,
+            "observation": "live",
+            "tle": true,
+            "prediction_ns": 77504051,
+            "timing": {
+              "wall_ns": 216912553,
+              "self_cpu_ns": 49399000,
+              "children_cpu_ns": 167482000,
+              "cpu_ns": 216881000
+            }
+          },
+          {
+            "limit_ms": 300,
+            "pid": 1097,
+            "observation": "terminal",
+            "tle": false,
+            "prediction_ns": 224830000,
+            "timing": {
+              "wall_ns": 450306012,
+              "self_cpu_ns": 54605000,
+              "children_cpu_ns": 395622000,
+              "cpu_ns": 450227000
+            }
+          }
+        ]
+      },
+      "session": {
+        "hit": false,
+        "cache_entry_sha256": "a1bf8dbef38e6e4ecf6f0e4ef071368c879ab4f4b989a1d15e94cae2b29747b0",
+        "capture_pid": 1098,
+        "action": "reuse",
+        "policy_sha256": "f5fc1026ca0440ac9a62b8ad8d503f72530fc3d0042e9c57b9458547d4a47fc7",
+        "preflight_prediction_ns": 224830000,
+        "timing": {
+          "wall_ns": 569485197,
+          "self_cpu_ns": 114402000,
+          "children_cpu_ns": 451262000,
+          "cpu_ns": 565664000
+        },
+        "profile_target_cpu_ns": 451260000,
+        "native_target_cpu_ns": 0,
+        "live": [
+          {
+            "limit_ms": 75,
+            "pid": 1099,
+            "observation": "live",
+            "tle": true,
+            "prediction_ns": 75954721,
+            "timing": {
+              "wall_ns": 223929873,
+              "self_cpu_ns": 51429000,
+              "children_cpu_ns": 172421000,
+              "cpu_ns": 223850000
+            }
+          },
+          {
+            "limit_ms": 300,
+            "pid": 1100,
+            "observation": "terminal",
+            "tle": false,
+            "prediction_ns": 224830000,
+            "timing": {
+              "wall_ns": 444471983,
+              "self_cpu_ns": 55357000,
+              "children_cpu_ns": 388991000,
+              "cpu_ns": 444348000
+            }
+          }
+        ]
+      }
+    },
+    {
+      "round": 0,
+      "case_id": "fenwick/expanded_repeat",
+      "session": {
+        "hit": false,
+        "cache_entry_sha256": "a4a5345a436d1a765fa3555107d72cdf39d23dcd108a6020894775201e47d749",
+        "capture_pid": 1101,
+        "action": "reuse",
+        "policy_sha256": "f5fc1026ca0440ac9a62b8ad8d503f72530fc3d0042e9c57b9458547d4a47fc7",
+        "preflight_prediction_ns": 168718545,
+        "timing": {
+          "wall_ns": 470635445,
+          "self_cpu_ns": 111490000,
+          "children_cpu_ns": 357705000,
+          "cpu_ns": 469195000
+        },
+        "profile_target_cpu_ns": 357703000,
+        "native_target_cpu_ns": 0,
+        "live": [
+          {
+            "limit_ms": 75,
+            "pid": 1102,
+            "observation": "live",
+            "tle": true,
+            "prediction_ns": 75359829,
+            "timing": {
+              "wall_ns": 207404182,
+              "self_cpu_ns": 49956000,
+              "children_cpu_ns": 157358000,
+              "cpu_ns": 207314000
+            }
+          },
+          {
+            "limit_ms": 300,
+            "pid": 1103,
+            "observation": "terminal",
+            "tle": false,
+            "prediction_ns": 168718545,
+            "timing": {
+              "wall_ns": 361200284,
+              "self_cpu_ns": 54177000,
+              "children_cpu_ns": 306980000,
+              "cpu_ns": 361157000
+            }
+          }
+        ]
+      },
+      "fresh": {
+        "hit": false,
+        "cache_entry_sha256": null,
+        "capture_pid": 1105,
+        "action": "reuse",
+        "policy_sha256": "f5fc1026ca0440ac9a62b8ad8d503f72530fc3d0042e9c57b9458547d4a47fc7",
+        "preflight_prediction_ns": 168718545,
+        "timing": {
+          "wall_ns": 463115271,
+          "self_cpu_ns": 103999000,
+          "children_cpu_ns": 356978000,
+          "cpu_ns": 460977000
+        },
+        "profile_target_cpu_ns": 356977000,
+        "native_target_cpu_ns": 0,
+        "live": [
+          {
+            "limit_ms": 75,
+            "pid": 1106,
+            "observation": "live",
+            "tle": true,
+            "prediction_ns": 75500989,
+            "timing": {
+              "wall_ns": 206870692,
+              "self_cpu_ns": 49473000,
+              "children_cpu_ns": 157361000,
+              "cpu_ns": 206834000
+            }
+          },
+          {
+            "limit_ms": 300,
+            "pid": 1107,
+            "observation": "terminal",
+            "tle": false,
+            "prediction_ns": 168718545,
+            "timing": {
+              "wall_ns": 365428994,
+              "self_cpu_ns": 54176000,
+              "children_cpu_ns": 311205000,
+              "cpu_ns": 365381000
+            }
+          }
+        ]
+      }
+    },
+    {
+      "round": 0,
+      "case_id": "lookup/ordered_scale",
+      "fresh": {
+        "hit": false,
+        "cache_entry_sha256": null,
+        "capture_pid": 1110,
+        "action": "reuse",
+        "policy_sha256": "51f5ecb137340dd13024a196c259357c5bcc17be8536289f6e9520b200a628e4",
+        "preflight_prediction_ns": 72585109,
+        "timing": {
+          "wall_ns": 414640131,
+          "self_cpu_ns": 106082000,
+          "children_cpu_ns": 306296000,
+          "cpu_ns": 412378000
+        },
+        "profile_target_cpu_ns": 306295000,
+        "native_target_cpu_ns": 0,
+        "live": [
+          {
+            "limit_ms": 40,
+            "pid": 1111,
+            "observation": "live",
+            "tle": true,
+            "prediction_ns": 41162407,
+            "timing": {
+              "wall_ns": 208497741,
+              "self_cpu_ns": 51249000,
+              "children_cpu_ns": 157185000,
+              "cpu_ns": 208434000
+            }
+          },
+          {
+            "limit_ms": 150,
+            "pid": 1112,
+            "observation": "terminal",
+            "tle": false,
+            "prediction_ns": 72585109,
+            "timing": {
+              "wall_ns": 308282797,
+              "self_cpu_ns": 52154000,
+              "children_cpu_ns": 256097000,
+              "cpu_ns": 308251000
+            }
+          }
+        ]
+      },
+      "session": {
+        "hit": false,
+        "cache_entry_sha256": "f5c46f30b74c76a101c2b5f57c9cd06e584342f2ed3717a91795186e6fb12073",
+        "capture_pid": 1113,
+        "action": "reuse",
+        "policy_sha256": "51f5ecb137340dd13024a196c259357c5bcc17be8536289f6e9520b200a628e4",
+        "preflight_prediction_ns": 72585109,
+        "timing": {
+          "wall_ns": 420080607,
+          "self_cpu_ns": 111556000,
+          "children_cpu_ns": 306937000,
+          "cpu_ns": 418493000
+        },
+        "profile_target_cpu_ns": 306935000,
+        "native_target_cpu_ns": 0,
+        "live": [
+          {
+            "limit_ms": 40,
+            "pid": 1114,
+            "observation": "live",
+            "tle": true,
+            "prediction_ns": 41330958,
+            "timing": {
+              "wall_ns": 206662371,
+              "self_cpu_ns": 49409000,
+              "children_cpu_ns": 157226000,
+              "cpu_ns": 206635000
+            }
+          },
+          {
+            "limit_ms": 150,
+            "pid": 1115,
+            "observation": "terminal",
+            "tle": false,
+            "prediction_ns": 72585109,
+            "timing": {
+              "wall_ns": 310127948,
+              "self_cpu_ns": 51867000,
+              "children_cpu_ns": 258198000,
+              "cpu_ns": 310065000
+            }
+          }
+        ]
+      }
+    },
+    {
+      "round": 0,
+      "case_id": "window/double_table_repeat",
+      "session": {
+        "hit": false,
+        "cache_entry_sha256": "b63a7c03a46047f2e503af368454f4343d6d5435e2e8636c3a911428016ce518",
+        "capture_pid": 1116,
+        "action": "reuse",
+        "policy_sha256": "1ed6674af22a354daf6c69ae52b9a865236995ddc431e80957db50d68da57b3c",
+        "preflight_prediction_ns": 102015763,
+        "timing": {
+          "wall_ns": 519751865,
+          "self_cpu_ns": 110116000,
+          "children_cpu_ns": 405449000,
+          "cpu_ns": 515565000
+        },
+        "profile_target_cpu_ns": 405447000,
+        "native_target_cpu_ns": 0,
+        "live": [
+          {
+            "limit_ms": 40,
+            "pid": 1117,
+            "observation": "live",
+            "tle": true,
+            "prediction_ns": 41314611,
+            "timing": {
+              "wall_ns": 189669398,
+              "self_cpu_ns": 50399000,
+              "children_cpu_ns": 137132000,
+              "cpu_ns": 187531000
+            }
+          },
+          {
+            "limit_ms": 200,
+            "pid": 1118,
+            "observation": "terminal",
+            "tle": false,
+            "prediction_ns": 102015763,
+            "timing": {
+              "wall_ns": 335133922,
+              "self_cpu_ns": 53177000,
+              "children_cpu_ns": 281932000,
+              "cpu_ns": 335109000
+            }
+          }
+        ]
+      },
+      "fresh": {
+        "hit": false,
+        "cache_entry_sha256": null,
+        "capture_pid": 1119,
+        "action": "reuse",
+        "policy_sha256": "1ed6674af22a354daf6c69ae52b9a865236995ddc431e80957db50d68da57b3c",
+        "preflight_prediction_ns": 102015763,
+        "timing": {
+          "wall_ns": 531700815,
+          "self_cpu_ns": 106909000,
+          "children_cpu_ns": 421986000,
+          "cpu_ns": 528895000
+        },
+        "profile_target_cpu_ns": 421984000,
+        "native_target_cpu_ns": 0,
+        "live": [
+          {
+            "limit_ms": 40,
+            "pid": 1120,
+            "observation": "live",
+            "tle": true,
+            "prediction_ns": 42112175,
+            "timing": {
+              "wall_ns": 203321581,
+              "self_cpu_ns": 50964000,
+              "children_cpu_ns": 152328000,
+              "cpu_ns": 203292000
+            }
+          },
+          {
+            "limit_ms": 200,
+            "pid": 1121,
+            "observation": "terminal",
+            "tle": false,
+            "prediction_ns": 102015763,
+            "timing": {
+              "wall_ns": 338583317,
+              "self_cpu_ns": 54720000,
+              "children_cpu_ns": 283827000,
+              "cpu_ns": 338547000
+            }
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "case_id": "fenwick/expanded_repeat",
+      "fresh": {
+        "hit": false,
+        "cache_entry_sha256": null,
+        "capture_pid": 1122,
+        "action": "reuse",
+        "policy_sha256": "f5fc1026ca0440ac9a62b8ad8d503f72530fc3d0042e9c57b9458547d4a47fc7",
+        "preflight_prediction_ns": 168718545,
+        "timing": {
+          "wall_ns": 474139722,
+          "self_cpu_ns": 104997000,
+          "children_cpu_ns": 364391000,
+          "cpu_ns": 469388000
+        },
+        "profile_target_cpu_ns": 364390000,
+        "native_target_cpu_ns": 0,
+        "live": [
+          {
+            "limit_ms": 75,
+            "pid": 1123,
+            "observation": "live",
+            "tle": true,
+            "prediction_ns": 75374960,
+            "timing": {
+              "wall_ns": 223051321,
+              "self_cpu_ns": 50506000,
+              "children_cpu_ns": 172462000,
+              "cpu_ns": 222968000
+            }
+          },
+          {
+            "limit_ms": 300,
+            "pid": 1124,
+            "observation": "terminal",
+            "tle": false,
+            "prediction_ns": 168718545,
+            "timing": {
+              "wall_ns": 360359004,
+              "self_cpu_ns": 53130000,
+              "children_cpu_ns": 307190000,
+              "cpu_ns": 360320000
+            }
+          }
+        ]
+      },
+      "session": {
+        "hit": true,
+        "cache_entry_sha256": "a4a5345a436d1a765fa3555107d72cdf39d23dcd108a6020894775201e47d749",
+        "capture_pid": 1101,
+        "action": "reuse",
+        "policy_sha256": "f5fc1026ca0440ac9a62b8ad8d503f72530fc3d0042e9c57b9458547d4a47fc7",
+        "preflight_prediction_ns": 168718545,
+        "timing": {
+          "wall_ns": 20075665,
+          "self_cpu_ns": 20062000,
+          "children_cpu_ns": 0,
+          "cpu_ns": 20062000
+        },
+        "profile_target_cpu_ns": 0,
+        "native_target_cpu_ns": 0,
+        "live": [
+          {
+            "limit_ms": 75,
+            "pid": 1125,
+            "observation": "live",
+            "tle": true,
+            "prediction_ns": 76352957,
+            "timing": {
+              "wall_ns": 218871665,
+              "self_cpu_ns": 51328000,
+              "children_cpu_ns": 167512000,
+              "cpu_ns": 218840000
+            }
+          },
+          {
+            "limit_ms": 300,
+            "pid": 1126,
+            "observation": "terminal",
+            "tle": false,
+            "prediction_ns": 168718545,
+            "timing": {
+              "wall_ns": 376012872,
+              "self_cpu_ns": 55360000,
+              "children_cpu_ns": 320573000,
+              "cpu_ns": 375933000
+            }
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "case_id": "lookup/ordered_scale",
+      "session": {
+        "hit": true,
+        "cache_entry_sha256": "f5c46f30b74c76a101c2b5f57c9cd06e584342f2ed3717a91795186e6fb12073",
+        "capture_pid": 1113,
+        "action": "reuse",
+        "policy_sha256": "51f5ecb137340dd13024a196c259357c5bcc17be8536289f6e9520b200a628e4",
+        "preflight_prediction_ns": 72585109,
+        "timing": {
+          "wall_ns": 20445003,
+          "self_cpu_ns": 20426000,
+          "children_cpu_ns": 0,
+          "cpu_ns": 20426000
+        },
+        "profile_target_cpu_ns": 0,
+        "native_target_cpu_ns": 0,
+        "live": [
+          {
+            "limit_ms": 40,
+            "pid": 1127,
+            "observation": "live",
+            "tle": true,
+            "prediction_ns": 41255600,
+            "timing": {
+              "wall_ns": 207847291,
+              "self_cpu_ns": 50644000,
+              "children_cpu_ns": 157158000,
+              "cpu_ns": 207802000
+            }
+          },
+          {
+            "limit_ms": 150,
+            "pid": 1128,
+            "observation": "terminal",
+            "tle": false,
+            "prediction_ns": 72585109,
+            "timing": {
+              "wall_ns": 314610179,
+              "self_cpu_ns": 53309000,
+              "children_cpu_ns": 261219000,
+              "cpu_ns": 314528000
+            }
+          }
+        ]
+      },
+      "fresh": {
+        "hit": false,
+        "cache_entry_sha256": null,
+        "capture_pid": 1129,
+        "action": "reuse",
+        "policy_sha256": "51f5ecb137340dd13024a196c259357c5bcc17be8536289f6e9520b200a628e4",
+        "preflight_prediction_ns": 72585109,
+        "timing": {
+          "wall_ns": 417836027,
+          "self_cpu_ns": 109282000,
+          "children_cpu_ns": 307017000,
+          "cpu_ns": 416299000
+        },
+        "profile_target_cpu_ns": 307015000,
+        "native_target_cpu_ns": 0,
+        "live": [
+          {
+            "limit_ms": 40,
+            "pid": 1130,
+            "observation": "live",
+            "tle": true,
+            "prediction_ns": 41082991,
+            "timing": {
+              "wall_ns": 209321263,
+              "self_cpu_ns": 52095000,
+              "children_cpu_ns": 157197000,
+              "cpu_ns": 209292000
+            }
+          },
+          {
+            "limit_ms": 150,
+            "pid": 1131,
+            "observation": "terminal",
+            "tle": false,
+            "prediction_ns": 72585109,
+            "timing": {
+              "wall_ns": 310311366,
+              "self_cpu_ns": 53550000,
+              "children_cpu_ns": 256733000,
+              "cpu_ns": 310283000
+            }
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "case_id": "window/double_table_repeat",
+      "fresh": {
+        "hit": false,
+        "cache_entry_sha256": null,
+        "capture_pid": 1132,
+        "action": "reuse",
+        "policy_sha256": "1ed6674af22a354daf6c69ae52b9a865236995ddc431e80957db50d68da57b3c",
+        "preflight_prediction_ns": 102015763,
+        "timing": {
+          "wall_ns": 537770582,
+          "self_cpu_ns": 107918000,
+          "children_cpu_ns": 427205000,
+          "cpu_ns": 535123000
+        },
+        "profile_target_cpu_ns": 427205000,
+        "native_target_cpu_ns": 0,
+        "live": [
+          {
+            "limit_ms": 40,
+            "pid": 1133,
+            "observation": "live",
+            "tle": true,
+            "prediction_ns": 41096197,
+            "timing": {
+              "wall_ns": 198173391,
+              "self_cpu_ns": 50855000,
+              "children_cpu_ns": 147285000,
+              "cpu_ns": 198140000
+            }
+          },
+          {
+            "limit_ms": 200,
+            "pid": 1134,
+            "observation": "terminal",
+            "tle": false,
+            "prediction_ns": 102015763,
+            "timing": {
+              "wall_ns": 366278924,
+              "self_cpu_ns": 58255000,
+              "children_cpu_ns": 307983000,
+              "cpu_ns": 366238000
+            }
+          }
+        ]
+      },
+      "session": {
+        "hit": true,
+        "cache_entry_sha256": "b63a7c03a46047f2e503af368454f4343d6d5435e2e8636c3a911428016ce518",
+        "capture_pid": 1116,
+        "action": "reuse",
+        "policy_sha256": "1ed6674af22a354daf6c69ae52b9a865236995ddc431e80957db50d68da57b3c",
+        "preflight_prediction_ns": 102015763,
+        "timing": {
+          "wall_ns": 20099123,
+          "self_cpu_ns": 20098000,
+          "children_cpu_ns": 0,
+          "cpu_ns": 20098000
+        },
+        "profile_target_cpu_ns": 0,
+        "native_target_cpu_ns": 0,
+        "live": [
+          {
+            "limit_ms": 40,
+            "pid": 1135,
+            "observation": "live",
+            "tle": true,
+            "prediction_ns": 40657255,
+            "timing": {
+              "wall_ns": 188644730,
+              "self_cpu_ns": 51442000,
+              "children_cpu_ns": 137169000,
+              "cpu_ns": 188611000
+            }
+          },
+          {
+            "limit_ms": 200,
+            "pid": 1136,
+            "observation": "terminal",
+            "tle": false,
+            "prediction_ns": 102015763,
+            "timing": {
+              "wall_ns": 341258227,
+              "self_cpu_ns": 55165000,
+              "children_cpu_ns": 285994000,
+              "cpu_ns": 341159000
+            }
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "case_id": "fenwick/expanded",
+      "session": {
+        "hit": true,
+        "cache_entry_sha256": "a1bf8dbef38e6e4ecf6f0e4ef071368c879ab4f4b989a1d15e94cae2b29747b0",
+        "capture_pid": 1098,
+        "action": "reuse",
+        "policy_sha256": "f5fc1026ca0440ac9a62b8ad8d503f72530fc3d0042e9c57b9458547d4a47fc7",
+        "preflight_prediction_ns": 224830000,
+        "timing": {
+          "wall_ns": 20350595,
+          "self_cpu_ns": 20351000,
+          "children_cpu_ns": 0,
+          "cpu_ns": 20351000
+        },
+        "profile_target_cpu_ns": 0,
+        "native_target_cpu_ns": 0,
+        "live": [
+          {
+            "limit_ms": 75,
+            "pid": 1137,
+            "observation": "live",
+            "tle": true,
+            "prediction_ns": 78008179,
+            "timing": {
+              "wall_ns": 213212438,
+              "self_cpu_ns": 50780000,
+              "children_cpu_ns": 162405000,
+              "cpu_ns": 213185000
+            }
+          },
+          {
+            "limit_ms": 300,
+            "pid": 1139,
+            "observation": "terminal",
+            "tle": false,
+            "prediction_ns": 224830000,
+            "timing": {
+              "wall_ns": 493454135,
+              "self_cpu_ns": 58816000,
+              "children_cpu_ns": 434590000,
+              "cpu_ns": 493406000
+            }
+          }
+        ]
+      },
+      "fresh": {
+        "hit": false,
+        "cache_entry_sha256": null,
+        "capture_pid": 1140,
+        "action": "reuse",
+        "policy_sha256": "f5fc1026ca0440ac9a62b8ad8d503f72530fc3d0042e9c57b9458547d4a47fc7",
+        "preflight_prediction_ns": 224830000,
+        "timing": {
+          "wall_ns": 623595576,
+          "self_cpu_ns": 112773000,
+          "children_cpu_ns": 507766000,
+          "cpu_ns": 620539000
+        },
+        "profile_target_cpu_ns": 507764000,
+        "native_target_cpu_ns": 0,
+        "live": [
+          {
+            "limit_ms": 75,
+            "pid": 1143,
+            "observation": "live",
+            "tle": true,
+            "prediction_ns": 76216850,
+            "timing": {
+              "wall_ns": 226554322,
+              "self_cpu_ns": 53942000,
+              "children_cpu_ns": 172560000,
+              "cpu_ns": 226502000
+            }
+          },
+          {
+            "limit_ms": 300,
+            "pid": 1144,
+            "observation": "terminal",
+            "tle": false,
+            "prediction_ns": 224830000,
+            "timing": {
+              "wall_ns": 512798935,
+              "self_cpu_ns": 60528000,
+              "children_cpu_ns": 452220000,
+              "cpu_ns": 512748000
+            }
+          }
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "case_id": "lookup/ordered_scale",
+      "fresh": {
+        "hit": false,
+        "cache_entry_sha256": null,
+        "capture_pid": 1145,
+        "action": "reuse",
+        "policy_sha256": "51f5ecb137340dd13024a196c259357c5bcc17be8536289f6e9520b200a628e4",
+        "preflight_prediction_ns": 72585109,
+        "timing": {
+          "wall_ns": 420651276,
+          "self_cpu_ns": 107064000,
+          "children_cpu_ns": 310258000,
+          "cpu_ns": 417322000
+        },
+        "profile_target_cpu_ns": 310256000,
+        "native_target_cpu_ns": 0,
+        "live": [
+          {
+            "limit_ms": 40,
+            "pid": 1146,
+            "observation": "live",
+            "tle": true,
+            "prediction_ns": 40890936,
+            "timing": {
+              "wall_ns": 207023043,
+              "self_cpu_ns": 49767000,
+              "children_cpu_ns": 157197000,
+              "cpu_ns": 206964000
+            }
+          },
+          {
+            "limit_ms": 150,
+            "pid": 1147,
+            "observation": "terminal",
+            "tle": false,
+            "prediction_ns": 72585109,
+            "timing": {
+              "wall_ns": 311948941,
+              "self_cpu_ns": 54069000,
+              "children_cpu_ns": 257808000,
+              "cpu_ns": 311877000
+            }
+          }
+        ]
+      },
+      "session": {
+        "hit": true,
+        "cache_entry_sha256": "f5c46f30b74c76a101c2b5f57c9cd06e584342f2ed3717a91795186e6fb12073",
+        "capture_pid": 1113,
+        "action": "reuse",
+        "policy_sha256": "51f5ecb137340dd13024a196c259357c5bcc17be8536289f6e9520b200a628e4",
+        "preflight_prediction_ns": 72585109,
+        "timing": {
+          "wall_ns": 20402187,
+          "self_cpu_ns": 20404000,
+          "children_cpu_ns": 0,
+          "cpu_ns": 20404000
+        },
+        "profile_target_cpu_ns": 0,
+        "native_target_cpu_ns": 0,
+        "live": [
+          {
+            "limit_ms": 40,
+            "pid": 1148,
+            "observation": "live",
+            "tle": true,
+            "prediction_ns": 41185907,
+            "timing": {
+              "wall_ns": 207780799,
+              "self_cpu_ns": 50561000,
+              "children_cpu_ns": 157199000,
+              "cpu_ns": 207760000
+            }
+          },
+          {
+            "limit_ms": 150,
+            "pid": 1149,
+            "observation": "terminal",
+            "tle": false,
+            "prediction_ns": 72585109,
+            "timing": {
+              "wall_ns": 313537742,
+              "self_cpu_ns": 54676000,
+              "children_cpu_ns": 258819000,
+              "cpu_ns": 313495000
+            }
+          }
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "case_id": "window/double_table_repeat",
+      "session": {
+        "hit": true,
+        "cache_entry_sha256": "b63a7c03a46047f2e503af368454f4343d6d5435e2e8636c3a911428016ce518",
+        "capture_pid": 1116,
+        "action": "reuse",
+        "policy_sha256": "1ed6674af22a354daf6c69ae52b9a865236995ddc431e80957db50d68da57b3c",
+        "preflight_prediction_ns": 102015763,
+        "timing": {
+          "wall_ns": 20366402,
+          "self_cpu_ns": 20367000,
+          "children_cpu_ns": 0,
+          "cpu_ns": 20367000
+        },
+        "profile_target_cpu_ns": 0,
+        "native_target_cpu_ns": 0,
+        "live": [
+          {
+            "limit_ms": 40,
+            "pid": 1150,
+            "observation": "live",
+            "tle": true,
+            "prediction_ns": 42010013,
+            "timing": {
+              "wall_ns": 193893048,
+              "self_cpu_ns": 51683000,
+              "children_cpu_ns": 142171000,
+              "cpu_ns": 193854000
+            }
+          },
+          {
+            "limit_ms": 200,
+            "pid": 1151,
+            "observation": "terminal",
+            "tle": false,
+            "prediction_ns": 102015763,
+            "timing": {
+              "wall_ns": 348533022,
+              "self_cpu_ns": 57155000,
+              "children_cpu_ns": 289892000,
+              "cpu_ns": 347047000
+            }
+          }
+        ]
+      },
+      "fresh": {
+        "hit": false,
+        "cache_entry_sha256": null,
+        "capture_pid": 1152,
+        "action": "reuse",
+        "policy_sha256": "1ed6674af22a354daf6c69ae52b9a865236995ddc431e80957db50d68da57b3c",
+        "preflight_prediction_ns": 102015763,
+        "timing": {
+          "wall_ns": 533381675,
+          "self_cpu_ns": 118635000,
+          "children_cpu_ns": 413733000,
+          "cpu_ns": 532368000
+        },
+        "profile_target_cpu_ns": 413731000,
+        "native_target_cpu_ns": 0,
+        "live": [
+          {
+            "limit_ms": 40,
+            "pid": 1153,
+            "observation": "live",
+            "tle": true,
+            "prediction_ns": 41100425,
+            "timing": {
+              "wall_ns": 194097366,
+              "self_cpu_ns": 51843000,
+              "children_cpu_ns": 142220000,
+              "cpu_ns": 194063000
+            }
+          },
+          {
+            "limit_ms": 200,
+            "pid": 1154,
+            "observation": "terminal",
+            "tle": false,
+            "prediction_ns": 102015763,
+            "timing": {
+              "wall_ns": 363168426,
+              "self_cpu_ns": 57058000,
+              "children_cpu_ns": 306051000,
+              "cpu_ns": 363109000
+            }
+          }
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "case_id": "fenwick/expanded",
+      "fresh": {
+        "hit": false,
+        "cache_entry_sha256": null,
+        "capture_pid": 1155,
+        "action": "reuse",
+        "policy_sha256": "f5fc1026ca0440ac9a62b8ad8d503f72530fc3d0042e9c57b9458547d4a47fc7",
+        "preflight_prediction_ns": 224830000,
+        "timing": {
+          "wall_ns": 555577933,
+          "self_cpu_ns": 105513000,
+          "children_cpu_ns": 445863000,
+          "cpu_ns": 551376000
+        },
+        "profile_target_cpu_ns": 445862000,
+        "native_target_cpu_ns": 0,
+        "live": [
+          {
+            "limit_ms": 75,
+            "pid": 1156,
+            "observation": "live",
+            "tle": true,
+            "prediction_ns": 76710870,
+            "timing": {
+              "wall_ns": 212935398,
+              "self_cpu_ns": 50493000,
+              "children_cpu_ns": 162395000,
+              "cpu_ns": 212888000
+            }
+          },
+          {
+            "limit_ms": 300,
+            "pid": 1157,
+            "observation": "terminal",
+            "tle": false,
+            "prediction_ns": 224830000,
+            "timing": {
+              "wall_ns": 456955486,
+              "self_cpu_ns": 57613000,
+              "children_cpu_ns": 399097000,
+              "cpu_ns": 456710000
+            }
+          }
+        ]
+      },
+      "session": {
+        "hit": true,
+        "cache_entry_sha256": "a1bf8dbef38e6e4ecf6f0e4ef071368c879ab4f4b989a1d15e94cae2b29747b0",
+        "capture_pid": 1098,
+        "action": "reuse",
+        "policy_sha256": "f5fc1026ca0440ac9a62b8ad8d503f72530fc3d0042e9c57b9458547d4a47fc7",
+        "preflight_prediction_ns": 224830000,
+        "timing": {
+          "wall_ns": 20435618,
+          "self_cpu_ns": 20436000,
+          "children_cpu_ns": 0,
+          "cpu_ns": 20436000
+        },
+        "profile_target_cpu_ns": 0,
+        "native_target_cpu_ns": 0,
+        "live": [
+          {
+            "limit_ms": 75,
+            "pid": 1159,
+            "observation": "live",
+            "tle": true,
+            "prediction_ns": 75583324,
+            "timing": {
+              "wall_ns": 213417928,
+              "self_cpu_ns": 50987000,
+              "children_cpu_ns": 162388000,
+              "cpu_ns": 213375000
+            }
+          },
+          {
+            "limit_ms": 300,
+            "pid": 1160,
+            "observation": "terminal",
+            "tle": false,
+            "prediction_ns": 224830000,
+            "timing": {
+              "wall_ns": 451477322,
+              "self_cpu_ns": 55817000,
+              "children_cpu_ns": 395605000,
+              "cpu_ns": 451422000
+            }
+          }
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "case_id": "fenwick/expanded_repeat",
+      "session": {
+        "hit": true,
+        "cache_entry_sha256": "a4a5345a436d1a765fa3555107d72cdf39d23dcd108a6020894775201e47d749",
+        "capture_pid": 1101,
+        "action": "reuse",
+        "policy_sha256": "f5fc1026ca0440ac9a62b8ad8d503f72530fc3d0042e9c57b9458547d4a47fc7",
+        "preflight_prediction_ns": 168718545,
+        "timing": {
+          "wall_ns": 20347438,
+          "self_cpu_ns": 20332000,
+          "children_cpu_ns": 0,
+          "cpu_ns": 20332000
+        },
+        "profile_target_cpu_ns": 0,
+        "native_target_cpu_ns": 0,
+        "live": [
+          {
+            "limit_ms": 75,
+            "pid": 1161,
+            "observation": "live",
+            "tle": true,
+            "prediction_ns": 77682191,
+            "timing": {
+              "wall_ns": 212696483,
+              "self_cpu_ns": 50200000,
+              "children_cpu_ns": 162481000,
+              "cpu_ns": 212681000
+            }
+          },
+          {
+            "limit_ms": 300,
+            "pid": 1162,
+            "observation": "terminal",
+            "tle": false,
+            "prediction_ns": 168718545,
+            "timing": {
+              "wall_ns": 361954377,
+              "self_cpu_ns": 53807000,
+              "children_cpu_ns": 308074000,
+              "cpu_ns": 361881000
+            }
+          }
+        ]
+      },
+      "fresh": {
+        "hit": false,
+        "cache_entry_sha256": null,
+        "capture_pid": 1163,
+        "action": "reuse",
+        "policy_sha256": "f5fc1026ca0440ac9a62b8ad8d503f72530fc3d0042e9c57b9458547d4a47fc7",
+        "preflight_prediction_ns": 168718545,
+        "timing": {
+          "wall_ns": 484455825,
+          "self_cpu_ns": 110182000,
+          "children_cpu_ns": 371570000,
+          "cpu_ns": 481752000
+        },
+        "profile_target_cpu_ns": 371568000,
+        "native_target_cpu_ns": 0,
+        "live": [
+          {
+            "limit_ms": 75,
+            "pid": 1164,
+            "observation": "live",
+            "tle": true,
+            "prediction_ns": 77875441,
+            "timing": {
+              "wall_ns": 218849218,
+              "self_cpu_ns": 51321000,
+              "children_cpu_ns": 167501000,
+              "cpu_ns": 218822000
+            }
+          },
+          {
+            "limit_ms": 300,
+            "pid": 1165,
+            "observation": "terminal",
+            "tle": false,
+            "prediction_ns": 168718545,
+            "timing": {
+              "wall_ns": 371882333,
+              "self_cpu_ns": 55945000,
+              "children_cpu_ns": 315854000,
+              "cpu_ns": 371799000
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
