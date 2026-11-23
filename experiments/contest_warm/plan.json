@@ -1,0 +1,239 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "poll_ms": 5,
+  "timeout_ms": 120000,
+  "native_rounds": 11,
+  "probe_sha256": "159ca08d50bb8cf20e88f86b2186af422e094e7c14ebe98a42bed7adc2d6b186",
+  "deadline_percent": [
+    85,
+    100,
+    115
+  ],
+  "cases": [
+    {
+      "case_id": "dreaming/long_paths",
+      "program": "dreaming",
+      "variant": "long_paths",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "2a0b29e2beaba0ca7e96abaac3331bcebd2ab459a3c9f1e15da13d8505c26bba",
+      "stdin_sha256": "07da247d26ebcd2b1f44c61a53a6f1a7381bd354fa2f3bf610bb089db77152d8",
+      "stdout_sha256": "99e9b1577c62898bb8bb29763e735b274d3c4a7f16f42a8331be6e4392ebb23a",
+      "fixed_limits_ms": [
+        5,
+        12,
+        25,
+        50
+      ]
+    },
+    {
+      "case_id": "dreaming/star_groves",
+      "program": "dreaming",
+      "variant": "star_groves",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "2a0b29e2beaba0ca7e96abaac3331bcebd2ab459a3c9f1e15da13d8505c26bba",
+      "stdin_sha256": "6a1b06e576c080a9371c4c33e389f804377407db5c61d66db5f665f3603ebe1f",
+      "stdout_sha256": "edefa3c9d3c568374c1077e816b7035122cf40ae793a3a23e8023765e9901e02",
+      "fixed_limits_ms": [
+        5,
+        12,
+        25,
+        50
+      ]
+    },
+    {
+      "case_id": "dreaming/balanced_scrambled",
+      "program": "dreaming",
+      "variant": "balanced_scrambled",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "2a0b29e2beaba0ca7e96abaac3331bcebd2ab459a3c9f1e15da13d8505c26bba",
+      "stdin_sha256": "f6755f743084fe91f86c2915c75f96a80b9d168f2cf23e483e212f5acde13118",
+      "stdout_sha256": "0950047964451cd2f5fef9f84aed76c228d7bcd9cfbfa5262cea8713126fc805",
+      "fixed_limits_ms": [
+        5,
+        12,
+        25,
+        50
+      ]
+    },
+    {
+      "case_id": "dreaming/fragmented",
+      "program": "dreaming",
+      "variant": "fragmented",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "2a0b29e2beaba0ca7e96abaac3331bcebd2ab459a3c9f1e15da13d8505c26bba",
+      "stdin_sha256": "36210c323085fdcc9be5275f0eda703db4202f91bb8de6841e6f98f1ae4702e7",
+      "stdout_sha256": "065bf0309ba36b51095da77f17d46e2e20b91ac7803efa0bfb8d743b8af4664a",
+      "fixed_limits_ms": [
+        5,
+        12,
+        25,
+        50
+      ]
+    },
+    {
+      "case_id": "posterize/mild_ramp",
+      "program": "posterize",
+      "variant": "mild_ramp",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "deeeaf2bc1b735537c8a1101c5f359fe9454e0c2ebb207381ac8542a16aefa59",
+      "stdin_sha256": "d0432e9d2a8c3a1a514e9fc01ccadc7d2933a4fdbda79c9bbed0dfbc027fb13e",
+      "stdout_sha256": "0c92c202a124a17add436a54df23e0113fa7db5b05da1eec6d0a68fe3a0f23fa",
+      "fixed_limits_ms": [
+        5,
+        12,
+        25,
+        50
+      ]
+    },
+    {
+      "case_id": "posterize/bright_peaks",
+      "program": "posterize",
+      "variant": "bright_peaks",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "deeeaf2bc1b735537c8a1101c5f359fe9454e0c2ebb207381ac8542a16aefa59",
+      "stdin_sha256": "cb06caaff7722b8afa0f721f9f42b4355756a481de649cec9eaa8d1d4541d1b5",
+      "stdout_sha256": "144dd14fbfbbb6985673615a9311ecb2f72d0c70144f2679170417b601d65f63",
+      "fixed_limits_ms": [
+        5,
+        12,
+        25,
+        50
+      ]
+    },
+    {
+      "case_id": "posterize/alternating",
+      "program": "posterize",
+      "variant": "alternating",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "deeeaf2bc1b735537c8a1101c5f359fe9454e0c2ebb207381ac8542a16aefa59",
+      "stdin_sha256": "d552e34e643a3890870f768a4736ef26ef4d1caba00ee3b186ab1ed3a5a872ee",
+      "stdout_sha256": "dcbb7a69e0c57da0f486d4daa7d6744bbf8d3d3a04a7a23fa5518b71ce393924",
+      "fixed_limits_ms": [
+        5,
+        12,
+        25,
+        50
+      ]
+    },
+    {
+      "case_id": "posterize/broad_palette",
+      "program": "posterize",
+      "variant": "broad_palette",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "deeeaf2bc1b735537c8a1101c5f359fe9454e0c2ebb207381ac8542a16aefa59",
+      "stdin_sha256": "bc0a7f0b176fedf2b5e2a0bc5a4d62c24bdc47411d9cc79ad0b874c27495f2ef",
+      "stdout_sha256": "73f8b0ea01e36726d44d61abb13a22649301a079f78bdaa47aa71d7614b5e89b",
+      "fixed_limits_ms": [
+        5,
+        12,
+        25,
+        50
+      ]
+    },
+    {
+      "case_id": "scrivener/deep_random_queries",
+      "program": "scrivener",
+      "variant": "deep_random_queries",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "5a918d9eb725f4a0492ed3f891a155e6c08a3a30092215c9036648e8e3e9a60e",
+      "stdin_sha256": "99ea11662aff7eb36f0a589e825ee093313478066397bbb29439fd3439f8bbf2",
+      "stdout_sha256": "e89f447b05c720f4f904572af8d06164397ad61be16e80f4e3ab85e1abeab90c",
+      "fixed_limits_ms": [
+        5,
+        12,
+        25,
+        50
+      ]
+    },
+    {
+      "case_id": "scrivener/undo_branches",
+      "program": "scrivener",
+      "variant": "undo_branches",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "5a918d9eb725f4a0492ed3f891a155e6c08a3a30092215c9036648e8e3e9a60e",
+      "stdin_sha256": "c4488e566c990f5b460456676750ec814883a19c194e5f322d3517c498a1826b",
+      "stdout_sha256": "ce6314378bde1c41886a4f49c89d002f43796aacc8173ca4b1b5654fab195f8d",
+      "fixed_limits_ms": [
+        5,
+        12,
+        25,
+        50
+      ]
+    },
+    {
+      "case_id": "scrivener/recent_queries",
+      "program": "scrivener",
+      "variant": "recent_queries",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "5a918d9eb725f4a0492ed3f891a155e6c08a3a30092215c9036648e8e3e9a60e",
+      "stdin_sha256": "4fcf3064f814240f24c201a296e8291af3fca412b3c0b61c4c8489ff336fa2bc",
+      "stdout_sha256": "326fbc81279e0dd85c1f6e74ac48e78c18fd1a8cb55778421b2f507e86751992",
+      "fixed_limits_ms": [
+        5,
+        12,
+        25,
+        50
+      ]
+    },
+    {
+      "case_id": "scrivener/distant_versions",
+      "program": "scrivener",
+      "variant": "distant_versions",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "5a918d9eb725f4a0492ed3f891a155e6c08a3a30092215c9036648e8e3e9a60e",
+      "stdin_sha256": "7a42204886003000bb768b6a3dbb52acb7a9b41aa8728f098ad2544882cde7f0",
+      "stdout_sha256": "283b38434e84236c5de51b5bf3dac02087c6d5b3eb4abdef7aec425c488ca945",
+      "fixed_limits_ms": [
+        5,
+        12,
+        25,
+        50
+      ]
+    },
+    {
+      "case_id": "wall/crossed_intervals",
+      "program": "wall",
+      "variant": "crossed_intervals",
+      "split": "holdout",
+      "cohort": "previous",
+      "binary_sha256": "a9a2df1ade516cebcd4afa89705db83fc1425fc5db29a9bd3956386670d98210",
+      "stdin_sha256": "9cc911accf2965645c3b086605e1898088a3f92c03b366f7c4e7176b89f600da",
+      "stdout_sha256": "f8b0bc9fba18a2afc33170386becd25b8d0c31fa3259be0a74351bd087014ea9",
+      "fixed_limits_ms": [
+        5,
+        12,
+        25,
+        50
+      ]
+    },
+    {
+      "case_id": "money/dense_scrambled",
+      "program": "money",
+      "variant": "dense_scrambled",
+      "split": "holdout",
+      "cohort": "previous",
+      "binary_sha256": "cf323f0570bff64969254ad20f90fcaca929d52bb7edf8df0c37b6cd25058d00",
+      "stdin_sha256": "8b088af29a24f516cc504193bdeecf88732a283539b407b8e5971ba734021e9f",
+      "stdout_sha256": "f7bd7eb4921d32a40e87e838c4c3773b3b749fbe4f2b0fdeee54c40e0bab0e49",
+      "fixed_limits_ms": [
+        5,
+        6,
+        12,
+        25
+      ]
+    }
+  ]
+}

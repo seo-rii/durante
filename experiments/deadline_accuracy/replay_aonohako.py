@@ -9,6 +9,7 @@ import tempfile
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 from deadline_accuracy import verify
+from deadline_accuracy.registration import ARMS
 from shape_calibration import aonohako_clock
 
 
@@ -33,7 +34,7 @@ def project_limits(export, limits):
 def replay(root, binaries, reference, strategy="near-three", contest=False):
     primary = verify.verify(root, strategy, contest)
     summary = verify.load(root / "summary.json")
-    candidate = "exact" if strategy == "exact-one" else "gate"
+    candidate = ARMS[strategy]
     counts = {arm: Counter() for arm in ("baseline", candidate)}
     uncovered = []
     groups = 0
@@ -72,7 +73,7 @@ def replay(root, binaries, reference, strategy="near-three", contest=False):
                         counts[arm][status] += 1
     result = dict(schema=1, authority="diagnostic_only", summary_sha256=primary["summary_sha256"],
                   bindings=groups, certified_projections=certificates, arms=counts, unavailable=uncovered)
-    if strategy == "exact-one":
+    if strategy != "near-three":
         result["strategy"] = strategy
     return result
 
@@ -83,7 +84,7 @@ if __name__ == "__main__":
     cli.add_argument("--binaries", type=Path, required=True)
     cli.add_argument("--reference", type=Path, required=True)
     cli.add_argument("--output", type=Path)
-    cli.add_argument("--strategy", choices=("near-three", "exact-one"))
+    cli.add_argument("--strategy", choices=ARMS)
     cli.add_argument("--contest", action="store_true", help="use the contest registration and its exact-one clock")
     args = cli.parse_args()
     strategy = args.strategy or ("exact-one" if args.contest else "near-three")

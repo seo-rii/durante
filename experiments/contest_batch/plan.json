@@ -1,0 +1,208 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "poll_ms": 5,
+  "timeout_ms": 120000,
+  "native_rounds": 11,
+  "probe_sha256": "159ca08d50bb8cf20e88f86b2186af422e094e7c14ebe98a42bed7adc2d6b186",
+  "deadline_percent": [
+    85,
+    100,
+    115
+  ],
+  "cases": [
+    {
+      "case_id": "dreaming/comb_islands",
+      "program": "dreaming",
+      "variant": "comb_islands",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "2a0b29e2beaba0ca7e96abaac3331bcebd2ab459a3c9f1e15da13d8505c26bba",
+      "stdin_sha256": "c3a4b962723ce0bf9ab6f34232f5af5f7a16de7900032794301e0e6dd08a2744",
+      "stdout_sha256": "d5d722d4947b09b4bcce052cabf0a89dfce36ffe7ef4c092f8568a09ac96755d",
+      "fixed_limits_ms": [
+        5,
+        12,
+        25,
+        50
+      ]
+    },
+    {
+      "case_id": "dreaming/permuted_recursive",
+      "program": "dreaming",
+      "variant": "permuted_recursive",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "2a0b29e2beaba0ca7e96abaac3331bcebd2ab459a3c9f1e15da13d8505c26bba",
+      "stdin_sha256": "13eb5c8cc2a3c794aaac70726699c37fb919fb2bbfe7011b34487785372d65f0",
+      "stdout_sha256": "0a821607921b4c95351b883f46c231ca091457af8488cfbf7c911debb05d61f9",
+      "fixed_limits_ms": [
+        5,
+        12,
+        25,
+        50
+      ]
+    },
+    {
+      "case_id": "posterize/two_bands",
+      "program": "posterize",
+      "variant": "two_bands",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "deeeaf2bc1b735537c8a1101c5f359fe9454e0c2ebb207381ac8542a16aefa59",
+      "stdin_sha256": "92cd9e51fc81431f40c2432de73ce53820bbdb02217d38522a161ad94406d235",
+      "stdout_sha256": "efeea21f2b0e43e9dc182d6dd923e650362dd99e995544a719bf1b3f32084180",
+      "fixed_limits_ms": [
+        5,
+        12,
+        25,
+        50
+      ]
+    },
+    {
+      "case_id": "posterize/log_weights",
+      "program": "posterize",
+      "variant": "log_weights",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "deeeaf2bc1b735537c8a1101c5f359fe9454e0c2ebb207381ac8542a16aefa59",
+      "stdin_sha256": "97a35c633ed48adb647d37d53333547f0d483959fda0f3a8ceaa34a0230cea24",
+      "stdout_sha256": "218ddab6797aac7d0ef2d9ba9ce0e61c18677430f0bfbb79d6aa4ba5bdbca6ac",
+      "fixed_limits_ms": [
+        5,
+        12,
+        25,
+        50
+      ]
+    },
+    {
+      "case_id": "scrivener/prefix_forks",
+      "program": "scrivener",
+      "variant": "prefix_forks",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "5a918d9eb725f4a0492ed3f891a155e6c08a3a30092215c9036648e8e3e9a60e",
+      "stdin_sha256": "9ab113b126c3a8de7e50dac83614cd2f21b17672b8c349e33b8834ae70d2fcf7",
+      "stdout_sha256": "29c97d4eabee8426834952b319dec08c4253d843a66a9bb4804c0857e17ad8ba",
+      "fixed_limits_ms": [
+        5,
+        12,
+        25,
+        50
+      ]
+    },
+    {
+      "case_id": "scrivener/type_then_scan",
+      "program": "scrivener",
+      "variant": "type_then_scan",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "5a918d9eb725f4a0492ed3f891a155e6c08a3a30092215c9036648e8e3e9a60e",
+      "stdin_sha256": "2e8c69265ea90df2d1925fb199f2a8f6a0045e59c46b9d9b3f1d7b795d1acac2",
+      "stdout_sha256": "45e3c19ed95eabd41b6084b7e591160b868c30daa885b4ec525389ea4e9524fb",
+      "fixed_limits_ms": [
+        5,
+        12,
+        25,
+        50
+      ]
+    },
+    {
+      "case_id": "wall/drifting_bands",
+      "program": "wall",
+      "variant": "drifting_bands",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "a9a2df1ade516cebcd4afa89705db83fc1425fc5db29a9bd3956386670d98210",
+      "stdin_sha256": "ea6f7a42d6d897c5e9aca4c7c164221495f9e40c20f64c9576bcc39c0a4ce466",
+      "stdout_sha256": "1e948b25ab240e21cdb9c3001ed5402dd554717da945378ef4d82e6717571b06",
+      "fixed_limits_ms": [
+        5,
+        12,
+        25,
+        50
+      ]
+    },
+    {
+      "case_id": "wall/checker_tiles",
+      "program": "wall",
+      "variant": "checker_tiles",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "a9a2df1ade516cebcd4afa89705db83fc1425fc5db29a9bd3956386670d98210",
+      "stdin_sha256": "978f30d8989115c54f97a065d8053d414aeb0cc0229087b6b3f6941313b5c26a",
+      "stdout_sha256": "6cc95b824dd7a8df361e00e73e9acdcc317b9a9dcc0a5e931a0d91ceefc103ee",
+      "fixed_limits_ms": [
+        5,
+        12,
+        25,
+        50
+      ]
+    },
+    {
+      "case_id": "money/parallel_markets",
+      "program": "money",
+      "variant": "parallel_markets",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "cf323f0570bff64969254ad20f90fcaca929d52bb7edf8df0c37b6cd25058d00",
+      "stdin_sha256": "63f2d60303702e19699fd9bf2c6f3f7a80a499d1e4f7b4aa1c0aa0575cd099dd",
+      "stdout_sha256": "e6a8b5c1b2efe1faf3e742a804143ed3e8b790365db31f46177ec249b2b06cc4",
+      "fixed_limits_ms": [
+        5,
+        12,
+        25,
+        50
+      ]
+    },
+    {
+      "case_id": "money/repeated_bids",
+      "program": "money",
+      "variant": "repeated_bids",
+      "split": "holdout",
+      "cohort": "prospective",
+      "binary_sha256": "cf323f0570bff64969254ad20f90fcaca929d52bb7edf8df0c37b6cd25058d00",
+      "stdin_sha256": "5df6b4c904f225c1217d46afb1df9fc194fdb84ad28e07b77e14ecfb0bbff858",
+      "stdout_sha256": "739cc424d08f28915ed6bb2775a6e082d9f0a7b93a2fa10570583620848778f0",
+      "fixed_limits_ms": [
+        5,
+        12,
+        25,
+        50
+      ]
+    },
+    {
+      "case_id": "scrivener/distant_versions",
+      "program": "scrivener",
+      "variant": "distant_versions",
+      "split": "holdout",
+      "cohort": "previous",
+      "binary_sha256": "5a918d9eb725f4a0492ed3f891a155e6c08a3a30092215c9036648e8e3e9a60e",
+      "stdin_sha256": "7a42204886003000bb768b6a3dbb52acb7a9b41aa8728f098ad2544882cde7f0",
+      "stdout_sha256": "283b38434e84236c5de51b5bf3dac02087c6d5b3eb4abdef7aec425c488ca945",
+      "fixed_limits_ms": [
+        5,
+        12,
+        13,
+        25,
+        50
+      ]
+    },
+    {
+      "case_id": "wall/crossed_intervals",
+      "program": "wall",
+      "variant": "crossed_intervals",
+      "split": "holdout",
+      "cohort": "previous",
+      "binary_sha256": "a9a2df1ade516cebcd4afa89705db83fc1425fc5db29a9bd3956386670d98210",
+      "stdin_sha256": "9cc911accf2965645c3b086605e1898088a3f92c03b366f7c4e7176b89f600da",
+      "stdout_sha256": "f8b0bc9fba18a2afc33170386becd25b8d0c31fa3259be0a74351bd087014ea9",
+      "fixed_limits_ms": [
+        5,
+        12,
+        25,
+        50
+      ]
+    }
+  ]
+}

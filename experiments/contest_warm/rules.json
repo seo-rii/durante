@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "probe_sha256": "159ca08d50bb8cf20e88f86b2186af422e094e7c14ebe98a42bed7adc2d6b186",
+  "population": "Twelve prospective ELF/input pairs, four per new contest problem, plus the previous Wall/crossed_intervals and Money/dense_scrambled controls. No cross-input transfer. Inputs, outputs, ELFs and deadline rules are registered before timing.",
+  "baseline": "Take the first direct native observation of each current full capture, on CPU 1 of this boot. Use its user plus system CPU time to calibrate the existing deterministic work clock.",
+  "candidate": "Use the baseline observation as warmup. Immediately collect three more direct native observations of the same binary and exact input. Sort indices 1,2,3 by CPU time with chronological tie order and select the middle observation's normal work-clock policy. Reuse this fixed packet for all deadlines. Report all three extra CPU payments.",
+  "deadlines": "On each case run both clocks live at the distinct union of whole-ms fixed deadlines and ceil(85%, 100%, 115% of the first native estimate). Alternate arm order by case index plus deadline index. No later native reference enters calibration or scheduling. Separate wall watchdog 120 s.",
+  "reference": "After all cases finish live enforcement, collect 11 independent direct native wait4 observations per input in hash-sorted rotating rounds; verify each workload PID and CPU placement. Reference duration is the per-input native median. Count native splits separately. Rebuild actual observed live decisions with the Aonohako Go reference.",
+  "evaluation": "Primary endpoint: median absolute relative duration error across the twelve prospectively registered inputs. Report maximum error, paired wins/ties/losses, signed error, absolute errors per problem, unanimous and majority live verdicts, separately for fixed/derived limits. Treat a lower primary error as a duration improvement; assess decision agreement and preparation cost separately. Report two earlier controls separately. Descriptive ablations only: first post-warm observation and median of the first three, using the same frozen inputs/limits."
+}

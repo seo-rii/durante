@@ -1,0 +1,6 @@
+{
+  "schema": 1,
+  "design": "Repeat the complete preregistered 14-input study on a second newly provisioned AMD Milan GCE VM in the same zone with the identical frozen payload and CPU placement. Each guest independently pays for all four calibration observations and eleven later references. Require distinct boot hashes. Include both guests and retain all registered inputs.",
+  "primary": "Evaluate the prespecified prospective median absolute relative duration error separately in each guest, against that guest's own eleven-reference medians. Attribute a replicated duration improvement only if the post-warm median reduces that endpoint in both guests.",
+  "secondary": "Report paired input wins, maximum errors, actual fixed and all-limit agreement, reference splits, majority agreement and costs for each guest separately. Adaptive deadlines may differ by guest. The two runs reuse the same problem inputs."
+}

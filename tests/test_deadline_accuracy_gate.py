@@ -138,6 +138,56 @@ class MedianPacket(unittest.TestCase):
         self.assertFalse(gate.read_json(choice["packet"].read_bytes())["reused_original"])
         self.assertEqual(choice["prediction_ns"], 200_000_000)
 
+    def test_warm_three_records_paid_first_but_selects_only_later_observations(self):
+        self.select("expanded")
+        self.mock_elf_and_host()
+        samples = [self.sample(760, 8_000), self.sample(761, 16_000), self.sample(762, 1_000)]
+        with patch.object(gate.anchor, "native_once", side_effect=samples) as run:
+            far = self.prepare(1, "warm-three")
+            close = self.prepare(self.ms, "warm-three")
+            with self.assertRaisesRegex(ValueError, "calibration strategy"):
+                self.prepare(self.ms, "near-three")
+            with self.assertRaisesRegex(ValueError, "calibration strategy"):
+                self.prepare(1, "exact-one")
+        self.assertEqual(run.call_count, 3)
+        self.assertFalse(far["near"])
+        self.assertTrue(close["near"])
+        self.assertEqual(dict(far, near=True), close)
+        self.assertEqual((self.packet / "policy-0.json").read_bytes(), self.source.read_bytes())
+        manifest = gate.read_json(far["packet"].read_bytes())
+        self.assertEqual((manifest["schema"], manifest["strategy"], manifest["reused_original"],
+                          manifest["selected_index"]), (2, "warm-three", True, 1))
+        self.assertEqual(manifest["policy_sha256"], [gate.elf_digest(self.packet / f"policy-{i}.json") for i in range(4)])
+        self.assertEqual((far["policy"].name, far["prediction_ns"]), ("policy-1.json", 8_000_000))
+
+    def test_warm_three_pays_four_once_on_transfer_and_orders_ties_chronologically(self):
+        self.select("expanded_repeat")
+        self.mock_elf_and_host()
+        samples = [self.sample(770 + i, 25_000) for i in range(4)]
+        with patch.object(gate.anchor, "native_once", side_effect=samples) as run:
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                far, close = list(pool.map(lambda ms: self.prepare(ms, "warm-three"), (1, self.ms)))
+        self.assertEqual(run.call_count, 4)
+        self.assertEqual(dict(far, near=True), close)
+        manifest = gate.read_json(close["packet"].read_bytes())
+        self.assertFalse(manifest["reused_original"])
+        self.assertEqual(manifest["selected_index"], 2)
+        manifest["selected_index"] = 0
+        close["packet"].write_text(json.dumps(manifest))
+        with patch.object(gate.anchor, "native_once", side_effect=AssertionError("rewrote packet")):
+            with self.assertRaisesRegex(ValueError, "stored packet"):
+                self.prepare(1, "warm-three")
+
+    def test_warm_three_rejects_duplicate_warmup_pid_before_publication(self):
+        self.select("expanded")
+        self.mock_elf_and_host()
+        warmup_pid = self.origin["native"]["pid"]
+        samples = [self.sample(780, 5_000), self.sample(781, 8_000), self.sample(warmup_pid, 9_000)]
+        with patch.object(gate.anchor, "native_once", side_effect=samples):
+            with self.assertRaisesRegex(ValueError, "PID"):
+                self.prepare(1, "warm-three")
+        self.assertFalse(self.packet.exists())
+
     def test_far_uses_existing_policy_without_creating_packet(self):
         self.select("expanded_repeat")
         self.mock_elf_and_host()
@@ -281,3 +331,28 @@ class MedianPacket(unittest.TestCase):
             self.assertEqual(result["preflight_prediction_ns"], native["cpu_ns"])
             self.assertNotIn(native["pid"], enforcements)
         self.assertEqual(len(enforcements), 2)
+
+    @unittest.skipUnless(os.getenv("DURANTE_SHAPE_RUNTIME") and os.getenv("DURANTE_SHAPE_BINARIES"),
+                         "requires registered v11 runtime and workload ELFs")
+    def test_warm_three_cli_binds_far_and_near_limits_to_warm_median(self):
+        self.select("expanded_repeat", boot=False)
+        enforced = []
+        receipts = []
+        for ms, nearby in ((1, False), (self.ms, True)):
+            out = self.tmp / f"limit-{ms}"
+            result = self.run_cli(out, ms, "--strategy", "warm-three")
+            choice = gate.read_json((out / "gate.json").read_bytes())
+            self.assertEqual((choice["near"], choice["strategy"]), (nearby, "warm-three"))
+            self.assertEqual(choice["selected_policy_sha256"], result["policy_sha256"])
+            self.assertEqual(choice["prediction_ns"], result["preflight_prediction_ns"])
+            enforced.append(result["pid"])
+            receipts.append(choice)
+        manifest = gate.read_json((self.packet / "packet.json").read_bytes())
+        native = [gate.read_json((self.packet / f"policy-{i}.json").read_bytes())["native"] for i in range(4)]
+        ns, index = sorted((native[i]["cpu_ns"], i) for i in (1, 2, 3))[1]
+        self.assertEqual(len({sample["pid"] for sample in native} | set(enforced)), 6)
+        self.assertEqual(manifest["selected_index"], index)
+        for choice in receipts:
+            self.assertEqual(choice["prediction_ns"], ns)
+            self.assertEqual(choice["selected_policy_sha256"], manifest["policy_sha256"][index])
+            self.assertEqual(choice["packet_sha256"], gate.elf_digest(self.packet / "packet.json"))

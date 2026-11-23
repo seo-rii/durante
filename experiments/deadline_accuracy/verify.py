@@ -13,7 +13,7 @@ sys.path.insert(0, str(HERE.parent))
 from calibrated_limits.verify import METER, TYPES, live_observation, load, positive, verify_placement
 from cpp20_locality.export import parse_trace
 from cpp20_locality.verify import release_reader, require, sha
-from deadline_accuracy.registration import load_registration
+from deadline_accuracy.registration import ARMS, registration_for
 from first_run_sampler.profile import digest
 from footprint_admission.verify import select
 from guarded_native import anchor
@@ -21,7 +21,7 @@ from guarded_native.score import MS, boundary
 from shape_calibration import combined, temporal
 from shape_calibration import verify as prior
 
-PACKET_ESTIMATES = {"gate": "packet_median", "exact": "packet_exact"}
+PACKET_ESTIMATES = {"gate": "packet_median", "exact": "packet_exact", "warm": "packet_warm"}
 
 
 def exact(actual, expected, message):
@@ -83,7 +83,7 @@ def read_packet(directory, source, obs, case, kernel, boot, register, candidate)
     # Every baseline payment in this collection was made on the registered guest.
     reuse = load(policy_path)["anchor"] == obs
     clocks, paths, extra = [], [], []
-    count = 1 if candidate == "exact" else 3
+    count = {"exact": 1, "gate": 3, "warm": 4}[candidate]
     expected = {"selection.json", "packet.json"} | {f"policy-{i}.json" for i in range(count)}
     require({path.name for path in directory.iterdir()} == expected, "unexpected packet sample or file")
     for i in range(count):
@@ -104,13 +104,21 @@ def read_packet(directory, source, obs, case, kernel, boot, register, candidate)
         paths.append(path)
     hashes = [c["hash"] for c in clocks]
     manifest = dict(authority="diagnostic_only", context=context, reused_original=reuse, policy_sha256=hashes)
-    if candidate == "exact":
+    if candidate == "warm":
+        require(reuse, "warm study must share its first observation with the baseline")
+        # Index zero is excluded even if it is tied with the median. Break ties by capture order.
+        selected_index = sorted((1, 2, 3), key=lambda i: (clocks[i]["native_ns"], i))[1]
+        manifest.update(schema=2, strategy="warm-three", selected_index=selected_index)
+        label = "warm-median"
+    elif candidate == "exact":
         selected_index = 0
         manifest.update(schema=2, strategy="exact-one", selected_index=selected_index)
+        label = "first-exact"
     else:
         selected_index = sorted(range(count), key=lambda i: clocks[i]["native_ns"])[1]
         manifest.update(schema=1, median_index=selected_index)
-    exact(load(directory / "packet.json"), manifest, f"invalid {'first-exact' if candidate == 'exact' else 'median'} packet or source binding")
+        label = "median"
+    exact(load(directory / "packet.json"), manifest, f"invalid {label} packet or source binding")
     selected = directory / "selection.json"
     choice = dict(schema=1, method="footprint", action="calibrate", reference_index=None, comparisons=[],
                   policy_sha256=hashes[selected_index], prediction_ns=clocks[selected_index]["native_ns"], current_sample_sha256=obs["sample_sha256"])
@@ -144,7 +152,7 @@ def replay_limits(root, seq, case, row, source, obs, trial, plan, kernel, boot, 
     registered = thresholds(trial["baseline_ns"], plan["deadline_percent"], case["fixed_limits_ms"])
     for i, (ms, fixed, adaptive) in enumerate(registered if case["split"] == "holdout" else []):
         near = 4 * abs(trial["baseline_ns"] - ms * MS) <= ms * MS
-        use_packet = near or candidate == "exact"
+        use_packet = near or candidate != "gate"
         if use_packet and packet is None:
             packet, trial["extra_ns"] = read_packet(directory, source, obs, case, kernel, boot, register, candidate)
             trial[PACKET_ESTIMATES[candidate] + "_ns"] = packet[2]["native_ns"]
@@ -220,9 +228,12 @@ def aggregate(cases, candidate):
 
 
 def verify(root, strategy="near-three", contest=False):
-    require(strategy in ("near-three", "exact-one"), "unknown registered strategy")
-    candidate = "exact" if strategy == "exact-one" else "gate"
-    raw_plan, raw_rules, plan = load_registration(candidate == "exact", contest)
+    if strategy == "interleaved-three" and not contest:
+        from contest_batch.verify import verify as verify_batch
+        return verify_batch(root)
+    require(strategy in ARMS, "unknown registered strategy")
+    candidate = ARMS[strategy]
+    raw_plan, raw_rules, plan = registration_for(strategy, contest)
     rules, summary = json.loads(raw_rules), load(root / "summary.json")
     require(summary["plan_sha256"] == sha(raw_plan) and summary["rules_sha256"] == sha(raw_rules)
             and summary["probe_sha256"] == temporal.PROBE_SHA == rules["probe_sha256"] == plan["probe_sha256"]
@@ -238,10 +249,16 @@ def verify(root, strategy="near-three", contest=False):
     for seq, (case, row) in enumerate(zip(plan["cases"], summary["rows"], strict=True)):
         key, program = case["case_id"], case["program"]
         exact([row["sequence"],row["case_id"]], [seq,key], "case order mismatch")
-        require(key not in trials and (case["split"] == "calibration") == (program not in banks), "unexpected case or seed")
+        require(key not in trials, "duplicate case")
+        if candidate == "warm":
+            require(case["split"] == "holdout", "warm study requires a current exact observation on every case")
+            bank = []
+        else:
+            require((case["split"] == "calibration") == (program not in banks), "unexpected case or seed")
+            bank = banks[program]
         inp = case["stdin"].encode()
         require((root / "inputs" / sha(inp)).read_bytes() == inp, "different input supplied")
-        obs, source, trial = baseline(root / "cases", case, row, profiles, banks[program], clocks,
+        obs, source, trial = baseline(root / "cases", case, row, profiles, bank, clocks,
                                       summary["kernel"], register, boot)
         replay_limits(root, seq, case, row, source, obs, trial, plan, summary["kernel"], next(iter(boot)), reader, register, candidate)
         trials[key] = dict(**trial, cohort=case["cohort"], program=program)
@@ -249,7 +266,7 @@ def verify(root, strategy="near-three", contest=False):
     independent = prior.native_reference(root, summary, plan, held, register)
     verify_placement(root, pids)
     trace, _ = parse_trace((root / "exec-trace").read_text())
-    workload_names = set(METER) | banks.keys()
+    workload_names = set(METER) | {case["program"] for case in plan["cases"]}
     actual = {pid for pid, events in trace.items() if any(e["executable"] in workload_names for e in events)}
     require(actual == set(pids), "unaccounted measured process in the trace")
     for case in held:
@@ -269,7 +286,7 @@ if __name__ == "__main__":
     cli = argparse.ArgumentParser(description=__doc__)
     cli.add_argument("directory", type=Path)
     cli.add_argument("--output", type=Path)
-    cli.add_argument("--strategy", choices=("near-three", "exact-one"))
+    cli.add_argument("--strategy", choices=ARMS)
     cli.add_argument("--contest", action="store_true", help="use the contest registration and its exact-one clock")
     args = cli.parse_args()
     strategy = args.strategy or ("exact-one" if args.contest else "near-three")

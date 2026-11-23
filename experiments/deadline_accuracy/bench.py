@@ -10,7 +10,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 from cpp20_locality.verify import require, sha
 from deadline_accuracy import gate
-from deadline_accuracy.registration import load_registration
+from deadline_accuracy.registration import ARMS, registration_for
 from first_run_sampler.profile import elf_digest
 from guarded_native import live
 from shape_calibration import combined, run, select_policy
@@ -23,9 +23,57 @@ def deadlines(prediction_ns, percent, fixed):
     return sorted(set(fixed).union(relative))
 
 
-def bench(payload, binaries, probe, out, exact=False, contest=False):
-    candidate = "exact" if exact else "gate"
-    raw_plan, raw_rules, plan = load_registration(exact, contest)
+def capture_case(payload, binaries, probe, out, case, seq, bank, probe_sha):
+    key = case["case_id"]
+    elf = binaries / case["program"]
+    require(elf_digest(elf) == case["binary_sha256"], "unexpected workload ELF")
+    stdin = out / "inputs" / sha(case["stdin"].encode())
+    stdin.write_bytes(case["stdin"].encode())
+    folder = out / "cases" / key
+    folder.parent.mkdir(exist_ok=True)
+    profile, _ = combined.capture(payload, probe, elf, stdin, folder)
+    require(profile["stdout_sha256"] == sha(case["stdout"].encode()), "profile stdout differs")
+    selection = select_policy.resolve(elf, folder, [out / "cases" / k for k in bank], probe_sha, "footprint")
+    if selection["action"] == "calibrate":
+        selected = key
+        bank.append(key)
+    else:
+        selected = bank[selection["reference_index"]]
+    write(folder / "baseline-selection.json", selection)
+    return dict(sequence=seq, case_id=key, profile_pid=profile["launcher_pid"],
+                profile_cpu_ns=profile["cpu_us"] * 1000, anchor_case=selected,
+                baseline_ns=selection["prediction_ns"], limits=[])
+
+
+def enforce_limits(payload, binaries, out, case, row, plan, strategy, packet_dir):
+    candidate = ARMS[strategy]
+    key = case["case_id"]
+    elf = binaries / case["program"]
+    folder = out / "cases" / key
+    stdin = out / "inputs" / sha(case["stdin"].encode())
+    baseline_file = folder / "baseline-selection.json"
+    paid = out / "cases" / row["anchor_case"] / "policy.json"
+    for method in ("baseline", candidate):
+        (folder / "limits" / method).mkdir(parents=True)
+    limits = deadlines(row["baseline_ns"], plan["deadline_percent"], case["fixed_limits_ms"])
+    for index, ms in enumerate(limits):
+        chosen = gate.prepare(elf, stdin, folder, baseline_file, paid, packet_dir, ms, strategy=strategy)
+        order = ("baseline", candidate) if (row["sequence"] + index) % 2 == 0 else (candidate, "baseline")
+        for method in order:
+            decision, policy = (baseline_file, paid) if method == "baseline" else (chosen["selection"], chosen["policy"])
+            dest = folder / "limits" / method / f"{index:02d}"
+            result = run.run(payload, decision, folder, policy, elf, stdin, dest, ms,
+                             plan["timeout_ms"], plan["poll_ms"])
+            require(result["status"] in ("within_budget", "budget_exceeded"),
+                    f"uncertified {key} deadline {ms}: {result.get('reason', result['status'])}")
+            row["limits"].append(dict(index=index, limit_ms=ms, method=method, near=chosen["near"],
+                                      selection_path=str(decision.relative_to(out)), policy_path=str(policy.relative_to(out)),
+                                      exit_code=live.EXIT[result["status"]]))
+
+
+def bench(payload, binaries, probe, out, exact=False, contest=False, strategy=None):
+    strategy = strategy or ("exact-one" if exact else "near-three")
+    raw_plan, raw_rules, plan = registration_for(strategy, contest)
     probe_sha = elf_digest(probe)
     require(probe_sha == plan["probe_sha256"] == json.loads(raw_rules)["probe_sha256"], "different registered probe")
     affinity, allowed = pinned_cpu()
@@ -40,58 +88,32 @@ def bench(payload, binaries, probe, out, exact=False, contest=False):
     rows = []
     start = runtime.base["steal"](1)
     for seq, case in enumerate(plan["cases"]):
-        key, name = case["case_id"], case["program"]
-        elf = binaries / name
-        require(elf_digest(elf) == case["binary_sha256"], "unexpected workload ELF")
-        stdin = out / "inputs" / sha(case["stdin"].encode())
-        stdin.write_bytes(case["stdin"].encode())
-        folder = out / "cases" / key
-        folder.parent.mkdir(exist_ok=True)
-        profile, _ = combined.capture(payload, probe, elf, stdin, folder)
-        require(profile["stdout_sha256"] == sha(case["stdout"].encode()), "profile stdout differs")
-        bank = banks[name]
-        selection = select_policy.resolve(elf, folder, [out / "cases" / k for k in bank], probe_sha, "footprint")
-        if selection["action"] == "calibrate":
-            selected = key
-            bank.append(key)
-        else:
-            selected = bank[selection["reference_index"]]
-        baseline_file = folder / "baseline-selection.json"
-        write(baseline_file, selection)
-        paid = out / "cases" / selected / "policy.json"
-        pred = selection["prediction_ns"]
-        events = []
-        if case["split"] == "holdout":
-            for method in ("baseline", candidate):
-                (folder / "limits" / method).mkdir(parents=True)
-            for index, ms in enumerate(deadlines(pred, plan["deadline_percent"], case["fixed_limits_ms"])):
-                chosen = gate.prepare(elf, stdin, folder, baseline_file, paid, folder / "deadline-packet", ms,
-                                      strategy="exact-one" if exact else "near-three")
-                order = ("baseline", candidate) if (seq + index) % 2 == 0 else (candidate, "baseline")
-                for method in order:
-                    decision, policy = (baseline_file, paid) if method == "baseline" else (chosen["selection"], chosen["policy"])
-                    dest = folder / "limits" / method / f"{index:02d}"
-                    result = run.run(payload, decision, folder, policy, elf, stdin, dest, ms,
-                                     plan["timeout_ms"], plan["poll_ms"])
-                    require(result["status"] in ("within_budget", "budget_exceeded"),
-                            f"uncertified {key} deadline {ms}: {result.get('reason', result['status'])}")
-                    events.append(dict(index=index, limit_ms=ms, method=method, near=chosen["near"],
-                                       selection_path=str(decision.relative_to(out)), policy_path=str(policy.relative_to(out)),
-                                       exit_code=live.EXIT[result["status"]]))
-        rows.append(dict(sequence=seq, case_id=key, profile_pid=profile["launcher_pid"],
-                         profile_cpu_ns=profile["cpu_us"] * 1000, anchor_case=selected, baseline_ns=pred, limits=events))
+        bank = [] if strategy in ("warm-three", "interleaved-three") else banks[case["program"]]
+        row = capture_case(payload, binaries, probe, out, case, seq, bank, probe_sha)
+        rows.append(row)
+        if strategy != "interleaved-three" and case["split"] == "holdout":
+            enforce_limits(payload, binaries, out, case, row, plan, strategy,
+                           out / "cases" / case["case_id"] / "deadline-packet")
+    if strategy == "interleaved-three":
+        from contest_batch.batch import prepare
+        items = [dict(id=c["case_id"], elf=binaries / c["program"],
+                      stdin=out / "inputs" / sha(c["stdin"].encode()), capture=out / "cases" / c["case_id"])
+                 for c in plan["cases"]]
+        prepare(items, out / "batch")
+        for case, row in zip(plan["cases"], rows, strict=True):
+            enforce_limits(payload, binaries, out, case, row, plan, "warm-three", out / "batch" / case["case_id"])
     native = native_rounds(plan, binaries, out, runtime, timings)
     write(out / "summary.json", dict(schema=1, plan_sha256=sha(raw_plan), rules_sha256=sha(raw_rules),
           probe_sha256=probe_sha, affinity=affinity, cgroup_cpus=allowed, kernel=platform.release(),
           steal_delta=runtime.base["steal"](1) - start, rows=rows, native=native))
 
 
-def main(exact=False, contest=False):
+def main(exact=False, contest=False, strategy=None):
     cli = argparse.ArgumentParser(description=__doc__)
     for flag in ("payload", "binaries", "probe", "out"):
         cli.add_argument("--" + flag, type=Path, required=True)
     args = cli.parse_args()
-    bench(args.payload.resolve(), args.binaries.resolve(), args.probe.resolve(), args.out.resolve(), exact, contest)
+    bench(args.payload.resolve(), args.binaries.resolve(), args.probe.resolve(), args.out.resolve(), exact, contest, strategy)
 
 
 if __name__ == "__main__":
