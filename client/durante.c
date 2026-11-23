@@ -111,6 +111,7 @@ typedef struct {
    * after the fields the entries access with 8-bit displacements. */
   int32_t boundary_count;
   app_pc boundary_pc;
+  byte *boundary_routine;
 } thread_data_t;
 static int tls_index;
 /* In ordinary static code the generated accounting runs at every block and
@@ -309,13 +310,18 @@ static void add_live_delta(uint64_t *counter, uint64_t delta, uint64_t overflow_
 
 enum { LIVE_WORK_BATCH = 4096 };
 
+/* A flat live entry reads the countdown's sign from its top byte, which must
+ * be zero for every non-negative value. A capped countdown only adds a
+ * callback, which recomputes it. */
+#define LIVE_ROOM_MAX ((INT64_C(1) << 56) - 1)
+
 static void set_fast_until(thread_data_t *d, uint64_t until) {
   d->fast_until = until;
   if (until <= d->instructions)
     d->live_room = -1;
   else
-    d->live_room = until - d->instructions - 1 > (uint64_t)INT64_MAX
-                       ? INT64_MAX
+    d->live_room = until - d->instructions - 1 > (uint64_t)LIVE_ROOM_MAX
+                       ? LIVE_ROOM_MAX
                        : (int64_t)(until - d->instructions - 1);
 }
 
@@ -705,6 +711,8 @@ static void clear_write_checkpoint(thread_data_t *d) {
   d->write_pc = NULL;
 }
 
+static byte *live_boundary_routine(void *ctx);
+
 static void thread_init(void *ctx) {
   thread_data_t *d = dr_thread_alloc(ctx, sizeof(*d));
   if (!d)
@@ -718,6 +726,8 @@ static void thread_init(void *ctx) {
   if (!drmgr_set_tls_field(ctx, tls_index, d))
     fail("TLS init failed");
   set_raw_accounting_state(d);
+  if (flat_inline && live_work)
+    d->boundary_routine = live_boundary_routine(ctx);
   set_fast_until(d, 0);
   process_id_t process = dr_get_process_id();
   if (process != owner_pid) {
@@ -1047,8 +1057,8 @@ static opnd_t state_field(size_t offset) {
  * restore_state() can recognize partial entries by those two instructions. */
 enum { FLAT_PREFIX = 1, FLAT_BODY = 2, FLAT_SUFFIX = 4, FLAT_ALL = 7 };
 
-/* With live, the prefix leaves ECX zero when live_room is negative, which the
- * caller branches on, and the body also counts live_room down. */
+/* With live, the prefix leaves ECX zero unless live_room is negative, which
+ * the caller branches on, and the body also counts live_room down. */
 static void emit_flat_parts(void *ctx, instrlist_t *bb, instr_t *where, int count, int parts,
                             bool live) {
   opnd_t value = opnd_create_reg(DR_REG_RCX), state = opnd_create_reg(DR_REG_R11);
@@ -1081,13 +1091,10 @@ static void emit_flat_parts(void *ctx, instrlist_t *bb, instr_t *where, int coun
      * charge even immediately after returning from the callback. */
     INSERT(INSTR_CREATE_mov_ld(ctx, value, state_field(offsetof(thread_data_t, instructions))));
     INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, entry_base)), value));
-    /* live_room is far below 2^56 in magnitude, so its top byte is 0xff
-     * exactly when it is negative. ECX = (top byte + 1) & 0xff is then zero. */
+    /* live_room is below 2^56 in magnitude, so its top byte is zero exactly
+     * when it is non-negative and 0xff when it is negative. */
     INSERT(INSTR_CREATE_movzx(ctx, low_reg,
                               OPND_CREATE_MEM8(DR_REG_R11, offsetof(thread_data_t, live_room) + 7)));
-    INSERT(INSTR_CREATE_lea(ctx, low_reg,
-                            opnd_create_base_disp(DR_REG_ECX, DR_REG_NULL, 0, 1, OPSZ_lea)));
-    INSERT(INSTR_CREATE_movzx(ctx, low_reg, opnd_create_reg(DR_REG_CL)));
   }
   }
   if (parts & FLAT_BODY) {
@@ -1122,15 +1129,12 @@ static void emit_flat_charge(void *ctx, instrlist_t *bb, instr_t *where, int cou
  * are encoded once and inserted as one raw copy. A valid opcode and an empty
  * operand list keep the runtime from decoding the bundle; restore_state()
  * decodes the code cache itself. */
-enum { FLAT_ENTRY_CACHE = 1024, SEQUENCE_BYTES = 128 };
+enum { FLAT_ENTRY_CACHE = 1024, SEQUENCE_BYTES = 192 };
 typedef struct {
   uint length;
   byte bytes[SEQUENCE_BYTES];
 } encoded_sequence_t;
 static encoded_sequence_t *flat_entries[FLAT_ENTRY_CACHE + 1];
-/* Live entries: one prefix and suffix, and a body per block size. */
-static encoded_sequence_t *flat_live_prefix, *flat_live_suffix;
-static encoded_sequence_t *flat_live_bodies[FLAT_ENTRY_CACHE + 1];
 
 static uint encode_sequence(void *ctx, instrlist_t *ilist, byte *buf) {
   byte *end = instrlist_encode(ctx, ilist, buf, true);
@@ -1219,46 +1223,14 @@ static void insert_flat_charge(void *ctx, instrlist_t *bb, instr_t *where, int c
   insert_bundle(ctx, bb, where, entry->bytes, entry->length);
 }
 
-static void insert_flat_part(void *ctx, instrlist_t *bb, instr_t *where,
-                             encoded_sequence_t **slot, int count, int parts) {
-  if (count <= 0 || count > FLAT_ENTRY_CACHE) {
-    emit_flat_parts(ctx, bb, where, count, parts, true);
-    return;
-  }
-  encoded_sequence_t *entry = cached_flat_parts(ctx, slot, count, parts, true);
-  insert_bundle(ctx, bb, where, entry->bytes, entry->length);
-}
-
-/* A live entry's callback arguments: the block count and the two halves of
- * its first address, stored through R11 (the accounting state). */
-enum { BOUNDARY_COUNT, BOUNDARY_PC_LO, BOUNDARY_PC_HI, BOUNDARY_IMMEDIATES };
-static patched_template_t *boundary_template;
-
-static const patched_template_t *live_boundary_template(void *ctx) {
-  patched_template_t *t = __atomic_load_n(&boundary_template, __ATOMIC_ACQUIRE);
-  if (t)
-    return t;
-  static const size_t fields[BOUNDARY_IMMEDIATES] = {
-      offsetof(thread_data_t, boundary_count), offsetof(thread_data_t, boundary_pc),
-      offsetof(thread_data_t, boundary_pc) + 4};
-  instrlist_t *ilist = instrlist_create(ctx);
-  instr_t *imm[BOUNDARY_IMMEDIATES];
-  for (int i = 0; i < BOUNDARY_IMMEDIATES; ++i) {
-    imm[i] = INSTR_CREATE_mov_st(ctx, OPND_CREATE_MEM32(DR_REG_R11, (int)fields[i]),
-                                 OPND_CREATE_INT32(0x7fffffff));
-    instrlist_meta_append(ilist, imm[i]);
-  }
-  return publish_template(ctx, &boundary_template, ilist, imm, BOUNDARY_IMMEDIATES,
-                          "cannot lay out the live boundary arguments");
-}
-
 /* The runtime encodes every inserted instruction when it builds a block, and
  * a clean call's context switch is most of a live entry. Live entries
  * therefore share one routine that performs the boundary clean call. An
  * entry stores the arguments through R11 and the address to resume at in
- * RCX, both of which the clean call preserves. The routine is client memory
- * outside the code cache: like a callback, the runtime defers asynchronous
- * signals that arrive there and does not translate a thread stopped there. */
+ * RCX, both of which the clean call preserves, and jumps through the
+ * thread's boundary_routine. The routine is client memory outside the code
+ * cache: like a callback, the runtime defers asynchronous signals that
+ * arrive there and does not translate a thread stopped there. */
 static byte *boundary_routine;
 
 static byte *live_boundary_routine(void *ctx) {
@@ -1266,7 +1238,6 @@ static byte *live_boundary_routine(void *ctx) {
   if (routine)
     return routine;
   size_t size = dr_page_size();
-  /* Reachable from the code cache, as the entries jump here directly. */
   byte *fresh = dr_nonheap_alloc(size, DR_MEMPROT_READ | DR_MEMPROT_WRITE);
   if (!fresh)
     fail("cannot allocate the live boundary routine");
@@ -1293,34 +1264,61 @@ static byte *live_boundary_routine(void *ctx) {
  * the same block entries as on the callback path. The prefix checkpoints
  * the count while the scratch registers are spilled. Relocation can roll
  * either path back until the suffix restores RCX. The slow path passes this
- * block's arguments to the boundary routine, which resumes at the suffix. */
-static void insert_flat_live_entry(void *ctx, instrlist_t *bb, instr_t *where, int count,
-                                   app_pc first_pc, byte *routine) {
-  instr_t *slow = INSTR_CREATE_label(ctx), *fast = INSTR_CREATE_label(ctx);
-  instr_t *resume = INSTR_CREATE_label(ctx);
-  insert_flat_part(ctx, bb, where, &flat_live_prefix, 1, FLAT_PREFIX);
-  instrlist_meta_preinsert(bb, where, INSTR_CREATE_jecxz(ctx, opnd_create_instr(slow)));
-  instrlist_meta_preinsert(bb, where, INSTR_CREATE_jmp(ctx, opnd_create_instr(fast)));
-  instrlist_meta_preinsert(bb, where, slow);
-  const uint32_t value[BOUNDARY_IMMEDIATES] = {
-      (uint32_t)count, (uint32_t)(ptr_uint_t)first_pc,
-      (uint32_t)((ptr_uint_t)first_pc >> 32)};
-  insert_patched(ctx, bb, where, live_boundary_template(ctx), value, BOUNDARY_IMMEDIATES);
-  instrlist_meta_preinsert(bb, where,
-                           INSTR_CREATE_lea(ctx, opnd_create_reg(DR_REG_RCX),
-                                            opnd_create_mem_instr(resume, 0, OPSZ_lea)));
-  instrlist_meta_preinsert(bb, where, INSTR_CREATE_jmp(ctx, opnd_create_pc(routine)));
-  instrlist_meta_preinsert(bb, where, fast);
-  insert_flat_part(ctx, bb, where,
-                   count > 0 && count <= FLAT_ENTRY_CACHE ? &flat_live_bodies[count] : NULL,
-                   count, FLAT_BODY);
-  instrlist_meta_preinsert(bb, where, resume);
-  insert_flat_part(ctx, bb, where, &flat_live_suffix, 1, FLAT_SUFFIX);
+ * block's arguments to the boundary routine, which resumes at the suffix.
+ * Every branch is relative to the entry itself or goes through the thread's
+ * state, so the entry can be copied to any address. address receives the two
+ * stores of the block's first address. */
+enum { ENTRY_PC_LOW, ENTRY_PC_HIGH, ENTRY_IMMEDIATES };
+
+static void emit_flat_live_entry(void *ctx, instrlist_t *bb, instr_t *where, int count,
+                                 app_pc first_pc, instr_t **address) {
+#define INSERT(i) \
+  (where ? instrlist_meta_preinsert(bb, where, (i)) : instrlist_meta_append(bb, (i)))
+  instr_t *fast = INSTR_CREATE_label(ctx), *resume = INSTR_CREATE_label(ctx);
+  emit_flat_parts(ctx, bb, where, 1, FLAT_PREFIX, true);
+  INSERT(INSTR_CREATE_jecxz(ctx, opnd_create_instr(fast)));
+  INSERT(INSTR_CREATE_mov_st(ctx,
+                             OPND_CREATE_MEM32(DR_REG_R11, offsetof(thread_data_t, boundary_count)),
+                             OPND_CREATE_INT32(count)));
+  for (int i = 0; i < ENTRY_IMMEDIATES; ++i) {
+    instr_t *half = INSTR_CREATE_mov_st(
+        ctx, OPND_CREATE_MEM32(DR_REG_R11, (int)offsetof(thread_data_t, boundary_pc) + 4 * i),
+        OPND_CREATE_INT32((int)(uint32_t)((ptr_uint_t)first_pc >> (32 * i))));
+    INSERT(half);
+    if (address)
+      address[i] = half;
+  }
+  INSERT(INSTR_CREATE_lea(ctx, opnd_create_reg(DR_REG_RCX),
+                          opnd_create_mem_instr(resume, 0, OPSZ_lea)));
+  INSERT(INSTR_CREATE_jmp_ind(
+      ctx, OPND_CREATE_MEMPTR(DR_REG_R11, offsetof(thread_data_t, boundary_routine))));
+  INSERT(fast);
+  emit_flat_parts(ctx, bb, where, count, FLAT_BODY, true);
+  INSERT(resume);
+  emit_flat_parts(ctx, bb, where, 1, FLAT_SUFFIX, true);
+#undef INSERT
 }
+
+/* One encoded entry per block size, with the block's first address patched. */
+static patched_template_t *flat_live_entries[FLAT_ENTRY_CACHE + 1];
 
 static void insert_flat_live_charge(void *ctx, instrlist_t *bb, instr_t *where, int count,
                                     app_pc first_pc) {
-  insert_flat_live_entry(ctx, bb, where, count, first_pc, live_boundary_routine(ctx));
+  if (count <= 0 || count > FLAT_ENTRY_CACHE) {
+    emit_flat_live_entry(ctx, bb, where, count, first_pc, NULL);
+    return;
+  }
+  const patched_template_t *t = __atomic_load_n(&flat_live_entries[count], __ATOMIC_ACQUIRE);
+  if (!t) {
+    instrlist_t *ilist = instrlist_create(ctx);
+    instr_t *address[ENTRY_IMMEDIATES];
+    emit_flat_live_entry(ctx, ilist, NULL, count, NULL, address);
+    t = publish_template(ctx, &flat_live_entries[count], ilist, address, ENTRY_IMMEDIATES,
+                         "cannot lay out the live entry");
+  }
+  const uint32_t value[ENTRY_IMMEDIATES] = {(uint32_t)(ptr_uint_t)first_pc,
+                                            (uint32_t)((ptr_uint_t)first_pc >> 32)};
+  insert_patched(ctx, bb, where, t, value, ENTRY_IMMEDIATES);
 }
 
 static bool is_raw_slot(opnd_t opnd, uint slot) {
@@ -2130,6 +2128,8 @@ static void fork_init(void *ctx) {
   memset(d, 0, sizeof(*d));
   set_raw_accounting_state(d);
   clear_write_checkpoint(d); /* The slot still holds the parent's word. */
+  if (flat_inline && live_work)
+    d->boundary_routine = live_boundary_routine(ctx);
   set_fast_until(d, 0);
   open_stream("fork", parent, previous);
 }
@@ -2186,19 +2186,13 @@ static void process_exit(void) {
       dr_global_free(flat_entries[i], sizeof(*flat_entries[i]));
   }
   for (int i = 0; i <= FLAT_ENTRY_CACHE; ++i) {
-    if (flat_live_bodies[i])
-      dr_global_free(flat_live_bodies[i], sizeof(*flat_live_bodies[i]));
+    if (flat_live_entries[i])
+      dr_global_free(flat_live_entries[i], sizeof(*flat_live_entries[i]));
   }
-  if (flat_live_prefix)
-    dr_global_free(flat_live_prefix, sizeof(*flat_live_prefix));
-  if (flat_live_suffix)
-    dr_global_free(flat_live_suffix, sizeof(*flat_live_suffix));
   if (checkpoint_template)
     dr_global_free(checkpoint_template, sizeof(*checkpoint_template));
   if (packed_checkpoint_template)
     dr_global_free(packed_checkpoint_template, sizeof(*packed_checkpoint_template));
-  if (boundary_template)
-    dr_global_free(boundary_template, sizeof(*boundary_template));
   if (boundary_routine)
     dr_nonheap_free(boundary_routine, dr_page_size());
   if (live_work)

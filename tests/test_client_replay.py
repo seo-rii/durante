@@ -800,6 +800,11 @@ int main(int argc, char **argv) {
         publish_live_work(&state, true);
         assert(page.instructions == 4111 && !page.invalid);
         snapshot(true);
+        /* A thread that can no longer publish keeps a countdown whose top
+         * byte still reads as non-negative. */
+        thread_data_t far = {.instructions = 5};
+        set_fast_until(&far, UINT64_MAX - INT32_MAX);
+        assert(far.live_room == LIVE_ROOM_MAX && far.live_room >> 56 == 0);
         live_work = NULL;
     } else if (!strcmp(test, "live-saturation")) {
         live_work_t page = {.instructions = UINT64_MAX - 1, .movs = UINT64_MAX};
@@ -1075,6 +1080,7 @@ FLAT_ENTRY_HARNESS = r'''
 #include <asm/prctl.h>
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/mman.h>
 #include <sys/syscall.h>
 #include <unistd.h>
@@ -1240,25 +1246,54 @@ int main(void) {
     instrlist_meta_preinsert(bb, ret, report);
     instrlist_meta_preinsert(bb, ret, XINST_CREATE_move(ctx, opnd_create_reg(DR_REG_RDX),
                                                         opnd_create_reg(DR_REG_R11)));
-    insert_flat_live_entry(ctx, bb, report, 5, ENTRY_PC, routine);
-    for (instr_t *ins = instrlist_first(bb); ins != report; ins = instr_get_next(ins))
-        assert(!(instr_get_arith_flags(ins, DR_QUERY_DEFAULT) & (EFLAGS_READ_6 | EFLAGS_WRITE_6)));
+    insert_flat_live_charge(ctx, bb, report, 5, ENTRY_PC);
+    /* The cached entry is one raw copy. */
+    assert(instr_get_next(instrlist_first(bb)) == report);
     byte *entry_end = instrlist_encode(ctx, bb, entry, true);
-    assert(entry_end && entry_end <= routine);
+    assert(entry_end && entry_end <= entry + page / 4);
     instrlist_clear_and_destroy(ctx, bb);
+    /* It reaches the routine only through the thread's state, and no
+     * instruction of it reads or writes a flag. */
     byte *jump = NULL;
     for (byte *pc = entry; pc != NULL && pc < entry_end;) {
         instr_t in;
         instr_init(ctx, &in);
         byte *next = decode(ctx, pc, &in);
-        if (next && instr_get_opcode(&in) == OP_jmp && opnd_is_pc(instr_get_target(&in)) &&
-            opnd_get_pc(instr_get_target(&in)) == routine)
+        assert(next);
+        assert(!(instr_get_arith_flags(&in, DR_QUERY_DEFAULT) & (EFLAGS_READ_6 | EFLAGS_WRITE_6)));
+        if (instr_get_opcode(&in) == OP_jmp_ind) {
+            opnd_t target = instr_get_target(&in);
+            assert(!jump && opnd_is_base_disp(target) && opnd_get_base(target) == DR_REG_R11 &&
+                   opnd_get_disp(target) == (int)offsetof(thread_data_t, boundary_routine));
             jump = pc;
+        }
+        assert(instr_get_opcode(&in) != OP_jmp && instr_get_opcode(&in) != OP_call);
         instr_free(ctx, &in);
         pc = next;
     }
     assert(jump);
     check_slow_path_relocation(ctx, entry, jump);
+    /* The patched copy equals the entry emitted for this block at another
+     * address: nothing in it depends on where it runs. */
+    {
+        byte direct[SEQUENCE_BYTES];
+        instrlist_t *list = instrlist_create(ctx);
+        emit_flat_live_entry(ctx, list, NULL, 5, ENTRY_PC, NULL);
+        byte *direct_end = instrlist_encode(ctx, list, direct, true);
+        instrlist_clear_and_destroy(ctx, list);
+        assert(direct_end && direct_end - direct < entry_end - entry);
+        assert(!memcmp(direct, entry, (size_t)(direct_end - direct)));
+    }
+    /* A block larger than the cache emits the same entry instruction by instruction. */
+    byte *large = entry + page / 4;
+    bb = instrlist_create(ctx);
+    ret = INSTR_CREATE_ret(ctx);
+    instrlist_append(bb, ret);
+    insert_flat_live_charge(ctx, bb, ret, FLAT_ENTRY_CACHE + 1, ENTRY_PC);
+    assert(instr_get_next(instrlist_first(bb)) != ret);
+    byte *large_end = instrlist_encode(ctx, bb, large, true);
+    assert(large_end && large_end <= routine);
+    instrlist_clear_and_destroy(ctx, bb);
     /* The packed write checkpoint: immediate stores to the raw TLS word that
      * read or write no register and no flag. */
     byte *write_code = entry + 3 * page / 4;
@@ -1331,20 +1366,21 @@ int main(void) {
         assert(slots[RAW_TLS_WRITE] == 0);
         assert(d.instructions == 105 && d.entry_base == 100 && d.live_room == 2);
     }
-    /* ECX is zero for the branch exactly when the countdown is negative. */
-    const int64_t rooms[] = {INT64_MIN / 256, -4096, -2, -1, 0, 1, 4095, INT64_MAX};
+    /* ECX is zero for the branch exactly when the countdown is not negative. */
+    const int64_t rooms[] = {INT64_MIN / 256, -4096, -2, -1, 0, 1, 4095, LIVE_ROOM_MAX};
     for (size_t i = 0; i < sizeof(rooms) / sizeof(rooms[0]); ++i) {
         thread_data_t d = {.instructions = 10, .live_room = rooms[i], .write_suffix = 99};
         slots[RAW_TLS_STATE] = (reg_t)&d;
         ((void (*)(void))sign_code)();
-        assert((d.write_suffix == 0) == (rooms[i] < 0));
+        assert((d.write_suffix == 0) == (rooms[i] >= 0));
         assert(d.instructions == 10 && d.live_room == rooms[i]);
     }
     /* A negative countdown passes this block to the boundary routine, which
      * resumes at the suffix without the fast body's charge. Otherwise the
      * body counts down and charges. Both paths restore RCX and R11. */
     for (int slow = 0; slow < 2; ++slow) {
-        thread_data_t d = {.instructions = 50, .live_room = slow ? -1 : 9};
+        thread_data_t d = {.instructions = 50, .live_room = slow ? -1 : 9,
+                           .boundary_routine = routine};
         slots[RAW_TLS_STATE] = (reg_t)&d;
         slots[RAW_TLS_WRITE] = 77;
         reg_t rcx, r11;
@@ -1360,6 +1396,14 @@ int main(void) {
             assert(d.instructions == 55 && d.live_room == 4);
             assert(d.boundary_count == 0 && d.boundary_pc == NULL && d.write_next_pc == NULL);
         }
+    }
+    /* The uncached entry charges its own count on the fast path. */
+    {
+        thread_data_t d = {.instructions = 50, .live_room = 5000, .boundary_routine = routine};
+        slots[RAW_TLS_STATE] = (reg_t)&d;
+        ((void (*)(void))large)();
+        assert(d.instructions == 50 + FLAT_ENTRY_CACHE + 1 && d.entry_base == 50);
+        assert(d.live_room == 5000 - (FLAT_ENTRY_CACHE + 1) && d.boundary_pc == NULL);
     }
     /* The emitted checkpoint stores exactly the packed word and leaves both
      * scratch registers alone; settling it restores the callback's fields. */
