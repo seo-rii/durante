@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "summary_sha256": "2dbe9819707c3072a06153a42bf1fd0f42f4c18fe6aa69be2c81df567d106582",
+  "cohorts": {
+    "prospective": {
+      "all": {
+        "limits": 42,
+        "flagged_mixed": 4,
+        "flagged_unanimous": 1,
+        "unflagged_mixed": 1,
+        "unflagged_unanimous": 36,
+        "majority_misses_flagged": 2,
+        "majority_misses_unflagged": 0
+      },
+      "fixed": {
+        "limits": 24,
+        "flagged_mixed": 0,
+        "flagged_unanimous": 0,
+        "unflagged_mixed": 0,
+        "unflagged_unanimous": 24,
+        "majority_misses_flagged": 0,
+        "majority_misses_unflagged": 0
+      }
+    },
+    "previous": {
+      "all": {
+        "limits": 8,
+        "flagged_mixed": 1,
+        "flagged_unanimous": 0,
+        "unflagged_mixed": 1,
+        "unflagged_unanimous": 6,
+        "majority_misses_flagged": 1,
+        "majority_misses_unflagged": 0
+      },
+      "fixed": {
+        "limits": 6,
+        "flagged_mixed": 1,
+        "flagged_unanimous": 0,
+        "unflagged_mixed": 1,
+        "unflagged_unanimous": 4,
+        "majority_misses_flagged": 1,
+        "majority_misses_unflagged": 0
+      }
+    }
+  }
+}
