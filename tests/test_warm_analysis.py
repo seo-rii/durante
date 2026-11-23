@@ -56,3 +56,20 @@ class WarmSummary(unittest.TestCase):
                 for point in case["deadlines"]:
                     expected = sum(t > point["limit_ms"] * MS for t in case["native_ns"])
                     self.assertEqual(point["native_tle"], expected)
+
+    def test_interleaved_archives_contain_only_the_two_registered_arms(self):
+        for suffix in ("gce-contest-batch", "gce-contest-batch-repeat"):
+            directory = ROOT / "experiments/results" / suffix
+            with self.subTest(guest=suffix), tempfile.TemporaryDirectory() as temp:
+                raw = unpack(directory / "output.tar.xz", Path(temp))
+                result = analyze(raw, "interleaved-three")
+                self.assertEqual(result, json.loads((directory / "analysis.json").read_bytes()))
+                self.assertEqual(result["cohorts"]["prospective"]["inputs"], 10)
+                self.assertEqual(result["cohorts"]["previous"]["inputs"], 2)
+                self.assertNotIn("model_implied", json.dumps(result))
+                self.assertEqual(set(result["all"]["actual_duration"]), {"baseline", "warm"})
+                self.assertEqual(result["all"]["extra_native_runs"], 36)
+                for case in result["cases"].values():
+                    self.assertEqual(set(case["selected_indices"]), {"baseline", "warm"})
+                    self.assertEqual(case["observations_ns"][case["selected_indices"]["warm"]],
+                                     sorted(case["observations_ns"][1:])[1])
