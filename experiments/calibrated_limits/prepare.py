@@ -15,6 +15,20 @@ def digest(file):
         return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
+def registered_programs(cases):
+    programs = {}
+    for case in cases:
+        if "submission" in case:
+            entries = [(case["program"], case["reference_elf_sha256"]),
+                       (case["submission"], case["submission_elf_sha256"])]
+        else:
+            entries = [(case["program"], case["binary_sha256"])]
+        for name, expected in entries:
+            if programs.setdefault(name, expected) != expected:
+                raise ValueError("conflicting registered ELF for " + name)
+    return programs
+
+
 def prepare(out, runtime, *, study=HERE, probe=None, benchmark="bench.py", source_dirs=()):
     plan = json.loads((study / "plan.json").read_bytes())
     if (runtime / "protocol.json").read_bytes() != (HERE.parent / "guarded_sampler/protocol.json").read_bytes():
@@ -28,7 +42,7 @@ def prepare(out, runtime, *, study=HERE, probe=None, benchmark="bench.py", sourc
     shutil.copyfile(runtime / "production_reader.py", out / "repo/collect.py")
     binaries = out / "binaries"
     binaries.mkdir()
-    for program, expected in {c["program"]: c["binary_sha256"] for c in plan["cases"]}.items():
+    for program, expected in registered_programs(plan["cases"]).items():
         src = next((path for directory in (study, *source_dirs, HERE)
                     if (path := directory / (program + ".cpp")).is_file()), None)
         if src is not None:
