@@ -1,0 +1,81 @@
+--- access_sample/probe.c
++++ temporal.c
+@@ -9 +9 @@
+-enum { PERIOD = 1024, LINE = 64, MAX_SITES = 16384 };
++enum { PERIOD = 8191, WINDOW = 32, RADIUS = 64, LINE = 64, MAX_SITES = 16384 };
+@@ -12,2 +12,3 @@
+-    uint64_t remaining, previous_line, pairs, near;
+-    bool pending;
++    uint64_t remaining, first_line, windows, exact_hits, radius_hits;
++    unsigned partial;
++    bool same_line, in_radius;
+@@ -49,3 +50,13 @@
+-    if (!site->pending) {
+-        site->previous_line = line;
+-        site->pending = true;
++    if (site->partial == 0) {
++        site->first_line = line;
++        site->same_line = false;
++        site->in_radius = false;
++        site->partial = 1;
++        site->remaining = 1;
++        return;
++    }
++    uint64_t first = site->first_line;
++    site->same_line |= line == first;
++    site->in_radius |= (line > first ? line - first : first - line) <= RADIUS;
++    if (site->partial < WINDOW) {
++        ++site->partial;
+@@ -54,6 +65,5 @@
+-        uint64_t prev = site->previous_line;
+-        if ((line > prev ? line - prev : prev - line) <= 1)
+-            ++site->near;
+-        ++site->pairs;
+-        site->pending = false;
+-        site->remaining = PERIOD - 1;
++        ++site->windows;
++        site->exact_hits += site->same_line;
++        site->radius_hits += site->in_radius;
++        site->partial = 0;
++        site->remaining = PERIOD - WINDOW;
+@@ -170,6 +180,7 @@
+-    if (s->remaining == 0 || s->remaining >= PERIOD || (s->pending && s->remaining != 1) ||
+-        s->pairs > (UINT64_MAX - PERIOD) / PERIOD || s->near > s->pairs)
+-        fail("invalid site state");
+-    if (s->pending)
+-        return s->pairs * PERIOD + 1;
+-    return s->pairs ? s->pairs * PERIOD + 1 - s->remaining : 0;
++    if (s->remaining == 0 || s->remaining > PERIOD - WINDOW || s->partial > WINDOW ||
++        (s->partial && s->remaining != 1) || s->windows > (UINT64_MAX - PERIOD) / PERIOD ||
++        s->exact_hits > s->radius_hits || s->radius_hits > s->windows)
++        fail("invalid temporal window state");
++    if (s->partial)
++        return s->windows * PERIOD + s->partial;
++    return s->windows ? s->windows * PERIOD + 1 - s->remaining : 0;
+@@ -188 +199 @@
+-    uint64_t loads = 0, pairs = 0, near = 0;
++    uint64_t loads = 0, windows = 0, exact = 0, radius = 0;
+@@ -194,2 +205,3 @@
+-        near += sites[i].near;
+-        pairs += sites[i].pairs;
++        windows += sites[i].windows;
++        exact += sites[i].exact_hits;
++        radius += sites[i].radius_hits;
+@@ -198,3 +210,4 @@
+-               "\"loads\":%llu,\"pairs\":%llu,\"near_pairs\":%llu,\"far_pairs\":%llu,\"sites\":[",
+-               (unsigned)owner, PERIOD, LINE, (unsigned long long)loads, (unsigned long long)pairs,
+-               (unsigned long long)near, (unsigned long long)(pairs - near));
++               "\"window\":%d,\"radius_lines\":%d,\"loads\":%llu,\"windows\":%llu,"
++               "\"exact_hits\":%llu,\"radius_hits\":%llu,\"sites\":[",
++               (unsigned)owner, PERIOD, LINE, WINDOW, RADIUS, (unsigned long long)loads,
++               (unsigned long long)windows, (unsigned long long)exact, (unsigned long long)radius);
+@@ -206,4 +219,5 @@
+-        dr_fprintf(output, "%s{\"offset\":%llu,\"loads\":%llu,\"pairs\":%llu,\"near_pairs\":%llu,"
+-                   "\"far_pairs\":%llu}", comma ? "," : "", (unsigned long long)(s->pc - module_start),
+-                   (unsigned long long)n, (unsigned long long)s->pairs, (unsigned long long)s->near,
+-                   (unsigned long long)(s->pairs - s->near));
++        dr_fprintf(output, "%s{\"offset\":%llu,\"loads\":%llu,\"windows\":%llu,"
++                   "\"exact_hits\":%llu,\"radius_hits\":%llu}", comma ? "," : "",
++                   (unsigned long long)(s->pc - module_start), (unsigned long long)n,
++                   (unsigned long long)s->windows, (unsigned long long)s->exact_hits,
++                   (unsigned long long)s->radius_hits);
