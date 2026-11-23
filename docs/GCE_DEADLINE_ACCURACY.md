@@ -85,3 +85,5 @@ taskset -c "$cpu" python3 -B "$study/gate.py" --strategy exact-one \
   --selection "$selection" --policy "$policy" --packet-dir "$scratch/exact-packet" \
   --out "$scratch/enforcement" --limit-ms 75
 ```
+
+The [contest-suite study](GCE_CONTEST_DEADLINES.md) applies the same two live clocks to 12 prospective inputs on four IOI and ICPC World Finals solutions and compares them with an offline single-seed prediction.
