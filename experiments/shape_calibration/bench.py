@@ -31,16 +31,40 @@ def limited(payload, binary, policy, stdin, out, limit, plan):
     return proc.returncode
 
 
+def pinned_cpu():
+    affinity = sorted(os.sched_getaffinity(0))
+    cgroup = Path("/proc/self/cgroup").read_text().strip().split(":")[-1].lstrip("/")
+    allowed = (Path("/sys/fs/cgroup") / cgroup / "cpuset.cpus.effective").read_text().strip()
+    require(affinity == [1] and allowed == "1", "expected CPU 1 and its cgroup")
+    return affinity, allowed
+
+
+def native_rounds(plan, binaries, out, runtime, timings):
+    native = []
+    held = sorted((c for c in plan["cases"] if c["split"] == "holdout"), key=lambda c: sha(c["case_id"].encode()))
+    for round_id in range(plan["native_rounds"]):
+        offset = round_id % len(held)
+        for case in held[offset:] + held[:offset]:
+            seq = len(native)
+            directory = out / "native" / f"{seq:03d}"
+            directory.mkdir()
+            binary = binaries / case["program"]
+            stdin = out / "inputs" / sha(case["stdin"].encode())
+            row = runtime.base["execute"]([binary], directory, stdin, timings)
+            require(row["stdout_sha256"] == sha(case["stdout"].encode()) and row["cpu_us"] > 0, "native output or CPU")
+            native.append(dict(sequence=seq, case_id=case["case_id"], round=round_id+1, pid=row["launcher_pid"],
+                               user_us=row["user_us"], sys_us=row["sys_us"], cpu_ns=row["cpu_us"]*1000,
+                               stdout_sha256=row["stdout_sha256"]))
+    return native
+
+
 def bench(payload, binaries, probe, out):
     raw = (HERE / "plan.json").read_bytes()
     rules_raw = (HERE / "rules.json").read_bytes()
     plan, rules = json.loads(raw), json.loads(rules_raw)
     probe_sha = elf_digest(probe)
     require(probe_sha == rules["probe_sha256"], "unregistered temporal probe")
-    affinity = sorted(os.sched_getaffinity(0))
-    cgroup = Path("/proc/self/cgroup").read_text().strip().split(":")[-1].lstrip("/")
-    allowed = (Path("/sys/fs/cgroup") / cgroup / "cpuset.cpus.effective").read_text().strip()
-    require(affinity == [1] and allowed == "1", "expected CPU 1 and its cgroup")
+    affinity, allowed = pinned_cpu()
     sys.path.insert(0, str(payload))
     import cost_bench as runtime
     timings = {"trial_timeout_s": plan["timeout_ms"] // 1000,
@@ -49,7 +73,7 @@ def bench(payload, binaries, probe, out):
     for sub in ("inputs", "native", "cases"):
         (out / sub).mkdir()
     banks = defaultdict(lambda: {"shape": [], "temporal": []})
-    rows, native = [], []
+    rows = []
     start = runtime.base["steal"](1)
     for i, case in enumerate(plan["cases"]):
         name, key = case["program"], case["case_id"]
@@ -91,20 +115,7 @@ def bench(payload, binaries, probe, out):
                          temporal_cpu_ns=temporal["cpu_ns"], plain_pid=row["launcher_pid"],
                          plain_cpu_ns=row["cpu_us"] * 1000, policies=policies, live=events))
 
-    held = sorted((c for c in plan["cases"] if c["split"] == "holdout"), key=lambda c: sha(c["case_id"].encode()))
-    for round_id in range(plan["native_rounds"]):
-        offset = round_id % len(held)
-        for case in held[offset:] + held[:offset]:
-            seq = len(native)
-            directory = out / "native" / f"{seq:03d}"
-            directory.mkdir()
-            binary = binaries / case["program"]
-            stdin = out / "inputs" / sha(case["stdin"].encode())
-            row = runtime.base["execute"]([binary], directory, stdin, timings)
-            require(row["stdout_sha256"] == sha(case["stdout"].encode()) and row["cpu_us"] > 0, "native output or CPU")
-            native.append(dict(sequence=seq, case_id=case["case_id"], round=round_id+1, pid=row["launcher_pid"],
-                               user_us=row["user_us"], sys_us=row["sys_us"], cpu_ns=row["cpu_us"]*1000,
-                               stdout_sha256=row["stdout_sha256"]))
+    native = native_rounds(plan, binaries, out, runtime, timings)
     write(out / "summary.json", dict(schema=1, plan_sha256=sha(raw), rules_sha256=sha(rules_raw),
           probe_sha256=probe_sha, affinity=affinity, cgroup_cpus=allowed, kernel=platform.release(),
           steal_delta=runtime.base["steal"](1)-start, rows=rows, native=native))

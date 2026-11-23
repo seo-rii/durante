@@ -9,6 +9,7 @@ import tempfile
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 from first_run_sampler.profile import elf_digest, read_json, require, sha
+from footprint_admission import admission
 from guarded_native import anchor, live
 from shape_calibration import select_policy, temporal
 
@@ -16,7 +17,7 @@ from shape_calibration import select_policy, temporal
 def check_selection(selection, current, extra, policy, clock):
     obs = current["observation"]
     method = selection["method"]
-    require(type(selection["schema"]) is int and selection["schema"] == 1 and method in ("shape", "temporal")
+    require(type(selection["schema"]) is int and selection["schema"] == 1 and method in select_policy.METHODS
             and type(selection["prediction_ns"]) is int and selection["prediction_ns"] == clock.predict_ns(obs)
             and selection["current_sample_sha256"] == obs["sample_sha256"]
             and selection["policy_sha256"] == clock.policy_sha256, "selection differs from this policy or capture")
@@ -28,12 +29,16 @@ def check_selection(selection, current, extra, policy, clock):
         require(type(row["reference_index"]) is int and row["reference_index"] == i
                 and shape["current_sample_sha256"] == obs["sample_sha256"]
                 and shape["status"] in ("reuse", "needs_native"), "invalid spatial comparison")
-        if method == "temporal":
+        if method != "shape":
             require(order["current_sample_sha256"] == extra["observation"]["sample_sha256"]
                     and order["status"] in ("reuse", "needs_native"), "invalid temporal comparison")
         else:
             require(order is None, "unexpected temporal comparison")
-        if shape["status"] == "reuse" and (order is None or order["status"] == "reuse"):
+        if method == "footprint":
+            admission.validate(row["footprint"], current, shape)
+        else:
+            require("footprint" not in row, "unexpected footprint comparison")
+        if select_policy.permits_reuse(row, method):
             eligible.append(i)
     index = selection["reference_index"]
     if selection["action"] == "calibrate":
@@ -51,7 +56,7 @@ def run(payload, selection_file, current, policy_file, elf, stdin, out, limit_ms
     try:
         selected_raw = selection_file.read_bytes()
         selection = read_json(selected_raw)
-        require(selection["method"] in ("shape", "temporal"), "unknown selection method")
+        require(selection["method"] in select_policy.METHODS, "unknown selection method")
         with tempfile.TemporaryDirectory(dir=out) as tmp:
             # Keep the checked policy and stdin stable across verification and the live launch.
             private = Path(tmp)
