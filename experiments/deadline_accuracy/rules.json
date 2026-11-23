@@ -1,0 +1,9 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "probe_sha256": "159ca08d50bb8cf20e88f86b2186af422e094e7c14ebe98a42bed7adc2d6b186",
+  "baseline": "In plan order select the oldest compatible paid footprint anchor for the same ELF. Otherwise pay one native execution on this input. Gate-only observations cannot enter the baseline bank.",
+  "gate": "A deadline of T nanoseconds is close to the complete baseline estimate p if and only if 4*abs(p-T) <= T. At close deadlines use the median of three distinct pinned native measurements on the current exact ELF and stdin to choose its clock scale. Share this packet across close limits on the same capture. Count a baseline calibration as one observation only for the same physical current capture on the same boot and CPU. At other deadlines retain the baseline.",
+  "schedule": "Use the sorted union of the fixed external deadlines and ceil(p*percent/100000000) whole milliseconds, minimum 1. Alternate the first live arm by (case sequence + deadline index) parity. Both arms execute at every deadline and use the existing 120 s external watchdog. Choose the gate packet before enforcing the first close deadline.",
+  "scoring": "After all decisions run every holdout natively nine times, in rotated SHA-256 order of case ID. Compare actual deadline outcomes with all nine direct wait4 CPU times (strict greater-than), show unanimous false accepts/TLE and retain mixed outcomes. Report prospective vs prior inputs and fixed vs estimate-derived deadlines with overlap identified. Report additional paid native runs and CPU separately from independent validation. Broad deadlines may still produce errors outside the gate."
+}
