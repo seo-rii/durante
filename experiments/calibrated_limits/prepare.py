@@ -15,8 +15,8 @@ def digest(file):
         return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
-def prepare(out, runtime):
-    plan = json.loads((HERE / "plan.json").read_bytes())
+def prepare(out, runtime, *, study=HERE, probe=None):
+    plan = json.loads((study / "plan.json").read_bytes())
     if (runtime / "protocol.json").read_bytes() != (HERE.parent / "guarded_sampler/protocol.json").read_bytes():
         raise ValueError("expected the registered guarded-sampler runtime")
     out.mkdir(mode=0o700)
@@ -29,7 +29,9 @@ def prepare(out, runtime):
     binaries = out / "binaries"
     binaries.mkdir()
     for program, expected in {c["program"]: c["binary_sha256"] for c in plan["cases"]}.items():
-        src = HERE / (program + ".cpp")
+        src = study / (program + ".cpp")
+        if not src.exists():
+            src = HERE / (program + ".cpp")
         if src.exists():
             subprocess.run(["g++", "-std=c++20", "-O2", "-static", "-s", "-march=x86-64-v2",
                             "-Wl,--build-id=none", src, "-o", binaries / program], check=True)
@@ -41,8 +43,14 @@ def prepare(out, runtime):
     command = '"$PWD/bench.py"'
     if guest.count(command) != 1:
         raise ValueError("different guest entry point")
-    new_command = ('"$PWD/repo/experiments/calibrated_limits/bench.py" '
+    new_command = (f'"$PWD/repo/experiments/{study.name}/bench.py" '
                    '--payload "$PWD/runtime" --binaries "$PWD/binaries" --out "$PWD/output"')
+    if probe is not None:
+        expected = json.loads((study / "rules.json").read_bytes())["probe_sha256"]
+        if digest(probe) != expected:
+            raise ValueError("different registered temporal probe")
+        shutil.copy2(probe, out / "temporal.so")
+        new_command += ' --probe "$PWD/temporal.so"'
     (out / "guest.sh").write_text(guest.replace(command, new_command))
     (out / "guest.sh").chmod(0o700)
     files = sorted(p for p in out.rglob("*") if p.is_file())
