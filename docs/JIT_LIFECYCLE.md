@@ -20,6 +20,20 @@ copies have known byte lengths. The small RWX case requires 169 instructions,
 12 requested REP bytes and two REP entries; the larger requires 489/44/2.
 The old duplicated results (172/18/3 and 492/82/3) now fail unconditionally.
 
+## Protection changes under concurrent execution
+
+`tests/exec_area_race.py` runs worker threads that call a generated function
+while the main thread keeps switching its page between RX and RWX without
+changing the code. Each switch removes the page's executable area, often before
+any worker has executed from the new one. Such an area is removed without the
+flush synchronization, and the original runtime kept using its stale pointer
+when a thread's lookup of it failed after a lock upgrade: the engine and
+supervisor crashed in 17 of 20 cases. The prepared runtime clears the pointer.
+The harness runs a native control, the engine with the release core and the
+supervisor; every call must return the expected value. The debug core is not
+run: it first trips a separate consistency check for code that becomes writable
+while another thread executes it, which this fix does not address.
+
 ## Replay matrix
 
 `tests/jit_replay.py` covers earlier executed work, partially completed writes,

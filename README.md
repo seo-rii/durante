@@ -287,6 +287,9 @@ cache, which a loop of linked blocks may never take.
 A fault in a block that a write to its page has just flushed, such as a JIT's
 safepoint poll, is reported at the faulting instruction; the original runtime
 could report it at pc 0 ([BUG-006](docs/JVM_SAFEPOINT.md)).
+Changing the protection of generated code while other threads run it, as a JIT
+that patches under W^X does, no longer crashes the runtime: the original runtime
+kept a stale pointer when the code's executable area was removed during a lookup.
 Updating this patch requires rebuilding the prepared SDK, client and CLI together;
 `isolate` checks the reviewed patch digest.
 

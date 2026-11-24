@@ -18,6 +18,10 @@ Translate a fault in a flushed fragment from the fragment as it was built: a
 write to its region can make the region self-modifying, and rebuilding against
 that sandboxes the block, so the translation failed and the fault was delivered
 with a zero pc (JVM safepoint polls, BUG-006).
+Clear the stale area pointer when the executable-area lookup repeated after the
+lock upgrade fails: an area that was never executed from is removed without the
+flush synch, and the stale pointer crashed the runtime when one thread changed
+the protection of code that others were about to execute.
 
 --- a/core/dynamo.c
 +++ b/core/dynamo.c
@@ -1364,3 +1368,33 @@ index efc1bbb1cd..ad839efb02 100644
              ASSERT(bb != NULL);
              if (bb == NULL) {
                  instrlist_clear_and_destroy(dcontext, ilist);
+--- a/core/vmareas.c
++++ b/core/vmareas.c
+@@ -7497,6 +7497,12 @@ check_thread_vm_area(dcontext_t *dcontext, app_pc pc, app_pc tag, void **vmlist,
+                 d_r_write_lock(&executable_areas->lock);
+                 own_execareas_writelock = true;
+                 ok = lookup_addr(executable_areas, pc, &area);
++                /* The area can have been removed while we did not hold the lock.
++                 * A failed lookup leaves our pointer from the first lookup in
++                 * place: clear it, as below we take a non-NULL area as found.
++                 */
++                if (!ok)
++                    area = NULL;
+             }
+             if (ok && TEST(VM_DELAY_READONLY, area->vm_flags))
+                 handle_delay_readonly(dcontext, pc, area);
+@@ -7519,6 +7525,14 @@ check_thread_vm_area(dcontext_t *dcontext, app_pc pc, app_pc tag, void **vmlist,
+             d_r_write_lock(&executable_areas->lock);
+             own_execareas_writelock = true;
+             ok = lookup_addr(executable_areas, pc, &area);
++            /* An area that was never executed from is removed without the flush
++             * synch (flush_fragments_in_region_start()), so it can be gone now
++             * even though we are couldbelinking.  A failed lookup leaves our
++             * pointer from the first lookup in place: clear it, as below we take
++             * a non-NULL area as found and would skip adding the region.
++             */
++            if (!ok)
++                area = NULL;
+         }
+         if (ok) {
+             if (vmlist != NULL && !TEST(VM_EXECUTED_FROM, area->vm_flags)) {
