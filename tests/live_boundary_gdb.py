@@ -1,11 +1,14 @@
-"""GDB script: deliver a signal to a thread stopped inside the live boundary routine.
+"""GDB script: deliver a signal to a thread stopped inside client code.
 
-Run by live_work_client.py under `gdb -batch -x`. The routine is the client's
-own context switch, so the interesting interleavings are single instructions
-wide: this stops the application thread at one chosen point of the routine or
-of its callback, resumes it with SIGUSR1 already pending, and reports where it
-stopped and how the fixture exited. The fixture checks its own state, and
-executes a breakpoint instruction once its handler is installed.
+Run by live_work_client.py under `gdb -batch -x`. The live boundary routine is
+the client's own context switch, so the interesting interleavings are single
+instructions wide: this stops the application thread at one chosen point of the
+routine, of its callback, or of the REP clean callee, resumes it with SIGUSR1
+already pending, and reports where it stopped and how the fixture exited. The
+fixture checks its own state, and executes a breakpoint instruction once its
+handler is installed. With DURANTE_GDB_COUNT and DURANTE_GDB_SENT, the script
+first copies the fixture's iteration count to the second address, so that the
+fixture can tell how long delivery took.
 """
 import json
 import os
@@ -17,11 +20,16 @@ import gdb
 CLIENT = Path(os.environ["DURANTE_GDB_CLIENT"]).resolve()
 POINT = os.environ["DURANTE_GDB_POINT"]
 RESULT = Path(os.environ["DURANTE_GDB_RESULT"])
-# Link-time addresses of the client's lowest segment, of the callback and of
-# the variable holding the routine's address, then the callback's first bytes.
-BASE, CALLBACK, ROUTINE = (int(os.environ["DURANTE_GDB_" + name], 16)
-                           for name in ("BASE", "CALLBACK", "ROUTINE"))
+# Link-time addresses of the client's lowest segment, of the callback, of the
+# variable holding the routine's address and of the REP clean callee, then the
+# callback's first bytes.
+BASE, CALLBACK, ROUTINE, REP = (int(os.environ["DURANTE_GDB_" + name], 16)
+                                for name in ("BASE", "CALLBACK", "ROUTINE", "REP"))
 CALLBACK_BYTES = bytes.fromhex(os.environ["DURANTE_GDB_CALLBACK_BYTES"])
+# Fixture addresses (a static executable): its iteration count, and where to
+# copy it when the signal is sent.
+MARK = tuple(int(os.environ[name], 16) for name in ("DURANTE_GDB_COUNT", "DURANTE_GDB_SENT")
+             if name in os.environ)
 
 
 def running():
@@ -88,13 +96,26 @@ def main():
         raise RuntimeError("the client's callback is not mapped")
     pointer = gdb.lookup_type("unsigned long").pointer()
     routine = int(gdb.Value(ROUTINE + callback - CALLBACK).cast(pointer).dereference())
-    target = callback if POINT == "callback" else routine_points(routine)[POINT]
+    if POINT == "callback":
+        target = callback
+    elif POINT == "rep-callee":
+        target = REP + callback - CALLBACK
+    else:
+        target = routine_points(routine)[POINT]
     gdb.execute(f"break *{target}", to_string=True)
     gdb.execute("signal 0", to_string=True)  # Resume without the trap.
+    # The first REP of the loop runs in blocks that are not linked yet, so the
+    # thread would leave the code cache right after that call anyway. Wait
+    # until the loop is built and linked, as it is by the first boundary.
+    for _ in range(3 if POINT == "rep-callee" else 0):
+        gdb.execute("continue", to_string=True)
     stopped = int(gdb.parse_and_eval("$pc"))
     stack = int(gdb.parse_and_eval("$rsp"))
     application = any(start <= stack <= end for start, end, _, name in mappings() if name == "[stack]")
     gdb.execute("delete")
+    if MARK:
+        inferior = gdb.selected_inferior()
+        inferior.write_memory(MARK[1], bytes(inferior.read_memory(MARK[0], 8)))
     gdb.execute("signal SIGUSR1", to_string=True)
     code = gdb.parse_and_eval("$_exitcode")
     RESULT.write_text(json.dumps({

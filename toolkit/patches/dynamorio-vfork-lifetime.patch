@@ -11,6 +11,9 @@ Upstream PR: https://github.com/DynamoRIO/dynamorio/pull/7321
 Backport thread synchronization signal-stack correction from upstream commit
 985af57d7c3d73e7a1100d98e412584968588258.
 Upstream PR: https://github.com/DynamoRIO/dynamorio/pull/7749
+Bound delivery of a signal that interrupts a clean callee: x86 clean calls record
+their code cache address, and the signal handler unlinks that fragment.
+Keep the size and shift of instr operands when cloning an instruction list.
 
 --- a/core/dynamo.c
 +++ b/core/dynamo.c
@@ -1182,3 +1185,121 @@ index efc1bbb1cd..ad839efb02 100644
  void
  signal_prepare_clone_child(void *clone_record);
  void
+--- a/core/arch/arch.h
++++ b/core/arch/arch.h
+@@ -239,6 +239,8 @@ mixed_mode_enabled(void)
+         ((PROT_OFFS) + offsetof(dcontext_t, nonswapped_scratch))
+ #else
+ #    define SIGPENDING_OFFSET ((PROT_OFFS) + offsetof(dcontext_t, signals_pending))
++#    define CLEAN_CALL_CACHE_PC_OFFSET \
++        ((PROT_OFFS) + offsetof(dcontext_t, clean_call_cache_pc))
+ #endif
+ 
+ #ifdef TRACE_HEAD_CACHE_INCR
+--- a/core/arch/mangle_shared.c
++++ b/core/arch/mangle_shared.c
+@@ -223,6 +223,18 @@ prepare_for_clean_call(dcontext_t *dcontext, clean_call_info_t *cci, instrlist_t
+ #else
+         PRE(ilist, instr,
+             instr_create_save_to_dc_via_reg(dcontext, SCRATCH_REG0, REG_XSP, XSP_OFFSET));
++#    if defined(UNIX) && defined(X86)
++        /* Record where this clean call is in the code cache, for a signal that
++         * interrupts the callee (see record_pending_signal()).  The immediate
++         * stores need no scratch register and leave the flags alone.
++         * XXX: Record it on the other architectures too.
++         */
++        insert_mov_instr_addr(
++            dcontext, start_label, vmcode_get_end(),
++            opnd_create_dcontext_field_via_reg_sz(dcontext, SCRATCH_REG0,
++                                                  CLEAN_CALL_CACHE_PC_OFFSET, OPSZ_PTR),
++            ilist, instr, NULL, NULL);
++#    endif
+ #endif
+         /* DSTACK_OFFSET isn't within the upcontext so if it's separate this won't
+          * work right.  FIXME - the dcontext accessing routines are a mess of shared
+--- a/core/globals.h
++++ b/core/globals.h
+@@ -815,6 +815,11 @@ struct _dcontext_t {
+      * as that.
+      */
+     sbyte signals_pending; /* != 0: pending; < 0: currently handling one */
++    /* The code cache address of the last clean call this thread entered, which
++     * the clean call stores before it switches to the dstack (x86 only).  A signal
++     * that interrupts the callee unlinks that fragment to bound its delivery.
++     */
++    cache_pc clean_call_cache_pc;
+ #endif
+ 
+     /************* end of offset-crucial fields *********************/
+--- a/core/ir/instrlist.c
++++ b/core/ir/instrlist.c
+@@ -479,8 +479,14 @@ instrlist_clone(void *drcontext, instrlist_t *old)
+             if (opnd_is_far_instr(op)) {
+                 instr_set_src(copy, i,
+                               opnd_create_far_instr(opnd_get_segment_selector(op), tgt));
+-            } else
+-                instr_set_src(copy, i, opnd_create_instr(tgt));
++            } else {
++                /* Keep the size and shift: insert_mov_instr_addr() stores a 64-bit
++                 * address as two 32-bit halves of the same instr.
++                 */
++                instr_set_src(
++                    copy, i,
++                    opnd_create_instr_ex(tgt, opnd_get_size(op), opnd_get_shift(op)));
++            }
+         }
+     }
+     for (inst = instrlist_first(old), copy = instrlist_first(newlist);
+--- a/core/unix/signal.c
++++ b/core/unix/signal.c
+@@ -4912,6 +4912,42 @@ find_next_fragment_from_gencode(dcontext_t *dcontext, sigcontext_t *sc)
+     return f;
+ }
+ 
++/* A signal that interrupts a clean callee, or code the callee calls, waits for
++ * the thread's next exit from the code cache, and a loop of linked fragments may
++ * never take one.  Before it switched to the dstack the clean call recorded its own
++ * code cache address: unlink that fragment, as for a signal that arrives in the
++ * cache, so the thread exits to d_r_dispatch at the fragment's next exit.
++ */
++static void
++unlink_fragment_of_clean_call(dcontext_t *dcontext, thread_sig_info_t *info, byte *pc,
++                              byte *xsp)
++{
++    cache_pc call_pc = dcontext->clean_call_cache_pc;
++    fragment_t wrapper;
++    fragment_t *f;
++    /* Only a clean callee runs on the dstack while control is still in the cache.
++     * DR code may hold the locks the lookup and unlinking need, and so may a thread
++     * that is linking: their signals keep waiting for d_r_dispatch.
++     */
++    if ((dcontext->whereami != DR_WHERE_FCACHE &&
++         dcontext->whereami != DR_WHERE_CLEAN_CALLEE) ||
++        call_pc == NULL || info->interrupted != NULL || !is_on_dstack(dcontext, xsp) ||
++        is_in_dynamo_dll(pc) || is_couldbelinking(dcontext))
++        return;
++    /* PR 213040: we can't unlink coarse. */
++    if (!in_fcache(call_pc) || get_fcache_coarse_info(call_pc) != NULL)
++        return;
++    f = fragment_pclookup(dcontext, call_pc, &wrapper);
++    if (f == NULL || TESTANY(FRAG_COARSE_GRAIN, f->flags))
++        return;
++    LOG(THREAD, LOG_ASYNCH, 2, "\tsignal in clean callee: delaying until exit F%d\n",
++        f->id);
++    if (unlink_fragment_for_signal(dcontext, f, call_pc)) {
++        info->interrupted = f;
++        info->interrupted_pc = call_pc;
++    }
++}
++
+ static void
+ record_pending_signal(dcontext_t *dcontext, int sig, kernel_ucontext_t *ucxt,
+                       sigframe_rt_t *frame, bool forged, byte *access_address)
+@@ -5214,6 +5250,7 @@ record_pending_signal(dcontext_t *dcontext, int sig, kernel_ucontext_t *ucxt,
+             abort_on_DR_fault(dcontext, pc, NULL, sig, frame,
+                               (sig == SIGSEGV) ? "SEGV" : "other", " unknown");
+         }
++        unlink_fragment_of_clean_call(dcontext, info, pc, xsp);
+     }
+ 
+     LOG(THREAD, LOG_ASYNCH, 3, "\taction is not SIG_IGN\n");
