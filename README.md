@@ -290,6 +290,9 @@ could report it at pc 0 ([BUG-006](docs/JVM_SAFEPOINT.md)).
 Changing the protection of generated code while other threads run it, as a JIT
 that patches under W^X does, no longer crashes the runtime: the original runtime
 kept a stale pointer when the code's executable area was removed during a lookup.
+Generated code that a JIT patches in place on an RWX page no longer keeps
+running in its old form: the original runtime could check such code against a
+copy taken after the patch, so a block built before the patch passed its check.
 Updating this patch requires rebuilding the prepared SDK, client and CLI together;
 `isolate` checks the reviewed patch digest.
 

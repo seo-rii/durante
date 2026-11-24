@@ -34,6 +34,21 @@ supervisor; every call must return the expected value. The debug core is not
 run: it first trips a separate consistency check for code that becomes writable
 while another thread executes it, which this fix does not address.
 
+## Code patched in place
+
+`tests/selfmod_patch_race.py` runs worker threads that call a generated function
+while the main thread keeps patching it on an RWX page, with a version counter
+that tells each call which result is current. The runtime sandboxes such a page:
+every block checks on entry that the code still matches a copy stored with the
+block. The original runtime took that copy from the page after decoding the
+block, so a patch in between gave a block whose copy was newer than its body; it
+passed its check and returned the old result until the next patch. The engine
+with `-sandbox_writable` failed 10 of 10 cases on the release and debug cores,
+with hundreds to thousands of stale calls each, and the supervisor with default
+options failed 2 of 10. The prepared runtime decodes each sandboxed block from a
+snapshot of its code and stores that snapshot as the copy; it passes 40 of 40
+cases in ten repeats.
+
 ## Replay matrix
 
 `tests/jit_replay.py` covers earlier executed work, partially completed writes,
