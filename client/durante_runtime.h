@@ -10,7 +10,7 @@
 extern "C" {
 #endif
 
-#define DR_DURANTE_RUNTIME_ABI_VERSION 1U
+#define DR_DURANTE_RUNTIME_ABI_VERSION 2U
 #define DR_DURANTE_REPLAY_RETRY 1
 #define DR_DURANTE_REPLAY_AFTER_WRITE 2
 #define DR_DURANTE_REPLAY_ENTRY 3
@@ -52,6 +52,19 @@ dr_register_durante_code_replay_event(dr_durante_code_replay_cb_t callback);
 DR_API
 bool
 dr_unregister_durante_code_replay_event(dr_durante_code_replay_cb_t callback);
+
+/* While this thread runs client code that its instrumentation entered from the
+ * code cache other than through a clean call, *slot must hold the tag (first
+ * application address) of the block that code returns to.  A delayable signal
+ * that interrupts it then unlinks that block, as one in a clean callee does, so
+ * the thread reaches dispatch and the signal's delivery at the block's next exit
+ * instead of its next exit from the cache.  The core reads *slot in its signal
+ * handler: keep the slot in memory owned by this thread and pass NULL before
+ * freeing it.
+ */
+DR_API
+void
+dr_durante_set_return_tag(void *drcontext, app_pc const *slot);
 
 #ifdef __cplusplus
 }

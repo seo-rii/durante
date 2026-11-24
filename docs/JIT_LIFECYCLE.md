@@ -49,7 +49,7 @@ dispatching a retry. A retry inside the existing cache retains its raw registers
 
 The [private replay patch](../toolkit/patches/dynamorio-code-replay.patch) extends
 the pinned runtime, with declarations in [durante_runtime.h](../client/durante_runtime.h).
-The client requires ABI version 1 through strong symbol references; an old/stock
+The client requires ABI version 2 through strong symbol references; an old/stock
 core cannot silently run this counter without notifications. Rebuild SDK, client
 and CLI together. The SDK manifest records `code_replay_patch_sha256`, and isolate
 requires its reviewed value in addition to the existing source/lifetime patch.

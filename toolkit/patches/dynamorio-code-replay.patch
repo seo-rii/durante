@@ -5,6 +5,9 @@ fault retry, completed sandbox write, and pre-instrumentation sandbox entry.
 The fault path restores application registers before dispatch instead of leaking
 code-cache scratch values.  Generic restore-state queries remain informational.
 
+Client code entered from the cache without a clean call can name the block it
+returns to, so a signal there is delivered as promptly as in a clean callee.
+
 --- a/core/arch/x86/mangle.c
 +++ b/core/arch/x86/mangle.c
 @@ -3111,9 +3111,35 @@
@@ -373,3 +376,112 @@ diff --git a/core/arch/clean_call_opt_shared.c b/core/arch/clean_call_opt_shared
          /* 3. search if callee was analyzed before */
          ci = callee_info_table_lookup(callee);
          /* 4. this callee is not seen before */
+--- a/core/globals.h
++++ b/core/globals.h
+@@ -822,6 +822,10 @@ struct _dcontext_t {
+      * that interrupts the callee unlinks that fragment to bound its delivery.
+      */
+     cache_pc clean_call_cache_pc;
++    /* Where client code entered from the cache without a clean call keeps the
++     * tag of the block it returns to (dr_durante_set_return_tag()), or NULL.
++     */
++    app_pc const *client_return_tag;
+ #endif
+ 
+     /************* end of offset-crucial fields *********************/
+--- a/core/lib/dr_durante_runtime.h
++++ b/core/lib/dr_durante_runtime.h
+@@ -10,7 +10,7 @@
+ extern "C" {
+ #endif
+ 
+-#define DR_DURANTE_RUNTIME_ABI_VERSION 1U
++#define DR_DURANTE_RUNTIME_ABI_VERSION 2U
+ #define DR_DURANTE_REPLAY_RETRY 1
+ #define DR_DURANTE_REPLAY_AFTER_WRITE 2
+ #define DR_DURANTE_REPLAY_ENTRY 3
+@@ -53,6 +53,19 @@ DR_API
+ bool
+ dr_unregister_durante_code_replay_event(dr_durante_code_replay_cb_t callback);
+ 
++/* While this thread runs client code that its instrumentation entered from the
++ * code cache other than through a clean call, *slot must hold the tag (first
++ * application address) of the block that code returns to.  A delayable signal
++ * that interrupts it then unlinks that block, as one in a clean callee does, so
++ * the thread reaches dispatch and the signal's delivery at the block's next exit
++ * instead of its next exit from the cache.  The core reads *slot in its signal
++ * handler: keep the slot in memory owned by this thread and pass NULL before
++ * freeing it.
++ */
++DR_API
++void
++dr_durante_set_return_tag(void *drcontext, app_pc const *slot);
++
+ #ifdef __cplusplus
+ }
+ #endif
+--- a/core/lib/instrument.c
++++ b/core/lib/instrument.c
+@@ -1354,6 +1354,17 @@ dr_unregister_durante_code_replay_event(dr_durante_code_replay_cb_t callback)
+     return remove_callback(&durante_code_replay_callbacks, (void (*)(void))callback, true);
+ }
+ 
++void
++dr_durante_set_return_tag(void *drcontext, app_pc const *slot)
++{
++    dcontext_t *dcontext = (dcontext_t *)drcontext;
++    CLIENT_ASSERT(dcontext != NULL && dcontext != GLOBAL_DCONTEXT,
++                  "dr_durante_set_return_tag: invalid drcontext");
++#ifdef UNIX
++    dcontext->client_return_tag = slot;
++#endif
++}
++
+ void
+ instrument_durante_code_replay(dcontext_t *dcontext, int reason, app_pc source_pc,
+                                 app_pc target_pc)
+--- a/core/unix/signal.c
++++ b/core/unix/signal.c
+@@ -4922,22 +4922,34 @@ static void
+ unlink_fragment_of_clean_call(dcontext_t *dcontext, thread_sig_info_t *info, byte *pc,
+                               byte *xsp)
+ {
+-    cache_pc call_pc = dcontext->clean_call_cache_pc;
++    cache_pc call_pc = NULL;
+     fragment_t wrapper;
+     fragment_t *f;
+-    /* Only a clean callee runs on the dstack while control is still in the cache.
+-     * DR code may hold the locks the lookup and unlinking need, and so may a thread
++    /* DR code may hold the locks the lookup and unlinking need, and so may a thread
+      * that is linking: their signals keep waiting for d_r_dispatch.
+      */
+     if ((dcontext->whereami != DR_WHERE_FCACHE &&
+          dcontext->whereami != DR_WHERE_CLEAN_CALLEE) ||
+-        call_pc == NULL || info->interrupted != NULL || !is_on_dstack(dcontext, xsp) ||
+-        is_in_dynamo_dll(pc) || is_couldbelinking(dcontext))
++        info->interrupted != NULL || is_in_dynamo_dll(pc) || is_couldbelinking(dcontext))
+         return;
+-    /* PR 213040: we can't unlink coarse. */
+-    if (!in_fcache(call_pc) || get_fcache_coarse_info(call_pc) != NULL)
++    /* Only a clean callee runs on the dstack while control is still in the cache.
++     * Other client code entered from the cache names the block it returns to
++     * through dr_durante_set_return_tag().
++     */
++    if (is_on_dstack(dcontext, xsp)) {
++        call_pc = dcontext->clean_call_cache_pc;
++        /* PR 213040: we can't unlink coarse. */
++        if (call_pc == NULL || !in_fcache(call_pc) ||
++            get_fcache_coarse_info(call_pc) != NULL)
++            return;
++        f = fragment_pclookup(dcontext, call_pc, &wrapper);
++    } else if (dcontext->client_return_tag != NULL &&
++               *dcontext->client_return_tag != NULL) {
++        f = fragment_lookup(dcontext, *dcontext->client_return_tag);
++        if (f != NULL)
++            call_pc = FCACHE_ENTRY_PC(f);
++    } else
+         return;
+-    f = fragment_pclookup(dcontext, call_pc, &wrapper);
+     if (f == NULL || TESTANY(FRAG_COARSE_GRAIN, f->flags))
+         return;
+     LOG(THREAD, LOG_ASYNCH, 2, "\tsignal in clean callee: delaying until exit F%d\n",

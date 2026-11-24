@@ -761,6 +761,15 @@ SCALAR static void clear_write_checkpoint(thread_data_t *d) {
 enum { BOUNDARY_STACK_BYTES = 16 * 1024 };
 static void set_boundary_state(void *ctx, thread_data_t *d);
 
+static void free_thread_state(void *ctx, thread_data_t *d) {
+  /* The runtime must stop reading boundary_pc before it is freed. */
+  dr_durante_set_return_tag(ctx, NULL);
+  drmgr_set_tls_field(ctx, tls_index, NULL);
+  if (d->boundary_stack)
+    dr_thread_free(ctx, d->boundary_stack, BOUNDARY_STACK_BYTES);
+  dr_thread_free(ctx, d, sizeof(*d));
+}
+
 static void thread_init(void *ctx) {
   thread_data_t *d = dr_thread_alloc(ctx, sizeof(*d));
   if (!d)
@@ -807,10 +816,7 @@ static void thread_exit(void *ctx) {
      * refers to the child's descriptor table, so NEVER close that number in the
      * parent. Exec/_exit checkpoints close it in child context before the
      * transition. */
-    drmgr_set_tls_field(ctx, tls_index, NULL);
-    if (d->boundary_stack)
-      dr_thread_free(ctx, d->boundary_stack, BOUNDARY_STACK_BYTES);
-    dr_thread_free(ctx, d, sizeof(*d));
+    free_thread_state(ctx, d);
     return;
   }
   dr_mutex_lock(state_lock);
@@ -821,10 +827,7 @@ static void thread_exit(void *ctx) {
   ++threads_ended;
   dr_mutex_unlock(state_lock);
   if (d) {
-    drmgr_set_tls_field(ctx, tls_index, NULL);
-    if (d->boundary_stack)
-      dr_thread_free(ctx, d->boundary_stack, BOUNDARY_STACK_BYTES);
-    dr_thread_free(ctx, d, sizeof(*d));
+    free_thread_state(ctx, d);
   }
 }
 
@@ -1378,6 +1381,11 @@ static void set_boundary_state(void *ctx, thread_data_t *d) {
   }
   d->boundary_stack_top =
       (byte *)(((ptr_uint_t)d->boundary_stack + BOUNDARY_STACK_BYTES) & ~(ptr_uint_t)15);
+  /* The entry stores its block's first address, which is the block's tag, in
+   * boundary_pc before it jumps to the routine. A signal that arrives in the
+   * routine or the callback then unlinks that block, so it is delivered when the
+   * thread leaves the block rather than when it next leaves the code cache. */
+  dr_durante_set_return_tag(ctx, &d->boundary_pc);
 }
 
 /* Live clock: the flag-free entry also counts live_room down and takes the

@@ -220,6 +220,8 @@ def main():
                     check_boundary_signal(args.gdb, prefix, work, args.client.resolve(),
                                           work / "live-state-external-exe", point,
                                           f"boundary-signal-{point}")
+                    check_boundary_signal(args.gdb, prefix, work, args.client.resolve(),
+                                          work / "signal-wait-exe", point, f"boundary-wait-{point}")
                 # A runtime clean call: the REP callee runs on the runtime's stack.
                 check_boundary_signal(args.gdb, prefix, work, args.client.resolve(),
                                       work / "signal-wait-rep-exe", "rep-callee", "rep-callee-wait")

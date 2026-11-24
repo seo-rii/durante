@@ -280,10 +280,10 @@ restored registers and arithmetic with native, engine-only and client controls.
 The prepared x86-64 runtime saves, clears and restores guest flags around
 client clean calls. This lets HotSpot enable alignment checking during CPU
 detection while the client writes its thread-local counters and checkpoints.
-A signal that arrives while a thread runs a clean callee is delivered when the
-thread leaves the block it came from. The original runtime waited for the
-thread's next exit from the code cache, which a loop of linked blocks may never
-take.
+A signal that arrives while a thread runs a clean callee, or the client's own
+live boundary routine, is delivered when the thread leaves the block it came
+from. The original runtime waited for the thread's next exit from the code
+cache, which a loop of linked blocks may never take.
 Updating this patch requires rebuilding the prepared SDK, client and CLI together;
 `isolate` checks the reviewed patch digest.
 
