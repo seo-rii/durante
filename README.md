@@ -284,6 +284,9 @@ A signal that arrives while a thread runs a clean callee, or the client's own
 live boundary routine, is delivered when the thread leaves the block it came
 from. The original runtime waited for the thread's next exit from the code
 cache, which a loop of linked blocks may never take.
+A fault in a block that a write to its page has just flushed, such as a JIT's
+safepoint poll, is reported at the faulting instruction; the original runtime
+could report it at pc 0 ([BUG-006](docs/JVM_SAFEPOINT.md)).
 Updating this patch requires rebuilding the prepared SDK, client and CLI together;
 `isolate` checks the reviewed patch digest.
 

@@ -1,11 +1,39 @@
 # Java safepoint recurrence and context evidence
 
-BUG-006 is an open JVM compatibility failure. The retained Java 17 CI observation
+BUG-006 was a JVM abort caused by the runtime. The retained Java 17 CI observation
 aborted with `SharedRuntime::get_poll_stub` and the guarantee `safepoint polling:
 pc must refer to an nmethod`. It used the engine-only basic-block profile, without
 the Durante client. Its stack was in `ModuleBootstrap` / `System.initPhase2`,
 before the workload's child-launch code. Naming the workload `POSIX_SPAWN` does
 not establish that process creation caused the abort.
+
+## Cause and fix
+
+HotSpot patches compiled code while other threads may still run its old blocks.
+A write to a code page makes the runtime flush that page's blocks, and after a
+few writes it also marks the page self-modifying, so that new blocks from it are
+sandboxed. A thread that is still inside a flushed block keeps running it until
+it leaves. When that thread faulted, the runtime translated the fault by
+rebuilding the block from the page, and the rebuild now sandboxed it. The
+rebuilt block no longer matched the code the thread ran, translation failed, and
+the runtime delivered the fault with a zero pc. A safepoint poll in a flushed
+block therefore reached HotSpot's handler at pc 0, outside every nmethod.
+
+A diagnostic runtime caught this in the JVM: the fault was the poll
+`test [r10], eax` on the armed polling page, in a flushed block whose code had
+not changed. The runtime patch now rebuilds a flushed block as it was built,
+without consulting its page again.
+
+`tests/flushed_fault.c` reproduces it without a JVM: one thread takes a poll
+fault in a generated block that another thread's write to the same page has
+just flushed. `tests/flushed_fault.py` runs it natively, under the engine alone
+with the release and debug cores, and under the supervisor with the client. The
+earlier runtime reported about half of the faults away from the poll under the
+engine (with `-ro2sandbox_threshold 1`) and about one in twenty under the
+supervisor with default options; the debug core stopped at its translation
+assertion. The patched runtime reports all of them at the poll.
+
+The recurrence campaign below remains a regression check for the JVM itself.
 
 The observed JVM was Temurin 17.0.21+9 with Serial GC, a 64-MiB heap, 256-KiB thread
 stacks, 32-MiB compressed-class/code spaces and two active processors. The first
