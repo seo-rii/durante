@@ -293,6 +293,10 @@ kept a stale pointer when the code's executable area was removed during a lookup
 Generated code that a JIT patches in place on an RWX page no longer keeps
 running in its old form: the original runtime could check such code against a
 copy taken after the patch, so a block built before the patch passed its check.
+A page of code that a JIT replaces by mapping a new page at the same address no
+longer keeps running its old code, and a signal that arrives in generated code
+while another thread patches it no longer crashes the runtime
+([stress modes](docs/JIT_LIFECYCLE.md#code-that-keeps-changing-under-load)).
 Updating this patch requires rebuilding the prepared SDK, client and CLI together;
 `isolate` checks the reviewed patch digest.
 

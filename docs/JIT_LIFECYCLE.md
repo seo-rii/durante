@@ -49,6 +49,62 @@ options failed 2 of 10. The prepared runtime decodes each sandboxed block from a
 snapshot of its code and stores that snapshot as the copy; it passes 40 of 40
 cases in ten repeats.
 
+## Code that keeps changing under load
+
+`tests/jit_stress.py` has a patcher thread keep changing six generated functions
+while worker threads call them. Each function has its own version counter, so a
+call made while its function is stable must return that version's result. Five
+modes change the code, or load the process, in different ways; each runs a
+native control, then the engine alone and the supervisor, with the release and
+debug cores. The engine runs without traces, as the supervisor runs it.
+
+| Mode | What it does | Runtime before this suite |
+| --- | --- | --- |
+| `inplace` | patches on RWX pages; one instruction crosses a page boundary | passed; a rare debug-core check, below |
+| `remap` | replaces the page with a new mapping of the new code | failed 20 of 20 cases |
+| `churn` | `inplace` with workers that are short-lived threads | passed |
+| `signal` | `inplace` with signals whose handler also calls the functions | failed 1 of 20 cases idle, 7 of 8 release-core engine runs under load |
+| `fork` | `inplace` with children forked while the code changes | passed |
+
+The suite found five faults in the runtime, which the prepared runtime fixes:
+
+- **A new mapping over code that has run.** `mmap` with `MAP_FIXED` over
+  executed code was handled as a protection change, so the blocks built from the
+  old code stayed. With the release core 17 to 34 million calls per run returned
+  the old result; the debug core stopped on a consistency check. The runtime now
+  flushes those blocks before the system call, and again after it for blocks
+  that another thread built in between.
+- **A signal in a block that is being flushed.** The handler unlinks the
+  interrupted block so that the thread leaves it soon. It did so through the
+  entry points that also free the thread's flushed blocks, while the thread was
+  still inside one of them: the thread resumed freed code, and the runtime
+  crashed on a later signal. The handler now only takes the lock that keeps a
+  flusher out.
+- **The pointer to that block.** The runtime kept the unlinked block to re-link
+  it when the signal is delivered. A flush could free the block first, and the
+  runtime then re-linked freed memory. The thread now drops the pointer before
+  it frees flushed blocks.
+- **More pending signals than the runtime preallocates for.** With more than 8
+  signals pending on a thread, the handler allocated memory, taking locks that
+  the interrupted runtime code could hold. At that limit the runtime no longer
+  queues a standard signal that is already pending, which the kernel does not
+  queue again either.
+- **A block that wrote to its own code.** The thread deleted such a block while a
+  flusher on another thread could be unlinking the same block and allocating
+  from the thread's heap. The debug core reported heap corruption or a missing
+  link in about 1 of 20 `inplace` runs when the host was busy; with the window
+  widened by a delay, 6 of 40 runs failed, and 0 of 40 with the fix. The thread
+  now holds its linking lock while it deletes.
+
+With the prepared runtime the five modes pass 40 of 40 cases in two repeats.
+With four busy threads on the same machine, every mode passes 8 of 8 engine runs
+with each core.
+
+A sixth mode, `wx`, keeps the pages RX and makes them RWX only around each
+patch. It is not in the default set, because the runtime still fails it: the
+debug core stops on a consistency check in 6 of 10 cases, and under load the
+release core returned one stale call in 3 of 8 runs. `--mode wx` reproduces it.
+
 ## Replay matrix
 
 `tests/jit_replay.py` covers earlier executed work, partially completed writes,

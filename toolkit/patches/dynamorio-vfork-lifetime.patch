@@ -26,6 +26,20 @@ Decode a sandboxed block from a snapshot of its code, encode it from that
 snapshot, and store the snapshot as the copy its entry check compares with: a
 copy taken from the app code after decoding could already hold a newer patch,
 so a block of a JIT page patched in place kept running the old code.
+Set the protection of the runtime's generated code without querying it first:
+every flush changed it four times, and each query read /proc/self/maps.
+Keep the fragment that a signal unlinks: the handler took the flush-synch
+entry points, which free the thread's flushed fragments while the thread is
+still inside one, and the pointer kept for re-linking outlived a flush that
+freed the fragment.
+Do not queue a standard signal that is already pending into the last block of
+the pending-signal heap: growing that heap in the signal handler acquires locks
+that the interrupted runtime code may hold.
+Hold the thread's linking lock while a sandboxed block that wrote to itself is
+deleted: the thread is not at a linking point then, and a flusher could be
+unlinking the same fragment and allocating from the thread's heap.
+Flush the fragments of code that a fixed mmap replaces: such a mapping was
+treated as a protection change, so the old code kept running.
 
 --- a/core/dynamo.c
 +++ b/core/dynamo.c
@@ -1750,3 +1764,278 @@ index efc1bbb1cd..ad839efb02 100644
          *((uint *)vmcode_get_writable_addr(copy_pc + copy_sz - sizeof(uint))) = copy_sz;
          /* count copy as part of fragment */
          pc = copy_pc + copy_sz;
+--- a/core/arch/arch.c
++++ b/core/arch/arch.c
+@@ -1525,8 +1525,21 @@ protect_generated_code(generated_code_t *code_in, bool writable)
+             code->writable = writable;
+         }
+         STATS_INC(gencode_prot_changes);
+-        change_protection(vmcode_get_writable_addr(genstart),
+-                          code->commit_end_pc - genstart, writable);
++#ifdef UNIX
++        /* We know the protection of our own generated code, so we do not use
++         * change_protection(): it first queries the current protection, which on
++         * Linux reads /proc/self/maps.  Each flush gets here four times, via
++         * unlink_special_ibl_xfer() and link_special_ibl_xfer().  With
++         * -satisfy_w_xor_x the change is to the separate writable view instead.
++         */
++        if (!DYNAMO_OPTION(satisfy_w_xor_x)) {
++            set_protection(genstart, code->commit_end_pc - genstart,
++                           MEMPROT_READ | MEMPROT_EXEC |
++                               (writable ? MEMPROT_WRITE : 0));
++        } else
++#endif
++            change_protection(vmcode_get_writable_addr(genstart),
++                              code->commit_end_pc - genstart, writable);
+         if (writable) {
+             ASSERT(!code->writable);
+             code->writable = writable;
+--- a/core/fragment.c
++++ b/core/fragment.c
+@@ -5234,25 +5234,32 @@ fragment_self_write(dcontext_t *dcontext)
+         dcontext->last_fragment->tag,
+         EXIT_CTI_PC(dcontext->last_fragment, dcontext->last_exit));
+     STATS_INC(num_self_writes);
++#ifdef PROGRAM_SHEPHERDING
++    /* we can't call fragment_delete if vm_area_t deletes it by flushing */
++    if (!TEST(FRAG_WAS_DELETED, dcontext->last_fragment->flags) &&
++        vm_area_fragment_self_write(dcontext, dcontext->last_fragment->tag))
++        return;
++#endif
++    /* We are nolinking, so a flusher takes us to be at a safe point and can be
++     * unlinking our fragments right now, this one included, which also allocates
++     * from our heap.  It holds our linking lock while it does: we hold it while we
++     * check for that and delete.
++     */
++    per_thread_t *pt = (per_thread_t *)dcontext->fragment_field;
++    d_r_mutex_lock(&pt->linking_lock);
+     if (TEST(FRAG_WAS_DELETED, dcontext->last_fragment->flags)) {
+         /* Case 8177: case 3559 unionized fragment_t.in_xlate, so we cannot delete a
+          * fragment that has already been unlinked in the first stage of a flush.
+          * The flush queue check, which comes after this (b/c we want to be
+          * nolinking), will delete.
+          */
+-        ASSERT(((per_thread_t *)dcontext->fragment_field)->flush_queue_nonempty);
++        ASSERT(pt->flush_queue_nonempty);
+         STATS_INC(num_self_writes_after_flushes);
+     } else {
+-#ifdef PROGRAM_SHEPHERDING
+-        /* we can't call fragment_delete if vm_area_t deletes it by flushing */
+-        if (!vm_area_fragment_self_write(dcontext, dcontext->last_fragment->tag)) {
+-#endif
+-            fragment_delete(dcontext, dcontext->last_fragment, FRAGDEL_ALL);
+-            STATS_INC(num_fragments_deleted_selfmod);
+-#ifdef PROGRAM_SHEPHERDING
+-        }
+-#endif
++        fragment_delete(dcontext, dcontext->last_fragment, FRAGDEL_ALL);
++        STATS_INC(num_fragments_deleted_selfmod);
+     }
++    d_r_mutex_unlock(&pt->linking_lock);
+ }
+ 
+ /* coarse_grain says to use just the min_pc and max_pc of f.
+@@ -5421,6 +5428,10 @@ check_flush_queue(dcontext_t *dcontext, fragment_t *was_I_flushed)
+     per_thread_t *pt = (per_thread_t *)dcontext->fragment_field;
+     bool not_flushed = true;
+     ASSERT_OWN_MUTEX(true, &pt->linking_lock);
++#ifdef UNIX
++    /* We are about to free flushed fragments, or to give up our claim on them. */
++    signal_forget_flushed_fragment(dcontext);
++#endif
+     /* first check private queue and act on pending deletions */
+     if (pt->flush_queue_nonempty) {
+         bool local_prot = local_heap_protected(dcontext);
+@@ -5757,6 +5768,33 @@ enter_nolinking(dcontext_t *dcontext, fragment_t *was_I_flushed, bool cache_tran
+     return not_flushed;
+ }
+ 
++/* For a thread that changes the links of a fragment it has not left, such as
++ * from a signal handler that interrupted the code cache.  A flusher holds this
++ * lock while it unlinks our fragments, so holding it keeps the two apart.
++ * Such a thread must not use enter_couldbelinking() and enter_nolinking()
++ * instead: those are synch points for flushing, which delete the fragments on
++ * the thread's flush queue and release its references to pending shared
++ * deletions, and the thread may be about to resume one of those fragments.
++ */
++void
++acquire_linking_lock_in_fragment(dcontext_t *dcontext)
++{
++    per_thread_t *pt = (per_thread_t *)dcontext->fragment_field;
++    if (RUNNING_WITHOUT_CODE_CACHE() /*case 7966: has no pt*/ || pt == NULL)
++        return;
++    d_r_mutex_lock(&pt->linking_lock);
++    ASSERT(!pt->could_be_linking);
++}
++
++void
++release_linking_lock_in_fragment(dcontext_t *dcontext)
++{
++    per_thread_t *pt = (per_thread_t *)dcontext->fragment_field;
++    if (RUNNING_WITHOUT_CODE_CACHE() /*case 7966: has no pt*/ || pt == NULL)
++        return;
++    d_r_mutex_unlock(&pt->linking_lock);
++}
++
+ /* Returns false iff was_I_flushed ends up being deleted */
+ bool
+ enter_couldbelinking(dcontext_t *dcontext, fragment_t *was_I_flushed,
+--- a/core/fragment.h
++++ b/core/fragment.h
+@@ -1029,6 +1029,12 @@ enter_nolinking(dcontext_t *dcontext, fragment_t *watch, bool temporary);
+ bool
+ enter_couldbelinking(dcontext_t *dcontext, fragment_t *watch, bool temporary);
+ 
++void
++acquire_linking_lock_in_fragment(dcontext_t *dcontext);
++
++void
++release_linking_lock_in_fragment(dcontext_t *dcontext);
++
+ void
+ enter_threadexit(dcontext_t *dcontext);
+ 
+--- a/core/unix/os.c
++++ b/core/unix/os.c
+@@ -7291,6 +7291,24 @@ pre_system_call(dcontext_t *dcontext)
+                 break;
+             }
+         }
++        /* A fixed mapping replaces whatever is mapped there, as an unmap followed by
++         * a map would.  For code we have fragments of, those must go: flush them
++         * now, as for an unmap, and once more after the system call, for fragments
++         * that another thread builds from the old code in between.  We leave a
++         * library's segments alone: they are mapped over its initial mapping before
++         * any of its code runs.
++         */
++        dcontext->sys_param4 = 0;
++        if (addr != NULL && TEST(MAP_FIXED, flags) && !image &&
++            executable_vm_area_overlap((app_pc)addr, (app_pc)addr + len,
++                                       false /*no lock*/)) {
++            LOG(THREAD, LOG_SYSCALLS, 2, "\tfixed mmap over code " PFX "-" PFX "\n", addr,
++                (app_pc)addr + len);
++            flush_fragments_and_remove_region(dcontext, (app_pc)addr, len,
++                                              false /* don't own initexit_lock */,
++                                              false /* keep futures */);
++            dcontext->sys_param4 = 1;
++        }
+         /* post_system_call does the work */
+         dcontext->sys_param0 = (reg_t)addr;
+         dcontext->sys_param1 = len;
+@@ -8951,6 +8969,15 @@ post_system_call(dcontext_t *dcontext)
+             prot = (uint)dcontext->sys_param2;
+             flags = (uint)dcontext->sys_param3;
+             DEBUG_DECLARE(map_type = IF_X64_ELSE("mmap2", "mmap");)
++            if (dcontext->sys_param4 != 0 &&
++                executable_vm_area_overlap(base, base + size, false /*no lock*/)) {
++                /* See pre_system_call(): another thread ran the old code between
++                 * our flush and the system call, and built fragments from it.
++                 */
++                flush_fragments_and_remove_region(dcontext, base, size,
++                                                  false /* don't own initexit_lock */,
++                                                  false /* keep futures */);
++            }
+ #if defined(LINUX) && !defined(X64) && !defined(ARM)
+         }
+ #endif
+--- a/core/unix/os_exports.h
++++ b/core/unix/os_exports.h
+@@ -481,6 +481,8 @@ typedef struct _kernel_sigset_t {
+ 
+ void
+ receive_pending_signal(dcontext_t *dcontext);
++void
++signal_forget_flushed_fragment(dcontext_t *dcontext);
+ bool
+ is_signal_restorer_code(byte *pc, size_t *len);
+ bool
+--- a/core/unix/signal.c
++++ b/core/unix/signal.c
+@@ -4559,8 +4559,14 @@ unlink_fragment_for_signal(dcontext_t *dcontext, fragment_t *f,
+      */
+     bool changed = false;
+     bool waslinking = is_couldbelinking(dcontext);
++    /* The thread resumes f without passing d_r_dispatch, so we must not go through
++     * enter_couldbelinking() and enter_nolinking() here: they act on the thread's
++     * flush queue, which can delete f, or release the thread's reference to f if f
++     * is a shared fragment that is pending deletion, and the thread would then
++     * resume freed code.
++     */
+     if (!waslinking)
+-        enter_couldbelinking(dcontext, NULL, false);
++        acquire_linking_lock_in_fragment(dcontext);
+     /* may not be linked if trace_relink or something */
+     if (TEST(FRAG_COARSE_GRAIN, f->flags)) {
+         /* XXX PR 213040: we don't support unlinking coarse, so we try
+@@ -4599,13 +4605,31 @@ unlink_fragment_for_signal(dcontext_t *dcontext, fragment_t *f,
+             changed = true;
+     }
+     if (!waslinking)
+-        enter_nolinking(dcontext, NULL, false);
++        release_linking_lock_in_fragment(dcontext);
+     return changed;
+ }
+ 
++/* A fragment that we unlinked for a signal can be flushed before we re-link it.
++ * It is not entered again, so there is nothing to restore, and it can be freed
++ * once this thread acts on its flush queue: the thread drops its pointer first.
++ */
++void
++signal_forget_flushed_fragment(dcontext_t *dcontext)
++{
++    thread_sig_info_t *info = (thread_sig_info_t *)dcontext->signal_field;
++    if (info != NULL && info->interrupted != NULL &&
++        TEST(FRAG_WAS_DELETED, info->interrupted->flags)) {
++        LOG(THREAD, LOG_ASYNCH, 3, "\tinterrupted F%d was flushed: not re-linking\n",
++            info->interrupted->id);
++        info->interrupted = NULL;
++        info->interrupted_pc = NULL;
++    }
++}
++
+ static void
+ relink_interrupted_fragment(dcontext_t *dcontext, thread_sig_info_t *info)
+ {
++    signal_forget_flushed_fragment(dcontext);
+     if (info->interrupted == NULL)
+         return;
+     /* i#2066: if we were building a trace, it may already be re-linked */
+@@ -5397,7 +5421,21 @@ record_pending_signal(dcontext_t *dcontext, int sig, kernel_ucontext_t *ucxt,
+         /* Happened in DR, do not translate context.  Record for later processing
+          * at a safe point with a clean app state.
+          */
+-        if (!blocked || sig >= OFFS_RT || (blocked && info->sigpending[sig] == NULL)) {
++        /* Queueing a signal when the pending-signal heap's first unit is full
++         * allocates a new unit, which is unsafe here: it acquires locks that the
++         * code we interrupted may hold.  When only one block is left we do not
++         * queue a standard signal that is already pending, which the kernel does
++         * not queue again either, and keep the block for a signal that is not.
++         */
++        bool keep_last_block =
++            sig < OFFS_RT && info->sigpending[sig] != NULL &&
++            info->num_pending + 1 >= (int)DYNAMO_OPTION(max_pending_signals);
++        if (keep_last_block) {
++            STATS_INC(num_signals_dropped);
++            SYSLOG_INTERNAL_WARNING_ONCE("dropping already-pending standard signal");
++        }
++        if (!keep_last_block &&
++            (!blocked || sig >= OFFS_RT || (blocked && info->sigpending[sig] == NULL))) {
+             /* only have 1 pending for blocked non-rt signals */
+ 
+             /* to avoid accumulating signals if we're slow in presence of
+--- a/core/vmareas.c
++++ b/core/vmareas.c
+@@ -1032,7 +1032,12 @@ add_vm_area(vm_area_vector_t *v, app_pc start, app_pc end, uint vm_flags, uint f
+ #endif
+             /* disallow any other vm_flag differences */
+             DODEBUG({
+-                flagignore = VM_UNMOD_IMAGE | VM_WAS_FUTURE | VM_ONCE_ONLY | VM_WRITABLE;
++                /* A thread can execute from a mapping before the thread that made
++                 * it has added it here, so that the area being added is already
++                 * there and marked as executed from.
++                 */
++                flagignore = VM_UNMOD_IMAGE | VM_WAS_FUTURE | VM_ONCE_ONLY | VM_WRITABLE |
++                    VM_EXECUTED_FROM;
+             });
+ #ifdef PROGRAM_SHEPHERDING
+             DODEBUG({ flagignore = flagignore | VM_PATTERN_REVERIFY; });
