@@ -378,10 +378,10 @@ diff --git a/core/arch/clean_call_opt_shared.c b/core/arch/clean_call_opt_shared
          /* 4. this callee is not seen before */
 --- a/core/globals.h
 +++ b/core/globals.h
-@@ -822,6 +822,10 @@ struct _dcontext_t {
-      * that interrupts the callee unlinks that fragment to bound its delivery.
+@@ -817,6 +817,10 @@ struct _dcontext_t {
+      * as that.
       */
-     cache_pc clean_call_cache_pc;
+     sbyte signals_pending; /* != 0: pending; < 0: currently handling one */
 +    /* Where client code entered from the cache without a clean call keeps the
 +     * tag of the block it returns to (dr_durante_set_return_tag()), or NULL.
 +     */
@@ -442,46 +442,57 @@ diff --git a/core/arch/clean_call_opt_shared.c b/core/arch/clean_call_opt_shared
                                  app_pc target_pc)
 --- a/core/unix/signal.c
 +++ b/core/unix/signal.c
-@@ -4922,22 +4922,34 @@ static void
+@@ -4942,28 +4942,37 @@ static void
  unlink_fragment_of_clean_call(dcontext_t *dcontext, thread_sig_info_t *info, byte *pc,
                                byte *xsp)
  {
--    cache_pc call_pc = dcontext->clean_call_cache_pc;
+-    cache_pc call_pc;
 +    cache_pc call_pc = NULL;
      fragment_t wrapper;
-     fragment_t *f;
+-    fragment_t *f;
 -    /* Only a clean callee runs on the dstack while control is still in the cache.
 -     * DR code may hold the locks the lookup and unlinking need, and so may a thread
++    fragment_t *f = NULL;
 +    /* DR code may hold the locks the lookup and unlinking need, and so may a thread
       * that is linking: their signals keep waiting for d_r_dispatch.
       */
      if ((dcontext->whereami != DR_WHERE_FCACHE &&
           dcontext->whereami != DR_WHERE_CLEAN_CALLEE) ||
--        call_pc == NULL || info->interrupted != NULL || !is_on_dstack(dcontext, xsp) ||
+-        info->interrupted != NULL || !is_on_dstack(dcontext, xsp) ||
 -        is_in_dynamo_dll(pc) || is_couldbelinking(dcontext))
+-        return;
+-    /* An inline context switch leaves a stale value or zero here: only take the
+-     * return address of a call to the save routine.
+-     */
+-    call_pc = get_priv_mcontext_from_dstack(dcontext)->pc;
+-    if (!is_clean_call_save_return(dcontext, call_pc))
 +        info->interrupted != NULL || is_in_dynamo_dll(pc) || is_couldbelinking(dcontext))
          return;
 -    /* PR 213040: we can't unlink coarse. */
--    if (!in_fcache(call_pc) || get_fcache_coarse_info(call_pc) != NULL)
-+    /* Only a clean callee runs on the dstack while control is still in the cache.
-+     * Other client code entered from the cache names the block it returns to
-+     * through dr_durante_set_return_tag().
-+     */
+-    if (get_fcache_coarse_info(call_pc) != NULL)
+-        return;
+-    f = fragment_pclookup(dcontext, call_pc, &wrapper);
 +    if (is_on_dstack(dcontext, xsp)) {
-+        call_pc = dcontext->clean_call_cache_pc;
++        /* Only a clean callee runs on the dstack while control is still in the
++         * cache.  An inline context switch leaves a stale value or zero here: only
++         * take the return address of a call to the save routine.
++         */
++        call_pc = get_priv_mcontext_from_dstack(dcontext)->pc;
++        if (!is_clean_call_save_return(dcontext, call_pc))
++            return;
 +        /* PR 213040: we can't unlink coarse. */
-+        if (call_pc == NULL || !in_fcache(call_pc) ||
-+            get_fcache_coarse_info(call_pc) != NULL)
++        if (get_fcache_coarse_info(call_pc) != NULL)
 +            return;
 +        f = fragment_pclookup(dcontext, call_pc, &wrapper);
 +    } else if (dcontext->client_return_tag != NULL &&
 +               *dcontext->client_return_tag != NULL) {
++        /* Other client code entered from the cache names the block it returns to
++         * through dr_durante_set_return_tag().
++         */
 +        f = fragment_lookup(dcontext, *dcontext->client_return_tag);
 +        if (f != NULL)
 +            call_pc = FCACHE_ENTRY_PC(f);
-+    } else
-         return;
--    f = fragment_pclookup(dcontext, call_pc, &wrapper);
++    }
      if (f == NULL || TESTANY(FRAG_COARSE_GRAIN, f->flags))
          return;
      LOG(THREAD, LOG_ASYNCH, 2, "\tsignal in clean callee: delaying until exit F%d\n",
