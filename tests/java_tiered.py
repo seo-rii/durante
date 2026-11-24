@@ -11,7 +11,7 @@ import sys
 import time
 
 from concurrent_spawn import bounded_number, cleanup_orphans, own_subreaper
-from runtime_compat import (InputProvenance, bounded_bytes, bounded_json,
+from runtime_compat import (MAX_REPORT, InputProvenance, bounded_bytes, bounded_json,
                             executable_path, file_identity, run_process)
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -134,7 +134,9 @@ def check_production_runtime(args, provenance):
     runtime = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(runtime)
     manifest = bounded_json(args.sdk / runtime.MANIFEST)
-    expected = runtime._inputs(bounded_bytes(runtime.PATCH), bounded_bytes(runtime.REPLAY_PATCH))
+    # The patches outgrow the bound for captured output; use the report bound.
+    expected = runtime._inputs(bounded_bytes(runtime.PATCH, MAX_REPORT),
+                               bounded_bytes(runtime.REPLAY_PATCH, MAX_REPORT))
     core_hash = provenance.files["binary:core"]["before"]["sha256"]
     if (manifest.get("schema") != 1 or manifest.get("inputs") != expected
             or manifest.get("artifacts", {}).get("lib64/release/libdynamorio.so") != core_hash):
