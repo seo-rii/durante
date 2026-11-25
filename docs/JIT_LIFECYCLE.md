@@ -95,15 +95,22 @@ The suite found five faults in the runtime, which the prepared runtime fixes:
   link in about 1 of 20 `inplace` runs when the host was busy; with the window
   widened by a delay, 6 of 40 runs failed, and 0 of 40 with the fix. The thread
   now holds its linking lock while it deletes.
+- **A protection change that has not finished.** The `wx` mode keeps the pages
+  RX and makes them RWX only around each patch, as a JIT that keeps its code
+  W^X does. The runtime updates its view of the code before the `mprotect` call.
+  A thread that built a block from the page in between read the old, read-only
+  protection, so the runtime took the code for read-only: it neither kept the
+  page write-protected nor checked the block's code on entry. The JIT's next
+  write then went unnoticed and the old code kept running: under load the
+  release core returned one stale call in 3 of 8 runs. The runtime now records the change from before the system call
+  until after it, and checks the code of blocks built from the page meanwhile.
+  The debug core also stopped on a list check in 6 of 10 cases. That check
+  failed on blocks that one flush had moved onto an area which a second flush
+  then reached; the runtime now skips it for an area already being freed.
 
 With the prepared runtime the five modes pass 40 of 40 cases in two repeats.
 With four busy threads on the same machine, every mode passes 8 of 8 engine runs
 with each core.
-
-A sixth mode, `wx`, keeps the pages RX and makes them RWX only around each
-patch. It is not in the default set, because the runtime still fails it: the
-debug core stops on a consistency check in 6 of 10 cases, and under load the
-release core returned one stale call in 3 of 8 runs. `--mode wx` reproduces it.
 
 ## Replay matrix
 

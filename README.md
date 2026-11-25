@@ -295,7 +295,10 @@ running in its old form: the original runtime could check such code against a
 copy taken after the patch, so a block built before the patch passed its check.
 A page of code that a JIT replaces by mapping a new page at the same address no
 longer keeps running its old code, and a signal that arrives in generated code
-while another thread patches it no longer crashes the runtime
+while another thread patches it no longer crashes the runtime. Code that a JIT
+makes writable only around each patch no longer keeps running in its old form:
+a block built while the protection change was still pending was taken for
+read-only code
 ([stress modes](docs/JIT_LIFECYCLE.md#code-that-keeps-changing-under-load)).
 Updating this patch requires rebuilding the prepared SDK, client and CLI together;
 `isolate` checks the reviewed patch digest.

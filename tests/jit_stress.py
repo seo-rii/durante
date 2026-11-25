@@ -18,10 +18,7 @@ For each mode the harness runs a native control, then in each round the engine
 alone and the supervisor with the client, each with the release and debug
 cores. The engine runs without traces, as the supervisor runs it. Every case
 must complete its rounds with no stale call and no failed child, and a mode's
-own activity (threads, signals, forks) must have happened.
-
-wx is not in the default set: the runtime still returns stale results in it
-(see docs/JIT_LIFECYCLE.md). Select it with --mode to reproduce that.
+own activity (threads, signals, forks) must have happened. --mode selects modes.
 """
 import argparse
 import hashlib
@@ -37,8 +34,7 @@ from clone_clear_sighand import run_bounded
 ENGINE_OPTIONS = ("-disable_traces",)
 CORES = ("release", "debug")
 ACTIVITY = {"churn": "threads_created", "signal": "signals", "fork": "forks"}
-DEFAULT_MODES = ("inplace", "remap", "churn", "signal", "fork")
-MODES = (*DEFAULT_MODES, "wx")
+MODES = ("inplace", "remap", "churn", "signal", "fork", "wx")
 
 
 def guest_errors(row, mode, rounds):
@@ -128,7 +124,7 @@ def main():
     parser.add_argument("--threads", type=bounded_number(1, 16), default=2)
     parser.add_argument("--timeout-ms", type=bounded_number(1000, 300000), default=120000)
     args = parser.parse_args()
-    modes = tuple(dict.fromkeys(args.modes or DEFAULT_MODES))
+    modes = tuple(dict.fromkeys(args.modes or MODES))
     args.sdk, args.client, args.runner_bin = [p.resolve() for p in (args.sdk, args.client, args.runner_bin)]
     args.output_dir.mkdir(parents=True, exist_ok=True)
     work = Path(tempfile.mkdtemp(prefix="cases-", dir=args.output_dir.resolve()))
