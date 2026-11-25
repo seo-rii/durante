@@ -74,8 +74,9 @@ static void durante_cpuid_emulate(int is_xgetbv) {
     durante_cpuid_invalid(ctx);
 }
 
-/* Register with drmgr_register_bb_app2app_event(). Translation (state
- * recreation) passes produce the same list. */
+/* Run before the block's analysis and instrumentation, as a drmgr app2app
+ * event would be. Translation (state recreation) passes produce the same
+ * list. */
 static dr_emit_flags_t durante_cpuid_app2app(void *drcontext, void *tag,
                                              instrlist_t *bb, bool for_trace,
                                              bool translating) {
