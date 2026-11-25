@@ -40,6 +40,8 @@ deleted: the thread is not at a linking point then, and a flusher could be
 unlinking the same fragment and allocating from the thread's heap.
 Flush the fragments of code that a fixed mmap replaces: such a mapping was
 treated as a protection change, so the old code kept running.
+Reserve 6 pages for the runtime's generated code: with -coarse_units on a host
+with AVX-512 it no longer fits in 5.
 
 --- a/core/dynamo.c
 +++ b/core/dynamo.c
@@ -2039,3 +2041,17 @@ index efc1bbb1cd..ad839efb02 100644
              });
  #ifdef PROGRAM_SHEPHERDING
              DODEBUG({ flagignore = flagignore | VM_PATTERN_REVERIFY; });
+--- a/core/arch/arch.c
++++ b/core/arch/arch.c
+@@ -266,9 +266,9 @@ move_to_start_of_cache_line(dr_isa_mode_t isa_mode, byte *pc)
+ /* The real size of generated code we need varies by cache line size and
+  * options like inlining of ibl code.  We also generate different routines
+  * for thread-private and thread-shared.  So, we dynamically extend the size
+- * as we generate.  Currently our max is under 5 pages.
++ * as we generate.  Currently our max is under 6 pages.
+  */
+-#define GENCODE_RESERVE_SIZE (5 * PAGE_SIZE)
++#define GENCODE_RESERVE_SIZE (6 * PAGE_SIZE)
+ 
+ #define GENCODE_COMMIT_SIZE \
+     ((size_t)(ALIGN_FORWARD(sizeof(generated_code_t), PAGE_SIZE) + PAGE_SIZE))
