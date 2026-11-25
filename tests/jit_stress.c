@@ -21,6 +21,7 @@
 #define _GNU_SOURCE
 #include <errno.h>
 #include <pthread.h>
+#include <sched.h>
 #include <signal.h>
 #include <stdatomic.h>
 #include <stdint.h>
@@ -47,6 +48,8 @@ static size_t offsets[FUNCTIONS];
 static atomic_int versions[FUNCTIONS];
 static atomic_int stop;
 static atomic_long calls, stale, signals, threads_created, forks, bad_children;
+/* Callers of run_calls() that have made a call: the changes start only then. */
+static atomic_int ready;
 static int memfd = -1;
 
 static int expected(int version) { return (version / 2) % 100; }
@@ -70,8 +73,15 @@ static int checked_call(int index, int argument, long *bad) {
 
 static void run_calls(long limit) {
   long n = 0, bad = 0;
-  for (int index = 0; limit < 0 ? !atomic_load(&stop) : n < limit; index = (index + 1) % FUNCTIONS)
+  int counted = 0;
+  for (int index = 0; limit < 0 ? !atomic_load(&stop) : n < limit;
+       index = (index + 1) % FUNCTIONS) {
     n += checked_call(index, (int)(n & 0xff), &bad);
+    if (!counted && n > 0) {
+      atomic_fetch_add(&ready, 1);
+      counted = 1;
+    }
+  }
   atomic_fetch_add(&calls, n);
   atomic_fetch_add(&stale, bad);
 }
@@ -241,6 +251,12 @@ int main(int argc, char **argv) {
       return 2;
     have_extra = 1;
   }
+
+  /* Under the runtime a thread can take longer to start than all the rounds
+   * take: wait until the workers call the functions (in churn mode, the first
+   * short-lived worker). */
+  while (atomic_load(&ready) < (mode == CHURN ? 1 : threads))
+    sched_yield();
 
   int failed = 0;
   for (long round = 1; round <= rounds && !failed; ++round) {
