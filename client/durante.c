@@ -1940,11 +1940,9 @@ static bool select_inline_block(void *ctx, instrlist_t *bb, bool translating,
 
 static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
                                         instrlist_t *bb, instr_t *where,
-                                        bool for_trace, bool translating,
+                                        bool first_in_block, bool translating,
                                         void *user_data) {
   (void)tag;
-  (void)for_trace;
-  bool first_in_block = drmgr_is_first_instr(drcontext, where);
   dr_emit_flags_t flags = DR_EMIT_DEFAULT;
 #ifdef DURANTE_TEST_COUNT_LOCATIONS
   (void)translating;
@@ -2070,6 +2068,39 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
                               OPND_CREATE_INT32(0),
                               OPND_CREATE_INT32(DR_REG_NULL));
     }
+  }
+  return flags;
+}
+
+/* drmgr.h hides DR's basic-block event so that drmgr can order the phases of
+ * several users.  This client is drmgr's only basic-block user: it links no
+ * other extension.  One DR event therefore runs drmgr's phases in drmgr's
+ * order: the CPUID rewrite (app2app), then the analysis of the rewritten
+ * block, then the insertion at each instruction, with the auto-predication
+ * drmgr applies, and the first instruction taken when insertion starts.  This
+ * avoids drmgr's per-block work: copying its callback lists under a lock,
+ * allocating the analysis result, and calling through it per phase and
+ * instruction.  drmgr's final pass marks application branches to instruction
+ * targets as meta; the client inserts no such branch, so it is not needed.
+ * Every other event stays with drmgr. */
+#undef dr_register_bb_event
+#undef dr_unregister_bb_event
+static bool cpuid_rewrite;
+
+static dr_emit_flags_t durante_bb_event(void *drcontext, void *tag, instrlist_t *bb,
+                                        bool for_trace, bool translating) {
+  dr_emit_flags_t flags = DR_EMIT_DEFAULT;
+  if (cpuid_rewrite)
+    flags |= durante_cpuid_app2app(drcontext, tag, bb, for_trace, translating);
+  void *user_data = NULL;
+  flags |= analyze_block(drcontext, tag, bb, for_trace, translating, &user_data);
+  instr_t *first = instrlist_first(bb), *next;
+  for (instr_t *where = first; where != NULL; where = next) {
+    next = instr_get_next(where);
+    instrlist_set_auto_predicate(bb, instr_get_predicate(where));
+    flags |= instrument_block(drcontext, tag, bb, where, where == first, translating,
+                              user_data);
+    instrlist_set_auto_predicate(bb, DR_PRED_NONE);
   }
   return flags;
 }
@@ -2306,9 +2337,7 @@ static void process_exit(void) {
   profile_dump();
   drmgr_unregister_module_unload_event(profile_module_unload);
 #endif
-  drmgr_unregister_bb_instrumentation_event(analyze_block);
-  if (durante_cpuid_active != DURANTE_CPUID_NONE)
-    drmgr_unregister_bb_app2app_event(durante_cpuid_app2app);
+  dr_unregister_bb_event(durante_bb_event);
   drmgr_unregister_thread_init_event(thread_init);
   drmgr_unregister_thread_exit_event(thread_exit);
   drmgr_unregister_pre_syscall_event(pre_syscall);
@@ -2447,19 +2476,17 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
                     dr_raw_tls_calloc(&raw_tls_register, &raw_tls_offset, RAW_TLS_SLOTS, 0);
   flat_inline = flat_candidate && raw_tls_enabled;
   tls_index = drmgr_register_tls_field();
+  cpuid_rewrite = cpuid_profile != DURANTE_CPUID_NONE;
   if (!state_lock || tls_index < 0 ||
-      (cpuid_profile != DURANTE_CPUID_NONE &&
-       !drmgr_register_bb_app2app_event(durante_cpuid_app2app, NULL)) ||
       !drmgr_register_thread_init_event(thread_init) ||
       !drmgr_register_thread_exit_event(thread_exit) ||
-      !drmgr_register_bb_instrumentation_event(analyze_block, instrument_block,
-                                               NULL) ||
       !drmgr_register_pre_syscall_event(pre_syscall) ||
       !drmgr_register_post_syscall_event(post_syscall) ||
       !drmgr_register_signal_event(signal_event) ||
       !drmgr_register_kernel_xfer_event(kernel_xfer) ||
       (raw_tls_enabled && !drmgr_register_restore_state_ex_event(restore_state)))
     fail("event registration failed");
+  dr_register_bb_event(durante_bb_event);
   dr_register_durante_code_replay_event(code_replay);
   open_stream("initial", 0, "");
   dr_register_filter_syscall_event(filter_syscall);
