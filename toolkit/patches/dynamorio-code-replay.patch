@@ -8,6 +8,9 @@ code-cache scratch values.  Generic restore-state queries remain informational.
 Client code entered from the cache without a clean call can name the block it
 returns to, so a signal there is delivered as promptly as in a clean callee.
 
+Leave a clean callee's signal alone while DR flushes for it: the flush
+completion callback and fragment deletion events run with DR's locks held.
+
 --- a/core/arch/x86/mangle.c
 +++ b/core/arch/x86/mangle.c
 @@ -3111,9 +3111,35 @@
@@ -496,3 +499,19 @@ diff --git a/core/arch/clean_call_opt_shared.c b/core/arch/clean_call_opt_shared
      if (f == NULL || TESTANY(FRAG_COARSE_GRAIN, f->flags))
          return;
      LOG(THREAD, LOG_ASYNCH, 2, "\tsignal in clean callee: delaying until exit F%d\n",
+--- a/core/unix/signal.c
++++ b/core/unix/signal.c
+@@ -4974,7 +4997,12 @@ unlink_fragment_of_clean_call(dcontext_t *dcontext, thread_sig_info_t *info, byt
+      */
+     if ((dcontext->whereami != DR_WHERE_FCACHE &&
+          dcontext->whereami != DR_WHERE_CLEAN_CALLEE) ||
+-        info->interrupted != NULL || is_in_dynamo_dll(pc) || is_couldbelinking(dcontext))
++        info->interrupted != NULL || is_in_dynamo_dll(pc) || is_couldbelinking(dcontext) ||
++        /* A callee that asked DR to flush is called back with DR's locks held:
++         * the flush completion callback and fragment deletion events.
++         */
++        is_self_flushing() || is_self_allsynch_flushing() ||
++        self_owns_recursive_lock(&change_linking_lock))
+         return;
+     if (is_on_dstack(dcontext, xsp)) {
+         /* Only a clean callee runs on the dstack while control is still in the
