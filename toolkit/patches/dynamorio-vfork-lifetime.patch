@@ -11,6 +11,47 @@ Upstream PR: https://github.com/DynamoRIO/dynamorio/pull/7321
 Backport thread synchronization signal-stack correction from upstream commit
 985af57d7c3d73e7a1100d98e412584968588258.
 Upstream PR: https://github.com/DynamoRIO/dynamorio/pull/7749
+Bound delivery of a signal that interrupts a clean callee: the out-of-line clean
+call save records the clean call's code cache address, and the signal handler
+unlinks that fragment.
+Translate a fault in a flushed fragment from the fragment as it was built: a
+write to its region can make the region self-modifying, and rebuilding against
+that sandboxes the block, so the translation failed and the fault was delivered
+with a zero pc (JVM safepoint polls, BUG-006).
+Clear the stale area pointer when the executable-area lookup repeated after the
+lock upgrade fails: an area that was never executed from is removed without the
+flush synch, and the stale pointer crashed the runtime when one thread changed
+the protection of code that others were about to execute.
+Decode a sandboxed block from a snapshot of its code, encode it from that
+snapshot, and store the snapshot as the copy its entry check compares with: a
+copy taken from the app code after decoding could already hold a newer patch,
+so a block of a JIT page patched in place kept running the old code.
+Set the protection of the runtime's generated code without querying it first:
+every flush changed it four times, and each query read /proc/self/maps.
+Keep the fragment that a signal unlinks: the handler took the flush-synch
+entry points, which free the thread's flushed fragments while the thread is
+still inside one, and the pointer kept for re-linking outlived a flush that
+freed the fragment.
+Do not queue a standard signal that is already pending into the last block of
+the pending-signal heap: growing that heap in the signal handler acquires locks
+that the interrupted runtime code may hold.
+Hold the thread's linking lock while a sandboxed block that wrote to itself is
+deleted: the thread is not at a linking point then, and a flusher could be
+unlinking the same fragment and allocating from the thread's heap.
+Flush the fragments of code that a fixed mmap replaces: such a mapping was
+treated as a protection change, so the old code kept running.
+Reserve 6 pages for the runtime's generated code: with -coarse_units on a host
+with AVX-512 it no longer fits in 5.
+Sandbox code while another thread changes its protection to writable: a block
+built from it before the system call took the page for read-only, so writes of a
+JIT that keeps its code W^X went unnoticed and the old code kept running.
+Fixes from a review of these changes: recreate a flushed trace without its
+regions also with a client; keep clearing signals_pending after a delivery;
+report no pc for part of a clean call's context; forget the interrupted
+fragment when the thread deletes it; raise the self-write deletion event after
+releasing the linking lock; keep reclaiming execve'd non-vfork clone children
+(i#1010); drop a pending signal only when the heap is full, without returning
+-EINTR.
 
 --- a/core/dynamo.c
 +++ b/core/dynamo.c
@@ -1182,3 +1223,1547 @@ index efc1bbb1cd..ad839efb02 100644
  void
  signal_prepare_clone_child(void *clone_record);
  void
+--- a/core/arch/emit_utils_shared.c
++++ b/core/arch/emit_utils_shared.c
+@@ -5844,6 +5844,22 @@ emit_clean_call_save(dcontext_t *dcontext, byte *pc, generated_code_t *code)
+     /* save all registers */
+     insert_push_all_registers(dcontext, NULL, &ilist, NULL, (uint)PAGE_SIZE,
+                               OPND_CREATE_INT32(0), REG_NULL);
++#    ifdef UNIX
++    /* Our return address, below the context we just saved, is the clean call's
++     * address in the code cache.  Copy it to the context's pc slot, which is
++     * otherwise unused, for a signal that interrupts the callee (see
++     * record_pending_signal()).  Neither instruction changes a register or the
++     * flags, and the arguments the caller sets up next may read any register.
++     */
++    APP(&ilist,
++        INSTR_CREATE_push(dcontext,
++                          OPND_CREATE_MEMPTR(DR_REG_XSP,
++                                             -(int)(get_clean_call_temp_stack_size() +
++                                                    XSP_SZ /* return addr */))));
++    APP(&ilist,
++        INSTR_CREATE_pop(dcontext,
++                         OPND_CREATE_MEMPTR(DR_REG_XSP, offsetof(priv_mcontext_t, pc))));
++#    endif
+ #elif defined(AARCH64)
+     /* save all registers */
+     insert_push_all_registers(dcontext, NULL, &ilist, NULL, (uint)PAGE_SIZE,
+@@ -5938,6 +5954,13 @@ emit_clean_call_restore(dcontext_t *dcontext, byte *pc, generated_code_t *code)
+         INSTR_CREATE_lea(
+             dcontext, opnd_create_reg(DR_REG_XSP),
+             opnd_create_base_disp(DR_REG_XSP, DR_REG_NULL, 0, (int)XSP_SZ, OPSZ_lea)));
++#    ifdef UNIX
++    /* The callee has returned: clear the address emit_clean_call_save() recorded. */
++    APP(&ilist,
++        XINST_CREATE_store(dcontext,
++                           OPND_CREATE_MEMPTR(DR_REG_XSP, offsetof(priv_mcontext_t, pc)),
++                           OPND_CREATE_INT32(0)));
++#    endif
+     /* restore all registers */
+     insert_pop_all_registers(dcontext, NULL, &ilist, NULL, (uint)PAGE_SIZE);
+     /* return back */
+--- a/core/lib/instrument.c
++++ b/core/lib/instrument.c
+@@ -6565,7 +6565,13 @@ dr_get_mcontext_priv(dcontext_t *dcontext, dr_mcontext_t *dmc, priv_mcontext_t *
+     /* XXX: should we set the pc field?
+      * If we do we'll have to adopt a different solution for i#1685 in our Windows
+      * hooks where today we use the pc slot for temp storage.
++     * The out-of-line clean call save records a code cache address there for the
++     * signal handler: do not report it.
+      */
++    if (mc != NULL)
++        mc->pc = NULL;
++    else if (TESTALL(DR_MC_ALL, dmc->flags) && dmc->size == sizeof(dr_mcontext_t))
++        dmc->pc = NULL;
+ 
+     return true;
+ }
+--- a/core/unix/signal.c
++++ b/core/unix/signal.c
+@@ -4912,6 +4912,68 @@ find_next_fragment_from_gencode(dcontext_t *dcontext, sigcontext_t *sc)
+     return f;
+ }
+ 
++/* Returns whether pc follows a direct call to the out-of-line clean call save
++ * routine, which is how emit_clean_call_save() records the clean call's address.
++ */
++static bool
++is_clean_call_save_return(dcontext_t *dcontext, cache_pc pc)
++{
++#ifdef X86
++    byte call[5];
++    if (pc == NULL || !in_fcache(pc) ||
++        !d_r_safe_read(pc - sizeof(call), sizeof(call), call))
++        return false;
++    return call[0] == RAW_OPCODE_call &&
++        pc + *(int *)&call[1] == get_clean_call_save(dcontext _IF_X64(GENCODE_X64));
++#else
++    return false;
++#endif
++}
++
++/* A signal that interrupts a clean callee, or code the callee calls, waits for
++ * the thread's next exit from the code cache, and a loop of linked fragments may
++ * never take one.  The out-of-line clean call save recorded the clean call's code
++ * cache address in the pc slot of the context it saved: unlink that fragment, as
++ * for a signal that arrives in the cache, so the thread exits to d_r_dispatch at
++ * the fragment's next exit.  Inline context switches record nothing, so their
++ * callees keep the old behavior.
++ */
++static void
++unlink_fragment_of_clean_call(dcontext_t *dcontext, thread_sig_info_t *info, byte *pc,
++                              byte *xsp)
++{
++    cache_pc call_pc;
++    fragment_t wrapper;
++    fragment_t *f;
++    /* Only a clean callee runs on the dstack while control is still in the cache.
++     * DR code may hold the locks the lookup and unlinking need, and so may a thread
++     * that is linking: their signals keep waiting for d_r_dispatch.
++     */
++    if ((dcontext->whereami != DR_WHERE_FCACHE &&
++         dcontext->whereami != DR_WHERE_CLEAN_CALLEE) ||
++        info->interrupted != NULL || !is_on_dstack(dcontext, xsp) ||
++        is_in_dynamo_dll(pc) || is_couldbelinking(dcontext))
++        return;
++    /* An inline context switch leaves a stale value or zero here: only take the
++     * return address of a call to the save routine.
++     */
++    call_pc = get_priv_mcontext_from_dstack(dcontext)->pc;
++    if (!is_clean_call_save_return(dcontext, call_pc))
++        return;
++    /* PR 213040: we can't unlink coarse. */
++    if (get_fcache_coarse_info(call_pc) != NULL)
++        return;
++    f = fragment_pclookup(dcontext, call_pc, &wrapper);
++    if (f == NULL || TESTANY(FRAG_COARSE_GRAIN, f->flags))
++        return;
++    LOG(THREAD, LOG_ASYNCH, 2, "\tsignal in clean callee: delaying until exit F%d\n",
++        f->id);
++    if (unlink_fragment_for_signal(dcontext, f, call_pc)) {
++        info->interrupted = f;
++        info->interrupted_pc = call_pc;
++    }
++}
++
+ static void
+ record_pending_signal(dcontext_t *dcontext, int sig, kernel_ucontext_t *ucxt,
+                       sigframe_rt_t *frame, bool forged, byte *access_address)
+@@ -5214,6 +5276,7 @@ record_pending_signal(dcontext_t *dcontext, int sig, kernel_ucontext_t *ucxt,
+             abort_on_DR_fault(dcontext, pc, NULL, sig, frame,
+                               (sig == SIGSEGV) ? "SEGV" : "other", " unknown");
+         }
++        unlink_fragment_of_clean_call(dcontext, info, pc, xsp);
+     }
+ 
+     LOG(THREAD, LOG_ASYNCH, 3, "\taction is not SIG_IGN\n");
+--- a/core/arch/interp.c
++++ b/core/arch/interp.c
+@@ -5356,6 +5356,13 @@ recreate_fragment_ilist(dcontext_t *dcontext, byte *pc,
+         }
+     }
+ 
++    /* A write to the region of a flushed fragment can since have made the
++     * region self-modifying.  Rebuilding f against the region's current state
++     * would then sandbox it, and so also not share it: the result would not
++     * match the code f holds, and a fault in f could not be translated.  Rebuild
++     * f as it was built instead, without consulting its region again.
++     */
++    bool check_vm_area = !TESTANY(FRAG_WAS_DELETED, f->flags);
+     /* Recreate in same mode as original fragment */
+     DEBUG_DECLARE(bool ok =)
+     dr_set_isa_mode(dcontext, FRAG_ISA_MODE(f->flags), &old_mode);
+@@ -5365,7 +5372,7 @@ recreate_fragment_ilist(dcontext_t *dcontext, byte *pc,
+         /* easy case: just a bb */
+         ilist = recreate_bb_ilist(dcontext, (byte *)f->tag, (byte *)f->tag,
+                                   NULL /*default stop*/, 0 /*no pre flags*/, &flags, NULL,
+-                                  true /*check vm area*/, mangle, NULL, call_client,
++                                  check_vm_area, mangle, NULL, call_client,
+                                   false /*not for_trace*/);
+         ASSERT(ilist != NULL);
+         if (ilist == NULL) /* a race */
+@@ -5399,10 +5406,11 @@ recreate_fragment_ilist(dcontext_t *dcontext, byte *pc,
+         for (i = 0; i < t->num_bbs; i++) {
+             void *vmlist = NULL;
+             apc = (byte *)t->bbs[i].tag;
+-            bb = recreate_bb_ilist(
+-                dcontext, apc, apc, NULL /*default stop*/, 0 /*no pre flags*/, &flags,
+-                &md.final_exit_flags, true /*check vm area*/, !mangle_at_end,
+-                (mangle_at_end ? &vmlist : NULL), call_client, true /*for_trace*/);
++            bb = recreate_bb_ilist(dcontext, apc, apc, NULL /*default stop*/,
++                                   0 /*no pre flags*/, &flags, &md.final_exit_flags,
++                                   check_vm_area, !mangle_at_end,
++                                   (mangle_at_end && check_vm_area ? &vmlist : NULL),
++                                   call_client, true /*for_trace*/);
+             ASSERT(bb != NULL);
+             if (bb == NULL) {
+                 instrlist_clear_and_destroy(dcontext, ilist);
+--- a/core/vmareas.c
++++ b/core/vmareas.c
+@@ -7497,6 +7497,12 @@ check_thread_vm_area(dcontext_t *dcontext, app_pc pc, app_pc tag, void **vmlist,
+                 d_r_write_lock(&executable_areas->lock);
+                 own_execareas_writelock = true;
+                 ok = lookup_addr(executable_areas, pc, &area);
++                /* The area can have been removed while we did not hold the lock.
++                 * A failed lookup leaves our pointer from the first lookup in
++                 * place: clear it, as below we take a non-NULL area as found.
++                 */
++                if (!ok)
++                    area = NULL;
+             }
+             if (ok && TEST(VM_DELAY_READONLY, area->vm_flags))
+                 handle_delay_readonly(dcontext, pc, area);
+@@ -7519,6 +7525,14 @@ check_thread_vm_area(dcontext_t *dcontext, app_pc pc, app_pc tag, void **vmlist,
+             d_r_write_lock(&executable_areas->lock);
+             own_execareas_writelock = true;
+             ok = lookup_addr(executable_areas, pc, &area);
++            /* An area that was never executed from is removed without the flush
++             * synch (flush_fragments_in_region_start()), so it can be gone now
++             * even though we are couldbelinking.  A failed lookup leaves our
++             * pointer from the first lookup in place: clear it, as below we take
++             * a non-NULL area as found and would skip adding the region.
++             */
++            if (!ok)
++                area = NULL;
+         }
+         if (ok) {
+             if (vmlist != NULL && !TEST(VM_EXECUTED_FROM, area->vm_flags)) {
+--- a/core/arch/arch_exports.h
++++ b/core/arch/arch_exports.h
+@@ -1499,6 +1499,8 @@ recreate_fragment_ilist(dcontext_t *dcontext, byte *pc,
+ 
+ app_pc
+ find_app_bb_end(dcontext_t *dcontext, byte *start_pc, uint flags);
++const byte *
++bb_build_selfmod_snapshot(dcontext_t *dcontext, app_pc tag, size_t *size);
+ bool
+ app_bb_overlaps(dcontext_t *dcontext, byte *start_pc, uint flags, byte *region_start,
+                 byte *region_end, overlap_info_t *info_res);
+--- a/core/arch/interp.c
++++ b/core/arch/interp.c
+@@ -223,6 +223,20 @@ typedef struct {
+     instr_t *instr;                    /* the current instr */
+     int eflags;
+     app_pc pretend_pc; /* selfmod only: decode from separate pc */
++#ifdef X86
++    /* A sandboxed block that is built for the cache is decoded from a copy of its
++     * app code, starting at start_pc, which also becomes the copy that the
++     * block's entry check compares the app code with (see
++     * bb_decode_selfmod_snapshot()).  NULL if not used.
++     */
++    byte *selfmod_snapshot;
++    uint selfmod_snapshot_capacity; /* bytes of app code selfmod_snapshot can hold */
++    uint selfmod_snapshot_len;      /* bytes of app code read into selfmod_snapshot */
++    /* The snapshot could not be taken: the rest of the block was decoded from the
++     * app code, and the copy is read from the app code when the block is emitted.
++     */
++    bool selfmod_snapshot_failed;
++#endif
+ #ifdef ARM
+     dr_pred_type_t svc_pred; /* predicate for conditional svc */
+ #endif
+@@ -2700,6 +2714,203 @@ client_check_syscall(instrlist_t *ilist, instr_t *inst, bool *found_syscall,
+     return true;
+ }
+ 
++#ifdef X86
++/* The app code of a sandboxed block can change at any time, including between
++ * our decoding the block and our copying the code into the fragment for the
++ * block's entry check.  A copy taken after such a change matches the new code,
++ * so the check keeps passing while the block runs the old code.  We therefore
++ * decode a sandboxed block from a snapshot of its code, read before each
++ * instruction is decoded, and later store that snapshot as the copy (see
++ * bb_build_selfmod_snapshot()).  The check then compares the app code with
++ * exactly the code that the block was built from.  Encoding the block copies the
++ * raw bits of its instructions, so once the block is mangled we point them into
++ * the snapshot as well (see bb_encode_from_selfmod_snapshot()).
++ */
++
++/* Zeroes after the code read into the snapshot, so that decoding past it stays
++ * in our buffer: a zero byte is no prefix, and as a ModRM byte it ends the
++ * instruction.
++ */
++#    define SELFMOD_SNAPSHOT_SLACK (2 * MAX_INSTR_LENGTH)
++
++static void
++bb_start_selfmod_snapshot(build_bb_t *bb)
++{
++    /* The ilist clone kept for trace building would outlive the snapshot that its
++     * raw bits point into.
++     */
++    if (!bb->for_cache || bb->pretend_pc != NULL || bb->unmangled_ilist != NULL)
++        return;
++    if (bb->selfmod_snapshot == NULL) {
++        /* Room for as many instructions as a block normally has.  Beyond that, we
++         * decode from the app code (see bb_decode_selfmod_snapshot()).
++         */
++        bb->selfmod_snapshot_capacity =
++            (DYNAMO_OPTION(max_bb_instrs) + 1) * MAX_INSTR_LENGTH;
++        bb->selfmod_snapshot = (byte *)heap_alloc(
++            GLOBAL_DCONTEXT,
++            bb->selfmod_snapshot_capacity + SELFMOD_SNAPSHOT_SLACK HEAPACCT(ACCT_OTHER));
++    }
++    bb->selfmod_snapshot_len = 0;
++    bb->selfmod_snapshot_failed = false;
++}
++
++static void
++bb_free_selfmod_snapshot(build_bb_t *bb)
++{
++    if (bb->selfmod_snapshot == NULL)
++        return;
++    heap_free(GLOBAL_DCONTEXT, bb->selfmod_snapshot,
++              bb->selfmod_snapshot_capacity +
++                  SELFMOD_SNAPSHOT_SLACK HEAPACCT(ACCT_OTHER));
++    bb->selfmod_snapshot = NULL;
++}
++
++/* Reads the app code up to start_pc + len into the snapshot.  Returns whether all
++ * of it could be read.
++ */
++static bool
++bb_extend_selfmod_snapshot(build_bb_t *bb, uint len)
++{
++    bool ok = true;
++    ASSERT(len <= bb->selfmod_snapshot_capacity);
++    if (len > bb->selfmod_snapshot_len) {
++        size_t got = 0;
++        ok = safe_read_ex(bb->start_pc + bb->selfmod_snapshot_len,
++                          len - bb->selfmod_snapshot_len,
++                          bb->selfmod_snapshot + bb->selfmod_snapshot_len, &got);
++        bb->selfmod_snapshot_len += (uint)got;
++    }
++    memset(bb->selfmod_snapshot + bb->selfmod_snapshot_len, 0, SELFMOD_SNAPSHOT_SLACK);
++    return ok;
++}
++
++/* Decodes the instruction at bb->cur_pc from the snapshot, which is read first.
++ * Returns the pc after the instruction, or NULL, as decode() does.
++ */
++static byte *
++bb_decode_selfmod_snapshot(dcontext_t *dcontext, build_bb_t *bb)
++{
++    uint offs = (uint)(bb->cur_pc - bb->start_pc);
++    uint want = offs + MAX_INSTR_LENGTH;
++    /* We read ahead only on the page the instruction starts on: the next page can
++     * be unreadable without the instruction extending onto it.
++     */
++    uint on_page = (uint)((app_pc)PAGE_START(bb->cur_pc) + PAGE_SIZE - bb->cur_pc);
++    byte *copy_pc, *next;
++    ASSERT(!bb->selfmod_snapshot_failed && offs <= bb->selfmod_snapshot_len);
++    if (want > bb->selfmod_snapshot_capacity ||
++        !bb_extend_selfmod_snapshot(bb, offs + MIN(MAX_INSTR_LENGTH, on_page)))
++        goto decode_app_code;
++    copy_pc = bb->selfmod_snapshot + offs;
++    next = decode_from_copy(dcontext, copy_pc, bb->cur_pc, bb->instr);
++    if ((next == NULL || next > bb->selfmod_snapshot + bb->selfmod_snapshot_len) &&
++        bb->selfmod_snapshot_len < want) {
++        /* The instruction can continue on the next page. */
++        instr_reset(dcontext, bb->instr);
++        if (!bb_extend_selfmod_snapshot(bb, want))
++            goto decode_app_code;
++        next = decode_from_copy(dcontext, copy_pc, bb->cur_pc, bb->instr);
++    }
++    if (next != NULL && next > bb->selfmod_snapshot + bb->selfmod_snapshot_len) {
++        /* Longer than any valid instruction. */
++        instr_reset(dcontext, bb->instr);
++        goto decode_app_code;
++    }
++    if (next == NULL)
++        return NULL;
++    /* Leave the raw bits at the app pc, as decode() does: building and mangling the
++     * block take them for the instruction's app address.  This also drops the
++     * rip-relative position, so that pc-relative targets come from the operands,
++     * which are resolved against the app pc.  bb_encode_from_selfmod_snapshot()
++     * points the raw bits at the snapshot once the block is mangled.
++     */
++    instr_set_raw_bits(bb->instr, bb->cur_pc, (uint)(next - copy_pc));
++    return bb->cur_pc + (next - copy_pc);
++
++decode_app_code:
++    /* The code could not be read (the app unmapped it, or the instruction extends
++     * onto an unreadable page), or the block is unusually long.  We decode the rest
++     * of the block from the app code as without a snapshot, which also delivers a
++     * fault on it to the app, and emitting copies the app code.
++     */
++    bb->selfmod_snapshot_failed = true;
++    return decode(dcontext, bb->cur_pc, bb->instr);
++}
++
++/* Points the raw bits of the block's app instructions at the snapshot, so that
++ * encoding copies the code that we decoded rather than the app code as it is when
++ * the block is emitted.  An instruction with a pc-relative operand is encoded from
++ * its operands instead, as re-relativizing raw bits takes their address for the
++ * instruction's app pc.  Call once the block is mangled: mangling takes the raw
++ * bits for the app address.
++ */
++static void
++bb_encode_from_selfmod_snapshot(build_bb_t *bb)
++{
++    instr_t *in;
++    if (bb->selfmod_snapshot == NULL || bb->selfmod_snapshot_failed ||
++        !TESTANY(FRAG_SELFMOD_SANDBOXED, bb->flags))
++        return;
++    for (in = instrlist_first(bb->ilist); in != NULL; in = instr_get_next(in)) {
++        byte *bits = instr_get_raw_bits(in);
++        if (!instr_raw_bits_valid(in) || TESTANY(INSTR_RAW_BITS_ALLOCATED, in->flags) ||
++            bits < bb->start_pc || bits + in->length > bb->end_pc)
++            continue;
++        if (instr_operands_valid(in) && instr_get_rel_data_or_instr_target(in, NULL))
++            instr_set_raw_bits_valid(in, false);
++        else
++            in->bytes = bb->selfmod_snapshot + (bits - bb->start_pc);
++    }
++}
++#endif /* X86 */
++
++/* Returns the pc after the app instruction at pc, read from the snapshot if the
++ * block is decoded from one.
++ */
++static app_pc
++bb_decode_next_app_pc(dcontext_t *dcontext, build_bb_t *bb, app_pc pc)
++{
++#ifdef X86
++    if (bb->selfmod_snapshot != NULL && !bb->selfmod_snapshot_failed &&
++        pc >= bb->start_pc && pc < bb->start_pc + bb->selfmod_snapshot_len) {
++        byte *copy_pc = bb->selfmod_snapshot + (pc - bb->start_pc);
++        byte *next = decode_next_pc(dcontext, copy_pc);
++        if (next != NULL && next <= bb->selfmod_snapshot + bb->selfmod_snapshot_len)
++            return pc + (next - copy_pc);
++    }
++#endif
++    return decode_next_pc(dcontext, pc);
++}
++
++/* Returns the copy of its app code that the sandboxed block being built for tag
++ * was decoded from, and the copy's size in *size.  Returns NULL if the block was
++ * decoded from the app code itself.
++ */
++const byte *
++bb_build_selfmod_snapshot(dcontext_t *dcontext, app_pc tag, size_t *size)
++{
++#ifdef X86
++    build_bb_t *bb;
++    if (dcontext == GLOBAL_DCONTEXT || dcontext->bb_build_info == NULL)
++        return NULL;
++    bb = (build_bb_t *)dcontext->bb_build_info;
++    if (bb->start_pc != tag || bb->selfmod_snapshot == NULL ||
++        bb->selfmod_snapshot_failed || !TESTANY(FRAG_SELFMOD_SANDBOXED, bb->flags))
++        return NULL;
++    if (bb->end_pc <= bb->start_pc ||
++        bb->end_pc - bb->start_pc > bb->selfmod_snapshot_len) {
++        /* We decode every instruction of the block from the snapshot. */
++        ASSERT_NOT_REACHED();
++        return NULL;
++    }
++    *size = bb->end_pc - bb->start_pc;
++    return bb->selfmod_snapshot;
++#else
++    return NULL;
++#endif
++}
++
+ /* Pass bb to client, and afterward check for criteria we require and rescan for
+  * eflags and other flags that might have changed.
+  * Returns true normally; returns false to indicate "go native".
+@@ -3084,7 +3295,7 @@ client_process_bb(dcontext_t *dcontext, build_bb_t *bb)
+          * the length of the translation target
+          */
+         if (!adjusted_cur_pc) {
+-            bb->cur_pc = decode_next_pc(dcontext, xl8);
++            bb->cur_pc = bb_decode_next_app_pc(dcontext, bb, xl8);
+             LOG(THREAD, LOG_INTERP, 3, "setting cur_pc (for fall-through) to " PFX "\n",
+                 bb->cur_pc);
+         }
+@@ -3358,6 +3569,7 @@ build_bb_ilist(dcontext_t *dcontext, build_bb_t *bb)
+     if (TEST(FRAG_SELFMOD_SANDBOXED, bb->flags)) {
+         bb->full_decode = true;
+         bb->follow_direct = false;
++        IF_X86(bb_start_selfmod_snapshot(bb));
+     }
+     if (TEST(FRAG_HAS_TRANSLATION_INFO, bb->flags)) {
+         bb->full_decode = true;
+@@ -3395,8 +3607,14 @@ build_bb_ilist(dcontext_t *dcontext, build_bb_t *bb)
+             bb->instr_start = bb->cur_pc;
+             if (bb->full_decode) {
+                 /* only going through this do loop once! */
+-                bb->cur_pc = IF_AARCH64_ELSE(decode_with_ldstex,
+-                                             decode)(dcontext, bb->cur_pc, bb->instr);
++#ifdef X86
++                if (bb->selfmod_snapshot != NULL && !bb->selfmod_snapshot_failed &&
++                    TESTANY(FRAG_SELFMOD_SANDBOXED, bb->flags))
++                    bb->cur_pc = bb_decode_selfmod_snapshot(dcontext, bb);
++                else
++#endif
++                    bb->cur_pc = IF_AARCH64_ELSE(decode_with_ldstex,
++                                                 decode)(dcontext, bb->cur_pc, bb->instr);
+                 if (bb->record_translation)
+                     instr_set_translation(bb->instr, bb->instr_start);
+             } else {
+@@ -3458,6 +3676,7 @@ build_bb_ilist(dcontext_t *dcontext, build_bb_t *bb)
+                     ASSERT(is_first_instr);
+                     bb->full_decode = true;
+                     bb->follow_direct = false;
++                    IF_X86(bb_start_selfmod_snapshot(bb));
+                     bb->cur_pc = bb->instr_start;
+                     instr_reset(dcontext, bb->instr);
+                     continue;
+@@ -4404,6 +4623,7 @@ build_bb_ilist(dcontext_t *dcontext, build_bb_t *bb)
+         build_bb_ilist(dcontext, bb);
+         return;
+     }
++    IF_X86(bb_encode_from_selfmod_snapshot(bb));
+ }
+ 
+ /* Call when about to throw exception or other drastic action in the
+@@ -4431,6 +4651,7 @@ bb_build_abort(dcontext_t *dcontext, bool clean_vmarea, bool unlock)
+              */
+             check_thread_vm_area_abort(dcontext, &bb->vmlist, bb->flags);
+         } /* else we were presumably called from vmarea so caller does cleanup */
++        IF_X86(bb_free_selfmod_snapshot(bb));
+         if (unlock) {
+             /* Assumption: bb building lock is held iff bb->for_cache,
+              * and on a nested app bb build where !bb->for_cache we do keep the
+@@ -5092,6 +5313,8 @@ exit_interp_build_bb(dcontext_t *dcontext, build_bb_t *bb)
+ 
+     /* free the instrlist_t elements */
+     instrlist_clear_and_destroy(dcontext, bb->ilist);
++    /* After the instrs, whose raw bits can point into it. */
++    IF_X86(bb_free_selfmod_snapshot(bb));
+ }
+ 
+ /* Interprets the application's instructions until the end of a basic
+@@ -5139,6 +5362,7 @@ build_basic_block_fragment(dcontext_t *dcontext, app_pc start, uint initial_flag
+             LOG(THREAD, LOG_INTERP, 2, "replacing built bb with native_exec bb\n");
+             instrlist_clear_and_destroy(dcontext, bb.ilist);
+             vm_area_destroy_list(dcontext, bb.vmlist);
++            IF_X86(bb_free_selfmod_snapshot(&bb));
+             dcontext->bb_build_info = NULL;
+             init_interp_build_bb(dcontext, &bb, start, initial_flags, for_trace,
+                                  unmangled_ilist);
+--- a/core/emit.c
++++ b/core/emit.c
+@@ -386,6 +386,8 @@ emit_fragment_common(dcontext_t *dcontext, app_pc tag, instrlist_t *ilist, uint
+     uint len;
+     uint offset = 0;
+     uint copy_sz = 0;
++    /* The app code a sandboxed block was decoded from, if not the app code itself. */
++    const byte *selfmod_snapshot = NULL;
+     uint extra_jmp_padding_body = 0;
+     uint extra_jmp_padding_stubs = 0;
+     uint last_pad_offset = 0;
+@@ -554,7 +556,12 @@ emit_fragment_common(dcontext_t *dcontext, app_pc tag, instrlist_t *ilist, uint
+          * the original full range can only result in a false positive selfmod
+          * event, which is a performance issue only.
+          */
+-        end_bb_pc = find_app_bb_end(dcontext, tag, flags);
++        size_t snapshot_size;
++        selfmod_snapshot = bb_build_selfmod_snapshot(dcontext, tag, &snapshot_size);
++        if (selfmod_snapshot != NULL)
++            end_bb_pc = tag + snapshot_size;
++        else
++            end_bb_pc = find_app_bb_end(dcontext, tag, flags);
+         ASSERT(end_bb_pc > tag);
+         ASSERT_TRUNCATE(copy_sz, uint, (ptr_uint_t)(end_bb_pc - tag) + sizeof(uint));
+         copy_sz = (uint)(end_bb_pc - tag) + sizeof(uint);
+@@ -714,7 +721,8 @@ emit_fragment_common(dcontext_t *dcontext, app_pc tag, instrlist_t *ilist, uint
+                (PAD_FRAGMENT_JMPS(flags) &&
+                 !INTERNAL_OPTION(pad_jmps_return_excess_padding)));
+         /* size is stored at the end, but included in copy_sz */
+-        memcpy(vmcode_get_writable_addr(copy_pc), tag, copy_sz - sizeof(uint));
++        memcpy(vmcode_get_writable_addr(copy_pc),
++               selfmod_snapshot != NULL ? selfmod_snapshot : tag, copy_sz - sizeof(uint));
+         *((uint *)vmcode_get_writable_addr(copy_pc + copy_sz - sizeof(uint))) = copy_sz;
+         /* count copy as part of fragment */
+         pc = copy_pc + copy_sz;
+--- a/core/arch/arch.c
++++ b/core/arch/arch.c
+@@ -1525,8 +1525,21 @@ protect_generated_code(generated_code_t *code_in, bool writable)
+             code->writable = writable;
+         }
+         STATS_INC(gencode_prot_changes);
+-        change_protection(vmcode_get_writable_addr(genstart),
+-                          code->commit_end_pc - genstart, writable);
++#ifdef UNIX
++        /* We know the protection of our own generated code, so we do not use
++         * change_protection(): it first queries the current protection, which on
++         * Linux reads /proc/self/maps.  Each flush gets here four times, via
++         * unlink_special_ibl_xfer() and link_special_ibl_xfer().  With
++         * -satisfy_w_xor_x the change is to the separate writable view instead.
++         */
++        if (!DYNAMO_OPTION(satisfy_w_xor_x)) {
++            set_protection(genstart, code->commit_end_pc - genstart,
++                           MEMPROT_READ | MEMPROT_EXEC |
++                               (writable ? MEMPROT_WRITE : 0));
++        } else
++#endif
++            change_protection(vmcode_get_writable_addr(genstart),
++                              code->commit_end_pc - genstart, writable);
+         if (writable) {
+             ASSERT(!code->writable);
+             code->writable = writable;
+--- a/core/fragment.c
++++ b/core/fragment.c
+@@ -5234,25 +5234,32 @@ fragment_self_write(dcontext_t *dcontext)
+         dcontext->last_fragment->tag,
+         EXIT_CTI_PC(dcontext->last_fragment, dcontext->last_exit));
+     STATS_INC(num_self_writes);
++#ifdef PROGRAM_SHEPHERDING
++    /* we can't call fragment_delete if vm_area_t deletes it by flushing */
++    if (!TEST(FRAG_WAS_DELETED, dcontext->last_fragment->flags) &&
++        vm_area_fragment_self_write(dcontext, dcontext->last_fragment->tag))
++        return;
++#endif
++    /* We are nolinking, so a flusher takes us to be at a safe point and can be
++     * unlinking our fragments right now, this one included, which also allocates
++     * from our heap.  It holds our linking lock while it does: we hold it while we
++     * check for that and delete.
++     */
++    per_thread_t *pt = (per_thread_t *)dcontext->fragment_field;
++    d_r_mutex_lock(&pt->linking_lock);
+     if (TEST(FRAG_WAS_DELETED, dcontext->last_fragment->flags)) {
+         /* Case 8177: case 3559 unionized fragment_t.in_xlate, so we cannot delete a
+          * fragment that has already been unlinked in the first stage of a flush.
+          * The flush queue check, which comes after this (b/c we want to be
+          * nolinking), will delete.
+          */
+-        ASSERT(((per_thread_t *)dcontext->fragment_field)->flush_queue_nonempty);
++        ASSERT(pt->flush_queue_nonempty);
+         STATS_INC(num_self_writes_after_flushes);
+     } else {
+-#ifdef PROGRAM_SHEPHERDING
+-        /* we can't call fragment_delete if vm_area_t deletes it by flushing */
+-        if (!vm_area_fragment_self_write(dcontext, dcontext->last_fragment->tag)) {
+-#endif
+-            fragment_delete(dcontext, dcontext->last_fragment, FRAGDEL_ALL);
+-            STATS_INC(num_fragments_deleted_selfmod);
+-#ifdef PROGRAM_SHEPHERDING
+-        }
+-#endif
++        fragment_delete(dcontext, dcontext->last_fragment, FRAGDEL_ALL);
++        STATS_INC(num_fragments_deleted_selfmod);
+     }
++    d_r_mutex_unlock(&pt->linking_lock);
+ }
+ 
+ /* coarse_grain says to use just the min_pc and max_pc of f.
+@@ -5421,6 +5428,10 @@ check_flush_queue(dcontext_t *dcontext, fragment_t *was_I_flushed)
+     per_thread_t *pt = (per_thread_t *)dcontext->fragment_field;
+     bool not_flushed = true;
+     ASSERT_OWN_MUTEX(true, &pt->linking_lock);
++#ifdef UNIX
++    /* We are about to free flushed fragments, or to give up our claim on them. */
++    signal_forget_flushed_fragment(dcontext);
++#endif
+     /* first check private queue and act on pending deletions */
+     if (pt->flush_queue_nonempty) {
+         bool local_prot = local_heap_protected(dcontext);
+@@ -5757,6 +5768,33 @@ enter_nolinking(dcontext_t *dcontext, fragment_t *was_I_flushed, bool cache_tran
+     return not_flushed;
+ }
+ 
++/* For a thread that changes the links of a fragment it has not left, such as
++ * from a signal handler that interrupted the code cache.  A flusher holds this
++ * lock while it unlinks our fragments, so holding it keeps the two apart.
++ * Such a thread must not use enter_couldbelinking() and enter_nolinking()
++ * instead: those are synch points for flushing, which delete the fragments on
++ * the thread's flush queue and release its references to pending shared
++ * deletions, and the thread may be about to resume one of those fragments.
++ */
++void
++acquire_linking_lock_in_fragment(dcontext_t *dcontext)
++{
++    per_thread_t *pt = (per_thread_t *)dcontext->fragment_field;
++    if (RUNNING_WITHOUT_CODE_CACHE() /*case 7966: has no pt*/ || pt == NULL)
++        return;
++    d_r_mutex_lock(&pt->linking_lock);
++    ASSERT(!pt->could_be_linking);
++}
++
++void
++release_linking_lock_in_fragment(dcontext_t *dcontext)
++{
++    per_thread_t *pt = (per_thread_t *)dcontext->fragment_field;
++    if (RUNNING_WITHOUT_CODE_CACHE() /*case 7966: has no pt*/ || pt == NULL)
++        return;
++    d_r_mutex_unlock(&pt->linking_lock);
++}
++
+ /* Returns false iff was_I_flushed ends up being deleted */
+ bool
+ enter_couldbelinking(dcontext_t *dcontext, fragment_t *was_I_flushed,
+--- a/core/fragment.h
++++ b/core/fragment.h
+@@ -1029,6 +1029,12 @@ enter_nolinking(dcontext_t *dcontext, fragment_t *watch, bool temporary);
+ bool
+ enter_couldbelinking(dcontext_t *dcontext, fragment_t *watch, bool temporary);
+ 
++void
++acquire_linking_lock_in_fragment(dcontext_t *dcontext);
++
++void
++release_linking_lock_in_fragment(dcontext_t *dcontext);
++
+ void
+ enter_threadexit(dcontext_t *dcontext);
+ 
+--- a/core/unix/os.c
++++ b/core/unix/os.c
+@@ -7291,6 +7291,24 @@ pre_system_call(dcontext_t *dcontext)
+                 break;
+             }
+         }
++        /* A fixed mapping replaces whatever is mapped there, as an unmap followed by
++         * a map would.  For code we have fragments of, those must go: flush them
++         * now, as for an unmap, and once more after the system call, for fragments
++         * that another thread builds from the old code in between.  We leave a
++         * library's segments alone: they are mapped over its initial mapping before
++         * any of its code runs.
++         */
++        dcontext->sys_param4 = 0;
++        if (addr != NULL && TEST(MAP_FIXED, flags) && !image &&
++            executable_vm_area_overlap((app_pc)addr, (app_pc)addr + len,
++                                       false /*no lock*/)) {
++            LOG(THREAD, LOG_SYSCALLS, 2, "\tfixed mmap over code " PFX "-" PFX "\n", addr,
++                (app_pc)addr + len);
++            flush_fragments_and_remove_region(dcontext, (app_pc)addr, len,
++                                              false /* don't own initexit_lock */,
++                                              false /* keep futures */);
++            dcontext->sys_param4 = 1;
++        }
+         /* post_system_call does the work */
+         dcontext->sys_param0 = (reg_t)addr;
+         dcontext->sys_param1 = len;
+@@ -8951,6 +8969,15 @@ post_system_call(dcontext_t *dcontext)
+             prot = (uint)dcontext->sys_param2;
+             flags = (uint)dcontext->sys_param3;
+             DEBUG_DECLARE(map_type = IF_X64_ELSE("mmap2", "mmap");)
++            if (dcontext->sys_param4 != 0 &&
++                executable_vm_area_overlap(base, base + size, false /*no lock*/)) {
++                /* See pre_system_call(): another thread ran the old code between
++                 * our flush and the system call, and built fragments from it.
++                 */
++                flush_fragments_and_remove_region(dcontext, base, size,
++                                                  false /* don't own initexit_lock */,
++                                                  false /* keep futures */);
++            }
+ #if defined(LINUX) && !defined(X64) && !defined(ARM)
+         }
+ #endif
+--- a/core/unix/os_exports.h
++++ b/core/unix/os_exports.h
+@@ -481,6 +481,8 @@ typedef struct _kernel_sigset_t {
+ 
+ void
+ receive_pending_signal(dcontext_t *dcontext);
++void
++signal_forget_flushed_fragment(dcontext_t *dcontext);
+ bool
+ is_signal_restorer_code(byte *pc, size_t *len);
+ bool
+--- a/core/unix/signal.c
++++ b/core/unix/signal.c
+@@ -4559,8 +4559,14 @@ unlink_fragment_for_signal(dcontext_t *dcontext, fragment_t *f,
+      */
+     bool changed = false;
+     bool waslinking = is_couldbelinking(dcontext);
++    /* The thread resumes f without passing d_r_dispatch, so we must not go through
++     * enter_couldbelinking() and enter_nolinking() here: they act on the thread's
++     * flush queue, which can delete f, or release the thread's reference to f if f
++     * is a shared fragment that is pending deletion, and the thread would then
++     * resume freed code.
++     */
+     if (!waslinking)
+-        enter_couldbelinking(dcontext, NULL, false);
++        acquire_linking_lock_in_fragment(dcontext);
+     /* may not be linked if trace_relink or something */
+     if (TEST(FRAG_COARSE_GRAIN, f->flags)) {
+         /* XXX PR 213040: we don't support unlinking coarse, so we try
+@@ -4599,13 +4605,31 @@ unlink_fragment_for_signal(dcontext_t *dcontext, fragment_t *f,
+             changed = true;
+     }
+     if (!waslinking)
+-        enter_nolinking(dcontext, NULL, false);
++        release_linking_lock_in_fragment(dcontext);
+     return changed;
+ }
+ 
++/* A fragment that we unlinked for a signal can be flushed before we re-link it.
++ * It is not entered again, so there is nothing to restore, and it can be freed
++ * once this thread acts on its flush queue: the thread drops its pointer first.
++ */
++void
++signal_forget_flushed_fragment(dcontext_t *dcontext)
++{
++    thread_sig_info_t *info = (thread_sig_info_t *)dcontext->signal_field;
++    if (info != NULL && info->interrupted != NULL &&
++        TEST(FRAG_WAS_DELETED, info->interrupted->flags)) {
++        LOG(THREAD, LOG_ASYNCH, 3, "\tinterrupted F%d was flushed: not re-linking\n",
++            info->interrupted->id);
++        info->interrupted = NULL;
++        info->interrupted_pc = NULL;
++    }
++}
++
+ static void
+ relink_interrupted_fragment(dcontext_t *dcontext, thread_sig_info_t *info)
+ {
++    signal_forget_flushed_fragment(dcontext);
+     if (info->interrupted == NULL)
+         return;
+     /* i#2066: if we were building a trace, it may already be re-linked */
+@@ -5397,7 +5421,21 @@ record_pending_signal(dcontext_t *dcontext, int sig, kernel_ucontext_t *ucxt,
+         /* Happened in DR, do not translate context.  Record for later processing
+          * at a safe point with a clean app state.
+          */
+-        if (!blocked || sig >= OFFS_RT || (blocked && info->sigpending[sig] == NULL)) {
++        /* Queueing a signal when the pending-signal heap's first unit is full
++         * allocates a new unit, which is unsafe here: it acquires locks that the
++         * code we interrupted may hold.  When only one block is left we do not
++         * queue a standard signal that is already pending, which the kernel does
++         * not queue again either, and keep the block for a signal that is not.
++         */
++        bool keep_last_block =
++            sig < OFFS_RT && info->sigpending[sig] != NULL &&
++            info->num_pending + 1 >= (int)DYNAMO_OPTION(max_pending_signals);
++        if (keep_last_block) {
++            STATS_INC(num_signals_dropped);
++            SYSLOG_INTERNAL_WARNING_ONCE("dropping already-pending standard signal");
++        }
++        if (!keep_last_block &&
++            (!blocked || sig >= OFFS_RT || (blocked && info->sigpending[sig] == NULL))) {
+             /* only have 1 pending for blocked non-rt signals */
+ 
+             /* to avoid accumulating signals if we're slow in presence of
+--- a/core/vmareas.c
++++ b/core/vmareas.c
+@@ -1032,7 +1032,12 @@ add_vm_area(vm_area_vector_t *v, app_pc start, app_pc end, uint vm_flags, uint f
+ #endif
+             /* disallow any other vm_flag differences */
+             DODEBUG({
+-                flagignore = VM_UNMOD_IMAGE | VM_WAS_FUTURE | VM_ONCE_ONLY | VM_WRITABLE;
++                /* A thread can execute from a mapping before the thread that made
++                 * it has added it here, so that the area being added is already
++                 * there and marked as executed from.
++                 */
++                flagignore = VM_UNMOD_IMAGE | VM_WAS_FUTURE | VM_ONCE_ONLY | VM_WRITABLE |
++                    VM_EXECUTED_FROM;
+             });
+ #ifdef PROGRAM_SHEPHERDING
+             DODEBUG({ flagignore = flagignore | VM_PATTERN_REVERIFY; });
+--- a/core/arch/arch.c
++++ b/core/arch/arch.c
+@@ -266,9 +266,9 @@ move_to_start_of_cache_line(dr_isa_mode_t isa_mode, byte *pc)
+ /* The real size of generated code we need varies by cache line size and
+  * options like inlining of ibl code.  We also generate different routines
+  * for thread-private and thread-shared.  So, we dynamically extend the size
+- * as we generate.  Currently our max is under 5 pages.
++ * as we generate.  Currently our max is under 6 pages.
+  */
+-#define GENCODE_RESERVE_SIZE (5 * PAGE_SIZE)
++#define GENCODE_RESERVE_SIZE (6 * PAGE_SIZE)
+ 
+ #define GENCODE_COMMIT_SIZE \
+     ((size_t)(ALIGN_FORWARD(sizeof(generated_code_t), PAGE_SIZE) + PAGE_SIZE))
+--- a/core/unix/os.c
++++ b/core/unix/os.c
+@@ -7449,9 +7449,13 @@ pre_system_call(dcontext_t *dcontext)
+         new_memprot = osprot_to_memprot(prot) |
+             /* mprotect won't change meta flags */
+             (old_memprot & MEMPROT_META_FLAGS);
++        /* Paired with app_memory_protection_change_done() in post_system_call(). */
++        app_memory_protection_change_start(dcontext, addr, len, old_memprot, new_memprot);
+         res = app_memory_protection_change(dcontext, addr, len, new_memprot, &new_memprot,
+                                            NULL, false /*!image*/);
+         if (res != DO_APP_MEM_PROT_CHANGE) {
++            app_memory_protection_change_done(dcontext, addr, len, new_memprot,
++                                              false /*!success*/);
+             if (res == FAIL_APP_MEM_PROT_CHANGE) {
+                 ASSERT_NOT_IMPLEMENTED(false); /* return code? */
+             } else {
+@@ -9054,6 +9058,8 @@ post_system_call(dcontext_t *dcontext)
+         base = (app_pc)dcontext->sys_param0;
+         size = dcontext->sys_param1;
+         prot = dcontext->sys_param2;
++        app_memory_protection_change_done(dcontext, base, size, osprot_to_memprot(prot),
++                                          success);
+ #ifdef VMX86_SERVER
+         /* PR 475111: workaround for PR 107872 */
+         if (os_in_vmkernel_userworld() && result == -EBUSY && prot == PROT_NONE) {
+--- a/core/vmareas.c
++++ b/core/vmareas.c
+@@ -279,6 +279,12 @@ static vm_area_vector_t *pretend_writable_areas;
+ /* used for DYNAMO_OPTION(patch_proof_list) areas to watch */
+ vm_area_vector_t *patch_proof_areas;
+ 
++/* Code ranges whose protection a thread is changing, from before the system call
++ * until after it (see app_memory_protection_change_start()).  The data of each
++ * entry is the new MEMPROT_ protection.  Protected by the executable_areas lock.
++ */
++static vm_area_vector_t *pending_protection_changes;
++
+ /* used for DYNAMO_OPTION(emulate_IAT_writes), though in future may be
+  * expanded, so not just ifdef WINDOWS or ifdef PROGRAM_SHEPHERDING
+  */
+@@ -1630,6 +1636,9 @@ vm_areas_init()
+                           pretend_writable_areas);
+     VMVECTOR_ALLOC_VECTOR(patch_proof_areas, GLOBAL_DCONTEXT, VECTOR_SHARED,
+                           patch_proof_areas);
++    VMVECTOR_ALLOC_VECTOR(pending_protection_changes, GLOBAL_DCONTEXT,
++                          VECTOR_SHARED | VECTOR_NO_LOCK | VECTOR_NEVER_MERGE,
++                          innermost_lock);
+     VMVECTOR_ALLOC_VECTOR(emulate_write_areas, GLOBAL_DCONTEXT, VECTOR_SHARED,
+                           emulate_write_areas);
+     VMVECTOR_ALLOC_VECTOR(IAT_areas, GLOBAL_DCONTEXT, VECTOR_SHARED, IAT_areas);
+@@ -1805,6 +1814,8 @@ vm_areas_exit()
+     pretend_writable_areas = NULL;
+     vmvector_delete_vector(GLOBAL_DCONTEXT, patch_proof_areas);
+     patch_proof_areas = NULL;
++    vmvector_delete_vector(GLOBAL_DCONTEXT, pending_protection_changes);
++    pending_protection_changes = NULL;
+     vmvector_delete_vector(GLOBAL_DCONTEXT, emulate_write_areas);
+     emulate_write_areas = NULL;
+ 
+@@ -6954,9 +6965,37 @@ app_memory_protection_change_internal(dcontext_t *dcontext, bool update_areas,
+                 }
+                 /* FIXME : see note at top of function about bug 2833 */
+                 ASSERT(!TEST(MEMPROT_WRITE, prot)); /* sanity check */
+-                add_executable_vm_area(base, base + size, image ? VM_UNMOD_IMAGE : 0,
+-                                       frag_flags_pfx,
+-                                       false /*no lock*/ _IF_DEBUG(comment));
++                /* add_executable_vm_area() must take the lock itself for a
++                 * coarse-grain area, which is for a module's code: it checks the
++                 * IAT and persisted caches, and the hotp lock ranks before ours.
++                 */
++                bool hold_lock = !TEST(FRAG_COARSE_GRAIN, frag_flags_pfx);
++                bool add = true;
++                if (hold_lock) {
++                    d_r_write_lock(&executable_areas->lock);
++                    /* We checked for executable areas without the lock, before
++                     * deciding to add these.  Another thread can have executed the
++                     * code since and added an area for it, with the old or the
++                     * pending protection (see app_memory_protection_change_start()).
++                     * We leave that in place, and the rest of the region is added
++                     * when it is executed.
++                     */
++                    if (executable_vm_area_overlap(base, base + size,
++                                                   true /*have writelock*/)) {
++                        LOG(GLOBAL, LOG_VMAREAS, 2,
++                            "\tnot adding " PFX "-" PFX
++                            ": another thread added an area in it\n",
++                            base, base + size);
++                        add = false;
++                    }
++                }
++                if (add) {
++                    add_executable_vm_area(base, base + size,
++                                           image ? VM_UNMOD_IMAGE : 0, frag_flags_pfx,
++                                           hold_lock _IF_DEBUG(comment));
++                }
++                if (hold_lock)
++                    d_r_write_unlock(&executable_areas->lock);
+             }
+ #ifdef WINDOWS
+             if (free_iat) {
+@@ -7120,6 +7159,171 @@ app_memory_protection_change_internal(dcontext_t *dcontext, bool update_areas,
+     return DO_APP_MEM_PROT_CHANGE; /* let syscall go through */
+ }
+ 
++/* Returns whether a protection change is pending for code in [start, end), and in
++ * *to_writable whether one makes it writable.  Caller must hold the
++ * executable_areas lock.
++ */
++static bool
++pending_protection_change(app_pc start, app_pc end, bool *to_writable /* OUT */)
++{
++    vmvector_iterator_t vmvi;
++    bool found = false;
++    *to_writable = false;
++    if (vmvector_empty(pending_protection_changes))
++        return false;
++    vmvector_iterator_start(pending_protection_changes, &vmvi);
++    while (vmvector_iterator_hasnext(&vmvi)) {
++        app_pc entry_start, entry_end;
++        uint prot =
++            (uint)(ptr_uint_t)vmvector_iterator_next(&vmvi, &entry_start, &entry_end);
++        if (entry_start < end && start < entry_end) {
++            found = true;
++            if (TESTANY(MEMPROT_WRITE, prot))
++                *to_writable = true;
++        }
++    }
++    vmvector_iterator_stop(&vmvi);
++    return found;
++}
++
++/* Narrows [*start, *end), which contains pc, so that it lies either within one
++ * pending protection change or outside all of them, and returns whether pc is in
++ * one that makes the code writable.  A memory region can span pages with
++ * different pending changes, or with none.  Caller must hold the executable_areas
++ * lock.
++ */
++static bool
++clip_to_pending_protection_change(app_pc pc, app_pc *start /* IN/OUT */,
++                                  app_pc *end /* IN/OUT */)
++{
++    vmvector_iterator_t vmvi;
++    bool to_writable = false;
++    if (vmvector_empty(pending_protection_changes))
++        return false;
++    vmvector_iterator_start(pending_protection_changes, &vmvi);
++    while (vmvector_iterator_hasnext(&vmvi)) {
++        app_pc entry_start, entry_end;
++        uint prot =
++            (uint)(ptr_uint_t)vmvector_iterator_next(&vmvi, &entry_start, &entry_end);
++        if (entry_end <= *start || entry_start >= *end)
++            continue;
++        if (pc >= entry_start && pc < entry_end) {
++            *start = MAX(*start, entry_start);
++            *end = MIN(*end, entry_end);
++            if (TESTANY(MEMPROT_WRITE, prot))
++                to_writable = true;
++        } else if (entry_end <= pc)
++            *start = MAX(*start, entry_end);
++        else
++            *end = MIN(*end, entry_start);
++    }
++    vmvector_iterator_stop(&vmvi);
++    return to_writable;
++}
++
++#ifdef DEBUG
++/* Checks that we do not build a block from code that we take for read-only while
++ * its page is writable.
++ */
++static void
++check_code_not_writable(app_pc pc, uint frag_flags)
++{
++    uint prot;
++    bool to_writable;
++    bool own_lock = self_owns_write_lock(&executable_areas->lock);
++    if (!own_lock)
++        d_r_read_lock(&executable_areas->lock);
++    /* While a protection change is pending, the protection can be either the old or
++     * the new one (see app_memory_protection_change_start()).  Starting and
++     * finishing a change takes this lock, so we look for one before reading the
++     * protection.
++     */
++    if (!pending_protection_change(pc, pc + 1, &to_writable) &&
++        get_memory_info(pc, NULL, NULL, &prot)) {
++        ASSERT(!TESTANY(MEMPROT_WRITE, prot) ||
++               TESTANY(FRAG_SELFMOD_SANDBOXED, frag_flags) ||
++               !INTERNAL_OPTION(hw_cache_consistency));
++    }
++    if (!own_lock)
++        d_r_read_unlock(&executable_areas->lock);
++}
++#endif
++
++/* Making executable code writable removes its executable areas before the system
++ * call that changes the protection, so that no fragment of the old code survives
++ * the change.  Another thread that executes the code in between adds the areas
++ * back, and the protection it reads can still be the old, read-only one: the
++ * region then becomes writable without our knowing, and its fragments are never
++ * flushed when it is written.  Making it read-only ourselves is no remedy, as the
++ * pending change can undo that.  So until app_memory_protection_change_done(), we
++ * record the range, and check_thread_vm_area() sandboxes any area added in it.
++ * We also record changes that make code read-only: the region can be added with
++ * its new protection before the change takes effect, and check_thread_vm_area()
++ * must not take the old writable protection for an inconsistency.
++ * Call before app_memory_protection_change().
++ */
++void
++app_memory_protection_change_start(dcontext_t *dcontext, app_pc base, size_t size,
++                                   uint old_prot, uint prot /* MEMPROT_ */)
++{
++    app_pc end = (app_pc)ALIGN_FORWARD(base + size, PAGE_SIZE);
++    if (!INTERNAL_OPTION(hw_cache_consistency) || end <= base)
++        return;
++    /* old_prot is the protection we know of, which is read-only where we made
++     * writable code read-only ourselves (VM_MADE_READONLY).  The app takes that
++     * code for writable, and removing its area to apply the change restores the
++     * write permission until the system call: such a change is from writable too.
++     */
++    if (!TESTANY(MEMPROT_WRITE, old_prot | prot) &&
++        is_executable_area_writable_overlap(base, end) == NULL)
++        return;
++    /* The region need not have an executable area now: one can be added from the
++     * old protection while the change is pending.  Most changes are to data, so
++     * we avoid the write lock for those.
++     */
++    if (!TESTANY(MEMPROT_EXEC, old_prot | prot) &&
++        !executable_vm_area_overlap(base, end, false /*no lock*/))
++        return;
++    LOG(THREAD, LOG_VMAREAS, 2, "code region " PFX "-" PFX " is changing to %s\n", base,
++        end, memprot_string(prot));
++    d_r_write_lock(&executable_areas->lock);
++    vmvector_add(pending_protection_changes, base, end, (void *)(ptr_uint_t)prot);
++    d_r_write_unlock(&executable_areas->lock);
++}
++
++/* Call once the protection change started by app_memory_protection_change_start()
++ * has completed or failed.  An area that another thread added in the meantime is
++ * sandboxed, which is also correct for the new protection, unless the region is
++ * no longer executable: we then remove the area, as before the change.
++ */
++void
++app_memory_protection_change_done(dcontext_t *dcontext, app_pc base, size_t size,
++                                  uint prot /* platform independent MEMPROT_ */,
++                                  bool success)
++{
++    app_pc end = (app_pc)ALIGN_FORWARD(base + size, PAGE_SIZE);
++    bool remove_areas;
++    if (end <= base || vmvector_empty(pending_protection_changes))
++        return;
++    d_r_write_lock(&executable_areas->lock);
++    if (!vmvector_overlap(pending_protection_changes, base, end)) {
++        d_r_write_unlock(&executable_areas->lock);
++        return;
++    }
++    vmvector_remove(pending_protection_changes, base, end);
++    remove_areas = success && !TESTANY(MEMPROT_EXEC, prot) &&
++        executable_vm_area_overlap(base, end, true /*have writelock*/);
++    d_r_write_unlock(&executable_areas->lock);
++    if (remove_areas) {
++        LOG(THREAD, LOG_VMAREAS, 2,
++            "removing executable region " PFX "-" PFX " added during its change to %s\n",
++            base, end, memprot_string(prot));
++        flush_fragments_and_remove_region(dcontext, base, end - base,
++                                          false /* don't own initexit_lock */,
++                                          false /* keep futures */);
++    }
++}
++
+ uint
+ app_memory_protection_change(dcontext_t *dcontext, app_pc base, size_t size,
+                              uint prot,         /* platform independent MEMPROT_ */
+@@ -8105,7 +8309,30 @@ check_thread_vm_area(dcontext_t *dcontext, app_pc pc, app_pc tag, void **vmlist,
+ #endif
+         } else {
+             /* need to add the region */
+-            if (TEST(MEMPROT_WRITE, prot)) {
++            /* A thread is making this region writable (see
++             * app_memory_protection_change_start()): the protection we read can be
++             * the old one, and page protection we set now can be undone.
++             */
++            app_pc area_start = base_pc, area_end = base_pc + size;
++            bool becoming_writable =
++                clip_to_pending_protection_change(pc, &area_start, &area_end);
++            base_pc = area_start;
++            size = area_end - area_start;
++            if (becoming_writable) {
++                LOG(GLOBAL, LOG_VMAREAS, 2,
++                    "\tNew executable region " PFX "-" PFX " is becoming writable\n",
++                    base_pc, base_pc + size);
++                frag_flags |= SANDBOX_FLAG();
++            } else {
++                /* The protection we read before taking the lock can predate a change
++                 * that has completed since: read it again now that a change cannot
++                 * start or finish (both take this lock).
++                 */
++                uint cur_prot;
++                if (get_memory_info(pc, NULL, NULL, &cur_prot))
++                    prot |= (cur_prot & MEMPROT_WRITE);
++            }
++            if (TEST(MEMPROT_WRITE, prot) || becoming_writable) {
+                 vm_flags |= VM_WRITABLE;
+                 STATS_INC(num_writable_code_regions);
+                 /* Now that new area bounds are finalized, see if it should be
+@@ -8334,11 +8561,7 @@ check_thread_vm_area(dcontext_t *dcontext, app_pc pc, app_pc tag, void **vmlist,
+      * Investigation is needed.  For now we avoid them in default debug runs.
+      */
+     DOCHECK(IF_MACOS64_ELSE(3, IF_AARCH64_ELSE(3, IF_RISCV64_ELSE(3, 1))), {
+-        uint prot2;
+-        ok = get_memory_info(pc, NULL, NULL, &prot2);
+-        ASSERT(!ok || !TEST(MEMPROT_WRITE, prot2) ||
+-               TEST(FRAG_SELFMOD_SANDBOXED, *flags) ||
+-               !INTERNAL_OPTION(hw_cache_consistency));
++        check_code_not_writable(pc, *flags);
+         ASSERT(is_readable_without_exception_try(pc, 1));
+     });
+ 
+@@ -9491,6 +9714,8 @@ vm_area_unlink_fragments(dcontext_t *dcontext, app_pc start, app_pc end,
+     for (i = data->areas.length - 1; i >= 0; i--) {
+         /* look for overlap */
+         if (start < data->areas.buf[i].end && end > data->areas.buf[i].start) {
++            DEBUG_DECLARE(bool already_marked =
++                              TESTANY(VM_DELETE_ME, data->areas.buf[i].vm_flags);)
+             LOG(thread_log, LOG_FRAGMENT | LOG_VMAREAS, 2,
+                 "\tmarking region " PFX ".." PFX
+                 " for deletion & unlinking all its frags\n",
+@@ -9514,9 +9739,16 @@ vm_area_unlink_fragments(dcontext_t *dcontext, app_pc start, app_pc end,
+             }
+             /* i#942: We can't flush a fragment list with multiple also entries
+              * from the same fragment on it, or our iteration gets derailed.
++             * A thread-private area that an earlier flush marked, and that its
++             * thread has not yet freed in vm_area_flush_fragments(), also holds
++             * the fragments that flush moved onto it below.  Those can start
++             * outside the area, but they are unlinked and have no also entries,
++             * so this walk does not change the list.
+              */
+-            DOCHECK(CHKLVL_DEFAULT,
+-                    { vm_area_check_clean_fraglist(&data->areas.buf[i]); });
++            DOCHECK(CHKLVL_DEFAULT, {
++                if (!already_marked)
++                    vm_area_check_clean_fraglist(&data->areas.buf[i]);
++            });
+             ASSERT(!TEST(FRAG_COARSE_GRAIN, data->areas.buf[i].frag_flags));
+             for (entry = data->areas.buf[i].custom.frags; entry != NULL; entry = next) {
+                 fragment_t *f = FRAG_FRAG(entry);
+@@ -11137,6 +11369,22 @@ vm_area_selfmod_check_clear_exec_count(dcontext_t *dcontext, fragment_t *f)
+                                     false /* keep futures */, true /* exec invalid */,
+                                     false /* don't force synchall */
+                                     _IF_DGCDIAG(NULL));
++    if (convert_s2ro) {
++        bool to_writable;
++        /* A thread that is making the region writable may not have changed the
++         * protection yet (see app_memory_protection_change_start()): the page would
++         * become writable again after we make it read-only, while we take it for
++         * read-only.  We keep it sandboxed, which is right for the new protection.
++         * flush_* grabbed executable_areas lock for us, which a change also takes
++         * to start and finish.
++         */
++        if (pending_protection_change(start, end, &to_writable) && to_writable) {
++            LOG(THREAD, LOG_VMAREAS, 2,
++                "\tnot converting " PFX "-" PFX " to ro: becoming writable\n", start,
++                end);
++            convert_s2ro = false;
++        }
++    }
+     if (convert_s2ro) {
+         DODEBUG(ro2s->s2ro_xfers++;);
+         /* flush_* grabbed executable_areas lock for us */
+--- a/core/vmareas.h
++++ b/core/vmareas.h
+@@ -625,6 +625,15 @@ bool
+ app_memory_pre_alloc(dcontext_t *dcontext, byte *base, size_t size, uint prot, bool hint,
+                      bool update_areas, bool image);
+ 
++void
++app_memory_protection_change_start(dcontext_t *dcontext, app_pc base, size_t size,
++                                   uint old_prot, uint prot /* MEMPROT_ */);
++
++void
++app_memory_protection_change_done(dcontext_t *dcontext, app_pc base, size_t size,
++                                  uint prot /* platform independent MEMPROT_ */,
++                                  bool success);
++
+ uint
+ app_memory_protection_change(dcontext_t *dcontext, app_pc base, size_t size,
+                              uint prot,         /* platform independent MEMPROT_ */
+--- a/core/arch/interp.c
++++ b/core/arch/interp.c
+@@ -7178,9 +7178,11 @@ mangle_trace(dcontext_t *dcontext, instrlist_t *ilist, monitor_data_t *md)
+ 
+         /* Clients should not add new source code regions, which would mess us up
+          * here, as well as mess up our cache consistency (both page prot and
+-         * selfmod).
++         * selfmod).  A flushed trace is recreated without consulting its regions
++         * (see recreate_fragment_ilist()), so its blocks have no region list to
++         * check: the check was made when the trace was built.
+          */
+-        if (md->pass_to_client &&
++        if (md->pass_to_client && md->blk_info[blk].vmlist != NULL &&
+             (!vm_list_overlaps(dcontext, md->blk_info[blk].vmlist, xl8, xl8 + 1) &&
+              !(instr_is_ubr(inst) && opnd_is_pc(instr_get_target(inst)) &&
+                xl8 == opnd_get_pc(instr_get_target(inst))))
+--- a/core/dynamo.c
++++ b/core/dynamo.c
+@@ -2169,6 +2169,7 @@ add_thread(IF_WINDOWS_ELSE_NP(HANDLE hthread, process_id_t pid), thread_id_t tid
+ #else
+     tr->pid = pid;
+     tr->execve = false;
++    tr->vfork_child = false;
+ #endif
+     tr->id = tid;
+     ASSERT(tid != INVALID_THREAD_ID); /* ensure os never assigns invalid id to a thread */
+--- a/core/fragment.c
++++ b/core/fragment.c
+@@ -2968,6 +2968,11 @@ fragment_delete(dcontext_t *dcontext, fragment_t *f, uint actions)
+ {
+     bool acquired_shared_vm_lock = false;
+     bool acquired_fragdel_lock = false;
++#ifdef UNIX
++    /* The signal handler may hold f to re-link it when the signal is delivered. */
++    if (dcontext != GLOBAL_DCONTEXT)
++        signal_forget_deleted_fragment(dcontext, f);
++#endif
+     LOG(THREAD, LOG_FRAGMENT, 3,
+         "fragment_delete: *" PFX " F%d(" PFX ")." PFX " %s 0x%x\n", f, f->id, f->tag,
+         f->start_pc, TEST(FRAG_IS_TRACE, f->flags) ? "trace" : "bb", actions);
+@@ -3059,7 +3064,7 @@ fragment_delete(dcontext_t *dcontext, fragment_t *f, uint actions)
+      * hashtable_fragment_reset().  If we add any further conditions on when it should
+      * be invoked we should keep the two calls in synch.
+      */
+-    if (dr_fragment_deleted_hook_exists() &&
++    if (dr_fragment_deleted_hook_exists() && !TEST(FRAGDEL_NO_CLIENT_EVENT, actions) &&
+         (!TEST(FRAGDEL_NO_HEAP, actions) || !TEST(FRAGDEL_NO_FCACHE, actions)))
+         instrument_fragment_deleted(dcontext, f->tag, f->flags);
+ #ifdef UNIX
+@@ -5243,9 +5248,13 @@ fragment_self_write(dcontext_t *dcontext)
+     /* We are nolinking, so a flusher takes us to be at a safe point and can be
+      * unlinking our fragments right now, this one included, which also allocates
+      * from our heap.  It holds our linking lock while it does: we hold it while we
+-     * check for that and delete.
++     * check for that and delete.  The client's deletion event can call routines
++     * that take that lock (dr_app_pc_from_cache_pc(), for example), so we invoke
++     * it after releasing the lock.  It gets only the tag and flags.
+      */
+     per_thread_t *pt = (per_thread_t *)dcontext->fragment_field;
++    app_pc deleted_tag = NULL;
++    uint deleted_flags = 0;
+     d_r_mutex_lock(&pt->linking_lock);
+     if (TEST(FRAG_WAS_DELETED, dcontext->last_fragment->flags)) {
+         /* Case 8177: case 3559 unionized fragment_t.in_xlate, so we cannot delete a
+@@ -5256,10 +5265,14 @@ fragment_self_write(dcontext_t *dcontext)
+         ASSERT(pt->flush_queue_nonempty);
+         STATS_INC(num_self_writes_after_flushes);
+     } else {
+-        fragment_delete(dcontext, dcontext->last_fragment, FRAGDEL_ALL);
++        deleted_tag = dcontext->last_fragment->tag;
++        deleted_flags = dcontext->last_fragment->flags;
++        fragment_delete(dcontext, dcontext->last_fragment, FRAGDEL_NO_CLIENT_EVENT);
+         STATS_INC(num_fragments_deleted_selfmod);
+     }
+     d_r_mutex_unlock(&pt->linking_lock);
++    if (deleted_tag != NULL && dr_fragment_deleted_hook_exists())
++        instrument_fragment_deleted(dcontext, deleted_tag, deleted_flags);
+ }
+ 
+ /* coarse_grain says to use just the min_pc and max_pc of f.
+--- a/core/fragment.h
++++ b/core/fragment.h
+@@ -684,6 +684,8 @@ enum {
+     FRAGDEL_NO_VMAREA = 0x040,
+ 
+     FRAGDEL_NEED_CHLINK_LOCK = 0x080,
++    /* The caller invokes the client's fragment deletion event itself. */
++    FRAGDEL_NO_CLIENT_EVENT = 0x100,
+ };
+ void
+ fragment_delete(dcontext_t *dcontext, fragment_t *f, uint actions);
+--- a/core/globals.h
++++ b/core/globals.h
+@@ -281,6 +281,7 @@ typedef struct _thread_record_t {
+ #else
+     process_id_t pid; /* thread group id */
+     bool execve;      /* exiting due to execve (i#237/PR 498284) */
++    bool vfork_child; /* created with CLONE_VFORK: its parent reclaims it */
+ #endif
+     uint num;                  /* creation ordinal */
+     bool under_dynamo_control; /* used for deciding whether to intercept events */
+--- a/core/lib/instrument.c
++++ b/core/lib/instrument.c
+@@ -6619,11 +6619,13 @@ dr_get_mcontext_priv(dcontext_t *dcontext, dr_mcontext_t *dmc, priv_mcontext_t *
+      * If we do we'll have to adopt a different solution for i#1685 in our Windows
+      * hooks where today we use the pc slot for temp storage.
+      * The out-of-line clean call save records a code cache address there for the
+-     * signal handler: do not report it.
++     * signal handler: do not report it, also not to a request for part of the
++     * context or from a client built with a smaller dr_mcontext_t.
+      */
+     if (mc != NULL)
+         mc->pc = NULL;
+-    else if (TESTALL(DR_MC_ALL, dmc->flags) && dmc->size == sizeof(dr_mcontext_t))
++    else if (TESTANY(DR_MC_CONTROL, dmc->flags) &&
++             dmc->size > offsetof(dr_mcontext_t, pc))
+         dmc->pc = NULL;
+ 
+     return true;
+--- a/core/unix/os.c
++++ b/core/unix/os.c
+@@ -2642,6 +2642,16 @@ os_thread_init_finalize(dcontext_t *dcontext, void *os_data)
+      * thread_initexit_lock (i#2779).
+      */
+     signal_thread_inherit(dcontext, os_data);
++#ifdef LINUX
++    /* The parent reclaims a vfork child when its vfork returns (see
++     * cleanup_after_vfork_execve()).  On Mac the vfork result is a pid, which
++     * finds no thread, so its vfork children are swept like other clones.
++     */
++    if (os_data != NULL) {
++        dcontext->thread_record->vfork_child =
++            TESTANY(CLONE_VFORK, get_clone_record_flags(os_data));
++    }
++#endif
+ }
+ 
+ void
+@@ -6425,6 +6435,33 @@ handle_execve_post(dcontext_t *dcontext)
+     }
+ }
+ 
++/* i#1010: Reclaims children that called execve but were not created with
++ * CLONE_VFORK, before the numbers of their private fds are reused.  No parent
++ * waits for them, and we cannot tell when their execve has reached the kernel:
++ * one still in handle_execve() is reclaimed too, as it always was.  A vfork
++ * child is reclaimed only by its parent (cleanup_after_vfork_execve()).
++ */
++static void
++cleanup_after_clone_execve(dcontext_t *dcontext)
++{
++    thread_record_t **threads;
++    int num_threads, i;
++    if (num_execve_threads == 0)
++        return;
++    d_r_mutex_lock(&thread_initexit_lock);
++    get_list_of_threads_ex(&threads, &num_threads, true /*include execve*/);
++    for (i = 0; i < num_threads; i++) {
++        if (threads[i]->execve && !threads[i]->vfork_child) {
++            LOG(THREAD, LOG_SYSCALLS, 2, "cleaning up earlier clone thread " TIDFMT "\n",
++                threads[i]->id);
++            dynamo_other_thread_exit(threads[i]);
++        }
++    }
++    d_r_mutex_unlock(&thread_initexit_lock);
++    global_heap_free(threads,
++                     num_threads * sizeof(thread_record_t *) HEAPACCT(ACCT_THREAD_MGT));
++}
++
+ /* Reclaim only the child whose CLONE_VFORK syscall has returned to this
+  * parent.  Linux releases that parent only after the child has relinquished
+  * the shared address space through execve or exit.  An execve marker alone is
+@@ -7066,6 +7103,13 @@ handle_clone_pre(dcontext_t *dcontext)
+         LOG(THREAD, LOG_SYSCALLS, 1, "\tWARNING: CLONE_VM not set!\n");
+     }
+ 
++    /* i#1010: If we have private fds open (usually logfiles), we should
++     * clean those up before they get reused by a new thread.
++     * XXX: Ideally we'd do this in fd_table_add(), but we can't acquire
++     * thread_initexit_lock there.
++     */
++    cleanup_after_clone_execve(dcontext);
++
+     /* For thread creation clone syscalls a clone_record_t structure
+      * containing the pc after the app's syscall instr and other data
+      * (see i#27) is placed at the bottom of the dstack (which is allocated
+@@ -7551,6 +7595,7 @@ pre_system_call(dcontext_t *dcontext)
+         uint flags = CLONE_VFORK | CLONE_VM | SIGCHLD;
+         LOG(THREAD, LOG_SYSCALLS, 2, "syscall: vfork\n");
+         handle_clone(dcontext, flags);
++        cleanup_after_clone_execve(dcontext);
+ 
+         /* save for post_system_call, treated as if SYS_clone */
+         dcontext->sys_param0 = (reg_t)flags;
+--- a/core/unix/os_exports.h
++++ b/core/unix/os_exports.h
+@@ -483,6 +483,8 @@ void
+ receive_pending_signal(dcontext_t *dcontext);
+ void
+ signal_forget_flushed_fragment(dcontext_t *dcontext);
++void
++signal_forget_deleted_fragment(dcontext_t *dcontext, fragment_t *f);
+ bool
+ is_signal_restorer_code(byte *pc, size_t *len);
+ bool
+@@ -535,6 +537,9 @@ create_clone_record(dcontext_t *dcontext, reg_t *app_thread_xsp,
+ create_clone_record(dcontext_t *dcontext, reg_t *app_thread_xsp);
+ #endif
+ 
++uint64
++get_clone_record_flags(void *record);
++
+ #ifdef MACOS
+ void *
+ get_clone_record_thread_arg(void *record);
+--- a/core/unix/signal.c
++++ b/core/unix/signal.c
+@@ -1035,6 +1035,13 @@ get_clone_record_app_xsp(void *record)
+     return ((clone_record_t *)record)->app_thread_xsp;
+ }
+ 
++uint64
++get_clone_record_flags(void *record)
++{
++    ASSERT(record != NULL);
++    return ((clone_record_t *)record)->clone_flags;
++}
++
+ #ifdef MACOS
+ void *
+ get_clone_record_thread_arg(void *record)
+@@ -4626,6 +4633,22 @@ signal_forget_flushed_fragment(dcontext_t *dcontext)
+     }
+ }
+ 
++/* The thread itself can also delete the fragment we unlinked for a signal,
++ * without a flush: a sandboxed block that wrote to its own code, for example
++ * (fragment_self_write()).  Called from fragment_delete().
++ */
++void
++signal_forget_deleted_fragment(dcontext_t *dcontext, fragment_t *f)
++{
++    thread_sig_info_t *info = (thread_sig_info_t *)dcontext->signal_field;
++    if (info != NULL && info->interrupted == f) {
++        LOG(THREAD, LOG_ASYNCH, 3, "\tinterrupted F%d is deleted: not re-linking\n",
++            f->id);
++        info->interrupted = NULL;
++        info->interrupted_pc = NULL;
++    }
++}
++
+ static void
+ relink_interrupted_fragment(dcontext_t *dcontext, thread_sig_info_t *info)
+ {
+@@ -5023,6 +5051,7 @@ record_pending_signal(dcontext_t *dcontext, int sig, kernel_ucontext_t *ucxt,
+     bool handled = false;
+     bool reroute = false;
+     bool at_auto_restart_syscall = false;
++    byte *pre_restart_xip = NULL;
+     int syslen = 0;
+     reg_t orig_retval_reg = sc->SC_RETURN_REG;
+     sigpending_t *pend;
+@@ -5241,6 +5270,7 @@ record_pending_signal(dcontext_t *dcontext, int sig, kernel_ucontext_t *ucxt,
+                     "\n",
+                     pc, pc + syslen);
+                 at_auto_restart_syscall = true;
++                pre_restart_xip = (byte *)sc->SC_XIP;
+                 sc->SC_XIP += syslen;
+                 sc->SC_RETURN_REG = -EINTR;
+                 pc = (byte *)sc->SC_XIP;
+@@ -5278,6 +5308,7 @@ record_pending_signal(dcontext_t *dcontext, int sig, kernel_ucontext_t *ucxt,
+          * existing sysenter restart mechanism.
+          */
+         at_auto_restart_syscall = true;
++        pre_restart_xip = (byte *)sc->SC_XIP;
+         sc->SC_XIP = (reg_t)vsyscall_sysenter_return_pc;
+         sc->SC_RETURN_REG = -EINTR;
+         pc = (byte *)sc->SC_XIP;
+@@ -5427,12 +5458,21 @@ record_pending_signal(dcontext_t *dcontext, int sig, kernel_ucontext_t *ucxt,
+          * queue a standard signal that is already pending, which the kernel does
+          * not queue again either, and keep the block for a signal that is not.
+          */
+-        bool keep_last_block =
+-            sig < OFFS_RT && info->sigpending[sig] != NULL &&
+-            info->num_pending + 1 >= (int)DYNAMO_OPTION(max_pending_signals);
++        int capacity = (int)DYNAMO_OPTION(max_pending_signals) *
++            /* receive_pending_signal() adds a second unit near the limit. */
++            (info->multiple_pending_units ? 2 : 1);
++        bool keep_last_block = sig < OFFS_RT && info->sigpending[sig] != NULL &&
++            info->num_pending + 1 >= capacity;
+         if (keep_last_block) {
+             STATS_INC(num_signals_dropped);
+             SYSLOG_INTERNAL_WARNING_ONCE("dropping already-pending standard signal");
++            if (at_auto_restart_syscall) {
++                /* No handler runs for this signal: let the kernel restart the
++                 * interrupted syscall instead of returning -EINTR to the app.
++                 */
++                sc->SC_XIP = (reg_t)pre_restart_xip;
++                sc->SC_RETURN_REG = orig_retval_reg;
++            }
+         }
+         if (!keep_last_block &&
+             (!blocked || sig >= OFFS_RT || (blocked && info->sigpending[sig] == NULL))) {
+@@ -7612,9 +7652,9 @@ receive_pending_signal(dcontext_t *dcontext)
+         }
+     }
+     /* Only one signal can be delivered ignoring the back-in-dispatch blocked set. */
+-    for (int i = 1; i <= MAX_SIGNUM; i++) {
+-        if (info->sigpending[i] != NULL && info->sigpending[i]->unblocked_at_receipt)
+-            info->sigpending[i]->unblocked_at_receipt = false;
++    for (sig = 1; sig <= MAX_SIGNUM; sig++) {
++        if (info->sigpending[sig] != NULL && info->sigpending[sig]->unblocked_at_receipt)
++            info->sigpending[sig]->unblocked_at_receipt = false;
+     }
+     /* barrier to prevent compiler from moving the below write above the loop */
+     __asm__ __volatile__("" : : : "memory");

@@ -52,7 +52,10 @@ callback. It saves no vector or x87 state: the callback and everything it can
 reach are compiled to use the general registers only, and
 `tests/test_boundary_callback.py` reads the built client to check that. The
 runtime defers asynchronous signals and translation while a thread is in the
-routine or the callback, as it does inside a clean call. Publication therefore
+routine or the callback, as it does inside a clean call. The prepared runtime
+finds the block from the first address the entry stores and unlinks it for a
+deferred signal, so the signal is delivered when the thread leaves the block.
+Publication therefore
 happens at the same block entries as on the callback path. Replay, REP
 and new threads reset the countdown so the next entry takes the callback, and the
 callback recomputes it. The prefix saves the pre-entry countdown before choosing the

@@ -154,10 +154,10 @@ def fixtures():
         exec_attempts=0, suffix=compat_data + child_data)
     add("compat_exec_default", compat, features=(), arguments=("@transition_child",),
         stdout=child_message, unavailable=True, suffix=compat_data,
-        debug_failure="core/vmareas.c:6214 !dynamo_vm_area_overlap(base, base + size)")
+        debug_failure="core/vmareas.c:6230 !dynamo_vm_area_overlap(base, base + size)")
     add("sysenter_guard", ".byte 0x0f,0x34\n" + child_write, features=("simd",), code=126,
         unavailable=True, starts=1, spawns=0, exec_attempts=0, suffix=child_data,
-        debug_failure="core/arch/arch.c:3008 instr_get_opcode(&instr) == OP_jmp_short || instr_get_opcode(&instr) == OP_int")
+        debug_failure="core/arch/arch.c:3021 instr_get_opcode(&instr) == OP_jmp_short || instr_get_opcode(&instr) == OP_int")
     add("x32_guard", "mov $0x40000208,%eax\nxor %edi,%edi\nxor %esi,%esi\n"
         "xor %edx,%edx\nsyscall\n" + denied, features=("simd",), starts=1, spawns=0,
         exec_attempts=0, suffix=failed)

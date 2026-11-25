@@ -18,7 +18,7 @@ use std::time::{Duration, Instant};
 const SOURCE_SHA: &str = "9760d007363e3abba7c747489910f9f82d9fca53ba3bd3282e396fa3c97a3314";
 const PATCH_SHA: &str = "617e143716b533c36535fea64be9192bc46b3c2d52d140c3dbbded90487b1b54";
 const SDK_REPLAY_PATCH_SHA: &str =
-    "391cd6f5e35dcbda372cab5dd98fa40a5b2a41effda52ecfce9afa945acb249b";
+    "aad0137aadca8a0932ca22f67ea95260880eb6bb93a229fd540c01241dc80d9d";
 const SOURCE_URL: &str =
     "https://github.com/containers/bubblewrap/releases/download/v0.12.0/bubblewrap-0.12.0.tar.xz";
 const MAX_FILES: usize = 256;
@@ -242,7 +242,7 @@ pub(crate) fn verify_sdk(root: &Path) -> io::Result<()> {
         || manifest["inputs"]["source_sha256"]
             != "e2b7d3f1917ff64e644b81efd96a610a3c622f4857c75593fef5d5e581c231f6"
         || manifest["inputs"]["patch_sha256"]
-            != "59fc79b5055a0c42b463703768891f0a10199ef1135d43028826c8c3894bab7c"
+            != "8b82ea0b82b3bfdfa3cf92a5fb46e4a9cc457fc4e52747412adfbcbf18b70251"
         || manifest["inputs"]["code_replay_patch_sha256"] != SDK_REPLAY_PATCH_SHA
         || manifest["inputs"]["recipe"] != 1
     {

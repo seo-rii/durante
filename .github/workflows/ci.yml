@@ -123,6 +123,14 @@ jobs:
         run: python3 tests/simd.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/simd --require-isa sse2 --repeats 2
       - name: Preserve signal vector and floating-point state with release and debug runtimes
         run: python3 tests/signal_state.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/signal-state --require-isa sse2 --repeats 2
+      - name: Translate faults in generated code flushed by a write with release and debug runtimes
+        run: python3 tests/flushed_fault.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/flushed-fault --repeats 3
+      - name: Keep running generated code while another thread changes its page protection
+        run: python3 tests/exec_area_race.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/exec-area-race --repeats 5
+      - name: Run generated code that another thread patches in place
+        run: python3 tests/selfmod_patch_race.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/selfmod-patch-race --repeats 3
+      - name: Change generated code while threads, signals and forks run it
+        run: python3 tests/jit_stress.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/jit-stress --repeats 2
       - name: Qualify interpreter and JIT fixtures against native and engine controls
         run: python3 tests/runtime_compat.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/runtime-compat --require-runtime cpython --require-runtime pypy --require-runtime node --require-qualified-runtime java --java "$JAVA_HOME_17_X64/bin/java" --javac "$JAVA_HOME_17_X64/bin/javac" --timeout-ms 40000
       - name: Require PyPy threads, major GC and child-process accounting

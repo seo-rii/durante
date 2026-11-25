@@ -280,6 +280,26 @@ restored registers and arithmetic with native, engine-only and client controls.
 The prepared x86-64 runtime saves, clears and restores guest flags around
 client clean calls. This lets HotSpot enable alignment checking during CPU
 detection while the client writes its thread-local counters and checkpoints.
+A signal that arrives while a thread runs a clean callee, or the client's own
+live boundary routine, is delivered when the thread leaves the block it came
+from. The original runtime waited for the thread's next exit from the code
+cache, which a loop of linked blocks may never take.
+A fault in a block that a write to its page has just flushed, such as a JIT's
+safepoint poll, is reported at the faulting instruction; the original runtime
+could report it at pc 0 ([BUG-006](docs/JVM_SAFEPOINT.md)).
+Changing the protection of generated code while other threads run it, as a JIT
+that patches under W^X does, no longer crashes the runtime: the original runtime
+kept a stale pointer when the code's executable area was removed during a lookup.
+Generated code that a JIT patches in place on an RWX page no longer keeps
+running in its old form: the original runtime could check such code against a
+copy taken after the patch, so a block built before the patch passed its check.
+A page of code that a JIT replaces by mapping a new page at the same address no
+longer keeps running its old code, and a signal that arrives in generated code
+while another thread patches it no longer crashes the runtime. Code that a JIT
+makes writable only around each patch no longer keeps running in its old form:
+a block built while the protection change was still pending was taken for
+read-only code
+([stress modes](docs/JIT_LIFECYCLE.md#code-that-keeps-changing-under-load)).
 Updating this patch requires rebuilding the prepared SDK, client and CLI together;
 `isolate` checks the reviewed patch digest.
 

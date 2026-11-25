@@ -69,8 +69,19 @@ def check_run(prefix, work, name, command, *, valid=True, stdin=None):
         return measurement
 
 
+def symbols(path, names):
+    found = {}
+    for line in subprocess.run(["nm", path], capture_output=True, text=True, check=True).stdout.splitlines():
+        fields = line.split()
+        if len(fields) == 3 and fields[2] in names:
+            found[fields[2]] = int(fields[0], 16)
+    if set(found) != set(names):
+        raise ValueError(f"{path} lacks symbols {sorted(set(names) - set(found))}")
+    return found
+
+
 def client_addresses(client):
-    """Link-time addresses the debugger needs to find the boundary callback."""
+    """Link-time addresses the debugger needs to find the client code it stops in."""
     image = client.read_bytes()
     if image[:6] != b"\x7fELF\x02\x01":
         raise ValueError("the client is not a little-endian ELF64 file")
@@ -80,25 +91,23 @@ def client_addresses(client):
         kind, _, file_offset, address, _, file_size = struct.unpack_from("<IIQQQQ", image, offset + index * size)
         if kind == 1:  # PT_LOAD
             loads.append((address, file_offset, file_size))
-    symbols = {}
-    for line in subprocess.run(["nm", client], capture_output=True, text=True, check=True).stdout.splitlines():
-        fields = line.split()
-        if len(fields) == 3 and fields[2] in ("charge_boundary_state", "boundary_routine"):
-            symbols[fields[2]] = int(fields[0], 16)
-    callback = symbols["charge_boundary_state"]
+    found = symbols(client, ("charge_boundary_state", "boundary_routine", "observe_rep"))
+    callback = found["charge_boundary_state"]
     address, file_offset, _ = next(load for load in loads if load[0] <= callback < load[0] + load[2])
     start = file_offset + callback - address
     return {"BASE": min(load[0] for load in loads) & ~0xfff, "CALLBACK": callback,
-            "ROUTINE": symbols["boundary_routine"]}, image[start:start + 16]
+            "ROUTINE": found["boundary_routine"], "REP": found["observe_rep"]}, image[start:start + 16]
 
 
 BOUNDARY_POINTS = ("entry", "switched", "call", "callback", "returned", "resume")
 
 
-def check_boundary_signal(gdb, prefix, work, client, exe, point):
-    """A signal that finds the thread at this point of the boundary routine is
-    handled and leaves every register the fixture checks unchanged."""
-    directory = work / f"boundary-signal-{point}"
+def check_boundary_signal(gdb, prefix, work, client, exe, point, name):
+    """A signal that finds the thread at this point of client code is handled
+    without waiting for the thread to leave the code cache: every fixture exits
+    0 only if its handler ran, and the wait fixtures only if it ran within two
+    iterations of the send. The state fixture also checks every register."""
+    directory = work / name
     directory.mkdir()
     records, page, result = directory / "records", directory / "live", directory / "result.json"
     records.mkdir()
@@ -106,7 +115,10 @@ def check_boundary_signal(gdb, prefix, work, client, exe, point):
     addresses, text = client_addresses(client)
     environment = dict(os.environ, DURANTE_GDB_CLIENT=str(client), DURANTE_GDB_POINT=point,
                        DURANTE_GDB_RESULT=str(result), DURANTE_GDB_CALLBACK_BYTES=text.hex(),
-                       **{"DURANTE_GDB_" + name: hex(value) for name, value in addresses.items()})
+                       **{"DURANTE_GDB_" + key: hex(value) for key, value in addresses.items()})
+    if exe.name.startswith("signal-wait"):
+        mark = symbols(exe, ("count", "sent"))
+        environment.update(DURANTE_GDB_COUNT=hex(mark["count"]), DURANTE_GDB_SENT=hex(mark["sent"]))
     target = [*prefix, "-outdir", str(records), "-rep_bytes", "-live_work_v1", str(page), "--", exe]
     # A library path meant for the target can replace the libpython the
     # debugger is linked with, as setup-python's does in CI. Keep it from the
@@ -129,21 +141,21 @@ def check_boundary_signal(gdb, prefix, work, client, exe, point):
             os.killpg(proc.pid, signal.SIGKILL)
             proc.wait()
         if not cleanup_orphans():
-            raise RuntimeError(f"boundary signal at {point}: failed to reap fixture")
+            raise RuntimeError(f"{name}: failed to reap fixture")
     if result.is_file():
         report = json.loads(result.read_text())
     else:
         report = {"error": "no debugger report", "debugger_status": proc.returncode,
                   "debugger_output": transcript.read_bytes()[-2000:].decode(errors="replace")}
     if report.get("error") or report["stopped"] != report["target"] or report["exit_code"] != 0:
-        raise RuntimeError(f"boundary signal at {point}: {report}")
+        raise RuntimeError(f"{name}: {report}")
     # Only the routine's first and last instructions run on the application's
     # stack; between them, and in the callback, the thread is on its private one.
     if report["application_stack"] != (point in ("entry", "resume")):
-        raise RuntimeError(f"boundary signal at {point}: unexpected stack {report}")
+        raise RuntimeError(f"{name}: unexpected stack {report}")
     ready, invalid, _, _, _, overflow = PAGE.unpack(page.read_bytes())
     if (ready, invalid, overflow) != (1, 1, 0):
-        raise ValueError(f"boundary signal at {point}: unexpected ready/invalid/overflow")
+        raise ValueError(f"{name}: unexpected ready/invalid/overflow")
 
 
 def main():
@@ -201,9 +213,18 @@ def main():
                                check=True)
             check_run(prefix, work, "live-state-timer", [work / "live-state-timer-exe"], valid=False)
             if args.gdb:
+                for name, defines in (("signal-wait-exe", []), ("signal-wait-rep-exe", ["-DSIGNAL_WAIT_REP"])):
+                    subprocess.run(["cc", "-static", "-nostdlib", "-no-pie", *defines,
+                                    ROOT / "tests/signal_wait.S", "-o", work / name], check=True)
                 for point in BOUNDARY_POINTS:
                     check_boundary_signal(args.gdb, prefix, work, args.client.resolve(),
-                                          work / "live-state-external-exe", point)
+                                          work / "live-state-external-exe", point,
+                                          f"boundary-signal-{point}")
+                    check_boundary_signal(args.gdb, prefix, work, args.client.resolve(),
+                                          work / "signal-wait-exe", point, f"boundary-wait-{point}")
+                # A runtime clean call: the REP callee runs on the runtime's stack.
+                check_boundary_signal(args.gdb, prefix, work, args.client.resolve(),
+                                      work / "signal-wait-rep-exe", "rep-callee", "rep-callee-wait")
             # Each .Lwork body takes 5*N+18 instructions. Reading stdin adds
             # 12 instructions and a two-instruction loop with 10,000 iterations.
             thread_work = 5 * (100003 + 70001) + 2 * 18 + 32
