@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "cpu": 1,
+  "timeout_s": 120,
+  "design": "Repeat on two fresh single-thread-per-core AMD Milan n2d-standard-4 guests, CPU 1 with cgroup and affinity. Use the same binaries and current bundle engine for both client revisions. Nine direct user+system CPU completions per case and program.",
+  "cost": "For each executable and input, compare previous/current cheap profile child CPU using the median paired previous/current ratio from two alternating pairs. Check ordinary counters for both releases and one current four-counter diagnostic. For the historical interwoven control compare against both archived #95 full profiles.",
+  "order": "For the three new query permutations compare native medians, full counters and query edge totals per executable. Predeclared directional check: shuffled queries take more CPU than ascending queries on each boot. Loop body counts and these semantic step totals do not measure CPU cache misses.",
+  "holdout": "Hold tiled direct CPU times out of forecasting. On each boot and each ELF use the ascending native median times the ratio of tiled/ascending frozen combined instruction+REP work for the baseline. For the candidate, let x be the sum of the bit lengths of absolute differences between successive queried character positions. Interpolate linearly in x between the native medians for ascending and shuffled on the same executable and boot. Require x(ascending) < x(tiled) < x(shuffled). Round estimates up to integer nanoseconds. The candidate pays for a second endpoint; also report the unweighted mean of the two paid endpoint times as a cost-matched control. Count native TLE only on strict excess. Report signed error, fixed-deadline votes and correct majorities for both held-out executions, separately per boot. Register forecasts before collection and replay them offline.",
+  "fixed_limits_ms": [
+    25,
+    50,
+    75,
+    100,
+    150,
+    175,
+    200
+  ],
+  "bundles": {
+    "previous": {
+      "artifact_id": 15035186079,
+      "revision": "d839a4b707e3a0077a726c07498b073670490cb8",
+      "sha256": "b5dfdacc291967721785bc790dfee1c79a3940f9b34bdb6f4e6646c53dc1caa2"
+    },
+    "current": {
+      "artifact_id": 15033563582,
+      "revision": "589a402b0cfa70ea3af51bf8b95644026dbc64c8",
+      "sha256": "17e4d66cb8e643cd97b5627453acdd862becf2ffaa0c739bb32ecffd9715e955"
+    }
+  },
+  "tools": {
+    "reader": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a",
+    "previous": "419e565f4f903fa76677a73457606b8ac0eb227ed1a1d596c3dd9e661e86263a",
+    "current": "d66e4849de1e24e6a40bf42f00e1355343b79dd4af1a8cb8202d75392b33e629",
+    "drrun": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "engine": "f2478395d33e2d8e4a6fb4158fd826777cca37ee02e94924757696b08d7fb06f"
+  },
+  "binaries": {
+    "scrivener": "5a918d9eb725f4a0492ed3f891a155e6c08a3a30092215c9036648e8e3e9a60e",
+    "scrivener_lifting": "9f79bdb4bd631018fd950801d5fddcc58423ce264193ca91b5d99b7d80cb6246"
+  },
+  "cases": [
+    {
+      "name": "ascending",
+      "stdin_sha256": "44a9e1a322b6f9a39794d511b61dad59d96958f58ae55bf21b82d0c448c5f83f",
+      "stdout_sha256": "cb29dc1dbedc06d2f5a0b9667e3eeb75dd115e6b1a4ce7efa2bd3761952b0dfa"
+    },
+    {
+      "name": "tiled",
+      "stdin_sha256": "76e016bb3c477977514e706045ffd5c8c45eae5e383d5c6cfda95ae31f510624",
+      "stdout_sha256": "94b08ab3b45e4536ed7995deb5e44fa2788c1d727cb3d26b04add1a77a8aa01c"
+    },
+    {
+      "name": "shuffled",
+      "stdin_sha256": "1611756acc33b9d1f0f0e02af1979091247d047fbe820015e58f972ee5f0af3d",
+      "stdout_sha256": "97b39b4d0dbe56a7fd1d1c7d5fd03a6ed9c5c4956f66d834c802beec2a02e7d8"
+    },
+    {
+      "name": "interwoven_pages",
+      "stdin_sha256": "8edb596d806e8a2e62f28a04c840f9f715bdd9fc453f0caf085d5abe2ac6be9d",
+      "stdout_sha256": "40b8afdc4e2e691ec6365447ce02ba0c76bdc54b548b87dfe3d21f7f5977c570"
+    }
+  ],
+  "placement": "Keep the image default ASLR setting on both guests. Report observed counter drift and every profile. Use an independent 120-second safety watchdog. All timestamps for cost and forecasts use child wait4 CPU time."
+}

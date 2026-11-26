@@ -63,3 +63,5 @@ python3 -B experiments/calibrated_limits/prepare.py "$tmp/guest" \
     --runtime "$runtime" --study experiments/contest_submissions \
     --source-dir experiments/contest_accuracy --source-dir experiments/contest_warm
 ```
+
+The [Scrivener query-order experiment](GCE_SCRIVENER_ORDER.md) holds the requested positions and total lookup steps constant and compares counters and CPU time on the #96 and #97 clients.
