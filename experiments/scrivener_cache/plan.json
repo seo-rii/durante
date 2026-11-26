@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "cpu": 1,
+  "timeout_s": 120,
+  "bundle": {
+    "artifact_id": 15033563582,
+    "revision": "589a402b0cfa70ea3af51bf8b95644026dbc64c8",
+    "sha256": "17e4d66cb8e643cd97b5627453acdd862becf2ffaa0c739bb32ecffd9715e955"
+  },
+  "valgrind_package": {
+    "name": "valgrind",
+    "version": "1:3.19.0-1",
+    "arch": "amd64",
+    "sha256": "324842f2308a1e42abf2d81ff5eb19a9475fc9db95647f4d9da71444eda4087f"
+  },
+  "tools": {
+    "reader": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a",
+    "current": "d66e4849de1e24e6a40bf42f00e1355343b79dd4af1a8cb8202d75392b33e629",
+    "drrun": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "engine": "f2478395d33e2d8e4a6fb4158fd826777cca37ee02e94924757696b08d7fb06f",
+    "valgrind": "6cf6e12cf59b2a28625e65045b39564a82406604cca0d9c4cc5dffe8635c72c6",
+    "cachegrind": "768b94ae8257c6f5224257342729c6ce691aa80785fc436aaf67522b67b25459",
+    "preload": "2f2a3ccb9ebf10e4d6b2d6854e349e89b8852d3c0dfca9a55d7bc4d2939ac324"
+  },
+  "binaries": {
+    "scrivener": "5a918d9eb725f4a0492ed3f891a155e6c08a3a30092215c9036648e8e3e9a60e",
+    "scrivener_lifting": "9f79bdb4bd631018fd950801d5fddcc58423ce264193ca91b5d99b7d80cb6246"
+  },
+  "cases": [
+    {
+      "name": "ascending",
+      "stdin_sha256": "44a9e1a322b6f9a39794d511b61dad59d96958f58ae55bf21b82d0c448c5f83f",
+      "stdout_sha256": "cb29dc1dbedc06d2f5a0b9667e3eeb75dd115e6b1a4ce7efa2bd3761952b0dfa"
+    },
+    {
+      "name": "shuffled",
+      "stdin_sha256": "1611756acc33b9d1f0f0e02af1979091247d047fbe820015e58f972ee5f0af3d",
+      "stdout_sha256": "97b39b4d0dbe56a7fd1d1c7d5fd03a6ed9c5c4956f66d834c802beec2a02e7d8"
+    },
+    {
+      "name": "tiles32",
+      "stdin_sha256": "4772f977fac0974d1b2a91f2d515a8e4344beb0dd64364460c27e34e16503541",
+      "stdout_sha256": "135dca4d08de8e5d00d9dbbb949a44ea79bdcb4333c8ed37beba29517bd31eb5"
+    },
+    {
+      "name": "tiles4096",
+      "stdin_sha256": "9c6a639864592729184b0b484725bbd493bb09797b0998407e5868e01d2f1393",
+      "stdout_sha256": "9b8ceec7c888fe71e6cea1236c8adda3c1a61c5cba2c78f6bcda72d35c702d81"
+    },
+    {
+      "name": "reverse_tiles",
+      "stdin_sha256": "0934ee60af6c06ca8f7ed7a4a7160189fdc916ea562540b4ee1f7f5f5623ea96",
+      "stdout_sha256": "918d92bc673dca6ef8bf034a5ef745db5f1e42fe3eeb0102796c8d1f5ff7deff"
+    }
+  ],
+  "cache_geometry": {
+    "I1": [
+      32768,
+      8,
+      64
+    ],
+    "D1": [
+      32768,
+      8,
+      64
+    ],
+    "LL": [
+      524288,
+      8,
+      64
+    ]
+  },
+  "fixed_limits_ms": [
+    30,
+    35,
+    40,
+    45,
+    50,
+    55,
+    60,
+    65,
+    70,
+    75
+  ],
+  "design": "Two fresh AMD Milan n2d-standard-4 Debian 12 boots, one hardware thread per core, workload affinity and cgroup CPU 1. Use the same payload and default guest ASLR. Each same-ELF experiment retains #98 ascending and shuffled endpoints, and three new matched orders with the same multiset of query positions. Native references and costs are child wait4 user plus system CPU time.",
+  "schedule": "Profile all ten ELF/input pairs once with the #97 ordinary instruction/REP client and once with Cachegrind data/branch simulation. Rotate nine native rounds over the four endpoint pairs. Compute all estimates and write predictions and a digest of the pre-label journal before any holdout-native process. Run nine rotated native rounds over the six holdout pairs. All completed outputs must match independently generated oracles.",
+  "methods": "Ordinary baseline: ceil(ascending native median times holdout/ascending combined instruction+REP work), frozen Aonohako weights. Other methods pay for both same-ELF native endpoint medians. Midpoint weights them equally. Distance uses the sum of bit lengths of absolute successive query position deltas. Primary candidate uses simulated last-level data read misses (DLmr). Secondary uses simulated conditional branch mispredictions (Bcm). For each feature use (observed - ascending)/(shuffled - ascending), clamped to [0,1], or 1/2 for equal endpoint features. Interpolate CPU time linearly with that fraction and round up once.",
+  "qualification": "Evaluate each boot independently. Primary comparison is the median absolute relative error of DLmr versus the cost-matched midpoint over six fresh program/input pairs. Also compare distance, Bcm and the single-anchor ordinary clock, worst error, per-program results, and verdicts for each fixed limit. A replicated gain requires lower primary error than the midpoint on both guests. Fixed deadline passes at equality, report native majority and unanimous misses; forecasts are offline diagnostic projections. Report costs and all out-of-endpoint cases; do not refit on the holdouts."
+}
