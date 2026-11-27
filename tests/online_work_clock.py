@@ -60,6 +60,8 @@ ELIGIBLE = """
 #include <signal.h>
 #include <stdatomic.h>
 #include <string.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 static volatile sig_atomic_t handled;
 static atomic_int running;
@@ -78,11 +80,18 @@ int main(int argc, char **argv) {
         if (handled != SIGUSR1) return 3;
         if (!strcmp(argv[1], "signal-loop"))
             for (volatile unsigned long i = 0; ; ++i) {}
-    } else if (!strcmp(argv[1], "thread")) {
+    } else if (!strcmp(argv[1], "thread") || !strcmp(argv[1], "fork")) {
         /* The sibling is inside a block when exit_group stops it. */
         pthread_t thread;
         if (pthread_create(&thread, NULL, spin, NULL)) return 4;
         while (!atomic_load(&running)) {}
+        /* Each child starts with a copy of the running sibling's state. */
+        for (int n = 0; argv[1][0] == 'f' && n < 3; ++n) {
+            int status;
+            pid_t child = fork();
+            if (child == 0) _exit(0);
+            if (child < 0 || waitpid(child, &status, 0) != child || status) return 7;
+        }
     } else if (!strcmp(argv[1], "scas")) {
         static char text[4096];
         memset(text, 'a', sizeof(text) - 1);
@@ -152,9 +161,10 @@ def main():
         proc, e, receipt, m = run("signal_loop", 2_000_000, 15_000, root / "eligible", "signal-loop")
         assert (proc.returncode, e["state"], receipt["observation"]) == (123, "work_budget_exceeded", "live")
         assert e["wall_time_ms"] < 15_000
-        # A handled signal, a sibling stopped by exit_group and a CMPS/SCAS
-        # entry each complete within budget with the terminal counts.
-        for mode, field in (("signal", "signals_observed"), ("thread", None),
+        # A handled signal, a sibling stopped by exit_group, forks while that
+        # sibling runs, and a CMPS/SCAS entry each complete within budget with
+        # the terminal counts.
+        for mode, field in (("signal", "signals_observed"), ("thread", None), ("fork", None),
                             ("scas", "unsupported_rep_entries")):
             proc, e, receipt, m = run("eligible_" + mode, 10_000_000_000, 15_000,
                                       root / "eligible", mode)

@@ -50,8 +50,10 @@ aligned little-endian uint64 words in this order.
 
 All instrumented images, processes and threads in the role contribute to that
 one file. Each thread advances its private published baseline; shared counters
-use atomic additions. A child starts fresh, and an exec checkpoint publishes
-only the outstanding delta. A failed exec therefore continues against the
+use atomic additions. A child starts fresh: the copies of its parent's other
+threads that a fork leaves behind publish nothing, since those threads keep
+running and publish in the parent. An exec checkpoint publishes only the
+outstanding delta. A failed exec therefore continues against the
 same baseline. Publication at the next block entry leaves the current block
 available for replay correction. The client batches each component up to a
 4096-unit publication threshold. Before each application syscall it flushes

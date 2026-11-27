@@ -321,6 +321,8 @@ def main():
             subprocess.run(["cc", "-O2", "-pthread", "-x", "c", "-", "-o", eligible],
                            text=True, input=ELIGIBLE, check=True)
             check_run(prefix, work, "running-thread", [eligible, "thread"])
+            # A child does not publish the copy of a sibling's state it inherits.
+            check_run(prefix, work, "fork-running-thread", [eligible, "fork"])
             measurement = check_run(prefix, work, "scas", [eligible, "scas"])
             if not measurement["unsupported_rep_entries"]:
                 raise ValueError(f"scas: no CMPS/SCAS entry observed: {measurement}")

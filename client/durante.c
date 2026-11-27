@@ -805,6 +805,19 @@ static void thread_init(void *ctx) {
 }
 static void thread_exit(void *ctx) {
   thread_data_t *d = thread_state(ctx);
+  /* In a forked child the runtime runs this event, before fork_init(), for
+   * each parent thread that did not survive the fork, on a copy of its state.
+   * Those counts belong to the parent thread, which still publishes and
+   * aggregates them: publishing the copy would count its remainder twice, and
+   * a replay it had pending would invalidate the page. fork_init() resets the
+   * totals, so the copy is only freed. Only such a context belongs to another
+   * process while owner_pid is not yet this one: a shared-VM child's own
+   * context, or a child's state exiting in the parent, fails one condition. */
+  if (d && dr_get_process_id() != owner_pid &&
+      dr_get_process_id_from_drcontext(ctx) != dr_get_process_id()) {
+    free_thread_state(ctx, d);
+    return;
+  }
   /* A thread stopped by another thread's exit_group can be anywhere in a
    * charged BB. Its terminal record counts that final prefix as it stands, so
    * publish the same remainder; the live total then matches the record. */
