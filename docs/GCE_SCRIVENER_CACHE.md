@@ -51,6 +51,8 @@ These forecasts use two paid native reference inputs per executable for the inte
 
 A follow-up measures the branch-only collector separately and tests the frozen forecasts on IOI Wall. [Wall results and replay](GCE_WALL_BRANCH.md)
 
+Five further Scrivener query orders test whether an input-page scan improves the branch-only estimate for both solvers. [Scrivener page and branch forecasts](GCE_SCRIVENER_PAGES.md)
+
 ## Replay
 
 Run the following from the repository root to check both archives against their published metrics.
