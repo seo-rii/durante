@@ -103,3 +103,28 @@ The corpus showed two problems, both fixed with it:
 The counts of JIT runtimes depend on how fast they run: Java `bfs_grid` counted
 1.80e9 instructions in a plain run, 1.51e9 under a budget and 1.21e9 with the
 old latency callbacks. Every measurement was still valid.
+
+### Java 17 deep recursion
+
+The OpenJDK 21 measurements above used the original Java `deep_dfs`, which
+computed subtree sizes while unwinding one million recursive calls. On hosted
+Temurin 17.0.21.1 that program produced the reference output natively in
+3.71 seconds. Durante reached its 120-second watchdog in plain mode and its
+240-second watchdog with the latency bound. Both runs consumed CPU and
+produced no output. The cause of the slowdown in this JVM and instrumentation
+combination remains open. [Original CI run](https://github.com/seo-rii/durante/actions/runs/46023913950/job/140590274641)
+
+The current Java solver scores each node on entry by summing the labels of its
+ancestors, including itself. Each label then contributes once per descendant,
+which gives the same weighted subtree checksum. The input is a path rooted at
+one end, so each call recurses to its sole successor and returns immediately.
+The input, million-call depth, 512 MiB thread stack, JVM flags and watchdogs
+are identical to the original case.
+
+To run the original case in a separate checkout, select its solver and run
+the corpus command above with `--lang java --problem deep_dfs --no-aslr`
+on JDK 17:
+
+```sh
+git show ac0b7b1:tests/contest/deep_dfs/Main.java > tests/contest/deep_dfs/Main.java
+```

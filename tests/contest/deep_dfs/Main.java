@@ -33,13 +33,18 @@ public class Main {
     static long total = 0;
     static int maxDepth = 0;
 
-    static long dfs(int v, int parent, int depth) {
+    static void dfs(int v, int parent, int depth, long ancestorSum) {
         if (depth > maxDepth) maxDepth = depth;
-        long size = 1;
-        for (int e = head[v]; e != -1; e = nxt[e])
-            if (to[e] != parent) size += dfs(to[e], v, depth + 1);
-        total = (total + size % MOD * v) % MOD;
-        return size;
+        // Each ancestor contributes its label once for every node in its subtree.
+        ancestorSum = (ancestorSum + v) % MOD;
+        total = (total + ancestorSum) % MOD;
+        for (int e = head[v]; e != -1; e = nxt[e]) {
+            if (to[e] != parent) {
+                // The input is a path rooted at one end, so it has one successor.
+                dfs(to[e], v, depth + 1, ancestorSum);
+                return;
+            }
+        }
     }
 
     public static void main(String[] args) throws Exception {
@@ -57,7 +62,7 @@ public class Main {
                     to[e] = v; nxt[e] = head[u]; head[u] = e++;
                     to[e] = u; nxt[e] = head[v]; head[v] = e++;
                 }
-                dfs(1, 0, 0);
+                dfs(1, 0, 0, 0);
                 System.out.println(maxDepth + " " + total);
             } catch (IOException ex) {
                 throw new UncheckedIOException(ex);
