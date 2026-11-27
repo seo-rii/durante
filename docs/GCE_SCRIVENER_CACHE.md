@@ -49,6 +49,8 @@ Both fresh Debian 12 N2D guests used AMD Milan, one hardware thread per core and
 
 These forecasts use two paid native reference inputs per executable for the interpolation methods. The three held-out orders come from a single problem, with the same query multiset, and cover two known algorithms on one CPU family. The next test of the branch signal should use an independent problem and a separately timed lower-cost collector before considering it for a judge clock.
 
+A follow-up measures the branch-only collector separately and tests the frozen forecasts on IOI Wall. [Wall results and replay](GCE_WALL_BRANCH.md)
+
 ## Replay
 
 Run the following from the repository root to check both archives against their published metrics.

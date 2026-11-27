@@ -1,0 +1,26 @@
+{
+  "platform": {
+    "creation": "2026-11-27T06:54:31.445709+00:00",
+    "zone": "asia-northeast3-a",
+    "machine_type": "n2d-standard-4",
+    "threads_per_core": 1,
+    "cpu_platform": "AMD Milan",
+    "image": "debian-12-bookworm-v20261117",
+    "disk_auto_delete": true,
+    "external_ip": false,
+    "service_account": false
+  },
+  "cleanup": {
+    "instance_http": 404,
+    "boot_disk_http": 404,
+    "key_removed": true,
+    "verified_at": "2026-11-27T06:57:57.791078+00:00"
+  },
+  "freeze": {
+    "payload_sha256": "199deeb3f404e403759409efdb72a08e6697a5266e8da2dd57d39028a89a4f93",
+    "checksums_sha256": "5e260814d00c6d7ea46d37033a9afe9679e77521a306c2e58b31816f17edd79d",
+    "plan_sha256": "477b2a6410f717bb7ed6ac54dba5cac46f389c9484ca32a9c166c22c00028ac3",
+    "source_revision": "bd620a2332be28909927e32bcfea3407e94d7fb3"
+  },
+  "output_sha256": "5e4fdf77a981acdf256ad554bcc06d1b2d37223b3cecc4a2fc850317292be779"
+}

@@ -1,0 +1,991 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "plan_sha256": "477b2a6410f717bb7ed6ac54dba5cac46f389c9484ca32a9c166c22c00028ac3",
+  "run_sha256": "aad807a5446937774ef706a43b0b0dbc3461c2c0497ded4d4b572256370f8002",
+  "predictions_sha256": "c52f9ac5f2148828cfcc1cb4526633241619b357cc0203a26f73f8db54f89f1b",
+  "boot_sha256": "0106b38dd51fb51ff8e0cfda9c87fd3589e62ae0a3ac5aaa95da686a63661e7d",
+  "cpu_steal_ticks": 0,
+  "verified_pids": 90,
+  "sealed_prefix_rows": 63,
+  "cases": {
+    "ascending": {
+      "native_ns": [
+        46683000,
+        46847000,
+        46673000,
+        46658000,
+        46726000,
+        46702000,
+        46845000,
+        46718000,
+        46672000
+      ],
+      "profiles": {
+        "ordinary": [
+          {
+            "cpu_us": 324292,
+            "counts": {
+              "instructions": 570563029,
+              "rep_bytes": 632
+            }
+          },
+          {
+            "cpu_us": 326096,
+            "counts": {
+              "instructions": 570563029,
+              "rep_bytes": 632
+            }
+          },
+          {
+            "cpu_us": 341906,
+            "counts": {
+              "instructions": 570563029,
+              "rep_bytes": 632
+            }
+          }
+        ],
+        "full": [
+          {
+            "cpu_us": 2196535,
+            "counts": {
+              "Ir": 577630986,
+              "I1mr": 647,
+              "ILmr": 647,
+              "Dr": 126439360,
+              "D1mr": 66698,
+              "DLmr": 65839,
+              "Dw": 81393221,
+              "D1mw": 65934,
+              "DLmw": 65796,
+              "Bc": 83342869,
+              "Bcm": 3220529,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          },
+          {
+            "cpu_us": 2197933,
+            "counts": {
+              "Ir": 577630986,
+              "I1mr": 647,
+              "ILmr": 647,
+              "Dr": 126439360,
+              "D1mr": 66698,
+              "DLmr": 65839,
+              "Dw": 81393221,
+              "D1mw": 65934,
+              "DLmw": 65796,
+              "Bc": 83342869,
+              "Bcm": 3220529,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          },
+          {
+            "cpu_us": 2190839,
+            "counts": {
+              "Ir": 577630986,
+              "I1mr": 647,
+              "ILmr": 647,
+              "Dr": 126439360,
+              "D1mr": 66698,
+              "DLmr": 65839,
+              "Dw": 81393221,
+              "D1mw": 65934,
+              "DLmw": 65796,
+              "Bc": 83342869,
+              "Bcm": 3220529,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          }
+        ],
+        "branch_only": [
+          {
+            "cpu_us": 1162932,
+            "counts": {
+              "Ir": 577630986,
+              "Bc": 83342869,
+              "Bcm": 3220529,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          },
+          {
+            "cpu_us": 1158044,
+            "counts": {
+              "Ir": 577630986,
+              "Bc": 83342869,
+              "Bcm": 3220529,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          },
+          {
+            "cpu_us": 1161777,
+            "counts": {
+              "Ir": 577630986,
+              "Bc": 83342869,
+              "Bcm": 3220529,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          }
+        ]
+      },
+      "paired_events_equal": {
+        "Ir": [
+          true,
+          true,
+          true
+        ],
+        "Bc": [
+          true,
+          true,
+          true
+        ],
+        "Bcm": [
+          true,
+          true,
+          true
+        ],
+        "Bi": [
+          true,
+          true,
+          true
+        ],
+        "Bim": [
+          true,
+          true,
+          true
+        ]
+      }
+    },
+    "shuffled": {
+      "native_ns": [
+        60314000,
+        58559000,
+        56347000,
+        55430000,
+        56443000,
+        56228000,
+        56196000,
+        57159000,
+        60205000
+      ],
+      "profiles": {
+        "ordinary": [
+          {
+            "cpu_us": 346408,
+            "counts": {
+              "instructions": 570563159,
+              "rep_bytes": 632
+            }
+          },
+          {
+            "cpu_us": 347458,
+            "counts": {
+              "instructions": 570563159,
+              "rep_bytes": 632
+            }
+          },
+          {
+            "cpu_us": 352496,
+            "counts": {
+              "instructions": 570563159,
+              "rep_bytes": 632
+            }
+          }
+        ],
+        "full": [
+          {
+            "cpu_us": 2294093,
+            "counts": {
+              "Ir": 577631116,
+              "I1mr": 647,
+              "ILmr": 647,
+              "Dr": 126439425,
+              "D1mr": 1147923,
+              "DLmr": 420301,
+              "Dw": 81393286,
+              "D1mw": 69142,
+              "DLmw": 65847,
+              "Bc": 83342869,
+              "Bcm": 3671733,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          },
+          {
+            "cpu_us": 2287498,
+            "counts": {
+              "Ir": 577631116,
+              "I1mr": 647,
+              "ILmr": 647,
+              "Dr": 126439425,
+              "D1mr": 1147923,
+              "DLmr": 420301,
+              "Dw": 81393286,
+              "D1mw": 69142,
+              "DLmw": 65847,
+              "Bc": 83342869,
+              "Bcm": 3671733,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          },
+          {
+            "cpu_us": 2290566,
+            "counts": {
+              "Ir": 577631116,
+              "I1mr": 647,
+              "ILmr": 647,
+              "Dr": 126439425,
+              "D1mr": 1147923,
+              "DLmr": 420301,
+              "Dw": 81393286,
+              "D1mw": 69142,
+              "DLmw": 65847,
+              "Bc": 83342869,
+              "Bcm": 3671733,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          }
+        ],
+        "branch_only": [
+          {
+            "cpu_us": 1198602,
+            "counts": {
+              "Ir": 577631116,
+              "Bc": 83342869,
+              "Bcm": 3671733,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          },
+          {
+            "cpu_us": 1213280,
+            "counts": {
+              "Ir": 577631116,
+              "Bc": 83342869,
+              "Bcm": 3671733,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          },
+          {
+            "cpu_us": 1199033,
+            "counts": {
+              "Ir": 577631116,
+              "Bc": 83342869,
+              "Bcm": 3671733,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          }
+        ]
+      },
+      "paired_events_equal": {
+        "Ir": [
+          true,
+          true,
+          true
+        ],
+        "Bc": [
+          true,
+          true,
+          true
+        ],
+        "Bcm": [
+          true,
+          true,
+          true
+        ],
+        "Bi": [
+          true,
+          true,
+          true
+        ],
+        "Bim": [
+          true,
+          true,
+          true
+        ]
+      }
+    },
+    "tiles32": {
+      "native_ns": [
+        47211000,
+        47396000,
+        47205000,
+        47221000,
+        47295000,
+        47168000,
+        47181000,
+        47154000,
+        47309000
+      ],
+      "profiles": {
+        "ordinary": [
+          {
+            "cpu_us": 329119,
+            "counts": {
+              "instructions": 570563029,
+              "rep_bytes": 632
+            }
+          },
+          {
+            "cpu_us": 328238,
+            "counts": {
+              "instructions": 570563029,
+              "rep_bytes": 632
+            }
+          },
+          {
+            "cpu_us": 327800,
+            "counts": {
+              "instructions": 570563029,
+              "rep_bytes": 632
+            }
+          }
+        ],
+        "full": [
+          {
+            "cpu_us": 2188078,
+            "counts": {
+              "Ir": 577630986,
+              "I1mr": 647,
+              "ILmr": 647,
+              "Dr": 126439360,
+              "D1mr": 66674,
+              "DLmr": 65838,
+              "Dw": 81393221,
+              "D1mw": 65934,
+              "DLmw": 65796,
+              "Bc": 83342869,
+              "Bcm": 3254121,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          },
+          {
+            "cpu_us": 2184253,
+            "counts": {
+              "Ir": 577630986,
+              "I1mr": 647,
+              "ILmr": 647,
+              "Dr": 126439360,
+              "D1mr": 66674,
+              "DLmr": 65838,
+              "Dw": 81393221,
+              "D1mw": 65934,
+              "DLmw": 65796,
+              "Bc": 83342869,
+              "Bcm": 3254121,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          },
+          {
+            "cpu_us": 2194313,
+            "counts": {
+              "Ir": 577630986,
+              "I1mr": 647,
+              "ILmr": 647,
+              "Dr": 126439360,
+              "D1mr": 66674,
+              "DLmr": 65838,
+              "Dw": 81393221,
+              "D1mw": 65934,
+              "DLmw": 65796,
+              "Bc": 83342869,
+              "Bcm": 3254121,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          }
+        ],
+        "branch_only": [
+          {
+            "cpu_us": 1164722,
+            "counts": {
+              "Ir": 577630986,
+              "Bc": 83342869,
+              "Bcm": 3254121,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          },
+          {
+            "cpu_us": 1161308,
+            "counts": {
+              "Ir": 577630986,
+              "Bc": 83342869,
+              "Bcm": 3254121,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          },
+          {
+            "cpu_us": 1157065,
+            "counts": {
+              "Ir": 577630986,
+              "Bc": 83342869,
+              "Bcm": 3254121,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          }
+        ]
+      },
+      "predictions": {
+        "ordinary": 46702000,
+        "midpoint": 51572500,
+        "branch_misses": 47427215,
+        "ll_read_misses": 46702000,
+        "transferred_branch": 51606432
+      },
+      "signed_error_ppm": {
+        "ordinary": -10781,
+        "midpoint": 92383,
+        "branch_misses": 4580,
+        "ll_read_misses": -10781,
+        "transferred_branch": 93102
+      },
+      "native_tle_votes": {
+        "20": 9,
+        "25": 9,
+        "30": 9,
+        "35": 9,
+        "40": 9,
+        "45": 9,
+        "50": 0,
+        "55": 0,
+        "60": 0,
+        "65": 0,
+        "70": 0,
+        "75": 0,
+        "80": 0,
+        "85": 0,
+        "90": 0,
+        "95": 0,
+        "100": 0,
+        "105": 0,
+        "110": 0,
+        "115": 0,
+        "120": 0,
+        "125": 0,
+        "130": 0,
+        "135": 0,
+        "140": 0,
+        "145": 0,
+        "150": 0
+      },
+      "feature_ranges": {
+        "Bcm": "in_range",
+        "DLmr": "below"
+      },
+      "paired_events_equal": {
+        "Ir": [
+          true,
+          true,
+          true
+        ],
+        "Bc": [
+          true,
+          true,
+          true
+        ],
+        "Bcm": [
+          true,
+          true,
+          true
+        ],
+        "Bi": [
+          true,
+          true,
+          true
+        ],
+        "Bim": [
+          true,
+          true,
+          true
+        ]
+      }
+    },
+    "tiles4096": {
+      "native_ns": [
+        51522000,
+        51349000,
+        51513000,
+        51340000,
+        51452000,
+        51243000,
+        51468000,
+        51128000,
+        51527000
+      ],
+      "profiles": {
+        "ordinary": [
+          {
+            "cpu_us": 331094,
+            "counts": {
+              "instructions": 570563049,
+              "rep_bytes": 632
+            }
+          },
+          {
+            "cpu_us": 351330,
+            "counts": {
+              "instructions": 570563049,
+              "rep_bytes": 632
+            }
+          },
+          {
+            "cpu_us": 344236,
+            "counts": {
+              "instructions": 570563049,
+              "rep_bytes": 632
+            }
+          }
+        ],
+        "full": [
+          {
+            "cpu_us": 2220550,
+            "counts": {
+              "Ir": 577631006,
+              "I1mr": 647,
+              "ILmr": 647,
+              "Dr": 126439370,
+              "D1mr": 348769,
+              "DLmr": 65835,
+              "Dw": 81393231,
+              "D1mw": 66728,
+              "DLmw": 65799,
+              "Bc": 83342869,
+              "Bcm": 3427590,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          },
+          {
+            "cpu_us": 2220123,
+            "counts": {
+              "Ir": 577631006,
+              "I1mr": 647,
+              "ILmr": 647,
+              "Dr": 126439370,
+              "D1mr": 348769,
+              "DLmr": 65835,
+              "Dw": 81393231,
+              "D1mw": 66728,
+              "DLmw": 65799,
+              "Bc": 83342869,
+              "Bcm": 3427590,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          },
+          {
+            "cpu_us": 2227407,
+            "counts": {
+              "Ir": 577631006,
+              "I1mr": 647,
+              "ILmr": 647,
+              "Dr": 126439370,
+              "D1mr": 348769,
+              "DLmr": 65835,
+              "Dw": 81393231,
+              "D1mw": 66728,
+              "DLmw": 65799,
+              "Bc": 83342869,
+              "Bcm": 3427590,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          }
+        ],
+        "branch_only": [
+          {
+            "cpu_us": 1171504,
+            "counts": {
+              "Ir": 577631006,
+              "Bc": 83342869,
+              "Bcm": 3427590,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          },
+          {
+            "cpu_us": 1162559,
+            "counts": {
+              "Ir": 577631006,
+              "Bc": 83342869,
+              "Bcm": 3427590,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          },
+          {
+            "cpu_us": 1167975,
+            "counts": {
+              "Ir": 577631006,
+              "Bc": 83342869,
+              "Bcm": 3427590,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          }
+        ]
+      },
+      "predictions": {
+        "ordinary": 46702002,
+        "midpoint": 51572500,
+        "branch_misses": 51172221,
+        "ll_read_misses": 46702000,
+        "transferred_branch": 76932906
+      },
+      "signed_error_ppm": {
+        "ordinary": -92319,
+        "midpoint": 2342,
+        "branch_misses": -5438,
+        "ll_read_misses": -92319,
+        "transferred_branch": 495236
+      },
+      "native_tle_votes": {
+        "20": 9,
+        "25": 9,
+        "30": 9,
+        "35": 9,
+        "40": 9,
+        "45": 9,
+        "50": 9,
+        "55": 0,
+        "60": 0,
+        "65": 0,
+        "70": 0,
+        "75": 0,
+        "80": 0,
+        "85": 0,
+        "90": 0,
+        "95": 0,
+        "100": 0,
+        "105": 0,
+        "110": 0,
+        "115": 0,
+        "120": 0,
+        "125": 0,
+        "130": 0,
+        "135": 0,
+        "140": 0,
+        "145": 0,
+        "150": 0
+      },
+      "feature_ranges": {
+        "Bcm": "in_range",
+        "DLmr": "below"
+      },
+      "paired_events_equal": {
+        "Ir": [
+          true,
+          true,
+          true
+        ],
+        "Bc": [
+          true,
+          true,
+          true
+        ],
+        "Bcm": [
+          true,
+          true,
+          true
+        ],
+        "Bi": [
+          true,
+          true,
+          true
+        ],
+        "Bim": [
+          true,
+          true,
+          true
+        ]
+      }
+    },
+    "bit_reversed": {
+      "native_ns": [
+        56217000,
+        54646000,
+        57128000,
+        58072000,
+        55359000,
+        55756000,
+        55344000,
+        56483000,
+        55157000
+      ],
+      "profiles": {
+        "ordinary": [
+          {
+            "cpu_us": 345877,
+            "counts": {
+              "instructions": 570562919,
+              "rep_bytes": 632
+            }
+          },
+          {
+            "cpu_us": 368493,
+            "counts": {
+              "instructions": 570562919,
+              "rep_bytes": 632
+            }
+          },
+          {
+            "cpu_us": 347916,
+            "counts": {
+              "instructions": 570562919,
+              "rep_bytes": 632
+            }
+          }
+        ],
+        "full": [
+          {
+            "cpu_us": 2281956,
+            "counts": {
+              "Ir": 577630876,
+              "I1mr": 647,
+              "ILmr": 647,
+              "Dr": 126439305,
+              "D1mr": 1168238,
+              "DLmr": 483865,
+              "Dw": 81393166,
+              "D1mw": 70461,
+              "DLmw": 66195,
+              "Bc": 83342869,
+              "Bcm": 3279840,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          },
+          {
+            "cpu_us": 2298584,
+            "counts": {
+              "Ir": 577630876,
+              "I1mr": 647,
+              "ILmr": 647,
+              "Dr": 126439305,
+              "D1mr": 1168238,
+              "DLmr": 483865,
+              "Dw": 81393166,
+              "D1mw": 70461,
+              "DLmw": 66195,
+              "Bc": 83342869,
+              "Bcm": 3279840,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          },
+          {
+            "cpu_us": 2291358,
+            "counts": {
+              "Ir": 577630876,
+              "I1mr": 647,
+              "ILmr": 647,
+              "Dr": 126439305,
+              "D1mr": 1168238,
+              "DLmr": 483865,
+              "Dw": 81393166,
+              "D1mw": 70461,
+              "DLmw": 66195,
+              "Bc": 83342869,
+              "Bcm": 3279840,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          }
+        ],
+        "branch_only": [
+          {
+            "cpu_us": 1211973,
+            "counts": {
+              "Ir": 577630876,
+              "Bc": 83342869,
+              "Bcm": 3279840,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          },
+          {
+            "cpu_us": 1200040,
+            "counts": {
+              "Ir": 577630876,
+              "Bc": 83342869,
+              "Bcm": 3279840,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          },
+          {
+            "cpu_us": 1197084,
+            "counts": {
+              "Ir": 577630876,
+              "Bc": 83342869,
+              "Bcm": 3279840,
+              "Bi": 2099484,
+              "Bim": 55
+            }
+          }
+        ]
+      },
+      "predictions": {
+        "ordinary": 46701991,
+        "midpoint": 51572500,
+        "branch_misses": 47982460,
+        "ll_read_misses": 56443000,
+        "transferred_branch": 55361406
+      },
+      "signed_error_ppm": {
+        "ordinary": -162386,
+        "midpoint": -75032,
+        "branch_misses": -139421,
+        "ll_read_misses": 12322,
+        "transferred_branch": -7077
+      },
+      "native_tle_votes": {
+        "20": 9,
+        "25": 9,
+        "30": 9,
+        "35": 9,
+        "40": 9,
+        "45": 9,
+        "50": 9,
+        "55": 8,
+        "60": 0,
+        "65": 0,
+        "70": 0,
+        "75": 0,
+        "80": 0,
+        "85": 0,
+        "90": 0,
+        "95": 0,
+        "100": 0,
+        "105": 0,
+        "110": 0,
+        "115": 0,
+        "120": 0,
+        "125": 0,
+        "130": 0,
+        "135": 0,
+        "140": 0,
+        "145": 0,
+        "150": 0
+      },
+      "feature_ranges": {
+        "Bcm": "in_range",
+        "DLmr": "above"
+      },
+      "paired_events_equal": {
+        "Ir": [
+          true,
+          true,
+          true
+        ],
+        "Bc": [
+          true,
+          true,
+          true
+        ],
+        "Bcm": [
+          true,
+          true,
+          true
+        ],
+        "Bi": [
+          true,
+          true,
+          true
+        ],
+        "Bim": [
+          true,
+          true,
+          true
+        ]
+      }
+    }
+  },
+  "profile_cost": {
+    "median_branch_only_over_full_ppm": 525985,
+    "median_branch_only_over_ordinary_ppm": 3450872,
+    "median_branch_only_over_native_ppm": 22700284,
+    "total_cpu_us": {
+      "ordinary": 5112759,
+      "full": 33564086,
+      "branch_only": 17687898
+    }
+  },
+  "summary": {
+    "ordinary": {
+      "cases": 3,
+      "median_absolute_error_ppm": 92319,
+      "worst_absolute_error_ppm": 162386,
+      "within_20pct": 3,
+      "fixed_limits": 81,
+      "majority_correct": 78,
+      "mixed_limits": 1,
+      "unanimous_correct": 78,
+      "unanimous_false_timeout": 0,
+      "unanimous_false_pass": 2
+    },
+    "midpoint": {
+      "cases": 3,
+      "median_absolute_error_ppm": 75032,
+      "worst_absolute_error_ppm": 92383,
+      "within_20pct": 3,
+      "fixed_limits": 81,
+      "majority_correct": 79,
+      "mixed_limits": 1,
+      "unanimous_correct": 79,
+      "unanimous_false_timeout": 1,
+      "unanimous_false_pass": 0
+    },
+    "branch_misses": {
+      "cases": 3,
+      "median_absolute_error_ppm": 5438,
+      "worst_absolute_error_ppm": 139421,
+      "within_20pct": 3,
+      "fixed_limits": 81,
+      "majority_correct": 79,
+      "mixed_limits": 1,
+      "unanimous_correct": 79,
+      "unanimous_false_timeout": 0,
+      "unanimous_false_pass": 1
+    },
+    "ll_read_misses": {
+      "cases": 3,
+      "median_absolute_error_ppm": 12322,
+      "worst_absolute_error_ppm": 92319,
+      "within_20pct": 3,
+      "fixed_limits": 81,
+      "majority_correct": 80,
+      "mixed_limits": 1,
+      "unanimous_correct": 79,
+      "unanimous_false_timeout": 0,
+      "unanimous_false_pass": 1
+    },
+    "transferred_branch": {
+      "cases": 3,
+      "median_absolute_error_ppm": 93102,
+      "worst_absolute_error_ppm": 495236,
+      "within_20pct": 2,
+      "fixed_limits": 81,
+      "majority_correct": 75,
+      "mixed_limits": 1,
+      "unanimous_correct": 74,
+      "unanimous_false_timeout": 6,
+      "unanimous_false_pass": 0
+    }
+  }
+}

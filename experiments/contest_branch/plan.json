@@ -1,0 +1,122 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "cpu": 1,
+  "timeout_s": 120,
+  "bundle": {
+    "artifact_id": 15033563582,
+    "revision": "589a402b0cfa70ea3af51bf8b95644026dbc64c8",
+    "sha256": "17e4d66cb8e643cd97b5627453acdd862becf2ffaa0c739bb32ecffd9715e955"
+  },
+  "valgrind_package": {
+    "name": "valgrind",
+    "version": "1:3.19.0-1",
+    "arch": "amd64",
+    "sha256": "324842f2308a1e42abf2d81ff5eb19a9475fc9db95647f4d9da71444eda4087f"
+  },
+  "tools": {
+    "reader": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a",
+    "current": "d66e4849de1e24e6a40bf42f00e1355343b79dd4af1a8cb8202d75392b33e629",
+    "drrun": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "engine": "f2478395d33e2d8e4a6fb4158fd826777cca37ee02e94924757696b08d7fb06f",
+    "valgrind": "6cf6e12cf59b2a28625e65045b39564a82406604cca0d9c4cc5dffe8635c72c6",
+    "cachegrind": "768b94ae8257c6f5224257342729c6ce691aa80785fc436aaf67522b67b25459",
+    "preload": "2f2a3ccb9ebf10e4d6b2d6854e349e89b8852d3c0dfca9a55d7bc4d2939ac324"
+  },
+  "cache_geometry": {
+    "I1": [
+      32768,
+      8,
+      64
+    ],
+    "D1": [
+      32768,
+      8,
+      64
+    ],
+    "LL": [
+      524288,
+      8,
+      64
+    ]
+  },
+  "sources": {
+    "wall": "experiments/contest_accuracy/wall.cpp"
+  },
+  "source_sha256": {
+    "wall": "a00651e889a07a0634b51068c1992026d4b297a0d1c2898411ac980a81d616e7"
+  },
+  "binaries": {
+    "wall": "a9a2df1ade516cebcd4afa89705db83fc1425fc5db29a9bd3956386670d98210"
+  },
+  "anchors": [
+    "ascending",
+    "shuffled"
+  ],
+  "profile_reps": 3,
+  "native_reps": 9,
+  "fixed_limits_ms": [
+    20,
+    25,
+    30,
+    35,
+    40,
+    45,
+    50,
+    55,
+    60,
+    65,
+    70,
+    75,
+    80,
+    85,
+    90,
+    95,
+    100,
+    105,
+    110,
+    115,
+    120,
+    125,
+    130,
+    135,
+    140,
+    145,
+    150
+  ],
+  "scrivener_metrics": {
+    "gce-scrivener-cache": "4774feb892b9cbee1a7892a96d87b4cb7b1c163e6f1b416bcb42bbb700ea91ee",
+    "gce-scrivener-cache-repeat": "e2d868c09d3d1f3336b4d668b306f3d9dc4ae190dada78ebd04f5573ca14ae36"
+  },
+  "cases": [
+    {
+      "name": "ascending",
+      "stdin_sha256": "f3de24c43c165b473d0da3e142e459d018532a00f048a83aaadad8175e57a184",
+      "stdout_sha256": "71914967d9adb55f52967329d63c6018f1c8c72a940e8933a878cbf404a989b5"
+    },
+    {
+      "name": "shuffled",
+      "stdin_sha256": "ab94ebf1748aef031454f4741c648b76730ae9d4c5cdb50cc31685985f8baafb",
+      "stdout_sha256": "71914967d9adb55f52967329d63c6018f1c8c72a940e8933a878cbf404a989b5"
+    },
+    {
+      "name": "tiles32",
+      "stdin_sha256": "0844e84e696760efd6637bd6657faaf73e3a235f6d403d1d13dd64f2028d62b3",
+      "stdout_sha256": "71914967d9adb55f52967329d63c6018f1c8c72a940e8933a878cbf404a989b5"
+    },
+    {
+      "name": "tiles4096",
+      "stdin_sha256": "cbb1eeb3be8a82cf666e3db58655c9aa1e8fb6f9a21fc3551d5b6829b3661298",
+      "stdout_sha256": "71914967d9adb55f52967329d63c6018f1c8c72a940e8933a878cbf404a989b5"
+    },
+    {
+      "name": "bit_reversed",
+      "stdin_sha256": "6d416c80e5d5aab3d57b1fe780edd60cb47e5f3088bd2f11487ed3bbe60e3ff0",
+      "stdout_sha256": "71914967d9adb55f52967329d63c6018f1c8c72a940e8933a878cbf404a989b5"
+    }
+  ],
+  "design": "Two fresh GCE Debian 12 AMD Milan n2d-standard-4 boots, one thread per core, CPU 1 affinity and cgroup. One existing IOI 2014 Wall static executable, 131072 distinct singleton raises applied in five orders. Use the same payload on both guests and compare wait4 user plus system CPU.",
+  "schedule": "Run three rotated rounds of ordinary Durante, Cachegrind cache+branch and Cachegrind branch-only profiles. Use the first report of each arm for prediction; report all repeats. Run nine rotated native rounds of the two endpoint inputs. Seal the forecasts and prefix digest before any native run of the three holdouts. Then run nine rotated held-out native rounds. Check every stdout against its independent oracle.",
+  "methods": "Ordinary scales the ascending Wall native median by the ratio of registered instruction/REP work. Midpoint averages the ascending and shuffled medians. Bcm from branch-only and DLmr from full simulation interpolate between these two medians, clamping to the endpoint range and using midpoint for equal features. Round up once. The separate transfer control adds 146 ns per additional simulated conditional miss relative to ascending Wall, floored to one ns. 146 is the rounded median of four Scrivener endpoint slopes from #99. It consumes one Wall native anchor.",
+  "qualification": "Report separately per boot. Transfer of the two-anchor Bcm method requires lower median absolute relative error than both ordinary and midpoint on each guest. A cheaper collector requires the median across all five cases of (median branch-only CPU / median full CPU) below one on both. Report ratios versus ordinary/native, raw shared event equality across all three repeats, worst error, clipped features, the one-anchor transfer comparator, fixed-limit majority and unanimous errors. Equality at deadline passes. Do not fit on Wall holdouts."
+}

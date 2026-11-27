@@ -14,19 +14,25 @@ from scrivener_cache.bench import TOOL_PATHS
 from scrivener_order.prepare import bundle, finish_guest, release_files
 
 
-def prepare(out, current_bundle, valgrind_deb):
-    out = out.resolve()
-    require(not out.is_relative_to(HERE.parent), "choose a guest directory outside the experiment sources")
-    plan = json.loads((HERE / "plan.json").read_bytes())
-    require(digest(valgrind_deb) == plan["valgrind_package"]["sha256"], "different Valgrind package")
-    files = release_files(current_bundle, plan["bundle"], TOOL_PATHS["current"], include_sdk=True)
+def verified_valgrind_files(package, expected_digest):
+    require(digest(package) == expected_digest, "different Valgrind package")
+    files = {}
     # dpkg-deb -x extracts package data without running maintainer scripts.
     with tempfile.TemporaryDirectory() as directory:
-        subprocess.run(["dpkg-deb", "-x", valgrind_deb, directory], check=True)
+        subprocess.run(["dpkg-deb", "-x", package, directory], check=True)
         for relative in ("usr/bin/valgrind.bin", "usr/libexec/valgrind/cachegrind-amd64-linux",
                          "usr/libexec/valgrind/vgpreload_core-amd64-linux.so"):
             path = Path(directory) / relative
             files["cachegrind/" + path.name] = (path.read_bytes(), path.stat().st_mode & 0o777)
+    return files
+
+
+def prepare(out, current_bundle, valgrind_deb):
+    out = out.resolve()
+    require(not out.is_relative_to(HERE.parent), "choose a guest directory outside the experiment sources")
+    plan = json.loads((HERE / "plan.json").read_bytes())
+    files = release_files(current_bundle, plan["bundle"], TOOL_PATHS["current"], include_sdk=True)
+    files.update(verified_valgrind_files(valgrind_deb, plan["valgrind_package"]["sha256"]))
     bundle.write_directory(out, files)
     finish_guest(out, plan, HERE.name, TOOL_PATHS)
 
