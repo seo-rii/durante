@@ -26,11 +26,12 @@ def forecasts(low_ns, high_ns, low, high, case):
     return estimates
 
 
-def summarize(plan, rows, predictions):
+def summarize(plan, rows, predictions, methods=METHODS):
     limits = plan["fixed_limits_ms"]
     require(limits == list(range(30, 86, 5)), "unexpected fixed limits")
     heldout = [c["name"] for c in plan["cases"] if c["group"] == "holdout"]
-    require(set(predictions) == set(heldout), "unexpected set of held-out forecasts")
+    controls = [c["name"] for c in plan["cases"] if c["group"] == "control"]
+    require(set(predictions) == set(heldout + controls), "unexpected set of forecasts")
     native_ns = defaultdict(list)
     costs = defaultdict(list)
     for row in rows:
@@ -42,7 +43,7 @@ def summarize(plan, rows, predictions):
 
     cases = {}
     scored = []
-    for name in heldout:
+    for name in heldout + controls:
         programs = {}
         require(set(predictions[name]) == set(plan["binaries"]), "missing solver forecast")
         for program in plan["binaries"]:
@@ -50,16 +51,17 @@ def summarize(plan, rows, predictions):
             require(len(times) == 9 and min(times) > 0, "expected nine positive held-out native observations")
             actual = median(times)
             estimates = predictions[name][program]
-            require(set(estimates) == set(METHODS) and all(type(t) is int and t >= 0 for t in estimates.values()),
+            require(set(estimates) == set(methods) and all(type(t) is int and t >= 0 for t in estimates.values()),
                     "invalid sealed forecast")
             errors = {k: Fraction(ns - actual, actual) for k, ns in estimates.items()}
             programs[program] = dict(native_ns=times, median_native_ns=actual, predictions_ns=estimates,
                                      signed_error_ppm={k: round(err * 1_000_000) for k, err in errors.items()},
                                      within_20pct={k: abs(err) <= Fraction(1, 5) for k, err in errors.items()})
-            scored.append(dict(native_ns=times, median_ns=actual, predictions=estimates))
+            if name in heldout:
+                scored.append(dict(native_ns=times, median_ns=actual, predictions=estimates))
         cases[name] = programs
 
-    summary = score_cases(scored, limits, METHODS)
+    summary = score_cases(scored, limits, methods)
     for method, result in summary.items():
         # With nine observations, a strict majority crosses exactly when the median crosses.
         false_pass = sum(case["predictions"][method] <= ms * 1_000_000 < case["median_ns"]

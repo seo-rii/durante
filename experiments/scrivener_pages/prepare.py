@@ -19,11 +19,11 @@ def file_entry(path):
     return path.read_bytes(), path.stat().st_mode & 0o777
 
 
-def prepare(output, runtime, cachegrind):
+def prepare(output, runtime, cachegrind, *, study=HERE):
     output = output.resolve()
     require(not output.is_relative_to(HERE.parent) and not output.exists(),
             "choose a fresh output directory outside the experiment sources")
-    plan = json.loads((HERE / "plan.json").read_bytes())
+    plan = json.loads((study / "plan.json").read_bytes())
     tools = dict(plan["tools"])
     scan_sha256 = tools.pop("scan")
     files = {TOOL_PATHS["current"]: file_entry(runtime / "lib/libdurante.so")}
@@ -39,21 +39,25 @@ def prepare(output, runtime, cachegrind):
         staging = Path(temporary)
         scanner = staging / "scan"
         subprocess.run(["g++", "-std=c++20", "-O2", "-static", "-s", "-march=x86-64-v2",
-                        "-Wl,--build-id=none", HERE / "scan.cpp", "-o", scanner], check=True)
+                        "-Wl,--build-id=none", study / "scan.cpp", "-o", scanner], check=True)
         require(digest(scanner) == scan_sha256, "different static scan ELF")
         payload = staging / "payload"
         bundle.write_directory(payload, files)
-        finish_guest(payload, dict(plan, tools=tools), HERE.name, TOOL_PATHS)
+        finish_guest(payload, dict(plan, tools=tools), study.name, TOOL_PATHS)
         shutil.move(scanner, payload / "binaries/scan")
         with (payload / "checksums.sha256").open("a") as manifest:
             manifest.write(f"{scan_sha256}  binaries/scan\n")
         payload.rename(output)
 
 
-if __name__ == "__main__":
+def main(study=HERE):
     cli = argparse.ArgumentParser(description=__doc__)
     cli.add_argument("--runtime", type=Path, required=True, help="worker install containing dynamorio/ and lib/")
     cli.add_argument("--cachegrind", type=Path, required=True, help="directory with the three registered Debian ELFs")
     cli.add_argument("--output", type=Path, required=True)
     args = cli.parse_args()
-    prepare(args.output, args.runtime, args.cachegrind)
+    prepare(args.output, args.runtime, args.cachegrind, study=study)
+
+
+if __name__ == "__main__":
+    main()
