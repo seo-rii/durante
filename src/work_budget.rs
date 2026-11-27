@@ -44,8 +44,6 @@ impl Progress {
         let rep = &measurement["rep_breakdown"];
         measurement["valid"] == true
             && measurement["complete"] == true
-            && measurement["signals_observed"] == 0
-            && measurement["unsupported_rep_entries"] == 0
             && measurement["rep_bytes_enabled"] == true
             && rep["version"] == 1
             && self.overflow == 0
@@ -213,9 +211,15 @@ mod tests {
             overflow: 0,
         };
         assert!(p.matches_terminal(&good));
+        // Signals and CMPS/SCAS entries leave a complete report eligible, as
+        // they leave the live counts usable.
+        let mut observed = good.clone();
+        observed["signals_observed"] = json!(3);
+        observed["unsupported_rep_entries"] = json!(2);
+        assert!(p.matches_terminal(&observed));
         for (field, other) in [
-            ("signals_observed", json!(1)),
-            ("unsupported_rep_entries", json!(1)),
+            ("valid", json!(false)),
+            ("complete", json!(false)),
             ("instructions", json!(54)),
             ("rep_breakdown", Value::Null),
             (
