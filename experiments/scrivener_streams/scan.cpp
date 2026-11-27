@@ -50,6 +50,11 @@ int main(int argc, char**) {
     std::array<int, 16> recent;
     recent.fill(-1);
     std::vector<int> last;
+#ifdef SCRIVENER_RANK_FEATURES
+    std::vector<int> last_lookup;
+    long long displacement = 0;
+    int stale_disruptive = 0;
+#endif
     int length = 0, accesses = 0, misses = 0, disruptive = 0, previous = -1;
     long long position_bits = 0;
     for (int i = 0; i < commands; ++i) {
@@ -57,7 +62,12 @@ int main(int argc, char**) {
         if (command == 'T') {
             int ch = in.letter();
             if (ch < 'a' || ch > 'z') return 1;
-            if (length % 512 == 0) last.push_back(-1);
+            if (length % 512 == 0) {
+                last.push_back(-1);
+#ifdef SCRIVENER_RANK_FEATURES
+                last_lookup.push_back(-1);
+#endif
+            }
             ++length;
         } else if (command == 'P') {
             int position = in.number();
@@ -70,16 +80,32 @@ int main(int argc, char**) {
             auto slot = std::find(recent.begin(), recent.end(), page);
             if (slot == recent.end()) {
                 ++misses;
-                if (last[page] == -1 || std::abs(position - last[page]) > 8) ++disruptive;
+                if (last[page] == -1 || std::abs(position - last[page]) > 8) {
+                    ++disruptive;
+#ifdef SCRIVENER_RANK_FEATURES
+                    if (last[page] != -1)
+                        displacement += std::abs(position - last[page]);
+                    if (last[page] == -1 || accesses - last_lookup[page] - 1 >= 128)
+                        ++stale_disruptive;
+#endif
+                }
                 slot = recent.end() - 1;
             }
             std::move_backward(recent.begin(), slot, slot + 1);
             recent.front() = page;
             last[page] = position;
+#ifdef SCRIVENER_RANK_FEATURES
+            last_lookup[page] = accesses;
+#endif
         } else {
             return 1;
         }
     }
     if (!in.finished()) return 1;
+#ifdef SCRIVENER_RANK_FEATURES
+    std::printf("%d %d %d %lld %lld %d\n", accesses, misses, disruptive, position_bits,
+                displacement, stale_disruptive);
+#else
     std::printf("%d %d %d %lld\n", accesses, misses, disruptive, position_bits);
+#endif
 }
