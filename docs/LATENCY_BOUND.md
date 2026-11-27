@@ -43,6 +43,24 @@ proportion: `floor(bound * returned_instructions / block_instructions)`. Every
 block therefore keeps at least its issue cost, so a valid terminal always has
 `latency_bound_x16 >= 4 * instructions`; the collectors reject anything less.
 
+## Charging
+
+The bound is charged by the same flag-free inline block entry as the
+instruction count, with or without the live clock (`--work-budget`). After
+the count, the entry adds the block's constant, records the block's count and
+bound for a replay of one of its writes, and keeps the counter's previous
+value. A thread that the runtime relocates in the middle of an entry gets both
+charges back, and re-entering the block charges them once. As for
+instructions, the next entry latches a wrap of the 64-bit counter, and the
+wrap makes the measurement unavailable. An unanalyzable block still takes a
+callback that sets its error.
+
+`--memory-operand-bytes` keeps the block-entry and write callbacks for every
+counter, so it costs far more than the bound alone. (The 0.86% marginal cost
+in the Rust comparison below was measured when the bound used those callbacks
+too.) The inline entries and the callbacks count the same instructions and
+bound; the equality checks under Evidence compare them.
+
 ## Records and aggregate
 
 With the option, every `start` adds `latency_bound_version: 1`, and every `end`
@@ -62,7 +80,12 @@ at the top level, on every process and on every selected image segment. The CLI
 report adds `latency_bound_version: 1` when the bound was requested; a complete
 measurement without the object (or with it when it was not requested) is
 reported as unavailable (`client latency bound does not match the request`).
-Combined instruction and REP counters are unchanged by the option.
+The option does not change how instructions and REP bytes are counted. A
+program that reads `/proc/self/maps` still runs a little longer with it: that
+file also lists the runtime's own mappings, and the larger instrumented blocks
+take a few more code-cache units. A Rust program (whose start-up parses the
+file to find the main thread's stack) counted 659,893 instructions without the
+option and 672,643 with it, each the same in every run without ASLR.
 
 ## Memory operand bytes
 
@@ -115,6 +138,22 @@ report the same instructions and bound through `durante run --latency-bound`,
 and no bound without the flag. The code-replay fixtures from
 `tests/jit_replay.S` must stay valid with unchanged instruction counts and a
 bound of at least the issue cost.
+
+The harness then compares the inline entries with the callbacks that
+`--memory-operand-bytes` keeps. This covers one iteration count of each
+kernel, the replay fixtures, the operand fixture and the ordinary, exec and
+failed-exec REP lifecycle fixtures from `tests/rep_breakdown.S`. Each run is
+repeated with the live clock. Every counted field must be identical: validity,
+instructions, bound, REP counters, signals and every process and image row.
+With `--engine-debug` the same comparison also runs on the debug core.
+`--reference-client` adds a client built from another revision, for example
+one whose bound always used callbacks. Every fixture must then match it too,
+including the fork and vfork fixtures, which observe SIGCHLD, and a fault
+handler that reads registers its block's entry spilled.
+`tests/live_work_client.py --latency-bound` repeats the live page checks with
+the bound, including a signal at each point of the boundary routine with
+`--gdb`. `tests/jit_stress.py --latency-bound`, optionally with
+`--work-budget`, runs the generated-code stress with it, in every mode.
 
 In the exploratory work-feature study (`experiments/time_features`, a separate
 change), a prototype that omitted `lea` address dependencies predicted 9 of 18 single-cost kernels within 20%
