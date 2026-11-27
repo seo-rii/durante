@@ -64,7 +64,7 @@ def make(name, size=SIZE):
     return reorder_queries(size, _ranks(name, size))
 
 
-def features(text):
+def features(text, *, revisit_metrics=False):
     """Count LRU misses that are first visits or return more than eight positions away."""
     counts = pages.features(text)
     # The existing parser validates commands and computes the three reference features.
@@ -73,6 +73,8 @@ def features(text):
     recent = OrderedDict()
     last = {}
     disruptive = 0
+    last_visit = {}
+    query = displacement = stale_disruptive = 0
     for command, value in zip(words, words, strict=True):
         if command == "P":
             position = int(value.lstrip("0") or "0")
@@ -80,10 +82,21 @@ def features(text):
             if page in recent:
                 recent.move_to_end(page)
             else:
-                disruptive += page not in last or abs(last[page] - position) > 8
+                delta = None if page not in last else abs(last[page] - position)
+                if delta is None or delta > 8:
+                    disruptive += 1
+                    if revisit_metrics:
+                        displacement += 0 if delta is None else delta
+                        stale_disruptive += delta is None or query - last_visit[page] - 1 >= 128
                 recent[page] = None
                 if len(recent) > 16:
                     recent.popitem(last=False)
             last[page] = position
-    return dict(accesses=counts["accesses"], misses=counts["misses"], disruptive=disruptive,
-                position_bits=counts["position_bits"])
+            if revisit_metrics:
+                last_visit[page] = query
+                query += 1
+    result = dict(accesses=counts["accesses"], misses=counts["misses"], disruptive=disruptive,
+                  position_bits=counts["position_bits"])
+    if revisit_metrics:
+        result.update(displacement=displacement, stale_disruptive=stale_disruptive)
+    return result

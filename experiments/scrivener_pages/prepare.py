@@ -19,7 +19,7 @@ def file_entry(path):
     return path.read_bytes(), path.stat().st_mode & 0o777
 
 
-def prepare(output, runtime, cachegrind, *, study=HERE, scanner_source=None):
+def prepare(output, runtime, cachegrind, *, study=HERE, scanner_source=None, scanner_flags=()):
     if scanner_source is None:
         scanner_source = study / "scan.cpp"
     output = output.resolve()
@@ -41,7 +41,7 @@ def prepare(output, runtime, cachegrind, *, study=HERE, scanner_source=None):
         staging = Path(temporary)
         scanner = staging / "scan"
         subprocess.run(["g++", "-std=c++20", "-O2", "-static", "-s", "-march=x86-64-v2",
-                        "-Wl,--build-id=none", scanner_source, "-o", scanner], check=True)
+                        "-Wl,--build-id=none", *scanner_flags, scanner_source, "-o", scanner], check=True)
         require(digest(scanner) == scan_sha256, "different static scan ELF")
         payload = staging / "payload"
         bundle.write_directory(payload, files)
@@ -52,13 +52,13 @@ def prepare(output, runtime, cachegrind, *, study=HERE, scanner_source=None):
         payload.rename(output)
 
 
-def main(study=HERE, *, scanner_source=None):
+def main(study=HERE, *, scanner_source=None, scanner_flags=()):
     cli = argparse.ArgumentParser(description=__doc__)
     cli.add_argument("--runtime", type=Path, required=True, help="worker install containing dynamorio/ and lib/")
     cli.add_argument("--cachegrind", type=Path, required=True, help="directory with the three registered Debian ELFs")
     cli.add_argument("--output", type=Path, required=True)
     args = cli.parse_args()
-    prepare(args.output, args.runtime, args.cachegrind, study=study, scanner_source=scanner_source)
+    prepare(args.output, args.runtime, args.cachegrind, study=study, scanner_source=scanner_source, scanner_flags=scanner_flags)
 
 
 if __name__ == "__main__":
