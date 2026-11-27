@@ -66,17 +66,27 @@ static uint32_t DURANTE_TEST_BLOCK_LATENCY_BOUND(void *drcontext, void *tag, ins
 #define MAX_EVENTS 4096
 
 typedef struct {
-  uint64_t instructions, counter_overflows, signals, rep_bytes, rep_entries,
-      unsupported_rep_entries;
+  uint64_t instructions, counter_overflows;
+  /* Optional static latency bound (latency_bound.h), in 1/16 cycles. The
+   * current block's charge is kept so a replay can return its unexecuted
+   * share; an unanalyzable block or underflow is sticky invalidity. Flat
+   * entries reach these fields with 8-bit displacements.
+   * latency_entry_base is the counter before the most recent flat entry's
+   * charge, which relocation restores and the next entry checks for a wrap
+   * (as entry_base does for instructions). */
+  uint64_t latency_bound_x16, latency_entry_base;
+  uint32_t block_instructions, block_bound_x16;
+  uint64_t unsupported_rep_entries;
   uint64_t rep_movs_bytes, rep_stos_bytes, rep_movs_entries, rep_stos_entries;
   uint64_t published_instructions, published_movs, published_stos;
   /* Flat live entries charge a block by counting live_room down from
-   * fast_until - instructions - 1, and store nothing else. instructions lags
-   * until settle_live_count() adds the distance live_room has moved since
-   * room_settled. A negative value takes the boundary callback. It may run low
-   * after replay or relocation, which only adds a callback; the callback
-   * recomputes it. entry_room is live_room before the current entry, or
-   * ENTRY_ROOM_CHARGED once the callback has charged that entry. */
+   * fast_until - instructions - 1, and store no other count than the
+   * optional latency bound. instructions lags until settle_live_count() adds
+   * the distance live_room has moved since room_settled. A negative value
+   * takes the boundary callback. It may run low after replay or relocation,
+   * which only adds a callback; the callback recomputes it. entry_room is
+   * live_room before the current entry, or ENTRY_ROOM_CHARGED once the
+   * callback has charged that entry. */
   int64_t live_room, entry_room;
   /* The value of instructions before the most recent block entry (set by flat
    * entries without a live clock, and by the live boundary callback), and its
@@ -90,11 +100,7 @@ typedef struct {
   bool replay_error;
   /* A CPUID-profile request outside the fixed table (sticky invalidity). */
   bool cpuid_error;
-  /* Optional static latency bound (latency_bound.h), in 1/16 cycles. The
-   * current block's charge is kept so a replay can return its unexecuted
-   * share; an unanalyzable block or underflow is sticky invalidity. */
-  uint64_t latency_bound_x16;
-  uint32_t block_instructions, block_bound_x16;
+  uint64_t signals, rep_bytes, rep_entries;
   uint32_t write_block_instructions, write_block_bound_x16;
   bool latency_error;
   app_pc write_pc, write_next_pc, restart_pc;
@@ -123,6 +129,10 @@ typedef struct {
   byte *boundary_stack, *boundary_stack_top;
   reg_t boundary_rsp;
 } thread_data_t;
+/* Flat and live entries address these fields with 8-bit displacements. */
+_Static_assert(offsetof(thread_data_t, entry_base) + 8 <= 128 &&
+                   offsetof(thread_data_t, block_bound_x16) + 4 <= 128,
+               "entry fields need 8-bit displacements");
 static int tls_index;
 /* In ordinary static code the generated accounting runs at every block and
  * store. Mirror the drmgr-owned pointer for a single segment-relative load. */
@@ -431,7 +441,8 @@ static void settle_restart(thread_data_t *d) {
 /* Settle the last flat charge before aggregation or replay. Later block
  * entries latch earlier wraps before overwriting entry_base. */
 static void check_flat_counter(thread_data_t *d) {
-  if (flat_inline && d->instructions < d->entry_base) {
+  if (flat_inline && (d->instructions < d->entry_base ||
+                      (latency_bound_enabled && d->latency_bound_x16 < d->latency_entry_base))) {
     d->counter_overflows = 1;
     invalidate_live_work();
   }
@@ -750,6 +761,10 @@ static void settle_write_checkpoint(thread_data_t *d) {
   d->write_next_pc = pc + (packed >> WRITE_WORD_PC_BITS & ((1 << WRITE_WORD_LENGTH_BITS) - 1));
   d->write_suffix = packed >> (WRITE_WORD_PC_BITS + WRITE_WORD_LENGTH_BITS);
   d->write_rep = false;
+  /* An entry zeroes the word before it replaces the block fields, so a packed
+   * word belongs to the block they describe, as at before_write(). */
+  d->write_block_instructions = d->block_instructions;
+  d->write_block_bound_x16 = d->block_bound_x16;
 }
 
 /* Discard the checkpoint, including one inline code stored but no callback
@@ -1217,13 +1232,74 @@ static void emit_flat_charge(void *ctx, instrlist_t *bb, instr_t *where, int cou
   emit_flat_parts(ctx, bb, where, count, FLAT_ALL, false);
 }
 
+/* With -latency_bound a flat entry also charges the block's bound, as
+ * count_block_latency() does, after its count and after the write word is
+ * cleared, with R11 holding the state and RCX free. It records the block's
+ * count and bound for a replay of one of its writes, and saves the bound's
+ * prior value in latency_entry_base, which restore_state() recognizes. A
+ * bound above INT32_MAX (an unanalyzable block) charges nothing here; the
+ * caller adds the error callback. Like the count's, a wrap is latched by the
+ * next entry or by check_flat_counter(): a block adds at most INT32_MAX. imm
+ * receives the two uses of the bound. */
+enum { LATENCY_ADD, LATENCY_BLOCK_BOUND, LATENCY_IMMEDIATES };
+
+static void emit_flat_latency(void *ctx, instrlist_t *bb, instr_t *where, int count,
+                              uint32_t bound, instr_t **imm) {
+  opnd_t value = opnd_create_reg(DR_REG_RCX), low_reg = opnd_create_reg(DR_REG_ECX);
+#define INSERT(i) \
+  (where ? instrlist_meta_preinsert(bb, where, (i)) : instrlist_meta_append(bb, (i)))
+  instr_t *wrapped = INSTR_CREATE_label(ctx), *checked = INSTR_CREATE_label(ctx);
+  INSERT(INSTR_CREATE_movzx(ctx, low_reg,
+                            OPND_CREATE_MEM8(DR_REG_R11,
+                                             offsetof(thread_data_t, latency_entry_base) + 7)));
+  INSERT(INSTR_CREATE_jecxz(ctx, opnd_create_instr(checked)));
+  INSERT(INSTR_CREATE_movzx(ctx, low_reg,
+                            OPND_CREATE_MEM8(DR_REG_R11,
+                                             offsetof(thread_data_t, latency_bound_x16) + 7)));
+  INSERT(INSTR_CREATE_jecxz(ctx, opnd_create_instr(wrapped)));
+  INSERT(INSTR_CREATE_jmp_short(ctx, opnd_create_instr(checked)));
+  INSERT(wrapped);
+  INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, counter_overflows)),
+                             OPND_CREATE_INT32(1)));
+  INSERT(checked);
+  if (bound <= INT32_MAX) {
+    INSERT(INSTR_CREATE_mov_ld(ctx, value, state_field(offsetof(thread_data_t, latency_bound_x16))));
+    INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, latency_entry_base)),
+                               value));
+    instr_t *add = INSTR_CREATE_lea(
+        ctx, value, opnd_create_base_disp(DR_REG_RCX, DR_REG_NULL, 0, (int)bound, OPSZ_lea));
+    INSERT(add);
+    if (imm)
+      imm[LATENCY_ADD] = add;
+    INSERT(INSTR_CREATE_mov_st(ctx, state_field(offsetof(thread_data_t, latency_bound_x16)),
+                               value));
+  }
+  INSERT(INSTR_CREATE_mov_st(ctx,
+                             OPND_CREATE_MEM32(DR_REG_R11, offsetof(thread_data_t, block_instructions)),
+                             OPND_CREATE_INT32(count)));
+  instr_t *block_bound = INSTR_CREATE_mov_st(
+      ctx, OPND_CREATE_MEM32(DR_REG_R11, offsetof(thread_data_t, block_bound_x16)),
+      OPND_CREATE_INT32((int)bound));
+  INSERT(block_bound);
+  if (imm)
+    imm[LATENCY_BLOCK_BOUND] = block_bound;
+#undef INSERT
+}
+
+static void emit_flat_latency_entry(void *ctx, instrlist_t *bb, instr_t *where, int count,
+                                    uint32_t bound, instr_t **imm) {
+  emit_flat_parts(ctx, bb, where, count, FLAT_PREFIX | FLAT_BODY, false);
+  emit_flat_latency(ctx, bb, where, count, bound, imm);
+  emit_flat_parts(ctx, bb, where, count, FLAT_SUFFIX, false);
+}
+
 /* The runtime re-encodes every meta instruction of each new block, which
  * dominates block building for interpreters and generated code. These
  * sequences depend only on the block size or on a write's immediates, so they
  * are encoded once and inserted as one raw copy. A valid opcode and an empty
  * operand list keep the runtime from decoding the bundle; restore_state()
  * decodes the code cache itself. */
-enum { FLAT_ENTRY_CACHE = 1024, SEQUENCE_BYTES = 192 };
+enum { FLAT_ENTRY_CACHE = 1024, SEQUENCE_BYTES = 256 };
 typedef struct {
   uint length;
   byte bytes[SEQUENCE_BYTES];
@@ -1315,6 +1391,43 @@ static void insert_flat_charge(void *ctx, instrlist_t *bb, instr_t *where, int c
   encoded_sequence_t *entry = cached_flat_parts(ctx, &flat_entries[count], count, FLAT_ALL,
                                                 false);
   insert_bundle(ctx, bb, where, entry->bytes, entry->length);
+}
+
+/* After an unanalyzable block's flat entry, as count_block_latency() does
+ * for a bound it cannot charge. */
+static void unanalyzable_block_entry(void) {
+  thread_data_t *d = thread_state(dr_get_current_drcontext());
+  if (!d)
+    fail("latency bound without valid thread state");
+  counter_error(&d->latency_error);
+}
+
+static void insert_unanalyzable_call(void *ctx, instrlist_t *bb, instr_t *where) {
+  dr_insert_clean_call(ctx, bb, where, (void *)unanalyzable_block_entry, false, 0);
+}
+
+/* One encoded latency entry per block size, with the bound patched. The
+ * placeholder keeps the bound's displacement 32 bits wide. */
+static patched_template_t *flat_latency_entries[FLAT_ENTRY_CACHE + 1];
+
+static void insert_flat_latency_charge(void *ctx, instrlist_t *bb, instr_t *where, int count,
+                                       uint32_t bound) {
+  if (count <= 0 || count > FLAT_ENTRY_CACHE || bound > INT32_MAX) {
+    emit_flat_latency_entry(ctx, bb, where, count, bound, NULL);
+    if (bound > INT32_MAX)
+      insert_unanalyzable_call(ctx, bb, where);
+    return;
+  }
+  const patched_template_t *t = __atomic_load_n(&flat_latency_entries[count], __ATOMIC_ACQUIRE);
+  if (!t) {
+    instrlist_t *ilist = instrlist_create(ctx);
+    instr_t *imm[LATENCY_IMMEDIATES];
+    emit_flat_latency_entry(ctx, ilist, NULL, count, INT32_MAX, imm);
+    t = publish_template(ctx, &flat_latency_entries[count], ilist, imm, LATENCY_IMMEDIATES,
+                         "cannot lay out the latency entry");
+  }
+  const uint32_t value[LATENCY_IMMEDIATES] = {bound, bound};
+  insert_patched(ctx, bb, where, t, value, LATENCY_IMMEDIATES);
 }
 
 /* The runtime encodes every inserted instruction when it builds a block, so
@@ -1416,12 +1529,18 @@ static void set_boundary_state(void *ctx, thread_data_t *d) {
  * either path back until the suffix restores RCX. The slow path passes this
  * block's arguments to the boundary routine, which resumes at the suffix.
  * Every branch is relative to the entry itself or goes through the thread's
- * state, so the entry can be copied to any address. address receives the two
- * stores of the block's first address. */
+ * state, so the entry can be copied to any address. imm receives the two
+ * stores of the block's first address. With the latency bound, both paths
+ * charge it at the resume point, after the count and after the write word
+ * is cleared (by the body or by the callback); imm then also receives the
+ * bound's two uses, at ENTRY_IMMEDIATES + LATENCY_ADD and
+ * ENTRY_IMMEDIATES + LATENCY_BLOCK_BOUND. */
 enum { ENTRY_PC_LOW, ENTRY_PC_HIGH, ENTRY_IMMEDIATES };
+_Static_assert(ENTRY_IMMEDIATES + LATENCY_IMMEDIATES <= TEMPLATE_IMMEDIATES,
+               "live latency entry immediates");
 
-static void emit_flat_live_entry(void *ctx, instrlist_t *bb, instr_t *where, int count,
-                                 app_pc first_pc, instr_t **address) {
+static void emit_live_entry(void *ctx, instrlist_t *bb, instr_t *where, int count,
+                            app_pc first_pc, bool latency, uint32_t bound, instr_t **imm) {
 #define INSERT(i) \
   (where ? instrlist_meta_preinsert(bb, where, (i)) : instrlist_meta_append(bb, (i)))
   instr_t *fast = INSTR_CREATE_label(ctx), *resume = INSTR_CREATE_label(ctx);
@@ -1435,8 +1554,8 @@ static void emit_flat_live_entry(void *ctx, instrlist_t *bb, instr_t *where, int
         ctx, OPND_CREATE_MEM32(DR_REG_R11, (int)offsetof(thread_data_t, boundary_pc) + 4 * i),
         OPND_CREATE_INT32((int)(uint32_t)((ptr_uint_t)first_pc >> (32 * i))));
     INSERT(half);
-    if (address)
-      address[i] = half;
+    if (imm)
+      imm[i] = half;
   }
   INSERT(INSTR_CREATE_lea(ctx, opnd_create_reg(DR_REG_RCX),
                           opnd_create_mem_instr(resume, 0, OPSZ_lea)));
@@ -1445,30 +1564,42 @@ static void emit_flat_live_entry(void *ctx, instrlist_t *bb, instr_t *where, int
   INSERT(fast);
   emit_flat_parts(ctx, bb, where, count, FLAT_BODY, true);
   INSERT(resume);
+  if (latency)
+    emit_flat_latency(ctx, bb, where, count, bound, imm ? imm + ENTRY_IMMEDIATES : NULL);
   emit_flat_parts(ctx, bb, where, 1, FLAT_SUFFIX, true);
 #undef INSERT
 }
 
-/* One encoded entry per block size, with the block's first address patched. */
+/* One encoded entry per block size, with the block's first address (and the
+ * bound) patched. */
 static patched_template_t *flat_live_entries[FLAT_ENTRY_CACHE + 1];
+static patched_template_t *flat_live_latency_entries[FLAT_ENTRY_CACHE + 1];
+
+static void insert_live_entry(void *ctx, instrlist_t *bb, instr_t *where, int count,
+                              app_pc first_pc, bool latency, uint32_t bound) {
+  if (count <= 0 || count > FLAT_ENTRY_CACHE || (latency && bound > INT32_MAX)) {
+    emit_live_entry(ctx, bb, where, count, first_pc, latency, bound, NULL);
+    if (latency && bound > INT32_MAX)
+      insert_unanalyzable_call(ctx, bb, where);
+    return;
+  }
+  patched_template_t **slot = latency ? &flat_live_latency_entries[count] : &flat_live_entries[count];
+  const uint immediates = ENTRY_IMMEDIATES + (latency ? LATENCY_IMMEDIATES : 0);
+  const patched_template_t *t = __atomic_load_n(slot, __ATOMIC_ACQUIRE);
+  if (!t) {
+    instrlist_t *ilist = instrlist_create(ctx);
+    instr_t *imm[ENTRY_IMMEDIATES + LATENCY_IMMEDIATES];
+    emit_live_entry(ctx, ilist, NULL, count, NULL, latency, INT32_MAX, imm);
+    t = publish_template(ctx, slot, ilist, imm, immediates, "cannot lay out the live entry");
+  }
+  const uint32_t value[ENTRY_IMMEDIATES + LATENCY_IMMEDIATES] = {
+      (uint32_t)(ptr_uint_t)first_pc, (uint32_t)((ptr_uint_t)first_pc >> 32), bound, bound};
+  insert_patched(ctx, bb, where, t, value, immediates);
+}
 
 static void insert_flat_live_charge(void *ctx, instrlist_t *bb, instr_t *where, int count,
                                     app_pc first_pc) {
-  if (count <= 0 || count > FLAT_ENTRY_CACHE) {
-    emit_flat_live_entry(ctx, bb, where, count, first_pc, NULL);
-    return;
-  }
-  const patched_template_t *t = __atomic_load_n(&flat_live_entries[count], __ATOMIC_ACQUIRE);
-  if (!t) {
-    instrlist_t *ilist = instrlist_create(ctx);
-    instr_t *address[ENTRY_IMMEDIATES];
-    emit_flat_live_entry(ctx, ilist, NULL, count, NULL, address);
-    t = publish_template(ctx, &flat_live_entries[count], ilist, address, ENTRY_IMMEDIATES,
-                         "cannot lay out the live entry");
-  }
-  const uint32_t value[ENTRY_IMMEDIATES] = {(uint32_t)(ptr_uint_t)first_pc,
-                                            (uint32_t)((ptr_uint_t)first_pc >> 32)};
-  insert_patched(ctx, bb, where, t, value, ENTRY_IMMEDIATES);
+  insert_live_entry(ctx, bb, where, count, first_pc, false, 0);
 }
 
 static bool is_raw_slot(opnd_t opnd, uint slot) {
@@ -1500,6 +1631,7 @@ static bool restore_state(void *drcontext, bool restore_memory, dr_restore_state
     return true;
   byte *pc = info->fragment_info.cache_start_pc, *stop = info->raw_mcontext->pc;
   bool spilled_rcx = false, spilled_r11 = false, checkpointed = false, live_entry = false;
+  bool latency_checkpointed = false;
   instr_t ins;
   instr_init(drcontext, &ins);
   for (uint n = 0; pc != NULL && pc < stop && n < 4096; ++n) {
@@ -1521,12 +1653,18 @@ static bool restore_state(void *drcontext, bool restore_memory, dr_restore_state
                 opnd_get_disp(dst) == (int)offsetof(thread_data_t, entry_room))) {
         checkpointed = true;
         live_entry = opnd_get_disp(dst) == (int)offsetof(thread_data_t, entry_room);
+      } else if (flat_inline && checkpointed && is_reg(src, DR_REG_RCX) &&
+                 opnd_is_base_disp(dst) && opnd_get_base(dst) == DR_REG_R11 &&
+                 opnd_get_index(dst) == DR_REG_NULL &&
+                 opnd_get_disp(dst) == (int)offsetof(thread_data_t, latency_entry_base)) {
+        /* The entry's latency charge follows its count's checkpoint. */
+        latency_checkpointed = true;
       }
     } else if (op == OP_mov_ld && instr_num_dsts(&ins) == 1 && instr_num_srcs(&ins) == 1) {
       opnd_t dst = instr_get_dst(&ins, 0), src = instr_get_src(&ins, 0);
       if (is_raw_slot(src, RAW_TLS_SPILL_RCX) && is_reg(dst, DR_REG_RCX)) {
         spilled_rcx = false;
-        checkpointed = false; /* The entry sequence is complete. */
+        checkpointed = latency_checkpointed = false; /* The entry sequence is complete. */
       } else if (is_raw_slot(src, RAW_TLS_SPILL_R11) && is_reg(dst, DR_REG_R11)) {
         spilled_r11 = false;
       }
@@ -1541,6 +1679,9 @@ static bool restore_state(void *drcontext, bool restore_memory, dr_restore_state
     info->mcontext->r11 = slots[RAW_TLS_SPILL_R11];
   if (!checkpointed || !restore_memory)
     return true;
+  /* The latency charge is undone with the count's: re-entry charges both. */
+  if (latency_checkpointed)
+    d->latency_bound_x16 = d->latency_entry_base;
   if (!live_entry) {
     if (d->instructions != d->entry_base)
       d->instructions = d->entry_base;
@@ -1997,6 +2138,11 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
                            OPND_CREATE_INTPTR(first ? instr_get_app_pc(first) : NULL),
                            OPND_CREATE_INT32((int)(uint32_t)(packed >> 32)),
                            OPND_CREATE_INT32((int)suffix_memory_bytes(where)));
+    else if (latency_bound_enabled && flat_inline && live_work)
+      insert_live_entry(drcontext, bb, where, count, first ? instr_get_app_pc(first) : NULL, true,
+                        (uint32_t)(packed >> 32));
+    else if (latency_bound_enabled && flat_inline)
+      insert_flat_latency_charge(drcontext, bb, where, count, (uint32_t)(packed >> 32));
     else if (latency_bound_enabled)
       dr_insert_clean_call(drcontext, bb, where, (void *)count_block_latency, false, 3,
                            OPND_CREATE_INT32(count),
@@ -2045,8 +2191,9 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
                            OPND_CREATE_INT32(suffix),
                            OPND_CREATE_INT32((int)suffix_memory_bytes(where)),
                            OPND_CREATE_INT32((int)instruction_memory_bytes(where)));
-    } else if (!latency_bound_enabled && inline_write &&
+    } else if ((!latency_bound_enabled || flat_inline) && inline_write &&
                insert_write_checkpoint(drcontext, bb, where, pc, next_pc, suffix)) {
+      /* A flat checkpoint takes its block's bound when it is settled. */
       /* Flat layouts depend only on the block, so retranslation reproduces them. */
       if (!cache_probe_enabled() && !flat_inline)
         flags = DR_EMIT_STORE_TRANSLATIONS;
@@ -2390,6 +2537,10 @@ static void process_exit(void) {
   for (int i = 0; i <= FLAT_ENTRY_CACHE; ++i) {
     if (flat_live_entries[i])
       dr_global_free(flat_live_entries[i], sizeof(*flat_live_entries[i]));
+    if (flat_latency_entries[i])
+      dr_global_free(flat_latency_entries[i], sizeof(*flat_latency_entries[i]));
+    if (flat_live_latency_entries[i])
+      dr_global_free(flat_live_latency_entries[i], sizeof(*flat_live_latency_entries[i]));
   }
   if (checkpoint_template)
     dr_global_free(checkpoint_template, sizeof(*checkpoint_template));
@@ -2498,7 +2649,8 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
 #ifdef DURANTE_TEST_COUNT_LOCATIONS
   const bool flat_candidate = false; /* The location profile needs entry callbacks. */
 #else
-  const bool flat_candidate = !latency_bound_enabled && !cache_probe_enabled();
+  /* Operand bytes keep their entry and write callbacks. */
+  const bool flat_candidate = !memory_operand_bytes_enabled && !cache_probe_enabled();
 #endif
   raw_tls_enabled = (static_text_end != 0 || flat_candidate) &&
                     dr_raw_tls_calloc(&raw_tls_register, &raw_tls_offset, RAW_TLS_SLOTS, 0);

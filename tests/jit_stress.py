@@ -19,6 +19,8 @@ alone and the supervisor with the client, each with the release and debug
 cores. The engine runs without traces, as the supervisor runs it. Every case
 must complete its rounds with no stale call and no failed child, and a mode's
 own activity (threads, signals, forks) must have happened. --mode selects modes.
+--latency-bound and --work-budget pass to the supervisor, whose entries then
+charge the latency bound inline, with or without the live clock.
 """
 import argparse
 import hashlib
@@ -92,7 +94,9 @@ def run_supervised(args, work, executable, mode, core, index):
     drrun = args.drrun if core == "release" else args.drrun_debug
     command = [str(args.runner_bin), "run", "--drrun", str(drrun), "--client", str(args.client),
                "--report", str(report), "--records-dir", str(records),
-               "--timeout-ms", str(args.timeout_ms), "--",
+               "--timeout-ms", str(args.timeout_ms),
+               *(["--latency-bound"] if args.latency_bound else []),
+               *(["--work-budget", str(args.work_budget)] if args.work_budget else []), "--",
                *fixture_args(args, executable, mode)]
     row = run_bounded(command, directory, args.timeout_ms)
     row.update(case=case, mode=mode, core=core, errors=guest_errors(row, mode, args.rounds))
@@ -109,6 +113,10 @@ def run_supervised(args, work, executable, mode, core, index):
             errors.append("supervisor cleanup failed")
         if measurement.get("valid") is not True or measurement.get("complete") is not True:
             errors.append("complete measurement unavailable")
+        bound = measurement.get("latency_bound")
+        if args.latency_bound != (bound is not None) or (
+                bound and not bound.get("cycles_x16", -1) >= 4 * measurement.get("instructions", 0)):
+            errors.append("latency bound missing, unrequested or below issue cost")
     row["passed"] = not errors
     return row
 
@@ -123,6 +131,8 @@ def main():
     parser.add_argument("--rounds", type=bounded_number(100, 100000), default=3000)
     parser.add_argument("--threads", type=bounded_number(1, 16), default=2)
     parser.add_argument("--timeout-ms", type=bounded_number(1000, 300000), default=120000)
+    parser.add_argument("--latency-bound", action="store_true")
+    parser.add_argument("--work-budget", type=bounded_number(1, 2**63))
     args = parser.parse_args()
     modes = tuple(dict.fromkeys(args.modes or MODES))
     args.sdk, args.client, args.runner_bin = [p.resolve() for p in (args.sdk, args.client, args.runner_bin)]
@@ -167,7 +177,8 @@ def main():
     success = (len(natives) == len(modes) and cleaned and sources_unchanged and not failures and
                len(rows) == expected)
     summary = {"exit_code": 0 if success else 1, "modes": list(modes), "rounds": args.rounds,
-               "threads": args.threads, "cases": len(rows),
+               "threads": args.threads, "latency_bound": args.latency_bound,
+               "work_budget": args.work_budget, "cases": len(rows),
                "passed": sum(row["passed"] for row in rows), "failures": failures,
                "native_passed": all(row["passed"] for row in natives),
                "harness_cleanup_complete": cleaned, "source_unchanged": sources_unchanged,

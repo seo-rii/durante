@@ -38,6 +38,8 @@ int main(void) {
 
 
 TIMEOUT = 10
+# Client options every run adds after its live page (see --latency-bound).
+CLIENT_OPTIONS = []
 
 
 def check_run(prefix, work, name, command, *, valid=True, stdin=None, require_eligible=False,
@@ -50,7 +52,8 @@ def check_run(prefix, work, name, command, *, valid=True, stdin=None, require_el
     page.write_bytes(bytes(PAGE.size))
     policy = ["-live_work_require_eligible"] if require_eligible else []
     proc = subprocess.Popen([*prefix, "-outdir", str(records), "-rep_bytes", "-live_work_v1",
-                             str(page), *policy, "--", *command], start_new_session=True, cwd=directory,
+                             str(page), *policy, *CLIENT_OPTIONS, "--", *command],
+                            start_new_session=True, cwd=directory,
                             stdin=subprocess.PIPE if checkpoints else stdin,
                             stdout=subprocess.PIPE if checkpoints else None)
     try:
@@ -85,6 +88,10 @@ def compare_page(name, page, records, root_pid, valid=True):
     measurement = collector.collect(records, root_pid)
     if not measurement.get("complete") or not measurement.get("valid"):
         raise ValueError(f"{name}: invalid terminal measurement: {measurement.get('reason')}")
+    if "-latency_bound" in CLIENT_OPTIONS:
+        bound = measurement.get("latency_bound") or {}
+        if bound.get("version") != 1 or not bound.get("cycles_x16", -1) >= 4 * measurement["instructions"]:
+            raise ValueError(f"{name}: latency bound missing or below issue cost: {bound}")
     if valid:
         rep = measurement.get("rep_breakdown", {})
         actual = (instructions, movs, stos)
@@ -144,7 +151,8 @@ def check_boundary_signal(gdb, prefix, work, client, exe, point, name):
     if exe.name.startswith("signal-wait"):
         mark = symbols(exe, ("count", "sent"))
         environment.update(DURANTE_GDB_COUNT=hex(mark["count"]), DURANTE_GDB_SENT=hex(mark["sent"]))
-    target = [*prefix, "-outdir", str(records), "-rep_bytes", "-live_work_v1", str(page), "--", exe]
+    target = [*prefix, "-outdir", str(records), "-rep_bytes", "-live_work_v1", str(page),
+              *CLIENT_OPTIONS, "--", exe]
     # A library path meant for the target can replace the libpython the
     # debugger is linked with, as setup-python's does in CI. Keep it from the
     # debugger and give it back to the target.
@@ -194,10 +202,14 @@ def main():
                         help="use the SDK's debug core, whose exit checks fail a run that leaks")
     parser.add_argument("--gdb", type=Path,
                         help="also deliver a signal at each point of the live boundary routine")
+    parser.add_argument("--latency-bound", action="store_true",
+                        help="charge the static latency bound too, which live entries charge inline")
     args = parser.parse_args()
     global TIMEOUT
     if args.engine_debug:
         TIMEOUT = 60
+    if args.latency_bound:
+        CLIENT_OPTIONS.append("-latency_bound")
     prefix = [str(args.drrun.resolve()), *(["-debug"] if args.engine_debug else []),
               "-quiet", "-follow_children", "-disable_traces",
               "-vm_size", "32M", "-vmheap_size", "32M", "-c", str(args.client.resolve())]

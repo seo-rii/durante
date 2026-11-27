@@ -1347,6 +1347,300 @@ static bool is_raw_slot_half(opnd_t opnd, int half) {
                (int)(raw_tls_offset + RAW_TLS_WRITE * sizeof(void *)) + 4 * half;
 }
 
+/* The emitted sequences address raw TLS through GS. Point it at slots only
+ * while one runs: the standalone runtime still decodes between runs. */
+static void run_with_slots(byte *code, reg_t *slots) {
+    reg_t original, rcx, r11;
+    assert(syscall(SYS_arch_prctl, ARCH_GET_GS, &original) == 0);
+    assert(syscall(SYS_arch_prctl, ARCH_SET_GS, slots) == 0);
+    run_entry(code, 0x1111, 0x2222, &rcx, &r11);
+    assert(syscall(SYS_arch_prctl, ARCH_SET_GS, original) == 0);
+}
+
+/* One block entry before a ret. Returns the address of the ret. */
+static byte *encode_latency_entry(void *ctx, byte *code, size_t room, bool live, int count,
+                                  uint32_t bound) {
+    instrlist_t *bb = instrlist_create(ctx);
+    instr_t *ret = INSTR_CREATE_ret(ctx);
+    instrlist_append(bb, ret);
+    if (live)
+        insert_live_entry(ctx, bb, ret, count, ENTRY_PC, true, bound);
+    else
+        insert_flat_latency_charge(ctx, bb, ret, count, bound);
+    /* A cached entry is one raw copy; a larger block is emitted directly. */
+    assert((instr_get_next(instrlist_first(bb)) == ret) == (count <= FLAT_ENTRY_CACHE));
+    byte *end = instrlist_encode(ctx, bb, code, true);
+    assert(end && end <= code + room && end[-1] == 0xc3);
+    instrlist_clear_and_destroy(ctx, bb);
+    /* No instruction reads or writes a flag. Only a live entry leaves it, and
+     * only through the thread's boundary routine. */
+    int jumps = 0;
+    for (byte *pc = code; pc < end - 1;) {
+        instr_t in;
+        instr_init(ctx, &in);
+        byte *next = decode(ctx, pc, &in);
+        assert(next);
+        assert(!(instr_get_arith_flags(&in, DR_QUERY_DEFAULT) & (EFLAGS_READ_6 | EFLAGS_WRITE_6)));
+        assert(instr_get_opcode(&in) != OP_call && instr_get_opcode(&in) != OP_jmp &&
+               instr_get_opcode(&in) != OP_ret);
+        if (instr_get_opcode(&in) == OP_jmp_ind) {
+            opnd_t target = instr_get_target(&in);
+            assert(opnd_is_base_disp(target) && opnd_get_base(target) == DR_REG_R11 &&
+                   opnd_get_disp(target) == (int)offsetof(thread_data_t, boundary_routine));
+            ++jumps;
+        }
+        instr_free(ctx, &in);
+        pc = next;
+    }
+    assert(jumps == (live ? 1 : 0));
+    return end - 1;
+}
+
+/* The latency entries execute against an isolated state. */
+enum { LATENCY_PAGES = 4 };
+static byte *latency_page;
+static byte private_latency_stack[16384] __attribute__((aligned(16)));
+
+static void set_executable(bool executable) {
+    const size_t size = LATENCY_PAGES * (size_t)sysconf(_SC_PAGESIZE);
+    assert(mprotect(latency_page, size, executable ? PROT_READ | PROT_EXEC
+                                                   : PROT_READ | PROT_WRITE) == 0);
+}
+
+/* Relocate a thread stopped at every instruction boundary of an entry, and
+ * let it re-enter the block: whichever path it takes, it is charged its count
+ * and its bound exactly once. A query changes nothing and recovers the
+ * scratch registers wherever they are spilled. */
+static void sweep_latency_relocation(void *ctx, byte *code, byte *end, byte *copy,
+                                     const thread_data_t *initial, int count, uint32_t bound,
+                                     bool live) {
+    const size_t length = (size_t)(end - code) + 1; /* with the ret */
+    live_work_t page = {.ready = 1, .instructions = initial->published_instructions};
+    int stops = 0;
+    for (byte *stop = code;; stop = decode_next_pc(ctx, stop)) {
+        size_t at = (size_t)(stop - code);
+        set_executable(false);
+        memcpy(copy, code, length);
+        memset(copy + at, 0xc3, length - at); /* every path stops at or after stop */
+        set_executable(true);
+        thread_data_t d = *initial;
+        reg_t slots[RAW_TLS_SLOTS] = {(reg_t)&d, 0x51, 0x52, 77};
+        d.raw_tls_base = (byte *)slots;
+        live_work = live ? &page : NULL;
+        run_with_slots(copy, slots);
+        thread_data_t stopped = d;
+        dr_mcontext_t raw = {.pc = copy + at}, app = {.xcx = 0x99, .r11 = 0x98};
+        dr_restore_state_info_t info = {.raw_mcontext = &raw, .mcontext = &app};
+        info.fragment_info.cache_start_pc = copy;
+        restoring = &d;
+        assert(restore_state(ctx, false, &info));
+        assert(!memcmp(&d, &stopped, sizeof(d)));
+        assert(app.xcx == 0x99 || app.xcx == 0x1111);
+        assert(app.r11 == 0x98 || app.r11 == 0x2222);
+        /* Each spill and each reload is one 9-byte segment-relative move. */
+        if (at >= 18 && stop <= end - 18)
+            assert(app.xcx == 0x1111 && app.r11 == 0x2222);
+        for (int i = 0; i < 2; ++i)
+            assert(restore_state(ctx, true, &info));
+        if (stop < end)
+            run_with_slots(code, slots); /* re-entry at the block's start */
+        if (live)
+            settle_live_count(&d);
+        assert(d.instructions == initial->instructions + (uint64_t)count);
+        assert(d.latency_bound_x16 == initial->latency_bound_x16 + bound);
+        assert(d.latency_entry_base == initial->latency_bound_x16);
+        assert(d.block_instructions == (uint32_t)count && d.block_bound_x16 == bound);
+        assert(!d.counter_overflows && !d.latency_error && !page.invalid);
+        assert(slots[RAW_TLS_WRITE] == 0 || slots[RAW_TLS_WRITE] == WRITE_WORD_SETTLED);
+        restoring = NULL;
+        live_work = NULL;
+        ++stops;
+        if (stop == end)
+            break;
+    }
+    assert(stops > 20);
+}
+
+/* Charge the same blocks and writes through the entry callbacks and through
+ * the emitted flat entry, and settle the same replays: both keep the same
+ * instructions and bound. */
+static void check_latency_replay_equivalence(void *ctx, byte *entry_7_70, byte *entry_3_13) {
+    (void)ctx;
+    thread_data_t callback = {.instructions = 100, .latency_bound_x16 = 1000};
+    thread_data_t flat = callback;
+    reg_t slots[RAW_TLS_SLOTS] = {(reg_t)&flat, 0, 0, WRITE_WORD_SETTLED};
+    flat.raw_tls_base = (byte *)slots;
+    const app_pc start = (app_pc)0x1000, write = (app_pc)0x1010, next = (app_pc)0x1012;
+    uint64_t packed;
+    assert(pack_write_checkpoint(write, next, 3, &packed));
+    for (int path = 0; path < 2; ++path) {
+        thread_data_t *d = path ? &flat : &callback;
+        restoring = d;
+        flat_inline = raw_tls_enabled = path;
+        /* A retried write returns its whole unexecuted suffix: 3 of 7. */
+        if (path) {
+            run_with_slots(entry_7_70, slots);
+            slots[RAW_TLS_WRITE] = packed;
+        } else {
+            count_block_latency(7, start, 70);
+            before_write(write, next, 3);
+        }
+        code_replay(ctx, DR_DURANTE_REPLAY_RETRY, write, write);
+        assert(d->instructions == 104 && d->latency_bound_x16 == 1040 && d->restart_pc == write);
+        /* The resumed block, then a completed write that keeps 1 of its 3. */
+        if (path) {
+            run_with_slots(entry_3_13, slots);
+            slots[RAW_TLS_WRITE] = packed;
+        } else {
+            count_block_latency(3, write, 13);
+            before_write(write, next, 3);
+        }
+        code_replay(ctx, DR_DURANTE_REPLAY_AFTER_WRITE, NULL, next);
+        assert(d->instructions == 105 && d->latency_bound_x16 == 1045);
+        assert(!d->replay_error && !d->latency_error && !d->restart_pc && !d->counter_overflows);
+        check_flat_counter(d);
+        assert(!d->counter_overflows);
+    }
+    restoring = NULL;
+    flat_inline = raw_tls_enabled = false;
+}
+
+static void check_latency_entries(void *ctx) {
+    const bool saved_flat = flat_inline, saved_raw = raw_tls_enabled;
+    const size_t page = (size_t)sysconf(_SC_PAGESIZE);
+    latency_page = mmap(NULL, LATENCY_PAGES * page, PROT_READ | PROT_WRITE,
+                        MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    assert(latency_page != MAP_FAILED);
+    byte *flat = latency_page, *live = latency_page + page / 2, *large = latency_page + page;
+    byte *odd = large + page / 2, *small = latency_page + 2 * page, *other = small + page / 4;
+    byte *routine = small + page / 2, *copy = latency_page + 3 * page;
+    latency_bound_enabled = true;
+    byte *flat_end = encode_latency_entry(ctx, flat, page / 2, false, 5, 1000);
+    byte *live_end = encode_latency_entry(ctx, live, page / 2, true, 5, 1000);
+    byte *large_end = encode_latency_entry(ctx, large, page / 2, false, FLAT_ENTRY_CACHE + 1, 4100);
+    /* The largest cached entries, with 32-bit count displacements, fit. */
+    encode_latency_entry(ctx, small, page / 4, false, FLAT_ENTRY_CACHE, INT32_MAX);
+    encode_latency_entry(ctx, small, page / 4, true, FLAT_ENTRY_CACHE, INT32_MAX);
+    encode_latency_entry(ctx, small, page / 4, false, 7, 70);
+    encode_latency_entry(ctx, other, page / 4, false, 3, 13);
+    /* The patched copy equals the entry emitted directly for the same bound. */
+    {
+        byte direct[2 * SEQUENCE_BYTES];
+        instrlist_t *list = instrlist_create(ctx);
+        emit_flat_latency_entry(ctx, list, NULL, 5, 1000, NULL);
+        byte *direct_end = instrlist_encode(ctx, list, direct, true);
+        instrlist_clear_and_destroy(ctx, list);
+        assert(direct_end && direct_end - direct == flat_end - flat);
+        assert(!memcmp(direct, flat, (size_t)(direct_end - direct)));
+        list = instrlist_create(ctx);
+        emit_live_entry(ctx, list, NULL, 5, ENTRY_PC, true, 1000, NULL);
+        direct_end = instrlist_encode(ctx, list, direct, true);
+        instrlist_clear_and_destroy(ctx, list);
+        assert(direct_end && direct_end - direct == live_end - live);
+        assert(!memcmp(direct, live, (size_t)(direct_end - direct)));
+    }
+    /* An unanalyzable block charges its count, keeps no bound and records
+     * the block as the callback does; its callback makes the error. */
+    {
+        instrlist_t *bb = instrlist_create(ctx);
+        instr_t *ret = INSTR_CREATE_ret(ctx);
+        instrlist_append(bb, ret);
+        emit_flat_latency_entry(ctx, bb, ret, 2, UINT32_MAX, NULL);
+        byte *end = instrlist_encode(ctx, bb, odd, true);
+        assert(end && end <= odd + page / 2);
+        instrlist_clear_and_destroy(ctx, bb);
+    }
+    instrlist_t *boundary = instrlist_create(ctx);
+    emit_boundary_routine(ctx, boundary);
+    byte *routine_end = instrlist_encode(ctx, boundary, routine, true);
+    assert(routine_end && routine_end <= small + page);
+    instrlist_clear_and_destroy(ctx, boundary);
+    set_executable(true);
+    flat_inline = raw_tls_enabled = true;
+    /* The flat entry charges count and bound, records the block and clears
+     * the write word. The next entry latches a wrap of either counter before
+     * it replaces their bases; check_flat_counter() latches the last. */
+    const uint64_t starts[] = {0, (UINT64_C(1) << 56) - 4, (UINT64_C(1) << 63) - 4,
+                               UINT64_MAX - 2999, UINT64_MAX - 1000, UINT64_MAX - 999,
+                               UINT64_MAX - 1, UINT64_MAX};
+    for (size_t i = 0; i < sizeof(starts) / sizeof(starts[0]); ++i) {
+        thread_data_t d = {.instructions = 7, .latency_bound_x16 = starts[i]};
+        reg_t slots[RAW_TLS_SLOTS] = {(reg_t)&d};
+        d.raw_tls_base = (byte *)slots;
+        for (int j = 0; j < 3; ++j) {
+            uint64_t before = d.latency_bound_x16;
+            slots[RAW_TLS_WRITE] = 77;
+            run_with_slots(flat, slots);
+            assert(slots[RAW_TLS_WRITE] == 0);
+            assert(d.instructions == 7 + 5 * (uint64_t)(j + 1) && d.entry_base == 2 + 5 * (uint64_t)(j + 1));
+            assert(d.latency_entry_base == before && d.latency_bound_x16 == before + 1000);
+            assert(d.block_instructions == 5 && d.block_bound_x16 == 1000 && !d.latency_error);
+            assert(d.counter_overflows == (before < starts[i]));
+        }
+        thread_data_t last = {.instructions = 7, .latency_bound_x16 = starts[i]};
+        slots[RAW_TLS_STATE] = (reg_t)&last;
+        last.raw_tls_base = (byte *)slots;
+        run_with_slots(flat, slots);
+        check_flat_counter(&last);
+        assert(last.counter_overflows == (starts[i] > UINT64_MAX - 1000));
+    }
+    {
+        thread_data_t d = {.instructions = 1, .latency_bound_x16 = 50};
+        reg_t slots[RAW_TLS_SLOTS] = {(reg_t)&d};
+        d.raw_tls_base = (byte *)slots;
+        run_with_slots(large, slots);
+        assert(d.instructions == 2 + FLAT_ENTRY_CACHE && d.latency_bound_x16 == 4150);
+        assert(d.block_instructions == FLAT_ENTRY_CACHE + 1 && d.block_bound_x16 == 4100);
+        d.latency_entry_base = 9; /* the unanalyzable entry keeps the base */
+        run_with_slots(odd, slots);
+        assert(d.instructions == 4 + FLAT_ENTRY_CACHE && d.latency_bound_x16 == 4150);
+        assert(d.latency_entry_base == 9 && d.entry_base == 2 + FLAT_ENTRY_CACHE);
+        assert(d.block_instructions == 2 && d.block_bound_x16 == UINT32_MAX);
+        assert(!d.latency_error && !d.counter_overflows);
+        restoring = &d;
+        unanalyzable_block_entry();
+        assert(d.latency_error && !d.counter_overflows);
+        restoring = NULL;
+    }
+    /* The live entry charges the bound on both paths, after the count. */
+    for (int slow = 0; slow < 2; ++slow) {
+        live_work_t page_seen = {.ready = 1, .instructions = 4100};
+        thread_data_t d = {.instructions = 4100, .published_instructions = 4100,
+                           .live_room = slow ? -1 : 9, .room_settled = slow ? -1 : 9,
+                           .latency_bound_x16 = 300, .boundary_routine = routine,
+                           .boundary_stack_top = private_latency_stack + sizeof(private_latency_stack)};
+        reg_t slots[RAW_TLS_SLOTS] = {(reg_t)&d, 0, 0, 77};
+        d.raw_tls_base = (byte *)slots;
+        live_work = &page_seen;
+        run_with_slots(live, slots);
+        settle_live_count(&d);
+        assert(d.instructions == 4105 && d.latency_bound_x16 == 1300 && d.latency_entry_base == 300);
+        assert(d.block_instructions == 5 && d.block_bound_x16 == 1000);
+        assert(d.entry_room == (slow ? ENTRY_ROOM_CHARGED : 9));
+        assert(slots[RAW_TLS_WRITE] == (slow ? WRITE_WORD_SETTLED : 0));
+        assert(!d.counter_overflows && !page_seen.invalid);
+        live_work = NULL;
+    }
+    /* Relocation at every boundary of the flat, uncached and live entries,
+     * and on both live paths. */
+    thread_data_t initial = {.instructions = 4100, .latency_bound_x16 = 300};
+    sweep_latency_relocation(ctx, flat, flat_end, copy, &initial, 5, 1000, false);
+    sweep_latency_relocation(ctx, large, large_end, copy, &initial, FLAT_ENTRY_CACHE + 1, 4100,
+                             false);
+    for (int slow = 0; slow < 2; ++slow) {
+        thread_data_t live_initial = {
+            .instructions = 4100, .published_instructions = 4100, .latency_bound_x16 = 300,
+            .live_room = slow ? -1 : 9, .room_settled = slow ? -1 : 9, .boundary_routine = routine,
+            .boundary_stack_top = private_latency_stack + sizeof(private_latency_stack)};
+        sweep_latency_relocation(ctx, live, live_end, copy, &live_initial, 5, 1000, true);
+    }
+    check_latency_replay_equivalence(ctx, small, other);
+    latency_bound_enabled = false;
+    flat_inline = saved_flat;
+    raw_tls_enabled = saved_raw;
+    assert(munmap(latency_page, LATENCY_PAGES * page) == 0);
+}
+
 int main(void) {
     void *ctx = dr_standalone_init();
     raw_tls_register = DR_SEG_GS;
@@ -1464,7 +1758,7 @@ int main(void) {
     {
         byte direct[SEQUENCE_BYTES];
         instrlist_t *list = instrlist_create(ctx);
-        emit_flat_live_entry(ctx, list, NULL, 5, ENTRY_PC, NULL);
+        emit_live_entry(ctx, list, NULL, 5, ENTRY_PC, false, 0, NULL);
         byte *direct_end = instrlist_encode(ctx, list, direct, true);
         instrlist_clear_and_destroy(ctx, list);
         assert(direct_end && direct_end - direct < entry_end - entry);
@@ -1561,6 +1855,7 @@ int main(void) {
         pc = next;
     }
     assert(callbacks == 1);
+    check_latency_entries(ctx);
     dr_standalone_exit();
     assert(mprotect(code, page, PROT_READ | PROT_EXEC) == 0);
     assert(mprotect(entry, page, PROT_READ | PROT_EXEC) == 0);
