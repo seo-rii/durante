@@ -20,18 +20,25 @@ from scrivener_order.bench import read_profile
 
 
 @cache
-def registered_cases(raw):
+def registered_cases(raw, corpus_module=corpus, reference_counts=None):
     registered = {r["name"]: r for r in read_json(raw)["cases"]}
-    require(tuple(registered) == corpus.NAMES, "wrong Wall input set")
+    require(tuple(registered) == corpus_module.NAMES, "wrong Wall input set")
     for name, case in registered.items():
-        text, answer = corpus.make(name)
+        text, answer = corpus_module.make(name)
         require(sha(text.encode()) == case["stdin_sha256"] and sha(answer.encode()) == case["stdout_sha256"],
                 "generator differs from registered Wall input or oracle")
+        if reference_counts is not None:
+            expected = "{accesses} {misses}\n".format(**reference_counts(text)).encode()
+            require(sha(expected) == case["probe_stdout_sha256"], "registered input probe differs from reference")
     return registered
 
 
 def verify(root):
-    plan_raw = (HERE / "plan.json").read_bytes()
+    return verify_study(root, HERE, corpus, score, bench.PROFILE_ARMS)
+
+
+def verify_study(root, study, corpus_module, score_module, profile_arms, *, read_probe=None, reference_counts=None):
+    plan_raw = (study / "plan.json").read_bytes()
     plan = read_json(plan_raw)
     run_raw = (root / "run.json").read_bytes()
     run = read_json(run_raw)
@@ -45,19 +52,23 @@ def verify(root):
             and place["machine"] == "x86_64" and re.fullmatch(r"[0-9a-f]{64}", place["boot_sha256"])
             and bool(place["kernel"]) and type(run["cpu_steal_ticks"]) is int and run["cpu_steal_ticks"] >= 0,
             "invalid placement")
-    registered = registered_cases(plan_raw)
-    cases = {n: dict(native_ns=[], profiles={arm: [] for arm in bench.PROFILE_ARMS}) for n in registered}
+    registered = registered_cases(plan_raw, corpus_module, reference_counts)
+    cases = {n: dict(native_ns=[], profiles={arm: [] for arm in profile_arms}) for n in registered}
     reader = release_reader(plan["tools"]["reader"])
     rows = run["rows"]
     files, pids = set(), {}
     cutoff = None
-    for seq, (row, slot) in enumerate(zip(rows, bench.schedule(plan), strict=True)):
+    for seq, (row, slot) in enumerate(zip(rows, bench.schedule(plan, profile_arms), strict=True)):
         require(type(row["sequence"]) is int and row["sequence"] == seq
                 and all(type(row[k]) is type(v) and row[k] == v for k, v in slot.items()), "wrong schedule")
         name, program, arm = slot["name"], slot["program"], slot["arm"]
         case = cases[name]
-        require(program == corpus.PROGRAM and row["elf_sha256"] == plan["binaries"][program]
-                and all(row[k] == registered[name][k] for k in ("stdin_sha256", "stdout_sha256")), "wrong binary or I/O")
+        probe_run = arm == "leaf_pages"
+        expected_elf = plan["probe"]["sha256"] if probe_run else plan["binaries"][program]
+        output_key = "probe_stdout_sha256" if probe_run else "stdout_sha256"
+        require(program == corpus_module.PROGRAM and row["elf_sha256"] == expected_elf
+                and row["stdin_sha256"] == registered[name]["stdin_sha256"]
+                and row["stdout_sha256"] == registered[name][output_key], "wrong binary or I/O")
         pid = row["launcher_pid"]
         require(positive(pid) and pid not in pids and type(row["exit_code"]) is int and row["exit_code"] == 0
                 and all(type(row[k]) is int and row[k] >= 0 for k in ("user_us", "sys_us", "cpu_us", "wall_us"))
@@ -75,6 +86,12 @@ def verify(root):
             digest, record = read_profile(path.parent, pid, "current", reader)
             require(row["record_sha256"] == digest, "ordinary record digest mismatch")
             counts = {k: record[k] for k in ("instructions", "rep_bytes")}
+            files.add(path)
+        elif probe_run:
+            pids[pid] = (Path(plan["probe"]["path"]).name,)
+            path = directory / "leaf_pages.out"
+            require(sha(path.read_bytes()) == row["stdout_sha256"], "input probe receipt digest mismatch")
+            counts = read_probe(path)
             files.add(path)
         else:
             pids[pid] = ("valgrind.bin", "cachegrind-amd64-linux")
@@ -107,17 +124,20 @@ def verify(root):
     anchors = [dict(first_counts(cases[n]), native_ns=cases[n]["native_ns"]) for n in plan["anchors"]]
     for name, case in held.items():
         current = first_counts(case)
-        estimates = score.predict(*anchors, current)
+        estimates = score_module.predict(*anchors, current)
         sealed = seal["cases"][name]
-        require(set(sealed) == {corpus.PROGRAM} and all(positive(v) for v in sealed[corpus.PROGRAM].values())
-                and sealed[corpus.PROGRAM] == estimates, "replayed prediction differs from sealed forecast")
+        require(set(sealed) == {corpus_module.PROGRAM} and all(positive(v) for v in sealed[corpus_module.PROGRAM].values())
+                and sealed[corpus_module.PROGRAM] == estimates, "replayed prediction differs from sealed forecast")
         case["predictions"] = estimates
         center = median(case["native_ns"])
         case["signed_error_ppm"] = {k: round(1_000_000 * Fraction(v - center, center)) for k, v in estimates.items()}
         case["native_tle_votes"] = {str(ms): sum(t > ms * 1_000_000 for t in case["native_ns"])
                                     for ms in plan["fixed_limits_ms"]}
         ranges = {}
-        for arm, event in (("branch_only", "Bcm"), ("full", "DLmr")):
+        features = [("branch_only", "Bcm"), ("full", "DLmr")]
+        if read_probe is not None:
+            features.append(("leaf_pages", "misses"))
+        for arm, event in features:
             low, high = sorted(a[arm][event] for a in anchors)
             x = current[arm][event]
             ranges[event] = ("equal_endpoints" if low == high else "below" if x < low
@@ -126,7 +146,7 @@ def verify(root):
 
     ratios = {key: [] for key in ("full", "ordinary", "native")}
     for case in cases.values():
-        times = {arm: median(o["cpu_us"] for o in obs) for arm, obs in case["profiles"].items()}
+        times = {arm: median(Fraction(o["cpu_us"]) for o in obs) for arm, obs in case["profiles"].items()}
         times["native"] = Fraction(median(case["native_ns"]), 1000)
         for key, values in ratios.items():
             values.append(Fraction(times["branch_only"], times[key]))
@@ -136,19 +156,23 @@ def verify(root):
             for event in bench.BRANCH_EVENTS}
     costs = {f"median_branch_only_over_{k}_ppm": round(1_000_000 * median(v)) for k, v in ratios.items()}
     costs["total_cpu_us"] = {k: sum(o["cpu_us"] for c in cases.values() for o in c["profiles"][k])
-                             for k in bench.PROFILE_ARMS}
+                             for k in profile_arms}
     return dict(schema=1, authority=plan["authority"], plan_sha256=plan_sha, run_sha256=sha(run_raw),
                 predictions_sha256=sha(seal_raw), boot_sha256=place["boot_sha256"], cpu_steal_ticks=run["cpu_steal_ticks"],
                 verified_pids=len(pids), sealed_prefix_rows=cutoff, cases=cases, profile_cost=costs,
-                summary=score_cases(list(held.values()), plan["fixed_limits_ms"], score.METHODS))
+                summary=score_cases(list(held.values()), plan["fixed_limits_ms"], score_module.METHODS))
 
 
-if __name__ == "__main__":
+def main(replay=verify):
     cli = argparse.ArgumentParser(description=__doc__)
     cli.add_argument("directory", type=Path)
     cli.add_argument("--output", type=Path)
     args = cli.parse_args()
-    report = verify(args.directory)
+    report = replay(args.directory)
     if args.output:
         args.output.write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report["summary"], indent=2))
+
+
+if __name__ == "__main__":
+    main()

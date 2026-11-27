@@ -1,0 +1,205 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "cpu": 1,
+  "timeout_s": 120,
+  "bundle": {
+    "artifact_id": 15033563582,
+    "revision": "589a402b0cfa70ea3af51bf8b95644026dbc64c8",
+    "sha256": "17e4d66cb8e643cd97b5627453acdd862becf2ffaa0c739bb32ecffd9715e955"
+  },
+  "valgrind_package": {
+    "name": "valgrind",
+    "version": "1:3.19.0-1",
+    "arch": "amd64",
+    "sha256": "324842f2308a1e42abf2d81ff5eb19a9475fc9db95647f4d9da71444eda4087f"
+  },
+  "tools": {
+    "reader": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a",
+    "current": "d66e4849de1e24e6a40bf42f00e1355343b79dd4af1a8cb8202d75392b33e629",
+    "drrun": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "engine": "f2478395d33e2d8e4a6fb4158fd826777cca37ee02e94924757696b08d7fb06f",
+    "valgrind": "6cf6e12cf59b2a28625e65045b39564a82406604cca0d9c4cc5dffe8635c72c6",
+    "cachegrind": "768b94ae8257c6f5224257342729c6ce691aa80785fc436aaf67522b67b25459",
+    "preload": "2f2a3ccb9ebf10e4d6b2d6854e349e89b8852d3c0dfca9a55d7bc4d2939ac324"
+  },
+  "cache_geometry": {
+    "I1": [
+      32768,
+      8,
+      64
+    ],
+    "D1": [
+      32768,
+      8,
+      64
+    ],
+    "LL": [
+      524288,
+      8,
+      64
+    ]
+  },
+  "sources": {
+    "wall": "experiments/contest_accuracy/wall.cpp"
+  },
+  "source_sha256": {
+    "wall": "a00651e889a07a0634b51068c1992026d4b297a0d1c2898411ac980a81d616e7"
+  },
+  "binaries": {
+    "wall": "a9a2df1ade516cebcd4afa89705db83fc1425fc5db29a9bd3956386670d98210"
+  },
+  "probe": {
+    "path": "binaries/leaf_pages",
+    "source": "experiments/wall_locality/leaf_pages.cpp",
+    "source_sha256": "92104b066ae89c55807f501d6e00f4cd86886c0ee34172f8e34e40f71acc1495",
+    "sha256": "1c777cf2581175e30c03896276716c44dc51169c9a76c5593341ae3a96aae455"
+  },
+  "anchors": [
+    "ascending",
+    "shuffled"
+  ],
+  "profile_reps": 4,
+  "native_reps": 9,
+  "fixed_limits_ms": [
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91,
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119,
+    120
+  ],
+  "cases": [
+    {
+      "name": "ascending",
+      "stdin_sha256": "3eb3f850feb75129c1228a17c5ca04a1d03427e1d8203ec8bb6bf32d6d5698b5",
+      "stdout_sha256": "cefa4dbfa4d22c413b1023158ed6e79543f9ecd191cb10d38b8c396c8b67bc5c",
+      "probe_stdout_sha256": "af2814a7fed4b09480d4f6c979f61d415bc30c29da43ab90ddcad8b524eec972"
+    },
+    {
+      "name": "shuffled",
+      "stdin_sha256": "499aa20a381bbc44635b58fefa2b80c02781450a99f6b81f8926969825ea0067",
+      "stdout_sha256": "cefa4dbfa4d22c413b1023158ed6e79543f9ecd191cb10d38b8c396c8b67bc5c",
+      "probe_stdout_sha256": "727e632baf90cfce81b6a6b3e0b135b6a09a151f0f126c7d23a3a1c54094826c"
+    },
+    {
+      "name": "tiles128",
+      "stdin_sha256": "79dab8c19729b5a1f73048036edeff074cd52747d20f99ece11585851ae4be6d",
+      "stdout_sha256": "cefa4dbfa4d22c413b1023158ed6e79543f9ecd191cb10d38b8c396c8b67bc5c",
+      "probe_stdout_sha256": "af2814a7fed4b09480d4f6c979f61d415bc30c29da43ab90ddcad8b524eec972"
+    },
+    {
+      "name": "tiles8192",
+      "stdin_sha256": "0d5443558bf7a792feb5b2069be667d355b43827a49c79ce5378032e1cca0983",
+      "stdout_sha256": "cefa4dbfa4d22c413b1023158ed6e79543f9ecd191cb10d38b8c396c8b67bc5c",
+      "probe_stdout_sha256": "66c40ad19dce0af9c126937158a147ee222b3b1c9deb5bf110bfcd7caa1afc2e"
+    },
+    {
+      "name": "stride64",
+      "stdin_sha256": "a3629214266b5043891173104eb1874f5e878a11ead7c1ed118b650097f49f35",
+      "stdout_sha256": "cefa4dbfa4d22c413b1023158ed6e79543f9ecd191cb10d38b8c396c8b67bc5c",
+      "probe_stdout_sha256": "210d53d880a4429a695ed144dc99e80269c074152f1d108ab09cd687b76da744"
+    },
+    {
+      "name": "page_round_robin",
+      "stdin_sha256": "c6d63d3b0455c8f0e48674ce13b63865382f990947f3562a7abe32fbfd51de89",
+      "stdout_sha256": "cefa4dbfa4d22c413b1023158ed6e79543f9ecd191cb10d38b8c396c8b67bc5c",
+      "probe_stdout_sha256": "bc9f2608bfc3886a1edfbe13d6b4354c122a0f0b3185ef0d36b9f96735476447"
+    },
+    {
+      "name": "shuffled_tiles",
+      "stdin_sha256": "e2a084c4ef83c836dac7fc5b7240ac99d8656bcd13fa6fc2f71431c01885b86a",
+      "stdout_sha256": "cefa4dbfa4d22c413b1023158ed6e79543f9ecd191cb10d38b8c396c8b67bc5c",
+      "probe_stdout_sha256": "8a94f00c9b8ebb620e1860d1ff92480824f52a66f567c2f2d5ee92baa5b36675"
+    }
+  ],
+  "design": "Two fresh Debian 12 GCE AMD Milan n2d-standard-4 guests, one hardware thread per core, workload pinned by cgroup and affinity to CPU 1. The identical validated static Wall executable receives seven different orderings of the same multiset of overlapping width-eight raises. All streams have the same output. A separate native input tool counts cold fully associative 16-page LRU misses while accessing the left, then right, logical leaf page (position divided by 512) of each operation.",
+  "schedule": "Rotate four profiling modes (ordinary Durante, Cachegrind full, Cachegrind branch-only, standalone input scan) through all four positions in four rounds on every stream. Use the first observation of each mode to forecast. After profiling and eighteen native anchor runs, seal all estimates before any native run on the five holdout orders. Then run nine rotated native rounds per holdout. The previous #100 bit-reversed result is a separate retrospective check excluded from qualification.",
+  "methods": "Ordinary uses the ascending native Wall time scaled by instruction/REP work. All other methods use the ascending and shuffled native medians from this boot. An event fraction is its location between the two anchor counts, clamped to [0,1] and equal to 1/2 for identical counts. Interpolate native ns using that fraction and round up once. Compare midpoint, branch-only Bcm, full DLmr, standalone page misses, max(branch-only Bcm fraction,page fraction) and max(full Bcm fraction,full DLmr fraction). Max acts on the fractions. No coefficients are fitted on the holdouts.",
+  "qualification": "Primary comparison is max(branch-only Bcm,page) against branch-only Bcm. A replicated improvement requires lower worst absolute relative error on the five holdouts on BOTH guests. A separate deadline criterion requires strictly fewer unanimous false passes and no additional unanimous false TLE on each guest across the fixed integer limits 30..120 ms. Report median error, every held-out estimate, majority votes, both directions of unanimous error, and 50 ms results. At equality the case passes. Compare per-input median branch-only CPU plus median page-probe CPU with median full CPU, report median of seven ratios per guest. Also report the reusable input scan cost and ranges. No exclusion or model changes after timing."
+}
