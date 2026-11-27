@@ -35,6 +35,22 @@ The largest full-clock error on both guests came from the compact solver with 96
 
 The binary-lifting solver exposes a different limit. Both the 20-lane ascending and 40-lane descending inputs reach the upper clamp on normalized branch misses. Their time estimates differ by less than 0.6 microseconds on each guest, while their native medians differ by 1.242 and 1.974 ms.
 
+## Can the native timing error be reduced?
+
+After inspecting the new labels, we compared a third estimate that moves the full-clock prediction toward the mean of the two native anchors. We selected the weight using the *previous* experiment's six held-out orders, two solvers and two boots. Among 101 weights from 0 to 100 percent, the weight minimizing the worst absolute relative error on those 24 observations was **50 percent**. Ties prefer a smaller median error, then a smaller weight. This amounts to averaging the two integer estimates and rounding up. The comparison below is retrospective. The registered routing and its measured cost used the original full clock.
+
+| On the six new orders | First guest | Second guest |
+|---|---:|---:|
+| Adjusted median / worst absolute error | 4.02% / 16.07% | 4.49% / 16.39% |
+| Adjusted estimates within ±20%, of 12 | 12 | 12 |
+| Adjusted majority agreement on the grid | 134/144 | 136/144 |
+| Adjusted unanimous false timeout / false pass | 6 / 0 | 5 / 0 |
+| New unanimous false timeouts relative to the original clock | 2 | 3 |
+
+The smaller worst error comes with a cost at individual deadlines. At 45 ms the compact solver on bit-reversed 256-query tiles changes from a correct pass to a false timeout on each guest. The adjusted estimates are 47.37 and 47.15 ms, while the native medians are 40.88 and 41.07 ms. The adjustment also moves the predictions for the calibration inputs themselves. On the previous experiment's compact ascending input it changes 35.75 and 35.85 ms to 44.12 and 44.03 ms, causing a new false timeout at 40 ms on both boots. The compact shuffled input gains a false pass at 65 ms on both boots. These losses matter when selecting a clock to decide verdicts.
+
+To reproduce the weight selection, per-guest accuracy and vote counts from the published data, run `python3 -B experiments/scrivener_lazy/midpoint_comparison.py`. [Reanalysis](../experiments/scrivener_lazy/midpoint_comparison.py) · [Prior held-out cases](GCE_SCRIVENER_STREAMS.md)
+
 ## How the deadline is decided
 
 The previous Scrivener clock estimates CPU time for a known solver using two native reference inputs. It measures the median native time for an ascending and a globally shuffled query order. It measures two features at both anchors and on the candidate input. One feature counts disruptive page revisits in the input order. The other counts simulated conditional branch mispredictions in the compiled solver. The clock normalizes each feature against its two anchors, clamps it to the unit interval, averages the two fractions and interpolates the native reference times. Equal feature anchors contribute one half. The clock rounds its final estimate up to an integer nanosecond. [Original model](GCE_SCRIVENER_STREAMS.md)
