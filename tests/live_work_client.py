@@ -11,6 +11,7 @@ import tempfile
 
 from concurrent_spawn import cleanup_orphans, collector, own_subreaper
 from jit_replay import FIXTURES
+from online_work_clock import ELIGIBLE
 from rep_breakdown import CASES
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -56,11 +57,16 @@ def check_run(prefix, work, name, command, *, valid=True, stdin=None):
             proc.wait()
         if not cleanup_orphans():
             raise RuntimeError(f"{name}: failed to reap fixture")
+    return compare_page(name, page, records, proc.pid, valid)
+
+
+def compare_page(name, page, records, root_pid, valid=True):
+    """A usable page must hold exactly the terminal record's three counts."""
     ready, invalid, instructions, movs, stos, overflow = PAGE.unpack(page.read_bytes())
     if (ready, invalid, overflow) != (1, int(not valid), 0):
         raise ValueError(f"{name}: unexpected ready/invalid/overflow {(ready, invalid, overflow)}")
     if valid:
-        measurement = collector.collect(records, proc.pid)
+        measurement = collector.collect(records, root_pid)
         rep = measurement.get("rep_breakdown", {})
         actual = (instructions, movs, stos)
         expected = (measurement.get("instructions"), rep.get("movs_bytes"), rep.get("stos_bytes"))
@@ -153,9 +159,12 @@ def check_boundary_signal(gdb, prefix, work, client, exe, point, name):
     # stack; between them, and in the callback, the thread is on its private one.
     if report["application_stack"] != (point in ("entry", "resume")):
         raise RuntimeError(f"{name}: unexpected stack {report}")
-    ready, invalid, _, _, _, overflow = PAGE.unpack(page.read_bytes())
-    if (ready, invalid, overflow) != (1, 1, 0):
-        raise ValueError(f"{name}: unexpected ready/invalid/overflow")
+    # The handled signal leaves the page usable: it matches the terminal record.
+    (root,) = {json.loads(line)["pid"] for path in records.iterdir()
+               for line in path.read_text().splitlines()
+               if json.loads(line).get("parent_pid") == 0}
+    if not compare_page(name, page, records, root)["signals_observed"]:
+        raise ValueError(f"{name}: no signal observed")
 
 
 def main():
@@ -211,7 +220,8 @@ def main():
                 subprocess.run(["cc", "-static", "-nostdlib", "-no-pie", f"-DLIVE_STATE_SIGNALS={mode}",
                                 ROOT / "tests/live_state.S", "-o", work / f"live-state-{name}-exe"],
                                check=True)
-            check_run(prefix, work, "live-state-timer", [work / "live-state-timer-exe"], valid=False)
+            if not check_run(prefix, work, "live-state-timer", [work / "live-state-timer-exe"])["signals_observed"]:
+                raise ValueError("live-state-timer: no signal observed")
             if args.gdb:
                 for name, defines in (("signal-wait-exe", []), ("signal-wait-rep-exe", ["-DSIGNAL_WAIT_REP"])):
                     subprocess.run(["cc", "-static", "-nostdlib", "-no-pie", *defines,
@@ -262,7 +272,10 @@ def main():
             subprocess.run(["cc", "-O2", ROOT / "tests/tree_fixture.c", "-o", tree], check=True)
             for mode in ("nested", "exec-chain", "vfork-exit", "vfork-failed-exec", "posix-spawn"):
                 check_run(prefix, work, mode, [tree, mode])
-            check_run(prefix, work, "handled-signal", [tree, "signal"], valid=False)
+            # The terminal record accepts a handled signal, so the page stays usable.
+            measurement = check_run(prefix, work, "handled-signal", [tree, "signal"])
+            if not measurement["signals_observed"]:
+                raise ValueError(f"handled-signal: no signal observed: {measurement}")
             threads = work / "threads"
             subprocess.run(["cc", "-O2", "-pthread", ROOT / "tests/spawn_threads.c",
                             "-o", threads], check=True)
@@ -270,7 +283,16 @@ def main():
             active = work / "active"
             subprocess.run(["cc", "-O2", "-pthread", "-x", "c", "-", "-o", active],
                            text=True, input=ACTIVE_THREAD, check=True)
-            check_run(prefix, work, "unfinished-thread", [active], valid=False)
+            # A sibling that exit_group stops, waiting in a syscall or running in
+            # a block, publishes the same remainder its terminal record counts.
+            check_run(prefix, work, "unfinished-thread", [active])
+            eligible = work / "eligible"
+            subprocess.run(["cc", "-O2", "-pthread", "-x", "c", "-", "-o", eligible],
+                           text=True, input=ELIGIBLE, check=True)
+            check_run(prefix, work, "running-thread", [eligible, "thread"])
+            measurement = check_run(prefix, work, "scas", [eligible, "scas"])
+            if not measurement["unsupported_rep_entries"]:
+                raise ValueError(f"scas: no CMPS/SCAS entry observed: {measurement}")
         finally:
             signal.pthread_sigmask(signal.SIG_SETMASK, previous_mask)
             if libc.prctl(36, previous_subreaper, 0, 0, 0):

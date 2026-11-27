@@ -54,6 +54,48 @@ int main(int argc, char **argv) {
     for (volatile unsigned long i = 0; ; ++i) {}
 }
 """
+# Conditions the terminal record accepts must leave the live page usable too.
+ELIGIBLE = """
+#include <pthread.h>
+#include <signal.h>
+#include <stdatomic.h>
+#include <string.h>
+
+static volatile sig_atomic_t handled;
+static atomic_int running;
+static void on_signal(int sig) { handled = sig; }
+static void *spin(void *arg) {
+    atomic_store(&running, 1);
+    for (volatile unsigned long i = 0; ; ++i) {}
+    return arg;
+}
+
+int main(int argc, char **argv) {
+    if (argc != 2) return 2;
+    if (!strncmp(argv[1], "signal", 6)) {
+        signal(SIGUSR1, on_signal);
+        raise(SIGUSR1);
+        if (handled != SIGUSR1) return 3;
+        if (!strcmp(argv[1], "signal-loop"))
+            for (volatile unsigned long i = 0; ; ++i) {}
+    } else if (!strcmp(argv[1], "thread")) {
+        /* The sibling is inside a block when exit_group stops it. */
+        pthread_t thread;
+        if (pthread_create(&thread, NULL, spin, NULL)) return 4;
+        while (!atomic_load(&running)) {}
+    } else if (!strcmp(argv[1], "scas")) {
+        static char text[4096];
+        memset(text, 'a', sizeof(text) - 1);
+        const char *at = text;
+        unsigned long left = sizeof(text);
+        __asm__ volatile("repne scasb" : "+D"(at), "+c"(left) : "a"(0) : "cc", "memory");
+        if (at != text + sizeof(text)) return 5;
+    } else {
+        return 6;
+    }
+    return 0;
+}
+"""
 
 
 def main():
@@ -64,10 +106,10 @@ def main():
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
         for filename, source in (("three.S", EXIT_THREE), ("small.S", SMALL_WORK_THEN_WAIT),
-                                 ("work.c", WORKLOAD)):
+                                 ("work.c", WORKLOAD), ("eligible.c", ELIGIBLE)):
             path = root / filename
             path.write_text(source)
-            flags = ["-nostdlib", "-no-pie"] if path.suffix == ".S" else ["-O2"]
+            flags = ["-nostdlib", "-no-pie"] if path.suffix == ".S" else ["-O2", "-pthread"]
             subprocess.run(["cc", "-static", *flags, str(path), "-o", str(path.with_suffix(""))], check=True)
 
         def run(name, budget, wall_ms, *program):
@@ -106,6 +148,20 @@ def main():
         proc, e, receipt, m = run("wait", 2_000_000, 800, root / "work", "wait")
         assert (proc.returncode, e["state"], receipt["status"]) == (124, "timed_out", "unavailable")
         assert not m["complete"] and m.get("instructions") is None
+        # A handled signal no longer switches the budget off for the rest of the run.
+        proc, e, receipt, m = run("signal_loop", 2_000_000, 15_000, root / "eligible", "signal-loop")
+        assert (proc.returncode, e["state"], receipt["observation"]) == (123, "work_budget_exceeded", "live")
+        assert e["wall_time_ms"] < 15_000
+        # A handled signal, a sibling stopped by exit_group and a CMPS/SCAS
+        # entry each complete within budget with the terminal counts.
+        for mode, field in (("signal", "signals_observed"), ("thread", None),
+                            ("scas", "unsupported_rep_entries")):
+            proc, e, receipt, m = run("eligible_" + mode, 10_000_000_000, 15_000,
+                                      root / "eligible", mode)
+            assert (proc.returncode, e["state"], receipt["status"], receipt["observation"]) == (
+                0, "complete", "within_budget", "terminal"), (mode, e, receipt, m.get("reason"))
+            assert m["complete"] and receipt["instructions"] == m["instructions"], (mode, m)
+            assert field is None or m[field] > 0, (mode, m)
 
 
 if __name__ == "__main__":

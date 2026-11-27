@@ -371,9 +371,11 @@ static thread_data_t *thread_state(void *ctx) {
   return d;
 }
 
+/* Signals and CMPS/SCAS entries do not make a thread's counts unusable: the
+ * terminal record accepts both and carries the same counts. The budget unit has
+ * no CMPS/SCAS bytes, so such an entry charges its one instruction here too. */
 SCALAR static bool invalid_thread_work(const thread_data_t *d) {
-  return d->signals || d->rep_error || d->replay_error || d->cpuid_error ||
-         d->counter_overflows || d->unsupported_rep_entries;
+  return d->rep_error || d->replay_error || d->cpuid_error || d->counter_overflows;
 }
 
 SCALAR static void publish_live_work(thread_data_t *d, bool flush) {
@@ -802,12 +804,16 @@ static void thread_init(void *ctx) {
 }
 static void thread_exit(void *ctx) {
   thread_data_t *d = thread_state(ctx);
-  /* Asynchronous thread termination can interrupt an arbitrary charged BB.
-   * Only an explicit exit/exec checkpoint can attest to that final prefix. */
-  if (live_work && d &&
-      (d->instructions != d->published_instructions ||
-       d->rep_movs_bytes != d->published_movs || d->rep_stos_bytes != d->published_stos))
-    invalidate_live_work();
+  /* A thread stopped by another thread's exit_group can be anywhere in a
+   * charged BB. Its terminal record counts that final prefix as it stands, so
+   * publish the same remainder; the live total then matches the record. */
+  if (live_work && d) {
+    if (!d->child_pid)
+      publish_live_work(d, true);
+    else if (d->instructions != d->published_instructions ||
+             d->rep_movs_bytes != d->published_movs || d->rep_stos_bytes != d->published_stos)
+      invalidate_live_work();
+  }
   if (memory_operand_bytes_enabled && d && !d->child_pid &&
       d->pending_syscall != SYS_exit && d->pending_syscall != SYS_exit_group)
     d->latency_error = true; /* Another thread may have stopped this one mid-block. */
@@ -959,7 +965,6 @@ static void observe_rep(app_pc pc, int opcode, int bytes, int count_reg) {
   if (resumed)
     return;
   if (bytes == 0) {
-    invalidate_live_work();
     if (data->unsupported_rep_entries == UINT64_MAX)
       counter_error(&data->rep_error);
     else
@@ -2208,8 +2213,9 @@ static bool pre_syscall(void *ctx, int number) {
   d->pending_exec = exec;
   dr_mutex_lock(state_lock);
   if (live_work) {
-    if ((exec || number == SYS_exit_group) && !d->child_pid &&
-        threads_started != threads_ended + 1)
+    /* At exit_group the runtime still runs each other thread's exit event,
+     * which publishes that thread's remainder. Exec keeps the stricter rule. */
+    if (exec && !d->child_pid && threads_started != threads_ended + 1)
       invalidate_live_work();
     publish_live_work(d, true);
   }
@@ -2274,7 +2280,6 @@ static dr_signal_action_t signal_event(void *ctx, dr_siginfo_t *info) {
   thread_data_t *d = thread_state(ctx);
   if (!d || d->signals == UINT64_MAX)
     fail("signal accounting overflow");
-  invalidate_live_work();
   ++d->signals;
   return DR_SIGNAL_DELIVER;
 }
