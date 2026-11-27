@@ -1,0 +1,1533 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "plan_sha256": "c48cc6a359b6c88b3ed8cfe37070addac6ab86f20a8efd4417d88e49f86f3b4f",
+  "run_sha256": "142bbdfc5685c70bb310739b2ed071eb32871aea16dbca2ead8af447d6459e12",
+  "predictions_sha256": "218ad9fc3840cf7a1adfbd58cc73ab091158d7c0612f97f30452802d127f4963",
+  "boot_sha256": "ea2ccb3e9a36dc86aae6008c095903e2c3826a5b0a00160fd7f4805c1fcd55db",
+  "cpu_steal_ticks": 0,
+  "verified_pids": 261,
+  "sealed_prefix_rows": 135,
+  "cases": {
+    "lanes24": {
+      "scrivener": {
+        "native_ns": [
+          48014000,
+          45754000,
+          47936000,
+          45928000,
+          45196000,
+          44498000,
+          46519000,
+          43976000,
+          45297000
+        ],
+        "median_native_ns": 45754000,
+        "predictions_ns": {
+          "midpoint": 52494000,
+          "distance": 63421138,
+          "pages": 69235000,
+          "branch": 65971146,
+          "branch_pages": 67603073,
+          "ordinary": 35752998,
+          "stream": 35764093,
+          "branch_stream": 50867620
+        },
+        "signed_error_ppm": {
+          "midpoint": 147310,
+          "distance": 386133,
+          "pages": 513201,
+          "branch": 441866,
+          "branch_pages": 477534,
+          "ordinary": -218582,
+          "stream": -218340,
+          "branch_stream": 111763
+        },
+        "within_20pct": {
+          "midpoint": true,
+          "distance": false,
+          "pages": false,
+          "branch": false,
+          "branch_pages": false,
+          "ordinary": false,
+          "stream": false,
+          "branch_stream": true
+        },
+        "native_min_ns": 43976000,
+        "native_max_ns": 48014000,
+        "native_spread_ppm": 88255,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 9,
+          "45": 7,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 180000,
+          "disruptive": 407,
+          "position_bits": 2377482,
+          "work": 262240962,
+          "bcm": 1743930
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      },
+      "scrivener_lifting": {
+        "native_ns": [
+          40413000,
+          39207000,
+          38807000,
+          38746000,
+          38481000,
+          38834000,
+          39480000,
+          39026000,
+          39922000
+        ],
+        "median_native_ns": 39026000,
+        "predictions_ns": {
+          "midpoint": 40378000,
+          "distance": 43323060,
+          "pages": 44890000,
+          "branch": 44890000,
+          "branch_pages": 44890000,
+          "ordinary": 35865998,
+          "stream": 35868990,
+          "branch_stream": 40379495
+        },
+        "signed_error_ppm": {
+          "midpoint": 34644,
+          "distance": 110108,
+          "pages": 150259,
+          "branch": 150259,
+          "branch_pages": 150259,
+          "ordinary": -80972,
+          "stream": -80895,
+          "branch_stream": 34682
+        },
+        "within_20pct": {
+          "midpoint": true,
+          "distance": true,
+          "pages": true,
+          "branch": true,
+          "branch_pages": true,
+          "ordinary": true,
+          "stream": true,
+          "branch_stream": true
+        },
+        "native_min_ns": 38481000,
+        "native_max_ns": 40413000,
+        "native_spread_ppm": 49505,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 1,
+          "45": 0,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 180000,
+          "disruptive": 407,
+          "position_bits": 2377482,
+          "work": 268544956,
+          "bcm": 577558
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      }
+    },
+    "lanes64": {
+      "scrivener": {
+        "native_ns": [
+          46767000,
+          46090000,
+          47587000,
+          45077000,
+          44726000,
+          47569000,
+          47749000,
+          46366000,
+          46114000
+        ],
+        "median_native_ns": 46366000,
+        "predictions_ns": {
+          "midpoint": 52494000,
+          "distance": 60916830,
+          "pages": 69235000,
+          "branch": 61239809,
+          "branch_pages": 65237405,
+          "ordinary": 35753007,
+          "stream": 35771959,
+          "branch_stream": 48505884
+        },
+        "signed_error_ppm": {
+          "midpoint": 132166,
+          "distance": 313825,
+          "pages": 493228,
+          "branch": 320791,
+          "branch_pages": 407010,
+          "ordinary": -228896,
+          "stream": -228487,
+          "branch_stream": 46152
+        },
+        "within_20pct": {
+          "midpoint": true,
+          "distance": false,
+          "pages": false,
+          "branch": false,
+          "branch_pages": false,
+          "ordinary": false,
+          "stream": false,
+          "branch_stream": true
+        },
+        "native_min_ns": 44726000,
+        "native_max_ns": 47749000,
+        "native_spread_ppm": 65199,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 9,
+          "45": 8,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 180000,
+          "disruptive": 446,
+          "position_bits": 2176891,
+          "work": 262241025,
+          "bcm": 1698931
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      },
+      "scrivener_lifting": {
+        "native_ns": [
+          39098000,
+          40324000,
+          39050000,
+          39226000,
+          39210000,
+          39488000,
+          39740000,
+          39887000,
+          39489000
+        ],
+        "median_native_ns": 39488000,
+        "predictions_ns": {
+          "midpoint": 40378000,
+          "distance": 42648104,
+          "pages": 44890000,
+          "branch": 44852347,
+          "branch_pages": 44871174,
+          "ordinary": 35866007,
+          "stream": 35871110,
+          "branch_stream": 40361729
+        },
+        "signed_error_ppm": {
+          "midpoint": 22538,
+          "distance": 80027,
+          "pages": 136801,
+          "branch": 135848,
+          "branch_pages": 136324,
+          "ordinary": -91724,
+          "stream": -91595,
+          "branch_stream": 22126
+        },
+        "within_20pct": {
+          "midpoint": true,
+          "distance": true,
+          "pages": true,
+          "branch": true,
+          "branch_pages": true,
+          "ordinary": true,
+          "stream": true,
+          "branch_stream": true
+        },
+        "native_min_ns": 39050000,
+        "native_max_ns": 40324000,
+        "native_spread_ppm": 32263,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 1,
+          "45": 0,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 180000,
+          "disruptive": 446,
+          "position_bits": 2176891,
+          "work": 268545019,
+          "bcm": 576033
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      }
+    },
+    "descending48": {
+      "scrivener": {
+        "native_ns": [
+          45756000,
+          46745000,
+          47851000,
+          46352000,
+          47286000,
+          45365000,
+          47365000,
+          46510000,
+          45514000
+        ],
+        "median_native_ns": 46510000,
+        "predictions_ns": {
+          "midpoint": 52494000,
+          "distance": 60986632,
+          "pages": 69235000,
+          "branch": 62700984,
+          "branch_pages": 65967992,
+          "ordinary": 35753007,
+          "stream": 35768732,
+          "branch_stream": 49234858
+        },
+        "signed_error_ppm": {
+          "midpoint": 128661,
+          "distance": 311258,
+          "pages": 488605,
+          "branch": 348118,
+          "branch_pages": 418361,
+          "ordinary": -231283,
+          "stream": -230945,
+          "branch_stream": 58586
+        },
+        "within_20pct": {
+          "midpoint": true,
+          "distance": false,
+          "pages": false,
+          "branch": false,
+          "branch_pages": false,
+          "ordinary": false,
+          "stream": false,
+          "branch_stream": true
+        },
+        "native_min_ns": 45365000,
+        "native_max_ns": 47851000,
+        "native_spread_ppm": 53451,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 9,
+          "45": 9,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 180000,
+          "disruptive": 430,
+          "position_bits": 2182482,
+          "work": 262241022,
+          "bcm": 1712828
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      },
+      "scrivener_lifting": {
+        "native_ns": [
+          40827000,
+          41028000,
+          39809000,
+          40748000,
+          39627000,
+          39826000,
+          41213000,
+          41001000,
+          41106000
+        ],
+        "median_native_ns": 40827000,
+        "predictions_ns": {
+          "midpoint": 40378000,
+          "distance": 42666917,
+          "pages": 44890000,
+          "branch": 44890000,
+          "branch_pages": 44890000,
+          "ordinary": 35866007,
+          "stream": 35870241,
+          "branch_stream": 40380121
+        },
+        "signed_error_ppm": {
+          "midpoint": -10998,
+          "distance": 45066,
+          "pages": 99517,
+          "branch": 99517,
+          "branch_pages": 99517,
+          "ordinary": -121513,
+          "stream": -121409,
+          "branch_stream": -10946
+        },
+        "within_20pct": {
+          "midpoint": true,
+          "distance": true,
+          "pages": true,
+          "branch": true,
+          "branch_pages": true,
+          "ordinary": true,
+          "stream": true,
+          "branch_stream": true
+        },
+        "native_min_ns": 39627000,
+        "native_max_ns": 41213000,
+        "native_spread_ppm": 38847,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 6,
+          "45": 0,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 180000,
+          "disruptive": 430,
+          "position_bits": 2182482,
+          "work": 268545016,
+          "bcm": 577068
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      }
+    },
+    "tiles64_lanes48": {
+      "scrivener": {
+        "native_ns": [
+          50701000,
+          51681000,
+          49622000,
+          50337000,
+          52089000,
+          51940000,
+          49165000,
+          50171000,
+          48910000
+        ],
+        "median_native_ns": 50337000,
+        "predictions_ns": {
+          "midpoint": 52494000,
+          "distance": 60986632,
+          "pages": 69235000,
+          "branch": 62607406,
+          "branch_pages": 65921203,
+          "ordinary": 35753003,
+          "stream": 62374707,
+          "branch_stream": 62491057
+        },
+        "signed_error_ppm": {
+          "midpoint": 42851,
+          "distance": 211567,
+          "pages": 375430,
+          "branch": 243765,
+          "branch_pages": 309597,
+          "ordinary": -289727,
+          "stream": 239142,
+          "branch_stream": 241454
+        },
+        "within_20pct": {
+          "midpoint": true,
+          "distance": false,
+          "pages": false,
+          "branch": false,
+          "branch_pages": false,
+          "ordinary": false,
+          "stream": false,
+          "branch_stream": false
+        },
+        "native_min_ns": 48910000,
+        "native_max_ns": 52089000,
+        "native_spread_ppm": 63154,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 9,
+          "45": 9,
+          "50": 6,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 180000,
+          "disruptive": 132345,
+          "position_bits": 2182482,
+          "work": 262240992,
+          "bcm": 1711938
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      },
+      "scrivener_lifting": {
+        "native_ns": [
+          42076000,
+          41161000,
+          40652000,
+          41378000,
+          40260000,
+          40243000,
+          40820000,
+          40564000,
+          41007000
+        ],
+        "median_native_ns": 40820000,
+        "predictions_ns": {
+          "midpoint": 40378000,
+          "distance": 42666917,
+          "pages": 44890000,
+          "branch": 44890000,
+          "branch_pages": 44890000,
+          "ordinary": 35866003,
+          "stream": 43041028,
+          "branch_stream": 43965514
+        },
+        "signed_error_ppm": {
+          "midpoint": -10828,
+          "distance": 45245,
+          "pages": 99706,
+          "branch": 99706,
+          "branch_pages": 99706,
+          "ordinary": -121362,
+          "stream": 54410,
+          "branch_stream": 77058
+        },
+        "within_20pct": {
+          "midpoint": true,
+          "distance": true,
+          "pages": true,
+          "branch": true,
+          "branch_pages": true,
+          "ordinary": true,
+          "stream": true,
+          "branch_stream": true
+        },
+        "native_min_ns": 40243000,
+        "native_max_ns": 42076000,
+        "native_spread_ppm": 44904,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 9,
+          "45": 0,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 180000,
+          "disruptive": 132345,
+          "position_bits": 2182482,
+          "work": 268544986,
+          "bcm": 576528
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      }
+    },
+    "tiles512_lanes48": {
+      "scrivener": {
+        "native_ns": [
+          54227000,
+          56802000,
+          54126000,
+          52154000,
+          54971000,
+          54199000,
+          55357000,
+          53777000,
+          54101000
+        ],
+        "median_native_ns": 54199000,
+        "predictions_ns": {
+          "midpoint": 52494000,
+          "distance": 61106796,
+          "pages": 69235000,
+          "branch": 61933544,
+          "branch_pages": 65584272,
+          "ordinary": 35753003,
+          "stream": 69235000,
+          "branch_stream": 65584272
+        },
+        "signed_error_ppm": {
+          "midpoint": -31458,
+          "distance": 127452,
+          "pages": 277422,
+          "branch": 142706,
+          "branch_pages": 210064,
+          "ordinary": -340338,
+          "stream": 277422,
+          "branch_stream": 210064
+        },
+        "within_20pct": {
+          "midpoint": true,
+          "distance": true,
+          "pages": false,
+          "branch": true,
+          "branch_pages": false,
+          "ordinary": false,
+          "stream": false,
+          "branch_stream": false
+        },
+        "native_min_ns": 52154000,
+        "native_max_ns": 56802000,
+        "native_spread_ppm": 85758,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 9,
+          "45": 9,
+          "50": 9,
+          "55": 2,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 180000,
+          "disruptive": 168395,
+          "position_bits": 2192107,
+          "work": 262240995,
+          "bcm": 1705529
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      },
+      "scrivener_lifting": {
+        "native_ns": [
+          42241000,
+          43014000,
+          41752000,
+          42247000,
+          41722000,
+          42608000,
+          43502000,
+          43220000,
+          43292000
+        ],
+        "median_native_ns": 42608000,
+        "predictions_ns": {
+          "midpoint": 40378000,
+          "distance": 42699304,
+          "pages": 44890000,
+          "branch": 44845501,
+          "branch_pages": 44867751,
+          "ordinary": 35866003,
+          "stream": 44890000,
+          "branch_stream": 44867751
+        },
+        "signed_error_ppm": {
+          "midpoint": -52338,
+          "distance": 2143,
+          "pages": 53558,
+          "branch": 52514,
+          "branch_pages": 53036,
+          "ordinary": -158233,
+          "stream": 53558,
+          "branch_stream": 53036
+        },
+        "within_20pct": {
+          "midpoint": true,
+          "distance": true,
+          "pages": true,
+          "branch": true,
+          "branch_pages": true,
+          "ordinary": true,
+          "stream": true,
+          "branch_stream": true
+        },
+        "native_min_ns": 41722000,
+        "native_max_ns": 43502000,
+        "native_spread_ppm": 41776,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 9,
+          "45": 0,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 180000,
+          "disruptive": 168395,
+          "position_bits": 2192107,
+          "work": 268544989,
+          "bcm": 575997
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      }
+    },
+    "bitrev_tiles512": {
+      "scrivener": {
+        "native_ns": [
+          41456000,
+          42594000,
+          42588000,
+          42071000,
+          40593000,
+          41991000,
+          42060000,
+          42537000,
+          41259000
+        ],
+        "median_native_ns": 42060000,
+        "predictions_ns": {
+          "midpoint": 52494000,
+          "distance": 52547223,
+          "pages": 35753000,
+          "branch": 50097262,
+          "branch_pages": 42925131,
+          "ordinary": 35753000,
+          "stream": 35753000,
+          "branch_stream": 42925131
+        },
+        "signed_error_ppm": {
+          "midpoint": 248074,
+          "distance": 249340,
+          "pages": -149952,
+          "branch": 191090,
+          "branch_pages": 20569,
+          "ordinary": -149952,
+          "stream": -149952,
+          "branch_stream": 20569
+        },
+        "within_20pct": {
+          "midpoint": false,
+          "distance": false,
+          "pages": true,
+          "branch": true,
+          "branch_pages": true,
+          "ordinary": true,
+          "stream": true,
+          "branch_stream": true
+        },
+        "native_min_ns": 40593000,
+        "native_max_ns": 42594000,
+        "native_spread_ppm": 47575,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 9,
+          "45": 0,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 352,
+          "disruptive": 352,
+          "position_bits": 1506499,
+          "work": 262240977,
+          "bcm": 1592956
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      },
+      "scrivener_lifting": {
+        "native_ns": [
+          40892000,
+          39827000,
+          39373000,
+          39588000,
+          39927000,
+          39653000,
+          40014000,
+          40367000,
+          40080000
+        ],
+        "median_native_ns": 39927000,
+        "predictions_ns": {
+          "midpoint": 40378000,
+          "distance": 40392345,
+          "pages": 35866000,
+          "branch": 42313426,
+          "branch_pages": 39089713,
+          "ordinary": 35866000,
+          "stream": 35866000,
+          "branch_stream": 39089713
+        },
+        "signed_error_ppm": {
+          "midpoint": 11296,
+          "distance": 11655,
+          "pages": -101711,
+          "branch": 59770,
+          "branch_pages": -20970,
+          "ordinary": -101711,
+          "stream": -101711,
+          "branch_stream": -20970
+        },
+        "within_20pct": {
+          "midpoint": true,
+          "distance": true,
+          "pages": true,
+          "branch": true,
+          "branch_pages": true,
+          "ordinary": true,
+          "stream": true,
+          "branch_stream": true
+        },
+        "native_min_ns": 39373000,
+        "native_max_ns": 40892000,
+        "native_spread_ppm": 38044,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 4,
+          "45": 0,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 352,
+          "disruptive": 352,
+          "position_bits": 1506499,
+          "work": 268544971,
+          "bcm": 562682
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      }
+    },
+    "ascending": {
+      "scrivener": {
+        "native_ns": [
+          35695000,
+          35911000,
+          36186000,
+          36367000,
+          35352000,
+          35753000,
+          34921000,
+          36111000,
+          35717000
+        ],
+        "median_native_ns": 35753000,
+        "native_min_ns": 34921000,
+        "native_max_ns": 36367000,
+        "native_spread_ppm": 40444,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 8,
+          "40": 0,
+          "45": 0,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 352,
+          "disruptive": 352,
+          "position_bits": 161309,
+          "work": 262240977,
+          "bcm": 1456530
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      },
+      "scrivener_lifting": {
+        "native_ns": [
+          36387000,
+          36228000,
+          35866000,
+          35760000,
+          36103000,
+          35487000,
+          35504000,
+          35527000,
+          35952000
+        ],
+        "median_native_ns": 35866000,
+        "native_min_ns": 35487000,
+        "native_max_ns": 36387000,
+        "native_spread_ppm": 25093,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 0,
+          "45": 0,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 352,
+          "disruptive": 352,
+          "position_bits": 161309,
+          "work": 268544971,
+          "bcm": 528778
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      }
+    },
+    "shuffled": {
+      "scrivener": {
+        "native_ns": [
+          68025000,
+          75290000,
+          70849000,
+          67127000,
+          65014000,
+          70143000,
+          70875000,
+          69235000,
+          68943000
+        ],
+        "median_native_ns": 69235000,
+        "native_min_ns": 65014000,
+        "native_max_ns": 75290000,
+        "native_spread_ppm": 148422,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 9,
+          "45": 9,
+          "50": 9,
+          "55": 9,
+          "60": 9,
+          "65": 9,
+          "70": 4,
+          "75": 1,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 172029,
+          "disruptive": 166359,
+          "position_bits": 2843163,
+          "work": 262241040,
+          "bcm": 1774972
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      },
+      "scrivener_lifting": {
+        "native_ns": [
+          45313000,
+          44264000,
+          45330000,
+          44890000,
+          44302000,
+          45730000,
+          44227000,
+          44115000,
+          45333000
+        ],
+        "median_native_ns": 44890000,
+        "native_min_ns": 44115000,
+        "native_max_ns": 45730000,
+        "native_spread_ppm": 35977,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 9,
+          "45": 4,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 172029,
+          "disruptive": 166359,
+          "position_bits": 2843163,
+          "work": 268545034,
+          "bcm": 576231
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      }
+    }
+  },
+  "summary": {
+    "midpoint": {
+      "cases": 12,
+      "median_absolute_error_ppm": 38747,
+      "worst_absolute_error_ppm": 248074,
+      "within_20pct": 11,
+      "fixed_limits": 144,
+      "majority_correct": 136,
+      "mixed_limits": 8,
+      "unanimous_correct": 131,
+      "unanimous_false_timeout": 5,
+      "unanimous_false_pass": 0,
+      "majority_false_pass": 0,
+      "majority_false_timeout": 8
+    },
+    "ordinary": {
+      "cases": 12,
+      "median_absolute_error_ppm": 154093,
+      "worst_absolute_error_ppm": 340338,
+      "within_20pct": 7,
+      "fixed_limits": 144,
+      "majority_correct": 128,
+      "mixed_limits": 8,
+      "unanimous_correct": 124,
+      "unanimous_false_timeout": 0,
+      "unanimous_false_pass": 12,
+      "majority_false_pass": 16,
+      "majority_false_timeout": 0
+    },
+    "distance": {
+      "cases": 12,
+      "median_absolute_error_ppm": 118780,
+      "worst_absolute_error_ppm": 386133,
+      "within_20pct": 7,
+      "fixed_limits": 144,
+      "majority_correct": 126,
+      "mixed_limits": 8,
+      "unanimous_correct": 122,
+      "unanimous_false_timeout": 14,
+      "unanimous_false_pass": 0,
+      "majority_false_pass": 0,
+      "majority_false_timeout": 18
+    },
+    "pages": {
+      "cases": 12,
+      "median_absolute_error_ppm": 150106,
+      "worst_absolute_error_ppm": 513201,
+      "within_20pct": 7,
+      "fixed_limits": 144,
+      "majority_correct": 123,
+      "mixed_limits": 8,
+      "unanimous_correct": 118,
+      "unanimous_false_timeout": 17,
+      "unanimous_false_pass": 1,
+      "majority_false_pass": 1,
+      "majority_false_timeout": 20
+    },
+    "branch": {
+      "cases": 12,
+      "median_absolute_error_ppm": 146483,
+      "worst_absolute_error_ppm": 441866,
+      "within_20pct": 8,
+      "fixed_limits": 144,
+      "majority_correct": 125,
+      "mixed_limits": 8,
+      "unanimous_correct": 121,
+      "unanimous_false_timeout": 15,
+      "unanimous_false_pass": 0,
+      "majority_false_pass": 0,
+      "majority_false_timeout": 19
+    },
+    "branch_pages": {
+      "cases": 12,
+      "median_absolute_error_ppm": 143292,
+      "worst_absolute_error_ppm": 477534,
+      "within_20pct": 7,
+      "fixed_limits": 144,
+      "majority_correct": 124,
+      "mixed_limits": 8,
+      "unanimous_correct": 119,
+      "unanimous_false_timeout": 17,
+      "unanimous_false_pass": 0,
+      "majority_false_pass": 0,
+      "majority_false_timeout": 20
+    },
+    "stream": {
+      "cases": 12,
+      "median_absolute_error_ppm": 135681,
+      "worst_absolute_error_ppm": 277422,
+      "within_20pct": 7,
+      "fixed_limits": 144,
+      "majority_correct": 131,
+      "mixed_limits": 8,
+      "unanimous_correct": 127,
+      "unanimous_false_timeout": 4,
+      "unanimous_false_pass": 5,
+      "majority_false_pass": 8,
+      "majority_false_timeout": 5
+    },
+    "branch_stream": {
+      "cases": 12,
+      "median_absolute_error_ppm": 49594,
+      "worst_absolute_error_ppm": 241454,
+      "within_20pct": 10,
+      "fixed_limits": 144,
+      "majority_correct": 136,
+      "mixed_limits": 8,
+      "unanimous_correct": 131,
+      "unanimous_false_timeout": 5,
+      "unanimous_false_pass": 0,
+      "majority_false_pass": 0,
+      "majority_false_timeout": 8
+    }
+  },
+  "profile_cost": {
+    "scan": {
+      "runs": 27,
+      "total_cpu_us": 196811,
+      "median_cpu_us": 7229
+    },
+    "ordinary": {
+      "runs": 36,
+      "total_cpu_us": 6518261,
+      "median_cpu_us": 180360.5
+    },
+    "branch": {
+      "runs": 36,
+      "total_cpu_us": 19004878,
+      "median_cpu_us": 526656.5
+    },
+    "native": {
+      "runs": 162,
+      "total_cpu_us": 7199040,
+      "median_cpu_us": 42244.0
+    }
+  },
+  "controls": {
+    "lanes32": {
+      "scrivener": {
+        "native_ns": [
+          48289000,
+          45617000,
+          45706000,
+          45839000,
+          45892000,
+          45584000,
+          46055000,
+          44517000,
+          45661000
+        ],
+        "median_native_ns": 45706000,
+        "predictions_ns": {
+          "midpoint": 52494000,
+          "distance": 63304094,
+          "pages": 69235000,
+          "branch": 64489259,
+          "branch_pages": 66862130,
+          "ordinary": 35753003,
+          "stream": 35765505,
+          "branch_stream": 50127382
+        },
+        "signed_error_ppm": {
+          "midpoint": 148514,
+          "distance": 385028,
+          "pages": 514790,
+          "branch": 410958,
+          "branch_pages": 462874,
+          "ordinary": -217761,
+          "stream": -217488,
+          "branch_stream": 96735
+        },
+        "within_20pct": {
+          "midpoint": true,
+          "distance": false,
+          "pages": false,
+          "branch": false,
+          "branch_pages": false,
+          "ordinary": false,
+          "stream": false,
+          "branch_stream": true
+        },
+        "native_min_ns": 44517000,
+        "native_max_ns": 48289000,
+        "native_spread_ppm": 82527,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 9,
+          "45": 8,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 180000,
+          "disruptive": 414,
+          "position_bits": 2368107,
+          "work": 262240998,
+          "bcm": 1729836
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      },
+      "scrivener_lifting": {
+        "native_ns": [
+          40131000,
+          39987000,
+          39178000,
+          39441000,
+          38908000,
+          38815000,
+          39977000,
+          38951000,
+          40181000
+        ],
+        "median_native_ns": 39441000,
+        "predictions_ns": {
+          "midpoint": 40378000,
+          "distance": 43291515,
+          "pages": 44890000,
+          "branch": 44890000,
+          "branch_pages": 44890000,
+          "ordinary": 35866003,
+          "stream": 35869371,
+          "branch_stream": 40379686
+        },
+        "signed_error_ppm": {
+          "midpoint": 23757,
+          "distance": 97627,
+          "pages": 138156,
+          "branch": 138156,
+          "branch_pages": 138156,
+          "ordinary": -90642,
+          "stream": -90556,
+          "branch_stream": 23800
+        },
+        "within_20pct": {
+          "midpoint": true,
+          "distance": true,
+          "pages": true,
+          "branch": true,
+          "branch_pages": true,
+          "ordinary": true,
+          "stream": true,
+          "branch_stream": true
+        },
+        "native_min_ns": 38815000,
+        "native_max_ns": 40181000,
+        "native_spread_ppm": 34634,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 2,
+          "45": 0,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 180000,
+          "disruptive": 414,
+          "position_bits": 2368107,
+          "work": 268544992,
+          "bcm": 576741
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      }
+    }
+  },
+  "qualification": {
+    "branch_stream": {
+      "accuracy_gate": true,
+      "deadline_gate": true,
+      "unanimous_error_changes": {
+        "false_pass_fixed": [],
+        "false_pass_added": [],
+        "false_timeout_fixed": [
+          [
+            "lanes24",
+            "scrivener",
+            55
+          ],
+          [
+            "lanes24",
+            "scrivener",
+            60
+          ],
+          [
+            "lanes24",
+            "scrivener",
+            65
+          ],
+          [
+            "lanes64",
+            "scrivener",
+            50
+          ],
+          [
+            "lanes64",
+            "scrivener",
+            55
+          ],
+          [
+            "lanes64",
+            "scrivener",
+            60
+          ],
+          [
+            "lanes64",
+            "scrivener",
+            65
+          ],
+          [
+            "descending48",
+            "scrivener",
+            50
+          ],
+          [
+            "descending48",
+            "scrivener",
+            55
+          ],
+          [
+            "descending48",
+            "scrivener",
+            60
+          ],
+          [
+            "descending48",
+            "scrivener",
+            65
+          ],
+          [
+            "tiles64_lanes48",
+            "scrivener",
+            65
+          ]
+        ],
+        "false_timeout_added": []
+      }
+    },
+    "stream": {
+      "accuracy_gate": true,
+      "deadline_gate": false,
+      "unanimous_error_changes": {
+        "false_pass_fixed": [],
+        "false_pass_added": [
+          [
+            "lanes24",
+            "scrivener",
+            40
+          ],
+          [
+            "lanes64",
+            "scrivener",
+            40
+          ],
+          [
+            "descending48",
+            "scrivener",
+            40
+          ],
+          [
+            "descending48",
+            "scrivener",
+            45
+          ]
+        ],
+        "false_timeout_fixed": [
+          [
+            "lanes24",
+            "scrivener",
+            50
+          ],
+          [
+            "lanes24",
+            "scrivener",
+            55
+          ],
+          [
+            "lanes24",
+            "scrivener",
+            60
+          ],
+          [
+            "lanes24",
+            "scrivener",
+            65
+          ],
+          [
+            "lanes64",
+            "scrivener",
+            50
+          ],
+          [
+            "lanes64",
+            "scrivener",
+            55
+          ],
+          [
+            "lanes64",
+            "scrivener",
+            60
+          ],
+          [
+            "lanes64",
+            "scrivener",
+            65
+          ],
+          [
+            "descending48",
+            "scrivener",
+            50
+          ],
+          [
+            "descending48",
+            "scrivener",
+            55
+          ],
+          [
+            "descending48",
+            "scrivener",
+            60
+          ],
+          [
+            "descending48",
+            "scrivener",
+            65
+          ],
+          [
+            "tiles64_lanes48",
+            "scrivener",
+            65
+          ]
+        ],
+        "false_timeout_added": []
+      }
+    }
+  }
+}

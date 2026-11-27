@@ -1,5 +1,6 @@
 """Time the shared input scan and both Scrivener executables, then seal predictions before held-out native timing."""
 import argparse
+from dataclasses import dataclass
 import json
 import os
 from pathlib import Path
@@ -7,6 +8,7 @@ import signal
 from statistics import median
 import sys
 from tempfile import TemporaryDirectory
+from types import ModuleType
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
@@ -23,15 +25,27 @@ from shape_calibration.bench import pinned_cpu
 TOOL_PATHS = {**CACHE_TOOLS, "scan": "binaries/scan"}
 
 
+@dataclass(frozen=True)
+class Study:
+    directory: Path
+    corpus: ModuleType
+    scoring: ModuleType
+    scan_fields: tuple[str, ...]
+    controls: tuple[str, ...] = ()
+
+
+STUDY = Study(HERE, corpus, score, ("accesses", "misses", "position_bits"))
+
+
 def schedule(plan):
-    names = sorted(corpus.NAMES, key=lambda name: sha(name.encode()))
+    names = sorted((case["name"] for case in plan["cases"]), key=lambda name: sha(name.encode()))
     for rep in range(plan["scan_reps"]):
         for name in names[rep:] + names[:rep]:
             yield dict(name=name, program="scan", arm="scan", rep=rep + 1)
     yield from paired_schedule(plan, ("ordinary", "branch"))
 
 
-def predictions(plan, prefix):
+def predictions(plan, prefix, study=STUDY):
     anchors = plan["anchors"]
     times, scans, features = {}, {}, {}
     for row in prefix:
@@ -44,32 +58,37 @@ def predictions(plan, prefix):
                 scans[name] = row["features"]
             else:
                 features.setdefault((name, program), {}).update(row["features"])
-    results = {case["name"]: {} for case in plan["cases"] if case["group"] == "holdout"}
+    results = {case["name"]: {} for case in plan["cases"] if case["group"] != "anchor"}
     for program in plan["binaries"]:
-        observations = {n: {**scans[n], **features[n, program]} for n in corpus.NAMES}
+        observations = {n: {**scans[n], **features[n, program]} for n in study.corpus.NAMES}
         require(all(len(times[n, program]) == plan["native_reps"] for n in anchors), "incomplete anchors")
         low, high = anchors
         for name in results:
-            results[name][program] = score.forecasts(median(times[low, program]), median(times[high, program]),
-                                                     observations[low], observations[high], observations[name])
+            results[name][program] = study.scoring.forecasts(
+                median(times[low, program]), median(times[high, program]),
+                observations[low], observations[high], observations[name])
     return results
 
 
-def check_inputs(plan):
+def check_inputs(plan, study=STUDY):
     require(plan["anchors"] == ["ascending", "shuffled"] and
-            [c["name"] for c in plan["cases"]] == list(corpus.NAMES), "unexpected corpus")
+            [c["name"] for c in plan["cases"]] == list(study.corpus.NAMES), "unexpected corpus")
     for case in plan["cases"]:
         name = case["name"]
-        text, answer = corpus.make(name)
-        scan = "{accesses} {misses} {position_bits}\n".format(**corpus.features(text))
-        require(case["group"] == ("anchor" if name in plan["anchors"] else "holdout") and
+        text, answer = study.corpus.make(name)
+        counts = study.corpus.features(text)
+        scan = " ".join(str(counts[key]) for key in study.scan_fields) + "\n"
+        group = "anchor" if name in plan["anchors"] else "holdout"
+        if name in study.controls:
+            group = "control"
+        require(case["group"] == group and
                 all(sha(data.encode()) == case[key] for key, data in
                     (("stdin_sha256", text), ("stdout_sha256", answer), ("scan_sha256", scan))),
                 f"changed registered input, solution oracle or scanner output for {name}")
         yield case, text
 
 
-def measured_features(arm, directory, pid, program, reader):
+def measured_features(arm, directory, pid, program, reader, study=STUDY):
     if arm == "ordinary":
         _, report = read_profile(directory / "records", pid, "current", reader)
         return {"work": report["instructions"] + report["rep_bytes"]}
@@ -77,13 +96,13 @@ def measured_features(arm, directory, pid, program, reader):
         check_cachegrind_log(directory / "cachegrind.log", pid, program)
         return {"bcm": read_branch_profile(directory / "cachegrind.out", program)["Bcm"]}
     if arm == "scan":
-        accesses, misses, bits = map(int, (directory / "scan.out").read_bytes().split())
-        return dict(accesses=accesses, misses=misses, position_bits=bits)
+        values = map(int, (directory / "scan.out").read_bytes().split())
+        return dict(zip(study.scan_fields, values, strict=True))
     raise ValueError("unknown profile arm")
 
 
-def collect(payload, out):
-    plan_raw = (HERE / "plan.json").read_bytes()
+def collect(payload, out, study=STUDY):
+    plan_raw = (study.directory / "plan.json").read_bytes()
     plan = json.loads(plan_raw)
     tools = {name: elf_digest(payload / path) for name, path in TOOL_PATHS.items()}
     require(tools == plan["tools"] and set(plan["binaries"]) == {"scrivener", "scrivener_lifting"} and
@@ -104,16 +123,16 @@ def collect(payload, out):
     rows = []
     with TemporaryDirectory(dir=out) as temp:
         cases = {}
-        for case, text in check_inputs(plan):
+        for case, text in check_inputs(plan, study):
             cases[case["name"]] = case
             (Path(temp) / case["stdin_sha256"]).write_bytes(text.encode())
         start = steal(1)
         for seq, slot in enumerate(schedule(plan)):
             name, program, arm = (slot[k] for k in ("name", "program", "arm"))
             case = cases[name]
-            if arm == "native" and case["group"] == "holdout" and not seal.exists():
+            if arm == "native" and case["group"] != "anchor" and not seal.exists():
                 save_json(seal, dict(plan_sha256=sha(plan_raw), boot_sha256=host["boot_sha256"],
-                                     prefix_sha256=rows_digest(rows), cases=predictions(plan, rows)))
+                                     prefix_sha256=rows_digest(rows), cases=predictions(plan, rows, study)))
             directory = out / "runs" / f"{seq:03d}"
             directory.mkdir()
             binary = payload / "binaries" / program
@@ -140,7 +159,7 @@ def collect(payload, out):
             (directory / "stderr").unlink()
             if arm != "native":
                 row["features"] = measured_features(arm, directory, row["launcher_pid"], program,
-                                                    production_reader.collect)
+                                                    production_reader.collect, study)
             row["receipts"] = {f.relative_to(directory).as_posix(): elf_digest(f)
                                for f in sorted(directory.rglob("*")) if f.is_file()}
             rows.append(dict(**slot, sequence=seq, stdin_sha256=case["stdin_sha256"],
@@ -152,9 +171,13 @@ def collect(payload, out):
                                     rows=rows, predictions_sha256=elf_digest(seal)))
 
 
-if __name__ == "__main__":
+def main(study=STUDY):
     cli = argparse.ArgumentParser(description=__doc__)
     cli.add_argument("--payload", required=True, type=Path)
     cli.add_argument("--out", required=True, type=Path)
     args = cli.parse_args()
-    collect(args.payload.resolve(), args.out.resolve())
+    collect(args.payload.resolve(), args.out.resolve(), study)
+
+
+if __name__ == "__main__":
+    main()
