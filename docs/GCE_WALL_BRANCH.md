@@ -56,6 +56,8 @@ Turning off cache simulation saved about 47.4% of full profiling CPU on each gue
 
 This comparison covers one trusted executable and one matched point-update workload on a single CPU family. A candidate judge clock would still have to handle previously unseen implementations, range updates and boundary verdicts without calibrating two reference inputs per new executable (nine native runs per reference input here). The bit-reversed stream supplies a regression case for any cheaper combined branch and locality estimate.
 
+The follow-up checks the known 50 ms error and tests an input-derived locality feature on fresh overlapping ranges. [Range-update experiment](GCE_WALL_LOCALITY.md)
+
 ## Reproduce
 
 The archives contain the raw wait4 observations, ordinary process records, Cachegrind event files and logs, kernel exec trace and the pre-label prediction seal. From the repository root, the following commands reproduce both metrics files byte-for-byte.
