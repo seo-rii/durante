@@ -32,9 +32,9 @@ def predict(ascending, shuffled, holdout):
     return forecasts
 
 
-def score_cases(cases, limits):
+def score_cases(cases, limits, methods=METHODS):
     results = {}
-    for method in METHODS:
+    for method in methods:
         errors = []
         correct = unanimous = false_timeout = false_pass = mixed = 0
         for case in cases:
