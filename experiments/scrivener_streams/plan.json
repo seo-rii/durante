@@ -1,0 +1,149 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "platform": {
+    "machine": "n2d-standard-4",
+    "cpu_platform": "AMD Milan",
+    "threads_per_core": 1,
+    "cpu": 1,
+    "independent_boots": 2
+  },
+  "cpu": 1,
+  "timeout_s": 120,
+  "native_reps": 9,
+  "profile_reps": 2,
+  "scan_reps": 3,
+  "anchors": [
+    "ascending",
+    "shuffled"
+  ],
+  "fixed_limits_ms": [
+    30,
+    35,
+    40,
+    45,
+    50,
+    55,
+    60,
+    65,
+    70,
+    75,
+    80,
+    85
+  ],
+  "durante_client_revision": "b43685c76b94a365886031359b032899b009cd1b",
+  "valgrind_package": {
+    "name": "valgrind",
+    "version": "1:3.19.0-1",
+    "arch": "amd64",
+    "sha256": "324842f2308a1e42abf2d81ff5eb19a9475fc9db95647f4d9da71444eda4087f"
+  },
+  "tools": {
+    "reader": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a",
+    "current": "27051cef2450f484c08d79023607e39a6e75a8d7c22b077e028379e3b51d921c",
+    "drrun": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "engine": "f2478395d33e2d8e4a6fb4158fd826777cca37ee02e94924757696b08d7fb06f",
+    "valgrind": "6cf6e12cf59b2a28625e65045b39564a82406604cca0d9c4cc5dffe8635c72c6",
+    "cachegrind": "768b94ae8257c6f5224257342729c6ce691aa80785fc436aaf67522b67b25459",
+    "preload": "2f2a3ccb9ebf10e4d6b2d6854e349e89b8852d3c0dfca9a55d7bc4d2939ac324",
+    "scan": "dfe8e041babaf1c8b104580d2e6836a69708350232004da3dc698febd8ec9427"
+  },
+  "runtime_sha256": {
+    ".durante-runtime.json": "adb27bebcc760ece7ae0cd18f5a779e56dad3beeb86aee17f78682be5d4030a7",
+    "bin64/drrun": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "ext/lib64/debug/libdrmgr.so": "0011d0732cebbefcded9afdbe2094e799d6aae80017eca5aab3401bd31f79500",
+    "ext/lib64/release/libdrmgr.so": "372cc1f1f95ffa29a1f11de4be14f99de5938bbcae11294a38d0a7932069429a",
+    "lib32/debug/libdynamorio.so": "f12fb2006a9c3c5ae74ce2a6edf58f3b2404835b24fc41fbb46a2475d6639bb8",
+    "lib32/release/libdynamorio.so": "08c166e09ea8c97d579e8f6a1bc5ebf5bf39cbd937eb357fe0797066ec1afa63",
+    "lib64/debug/libdrpreload.so": "0cf77ae7149ed7bcfc7d2105fccf34ff9077c06566dde2475f31532a5b41b98f",
+    "lib64/debug/libdynamorio.so": "45e13a209ac3c03a0adfa722fb4c23ddedd91061b636d6a0d409066c364407f1",
+    "lib64/release/libdrpreload.so": "fd220281583ecc7de1395d63a82338f265b46fda1af8acfbeeabdf33c88e6113",
+    "lib64/release/libdynamorio.so": "f2478395d33e2d8e4a6fb4158fd826777cca37ee02e94924757696b08d7fb06f"
+  },
+  "binaries": {
+    "scrivener": "5a918d9eb725f4a0492ed3f891a155e6c08a3a30092215c9036648e8e3e9a60e",
+    "scrivener_lifting": "9f79bdb4bd631018fd950801d5fddcc58423ce264193ca91b5d99b7d80cb6246"
+  },
+  "previous_registration": "20feab067c2efc793bae383cba01e3816ad44018",
+  "controls": [
+    "lanes32"
+  ],
+  "cases": [
+    {
+      "name": "ascending",
+      "group": "anchor",
+      "stdin_sha256": "44a9e1a322b6f9a39794d511b61dad59d96958f58ae55bf21b82d0c448c5f83f",
+      "stdout_sha256": "cb29dc1dbedc06d2f5a0b9667e3eeb75dd115e6b1a4ce7efa2bd3761952b0dfa",
+      "scan_sha256": "47a7f4385f2f1d81b66c65d9e2eb7ac5b334156a1e66da2ff4cfc710e0ed52a7"
+    },
+    {
+      "name": "shuffled",
+      "group": "anchor",
+      "stdin_sha256": "1611756acc33b9d1f0f0e02af1979091247d047fbe820015e58f972ee5f0af3d",
+      "stdout_sha256": "97b39b4d0dbe56a7fd1d1c7d5fd03a6ed9c5c4956f66d834c802beec2a02e7d8",
+      "scan_sha256": "bdc718ea679abd732d7da1fb35ea9723186f2daa192dd81e718642a261e31222"
+    },
+    {
+      "name": "lanes32",
+      "group": "control",
+      "stdin_sha256": "b80c408c5ee5161dd4fdafc185c953b244495d939f9f3bc1b4cf90e48d4383f4",
+      "stdout_sha256": "eaa25f0903dcae6bbf6685794addecf0d2b6ae5e0c1282dbce83f519ecd7b190",
+      "scan_sha256": "fe159cdf6fb73c766bff57df187cc6f296d1fceb9bd0dcb5409dac2e83584236"
+    },
+    {
+      "name": "lanes24",
+      "group": "holdout",
+      "stdin_sha256": "d7b6fab6b7d55f934064bfdf42f6c571c7648e856641066a0f8b61876b6f75ae",
+      "stdout_sha256": "c4472a1e3cffac5080f99c02403cf9e291924eb26fd87572da2ff4cebec21a9a",
+      "scan_sha256": "b6ec8378047c99d588196b739afb631fe40722f8ff8b214de2a84590b04d85f9"
+    },
+    {
+      "name": "lanes64",
+      "group": "holdout",
+      "stdin_sha256": "14e56e21a429452403a99312f152355104acaa0f58a13328ca43150b5fbb6f41",
+      "stdout_sha256": "128bbb77feb2ae2917e89e2b6c40e13dbd88e94756a3c75caa9fb6f79cf0cd0e",
+      "scan_sha256": "2896e88a38e8f45f153566f7d4ee30162f21419f128ebacd58ddbb5b349051ae"
+    },
+    {
+      "name": "descending48",
+      "group": "holdout",
+      "stdin_sha256": "298847af4c268d4e844aa7d3ee705b3d3d795a47d89a991fc75982ca674fc566",
+      "stdout_sha256": "00adde00db943f0d22a23cb5d604cbaa2646886c5a911f01cdba174317b984f5",
+      "scan_sha256": "b5ccfa53bc1398003890fe524b2ea4be80cee6012a29e3ff393c79d89a551156"
+    },
+    {
+      "name": "tiles64_lanes48",
+      "group": "holdout",
+      "stdin_sha256": "2693e498b499b629ec1da2b75161b2710975222725443f9a08d4a59df3504e79",
+      "stdout_sha256": "c6f31d10d3a3ea645adea299e3f1e46c5add9ddb46eb967d6767a7aafbf62120",
+      "scan_sha256": "b79d661da08ff88fc935af5eb3e8214f006ea5f3ec42f46aadacd1817d90a1d4"
+    },
+    {
+      "name": "tiles512_lanes48",
+      "group": "holdout",
+      "stdin_sha256": "f3a188214263f3ee0d22efaa8894829377e9dd93045574ea81015e42daa8da43",
+      "stdout_sha256": "b9f0fba9f75e6486db356faf6c56088b68f1e4ae74ad62d4b7783c73d63250fc",
+      "scan_sha256": "45bfd2a1518df561d66d16663b00aada135cea3cb8a106017432dc183e76feb4"
+    },
+    {
+      "name": "bitrev_tiles512",
+      "group": "holdout",
+      "stdin_sha256": "0b50339366f00f7d0a40ac0cca233fc6e72610db2a4cf04ed0f196ae2e61e2c9",
+      "stdout_sha256": "4672a414edb7a4fee2ad53ce5a2ce5378a3943fdc7bee8c6d68f93fba2535330",
+      "scan_sha256": "929855ffec05cb02c83cd4b6a020771d09bf21dc43622ddbaeb11a01cbce6a8d"
+    }
+  ],
+  "design": "Two independent Milan guests use exactly the same registered executables, inputs and x86-64-v2 Durante v12 installation. Rotate profiling order with two repetitions per executable and three standalone scans per input. After nine native repetitions of both ascending/shuffled anchor inputs per solver, seal every forecast for the previously measured control and six fresh orders before the first non-anchor native execution. Rotate nine native repetitions per validation pair. CPU 1 cpuset and trace verify every measured launch. The reference is the median of child user plus system CPU. Report the known lanes32 control independently, including the compact solver at the original 65 ms budget.",
+  "methods": {
+    "ordinary": "Ascending native median multiplied by the ratio of ordinary work (instructions plus requested REP bytes, both weighted one).",
+    "midpoint": "Mean of the two native anchor medians.",
+    "distance": "Clamped interpolation between anchor times using the sum of bit lengths of consecutive absolute print-position distances.",
+    "pages": "Same interpolation using misses in the 16-entry LRU over floor(position / 512).",
+    "branch": "Same interpolation using simulated conditional branch mispredictions (Bcm); cache simulation disabled.",
+    "branch_pages": "Use the unweighted mean of the clamped page and branch fractions before interpolating. For an equal-feature anchor pair use 1/2. All estimates use exact fractions and one final ceil to nanoseconds. Use the first of each profile and scan. Each method uses the same executable and boot for both anchor and test.",
+    "stream": "Clamped interpolation using the count of 16-entry logical LRU misses which are either the first visit to a 512-position page or more than eight character positions from the most recent query to that same page. Update the remembered position on every query, including hits. The eight-position threshold is fixed for this logical statistic. Use the same two native anchors as pages.",
+    "branch_stream": "Interpolate once from the arithmetic mean of the individually clamped fractions for Bcm and the stream statistic. Use the same exact rational arithmetic, equal-anchor midpoint fallback and final ceil as branch_pages."
+  },
+  "accuracy_gate": "The primary comparison is branch_stream against the already-tested branch_pages baseline. Across twelve fresh input/solver pairs require strictly lower worst absolute relative error on each of two boots. Separately evaluate stream versus pages with the same criteria and report all eight models. The old lanes32 control is excluded from every fresh-input aggregate.",
+  "deadline_gate": "Across 144 fixed-budget comparisons per boot (six fresh inputs, two solvers, twelve whole-ms budgets), require at least one previously incorrect unanimous decision corrected and zero newly introduced unanimous false passes or false timeouts, by case, solver and budget. Check both guests. Report majority, mixed-native and unanimous results separately. The prior compact lanes32/65 ms regression is reported separately and cannot qualify a model."
+}
