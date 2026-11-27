@@ -1,0 +1,136 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "platform": {
+    "machine": "n2d-standard-4",
+    "cpu_platform": "AMD Milan",
+    "threads_per_core": 1,
+    "cpu": 1,
+    "independent_boots": 2
+  },
+  "cpu": 1,
+  "timeout_s": 120,
+  "native_reps": 9,
+  "profile_reps": 2,
+  "anchors": [
+    "ascending",
+    "shuffled"
+  ],
+  "fixed_limits_ms": [
+    30,
+    35,
+    40,
+    45,
+    50,
+    55,
+    60,
+    65,
+    70,
+    75,
+    80,
+    85
+  ],
+  "durante_client_revision": "b43685c76b94a365886031359b032899b009cd1b",
+  "valgrind_package": {
+    "name": "valgrind",
+    "version": "1:3.19.0-1",
+    "arch": "amd64",
+    "sha256": "324842f2308a1e42abf2d81ff5eb19a9475fc9db95647f4d9da71444eda4087f"
+  },
+  "tools": {
+    "reader": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a",
+    "current": "27051cef2450f484c08d79023607e39a6e75a8d7c22b077e028379e3b51d921c",
+    "drrun": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "engine": "f2478395d33e2d8e4a6fb4158fd826777cca37ee02e94924757696b08d7fb06f",
+    "valgrind": "6cf6e12cf59b2a28625e65045b39564a82406604cca0d9c4cc5dffe8635c72c6",
+    "cachegrind": "768b94ae8257c6f5224257342729c6ce691aa80785fc436aaf67522b67b25459",
+    "preload": "2f2a3ccb9ebf10e4d6b2d6854e349e89b8852d3c0dfca9a55d7bc4d2939ac324",
+    "scan": "dfe8e041babaf1c8b104580d2e6836a69708350232004da3dc698febd8ec9427"
+  },
+  "runtime_sha256": {
+    ".durante-runtime.json": "adb27bebcc760ece7ae0cd18f5a779e56dad3beeb86aee17f78682be5d4030a7",
+    "bin64/drrun": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "ext/lib64/debug/libdrmgr.so": "0011d0732cebbefcded9afdbe2094e799d6aae80017eca5aab3401bd31f79500",
+    "ext/lib64/release/libdrmgr.so": "372cc1f1f95ffa29a1f11de4be14f99de5938bbcae11294a38d0a7932069429a",
+    "lib32/debug/libdynamorio.so": "f12fb2006a9c3c5ae74ce2a6edf58f3b2404835b24fc41fbb46a2475d6639bb8",
+    "lib32/release/libdynamorio.so": "08c166e09ea8c97d579e8f6a1bc5ebf5bf39cbd937eb357fe0797066ec1afa63",
+    "lib64/debug/libdrpreload.so": "0cf77ae7149ed7bcfc7d2105fccf34ff9077c06566dde2475f31532a5b41b98f",
+    "lib64/debug/libdynamorio.so": "45e13a209ac3c03a0adfa722fb4c23ddedd91061b636d6a0d409066c364407f1",
+    "lib64/release/libdrpreload.so": "fd220281583ecc7de1395d63a82338f265b46fda1af8acfbeeabdf33c88e6113",
+    "lib64/release/libdynamorio.so": "f2478395d33e2d8e4a6fb4158fd826777cca37ee02e94924757696b08d7fb06f"
+  },
+  "binaries": {
+    "scrivener": "5a918d9eb725f4a0492ed3f891a155e6c08a3a30092215c9036648e8e3e9a60e",
+    "scrivener_lifting": "9f79bdb4bd631018fd950801d5fddcc58423ce264193ca91b5d99b7d80cb6246"
+  },
+  "clock_registration": "abe4f6230c58f9b7bba20a06a404a513a0330dd0",
+  "cases": [
+    {
+      "name": "ascending",
+      "group": "anchor",
+      "stdin_sha256": "44a9e1a322b6f9a39794d511b61dad59d96958f58ae55bf21b82d0c448c5f83f",
+      "stdout_sha256": "cb29dc1dbedc06d2f5a0b9667e3eeb75dd115e6b1a4ce7efa2bd3761952b0dfa",
+      "scan_sha256": "47a7f4385f2f1d81b66c65d9e2eb7ac5b334156a1e66da2ff4cfc710e0ed52a7"
+    },
+    {
+      "name": "shuffled",
+      "group": "anchor",
+      "stdin_sha256": "1611756acc33b9d1f0f0e02af1979091247d047fbe820015e58f972ee5f0af3d",
+      "stdout_sha256": "97b39b4d0dbe56a7fd1d1c7d5fd03a6ed9c5c4956f66d834c802beec2a02e7d8",
+      "scan_sha256": "bdc718ea679abd732d7da1fb35ea9723186f2daa192dd81e718642a261e31222"
+    },
+    {
+      "name": "lanes20",
+      "group": "holdout",
+      "stdin_sha256": "c8439b43f3324ee5859ae021fd3043c454fa2b96171f8df13af1e680acc9d0d9",
+      "stdout_sha256": "7c73b586fac8c8408840300b404c87ce8109933120c2ed52e462e97e05ac7639",
+      "scan_sha256": "b8ed1ee87517ea179db21dc6cd027bb0ad63a154666c46c9f4632556bfab7179",
+      "fixed_limit_ms": 75
+    },
+    {
+      "name": "lanes80",
+      "group": "holdout",
+      "stdin_sha256": "31d595785578eb1f9c6aba325d3d3d3fd916243541b1e676d0cbde8cd12c85ec",
+      "stdout_sha256": "4bebdbbf1393a4581219fbfcdc522de1c50240df7e74e58a9bc680537372092f",
+      "scan_sha256": "9c8082037e7185c3f7cf9a4e3843abe7ae8330e1930daf2e767eafaa32effc49",
+      "fixed_limit_ms": 40
+    },
+    {
+      "name": "descending40",
+      "group": "holdout",
+      "stdin_sha256": "275ead2abdb7a1f070128e76d5dc67844380687f3a47fc3f66707bf419796e32",
+      "stdout_sha256": "daa059c19a92735f3d75edb019e856e86a1398ebf16e35a3b93af780a5b68949",
+      "scan_sha256": "03c52bdd8c628c742a2d2214aabf0f8835cc519c874c1f42a5f3dc043e8f7c4e",
+      "fixed_limit_ms": 30
+    },
+    {
+      "name": "tiles96_lanes40",
+      "group": "holdout",
+      "stdin_sha256": "2aa97e70e7136c4c27a5a8a1bd0d31d44e87c604b78f2ec64304a20466c04ce6",
+      "stdout_sha256": "5e2d39296b56824d45d3b0865f5cc23473f6a48684915c6a7da91242a83dc2f9",
+      "scan_sha256": "dd8e4a303d31733d12f811c5dcb2d834e0d2da881216599cc79751302186f547",
+      "fixed_limit_ms": 60
+    },
+    {
+      "name": "tiles384_lanes40",
+      "group": "holdout",
+      "stdin_sha256": "189bb82009afae131d15188a7d0cc08f800890b50416e16d12da9bdd25ac2e39",
+      "stdout_sha256": "e145bf332bdb5d9671c815cca87846dcba4faea4c748ee2d1e27ff10afcd8f22",
+      "scan_sha256": "8fc5b3df7741adfbb5f602d438d78306231f74e52aa66a2ad642dbb23dd83e11",
+      "fixed_limit_ms": 45
+    },
+    {
+      "name": "bitrev_tiles256",
+      "group": "holdout",
+      "stdin_sha256": "05f7cf1001cf0ae7dce14662bc0268da4023e2229678b9edf88ee2bae7ba3567",
+      "stdout_sha256": "b992d18ec467908d0f501f1dfb16cb3aad1fa3b737d8dacc1632f546b6bf280f",
+      "scan_sha256": "c6dcc0b76dc23727c92f3578e8014d8a76a01db2cfe88f460a6d2fc749e54dc2",
+      "fixed_limit_ms": 50
+    }
+  ],
+  "clock": "Use the registered branch_stream nanosecond clock. For each solver/boot calibrate once on the medians of nine native child CPU times per anchor, one logical scan per anchor input shared during calibration, and one branch profile per anchor/solver. Normalize each feature between its own anchors, clamp to [0,1], take 1/2 if endpoints coincide. Interpolate using the mean of the two fractions, then ceil once. Native times and feature endpoints may each increase, decrease or be equal.",
+  "route": "A verdict times out only if the estimate strictly exceeds the integer budget. For any unmeasured varying feature use [0,1], for an equal-endpoint feature use {1/2}. Calculate the inclusive time bounds at both extremes with exact rationals. Stop when the whole interval is on the same side of the limit. Otherwise run the logical scan, tighten the bounds and, if still unresolved, run branch-only Cachegrind. The eager mode executes both tools independently on each evaluated pair. No cross-call scan or profile cache. A skipped path returns a verdict and an interval, not an exact time.",
+  "budget_design": "Assign six budgets 30,40,45,50,60,75 ms in order of SHA-256 of UTF-8 \"scrivener-lazy-v1/\" followed by the fresh input name. Both executables use the same assigned budget for an input. The separately reported grid is 30 to 85 ms every 5 ms. Only assigned-budget calls physically exercise the lazy routing and measure savings. Compare with native medians and unanimous votes at both sets of budgets.",
+  "study": "Two independent N2D AMD Milan single-thread-per-core guests, all children in CPU 1 cgroup/affinity. Six new matched inputs, two known solvers. Each assigned-budget eager/lazy pair is exercised twice in opposite path order. Each call receives independently collected measurements and common per-boot calibration. Bind executed raw profiles and the immutable decisions to a journal prefix before any held-out native run. Follow with nine rotated native repetitions per pair. Verify the exec trace including absence of unexpected scan/branch launches.",
+  "efficiency_gate": "Require strictly lower aggregate lazy child user+system CPU plus routing thread CPU on measured calls (excluding common calibration and validation), agreement with every paired eager verdict on assigned budgets, and equality across all replayed fixed-grid budgets on both boots. Report profile launch counts, wall elapsed, pure child CPU, common calibration cost and workload-level results. Check false timeouts and false passes against native separately; no native accuracy improvement is claimed from the routing rule."
+}

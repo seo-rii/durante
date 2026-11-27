@@ -1,0 +1,1122 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "plan_sha256": "26aeccf855b3ffc152326fb7e03776f0f8d2155e03742242a2c6819167be399d",
+  "run_sha256": "c4999078b72fe0f4ed675e8d0dd3c3f50cfadf93e840cff83d521d11f0dc7259",
+  "predictions_sha256": "df1dcdee2e41f1c75096e8982a362031485d21c7a1b1c6fc8cd01ea16ace88b4",
+  "boot_sha256": "cd2b1d27c8e8216d4e3cbf4513968e06f137174b1f241e0c092700ef4a66a1b0",
+  "cpu_steal_ticks": 0,
+  "verified_pids": 220,
+  "sealed_prefix_rows": 112,
+  "anchors": {
+    "scrivener": {
+      "ascending": {
+        "native_ns": 35744000,
+        "disruptive": 352,
+        "bcm": 1456530
+      },
+      "shuffled": {
+        "native_ns": 69583000,
+        "disruptive": 166359,
+        "bcm": 1774972
+      }
+    },
+    "scrivener_lifting": {
+      "ascending": {
+        "native_ns": 35654000,
+        "disruptive": 352,
+        "bcm": 528778
+      },
+      "shuffled": {
+        "native_ns": 45056000,
+        "disruptive": 166359,
+        "bcm": 576231
+      }
+    }
+  },
+  "summary": {
+    "measured": {
+      "eager": {
+        "calls": 24,
+        "paths": {
+          "anchors": 0,
+          "scan": 0,
+          "branch": 24
+        },
+        "scan_calls": 24,
+        "scan_cpu_us": 171992,
+        "branch_calls": 24,
+        "branch_cpu_us": 12608115,
+        "child_cpu_us": 12780107,
+        "router_cpu_ns": 44675711,
+        "combined_cpu_ns": 12824782711,
+        "elapsed_ns": 12830124378
+      },
+      "lazy": {
+        "calls": 24,
+        "paths": {
+          "anchors": 12,
+          "scan": 2,
+          "branch": 10
+        },
+        "scan_calls": 12,
+        "scan_cpu_us": 86688,
+        "branch_calls": 10,
+        "branch_cpu_us": 5257681,
+        "child_cpu_us": 5344369,
+        "router_cpu_ns": 20294540,
+        "combined_cpu_ns": 5364663540,
+        "elapsed_ns": 5364222028
+      },
+      "child_saved_ppm": 581821,
+      "combined_saved_ppm": 581696,
+      "elapsed_saved_ppm": 581904,
+      "equivalent_calls": 24,
+      "efficiency_gate": true,
+      "avoided_scans": 12,
+      "avoided_branches": 14
+    },
+    "calibration": {
+      "branch": {
+        "calls": 4,
+        "child_cpu_us": 2115341
+      },
+      "native": {
+        "calls": 36,
+        "child_cpu_us": 1672054
+      },
+      "scan": {
+        "calls": 2,
+        "child_cpu_us": 14987
+      }
+    },
+    "validation": {
+      "native": {
+        "calls": 108,
+        "child_cpu_us": 4762026
+      }
+    },
+    "fixed": {
+      "pairs_or_limits": 12,
+      "majority_correct": 9,
+      "majority_false_pass": 0,
+      "majority_false_timeout": 3,
+      "unanimous_correct": 9,
+      "unanimous_false_pass": 0,
+      "unanimous_false_timeout": 2,
+      "mixed": 1
+    },
+    "grid": {
+      "pairs_or_limits": 144,
+      "majority_correct": 132,
+      "majority_false_pass": 1,
+      "majority_false_timeout": 11,
+      "unanimous_correct": 129,
+      "unanimous_false_pass": 0,
+      "unanimous_false_timeout": 8,
+      "mixed": 7
+    },
+    "grid_eager_comparisons": 288,
+    "grid_paths": {
+      "anchors": 96,
+      "scan": 24,
+      "branch": 24
+    },
+    "descriptive_accuracy": {
+      "branch_stream": {
+        "cases": 12,
+        "within_20pct": 10,
+        "median_absolute_error_ppm": 43077,
+        "worst_absolute_error_ppm": 280632,
+        "worst_case": [
+          "tiles96_lanes40",
+          "scrivener"
+        ]
+      },
+      "calibration_midpoint": {
+        "cases": 12,
+        "within_20pct": 11,
+        "median_absolute_error_ppm": 36054,
+        "worst_absolute_error_ppm": 288215,
+        "worst_case": [
+          "bitrev_tiles256",
+          "scrivener"
+        ]
+      }
+    }
+  },
+  "cases": {
+    "lanes20": {
+      "scrivener": {
+        "limit_ms": 75,
+        "native_ns": [
+          44712000,
+          44969000,
+          44973000,
+          44218000,
+          44741000,
+          45399000,
+          46451000,
+          44679000,
+          44995000
+        ],
+        "median_native_ns": 44969000,
+        "midpoint_ns": 52663500,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 9,
+          "45": 2,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "eager_estimate_ns": [
+          51698400,
+          51698400
+        ],
+        "convex_estimate_interval_ns": [
+          35754396,
+          67642403
+        ],
+        "lazy_paths": [
+          "anchors",
+          "anchors"
+        ],
+        "lazy_over_budget": [
+          false,
+          false
+        ],
+        "measured": {
+          "eager": {
+            "calls": 2,
+            "paths": {
+              "anchors": 0,
+              "scan": 0,
+              "branch": 2
+            },
+            "scan_calls": 2,
+            "scan_cpu_us": 14544,
+            "branch_calls": 2,
+            "branch_cpu_us": 1042549,
+            "child_cpu_us": 1057093,
+            "router_cpu_ns": 3830478,
+            "combined_cpu_ns": 1060923478,
+            "elapsed_ns": 1060498882
+          },
+          "lazy": {
+            "calls": 2,
+            "paths": {
+              "anchors": 2,
+              "scan": 0,
+              "branch": 0
+            },
+            "scan_calls": 0,
+            "scan_cpu_us": 0,
+            "branch_calls": 0,
+            "branch_cpu_us": 0,
+            "child_cpu_us": 0,
+            "router_cpu_ns": 41650,
+            "combined_cpu_ns": 41650,
+            "elapsed_ns": 44558
+          }
+        }
+      },
+      "scrivener_lifting": {
+        "limit_ms": 75,
+        "native_ns": [
+          38936000,
+          39004000,
+          39029000,
+          39130000,
+          39177000,
+          39519000,
+          38822000,
+          39160000,
+          39531000
+        ],
+        "median_native_ns": 39130000,
+        "midpoint_ns": 40355000,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 0,
+          "45": 0,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "eager_estimate_ns": [
+          40356445,
+          40356445
+        ],
+        "convex_estimate_interval_ns": [
+          35656889,
+          45056000
+        ],
+        "lazy_paths": [
+          "anchors",
+          "anchors"
+        ],
+        "lazy_over_budget": [
+          false,
+          false
+        ],
+        "measured": {
+          "eager": {
+            "calls": 2,
+            "paths": {
+              "anchors": 0,
+              "scan": 0,
+              "branch": 2
+            },
+            "scan_calls": 2,
+            "scan_cpu_us": 14454,
+            "branch_calls": 2,
+            "branch_cpu_us": 1044011,
+            "child_cpu_us": 1058465,
+            "router_cpu_ns": 3689479,
+            "combined_cpu_ns": 1062154479,
+            "elapsed_ns": 1061649106
+          },
+          "lazy": {
+            "calls": 2,
+            "paths": {
+              "anchors": 2,
+              "scan": 0,
+              "branch": 0
+            },
+            "scan_calls": 0,
+            "scan_cpu_us": 0,
+            "branch_calls": 0,
+            "branch_cpu_us": 0,
+            "child_cpu_us": 0,
+            "router_cpu_ns": 38460,
+            "combined_cpu_ns": 38460,
+            "elapsed_ns": 41390
+          }
+        }
+      }
+    },
+    "lanes80": {
+      "scrivener": {
+        "limit_ms": 40,
+        "native_ns": [
+          48854000,
+          46203000,
+          48255000,
+          49402000,
+          47151000,
+          47380000,
+          49967000,
+          45510000,
+          48251000
+        ],
+        "median_native_ns": 48251000,
+        "midpoint_ns": 52663500,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 9,
+          "45": 9,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "eager_estimate_ns": [
+          48567599,
+          48567599
+        ],
+        "convex_estimate_interval_ns": [
+          35766423,
+          61368774
+        ],
+        "lazy_paths": [
+          "branch",
+          "branch"
+        ],
+        "lazy_over_budget": [
+          true,
+          true
+        ],
+        "measured": {
+          "eager": {
+            "calls": 2,
+            "paths": {
+              "anchors": 0,
+              "scan": 0,
+              "branch": 2
+            },
+            "scan_calls": 2,
+            "scan_cpu_us": 14441,
+            "branch_calls": 2,
+            "branch_cpu_us": 1053336,
+            "child_cpu_us": 1067777,
+            "router_cpu_ns": 3901526,
+            "combined_cpu_ns": 1071678526,
+            "elapsed_ns": 1081365629
+          },
+          "lazy": {
+            "calls": 2,
+            "paths": {
+              "anchors": 0,
+              "scan": 0,
+              "branch": 2
+            },
+            "scan_calls": 2,
+            "scan_cpu_us": 14759,
+            "branch_calls": 2,
+            "branch_cpu_us": 1051293,
+            "child_cpu_us": 1066052,
+            "router_cpu_ns": 4072956,
+            "combined_cpu_ns": 1070124956,
+            "elapsed_ns": 1071308026
+          }
+        }
+      },
+      "scrivener_lifting": {
+        "limit_ms": 40,
+        "native_ns": [
+          39775000,
+          39254000,
+          39290000,
+          39584000,
+          39325000,
+          40052000,
+          40726000,
+          39612000,
+          41403000
+        ],
+        "median_native_ns": 39612000,
+        "midpoint_ns": 40355000,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 3,
+          "45": 0,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "eager_estimate_ns": [
+          40256771,
+          40256771
+        ],
+        "convex_estimate_interval_ns": [
+          35660230,
+          44853311
+        ],
+        "lazy_paths": [
+          "branch",
+          "branch"
+        ],
+        "lazy_over_budget": [
+          true,
+          true
+        ],
+        "measured": {
+          "eager": {
+            "calls": 2,
+            "paths": {
+              "anchors": 0,
+              "scan": 0,
+              "branch": 2
+            },
+            "scan_calls": 2,
+            "scan_cpu_us": 14461,
+            "branch_calls": 2,
+            "branch_cpu_us": 1057379,
+            "child_cpu_us": 1071840,
+            "router_cpu_ns": 3727638,
+            "combined_cpu_ns": 1075567638,
+            "elapsed_ns": 1075056834
+          },
+          "lazy": {
+            "calls": 2,
+            "paths": {
+              "anchors": 0,
+              "scan": 0,
+              "branch": 2
+            },
+            "scan_calls": 2,
+            "scan_cpu_us": 14443,
+            "branch_calls": 2,
+            "branch_cpu_us": 1054804,
+            "child_cpu_us": 1069247,
+            "router_cpu_ns": 3785920,
+            "combined_cpu_ns": 1073032920,
+            "elapsed_ns": 1072749738
+          }
+        }
+      }
+    },
+    "descending40": {
+      "scrivener": {
+        "limit_ms": 30,
+        "native_ns": [
+          47372000,
+          47222000,
+          47126000,
+          48847000,
+          47177000,
+          46602000,
+          49026000,
+          44971000,
+          47263000
+        ],
+        "median_native_ns": 47222000,
+        "midpoint_ns": 52663500,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 9,
+          "45": 8,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "eager_estimate_ns": [
+          50040750,
+          50040750
+        ],
+        "convex_estimate_interval_ns": [
+          35758473,
+          64323026
+        ],
+        "lazy_paths": [
+          "anchors",
+          "anchors"
+        ],
+        "lazy_over_budget": [
+          true,
+          true
+        ],
+        "measured": {
+          "eager": {
+            "calls": 2,
+            "paths": {
+              "anchors": 0,
+              "scan": 0,
+              "branch": 2
+            },
+            "scan_calls": 2,
+            "scan_cpu_us": 14407,
+            "branch_calls": 2,
+            "branch_cpu_us": 1033996,
+            "child_cpu_us": 1048403,
+            "router_cpu_ns": 3766416,
+            "combined_cpu_ns": 1052169416,
+            "elapsed_ns": 1052155195
+          },
+          "lazy": {
+            "calls": 2,
+            "paths": {
+              "anchors": 2,
+              "scan": 0,
+              "branch": 0
+            },
+            "scan_calls": 0,
+            "scan_cpu_us": 0,
+            "branch_calls": 0,
+            "branch_cpu_us": 0,
+            "child_cpu_us": 0,
+            "router_cpu_ns": 41459,
+            "combined_cpu_ns": 41459,
+            "elapsed_ns": 44358
+          }
+        }
+      },
+      "scrivener_lifting": {
+        "limit_ms": 30,
+        "native_ns": [
+          40372000,
+          39743000,
+          40957000,
+          40597000,
+          41379000,
+          39722000,
+          40307000,
+          41380000,
+          40360000
+        ],
+        "median_native_ns": 40372000,
+        "midpoint_ns": 40355000,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 7,
+          "45": 0,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "eager_estimate_ns": [
+          40357011,
+          40357011
+        ],
+        "convex_estimate_interval_ns": [
+          35658022,
+          45056000
+        ],
+        "lazy_paths": [
+          "anchors",
+          "anchors"
+        ],
+        "lazy_over_budget": [
+          true,
+          true
+        ],
+        "measured": {
+          "eager": {
+            "calls": 2,
+            "paths": {
+              "anchors": 0,
+              "scan": 0,
+              "branch": 2
+            },
+            "scan_calls": 2,
+            "scan_cpu_us": 14420,
+            "branch_calls": 2,
+            "branch_cpu_us": 1051220,
+            "child_cpu_us": 1065640,
+            "router_cpu_ns": 3704668,
+            "combined_cpu_ns": 1069344668,
+            "elapsed_ns": 1069107357
+          },
+          "lazy": {
+            "calls": 2,
+            "paths": {
+              "anchors": 2,
+              "scan": 0,
+              "branch": 0
+            },
+            "scan_calls": 0,
+            "scan_cpu_us": 0,
+            "branch_calls": 0,
+            "branch_cpu_us": 0,
+            "child_cpu_us": 0,
+            "router_cpu_ns": 35210,
+            "combined_cpu_ns": 35210,
+            "elapsed_ns": 37831
+          }
+        }
+      }
+    },
+    "tiles96_lanes40": {
+      "scrivener": {
+        "limit_ms": 60,
+        "native_ns": [
+          52414000,
+          49099000,
+          51443000,
+          50452000,
+          51784000,
+          49645000,
+          50041000,
+          53659000,
+          50599000
+        ],
+        "median_native_ns": 50599000,
+        "midpoint_ns": 52663500,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 9,
+          "45": 9,
+          "50": 7,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "eager_estimate_ns": [
+          64798695,
+          64798695
+        ],
+        "convex_estimate_interval_ns": [
+          64216975,
+          65380415
+        ],
+        "lazy_paths": [
+          "branch",
+          "branch"
+        ],
+        "lazy_over_budget": [
+          true,
+          true
+        ],
+        "measured": {
+          "eager": {
+            "calls": 2,
+            "paths": {
+              "anchors": 0,
+              "scan": 0,
+              "branch": 2
+            },
+            "scan_calls": 2,
+            "scan_cpu_us": 15196,
+            "branch_calls": 2,
+            "branch_cpu_us": 1051260,
+            "child_cpu_us": 1066456,
+            "router_cpu_ns": 3554878,
+            "combined_cpu_ns": 1070010878,
+            "elapsed_ns": 1069546431
+          },
+          "lazy": {
+            "calls": 2,
+            "paths": {
+              "anchors": 0,
+              "scan": 0,
+              "branch": 2
+            },
+            "scan_calls": 2,
+            "scan_cpu_us": 15354,
+            "branch_calls": 2,
+            "branch_cpu_us": 1043899,
+            "child_cpu_us": 1059253,
+            "router_cpu_ns": 3697797,
+            "combined_cpu_ns": 1062950797,
+            "elapsed_ns": 1062485599
+          }
+        }
+      },
+      "scrivener_lifting": {
+        "limit_ms": 60,
+        "native_ns": [
+          41551000,
+          40940000,
+          41024000,
+          41648000,
+          41138000,
+          41822000,
+          41996000,
+          40928000,
+          42525000
+        ],
+        "median_native_ns": 41551000,
+        "midpoint_ns": 40355000,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 9,
+          "45": 0,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "eager_estimate_ns": [
+          44472167,
+          44472167
+        ],
+        "convex_estimate_interval_ns": [
+          43888333,
+          45056000
+        ],
+        "lazy_paths": [
+          "anchors",
+          "anchors"
+        ],
+        "lazy_over_budget": [
+          false,
+          false
+        ],
+        "measured": {
+          "eager": {
+            "calls": 2,
+            "paths": {
+              "anchors": 0,
+              "scan": 0,
+              "branch": 2
+            },
+            "scan_calls": 2,
+            "scan_cpu_us": 15362,
+            "branch_calls": 2,
+            "branch_cpu_us": 1071929,
+            "child_cpu_us": 1087291,
+            "router_cpu_ns": 3778069,
+            "combined_cpu_ns": 1091069069,
+            "elapsed_ns": 1090692473
+          },
+          "lazy": {
+            "calls": 2,
+            "paths": {
+              "anchors": 2,
+              "scan": 0,
+              "branch": 0
+            },
+            "scan_calls": 0,
+            "scan_cpu_us": 0,
+            "branch_calls": 0,
+            "branch_cpu_us": 0,
+            "child_cpu_us": 0,
+            "router_cpu_ns": 37190,
+            "combined_cpu_ns": 37190,
+            "elapsed_ns": 39871
+          }
+        }
+      }
+    },
+    "tiles384_lanes40": {
+      "scrivener": {
+        "limit_ms": 45,
+        "native_ns": [
+          52592000,
+          51839000,
+          51716000,
+          52830000,
+          53806000,
+          55314000,
+          53097000,
+          53926000,
+          52425000
+        ],
+        "median_native_ns": 52830000,
+        "midpoint_ns": 52663500,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 9,
+          "45": 9,
+          "50": 9,
+          "55": 1,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "eager_estimate_ns": [
+          66725661,
+          66725661
+        ],
+        "convex_estimate_interval_ns": [
+          63868322,
+          69583000
+        ],
+        "lazy_paths": [
+          "scan",
+          "scan"
+        ],
+        "lazy_over_budget": [
+          true,
+          true
+        ],
+        "measured": {
+          "eager": {
+            "calls": 2,
+            "paths": {
+              "anchors": 0,
+              "scan": 0,
+              "branch": 2
+            },
+            "scan_calls": 2,
+            "scan_cpu_us": 14747,
+            "branch_calls": 2,
+            "branch_cpu_us": 1053310,
+            "child_cpu_us": 1068057,
+            "router_cpu_ns": 3667777,
+            "combined_cpu_ns": 1071724777,
+            "elapsed_ns": 1071274903
+          },
+          "lazy": {
+            "calls": 2,
+            "paths": {
+              "anchors": 0,
+              "scan": 2,
+              "branch": 0
+            },
+            "scan_calls": 2,
+            "scan_cpu_us": 14794,
+            "branch_calls": 0,
+            "branch_cpu_us": 0,
+            "child_cpu_us": 14794,
+            "router_cpu_ns": 1248042,
+            "combined_cpu_ns": 16042042,
+            "elapsed_ns": 16039432
+          }
+        }
+      },
+      "scrivener_lifting": {
+        "limit_ms": 45,
+        "native_ns": [
+          42889000,
+          41592000,
+          43511000,
+          44245000,
+          42727000,
+          42200000,
+          43002000,
+          42724000,
+          42304000
+        ],
+        "median_native_ns": 42727000,
+        "midpoint_ns": 40355000,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 9,
+          "45": 0,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "eager_estimate_ns": [
+          45011322,
+          45011322
+        ],
+        "convex_estimate_interval_ns": [
+          44966643,
+          45056000
+        ],
+        "lazy_paths": [
+          "branch",
+          "branch"
+        ],
+        "lazy_over_budget": [
+          true,
+          true
+        ],
+        "measured": {
+          "eager": {
+            "calls": 2,
+            "paths": {
+              "anchors": 0,
+              "scan": 0,
+              "branch": 2
+            },
+            "scan_calls": 2,
+            "scan_cpu_us": 14719,
+            "branch_calls": 2,
+            "branch_cpu_us": 1058271,
+            "child_cpu_us": 1072990,
+            "router_cpu_ns": 3691608,
+            "combined_cpu_ns": 1076681608,
+            "elapsed_ns": 1076204428
+          },
+          "lazy": {
+            "calls": 2,
+            "paths": {
+              "anchors": 0,
+              "scan": 0,
+              "branch": 2
+            },
+            "scan_calls": 2,
+            "scan_cpu_us": 14703,
+            "branch_calls": 2,
+            "branch_cpu_us": 1061252,
+            "child_cpu_us": 1075955,
+            "router_cpu_ns": 3600528,
+            "combined_cpu_ns": 1079555528,
+            "elapsed_ns": 1079127650
+          }
+        }
+      }
+    },
+    "bitrev_tiles256": {
+      "scrivener": {
+        "limit_ms": 50,
+        "native_ns": [
+          41111000,
+          40881000,
+          40344000,
+          41173000,
+          40538000,
+          40785000,
+          41559000,
+          40404000,
+          41298000
+        ],
+        "median_native_ns": 40881000,
+        "midpoint_ns": 52663500,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 9,
+          "45": 0,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "eager_estimate_ns": [
+          42084363,
+          42084363
+        ],
+        "convex_estimate_interval_ns": [
+          35744000,
+          48424726
+        ],
+        "lazy_paths": [
+          "branch",
+          "branch"
+        ],
+        "lazy_over_budget": [
+          false,
+          false
+        ],
+        "measured": {
+          "eager": {
+            "calls": 2,
+            "paths": {
+              "anchors": 0,
+              "scan": 0,
+              "branch": 2
+            },
+            "scan_calls": 2,
+            "scan_cpu_us": 12594,
+            "branch_calls": 2,
+            "branch_cpu_us": 1026109,
+            "child_cpu_us": 1038703,
+            "router_cpu_ns": 3675446,
+            "combined_cpu_ns": 1042378446,
+            "elapsed_ns": 1041941177
+          },
+          "lazy": {
+            "calls": 2,
+            "paths": {
+              "anchors": 0,
+              "scan": 0,
+              "branch": 2
+            },
+            "scan_calls": 2,
+            "scan_cpu_us": 12635,
+            "branch_calls": 2,
+            "branch_cpu_us": 1046433,
+            "child_cpu_us": 1059068,
+            "router_cpu_ns": 3659518,
+            "combined_cpu_ns": 1062727518,
+            "elapsed_ns": 1062265054
+          }
+        }
+      },
+      "scrivener_lifting": {
+        "limit_ms": 50,
+        "native_ns": [
+          40073000,
+          39547000,
+          40813000,
+          39646000,
+          40636000,
+          39829000,
+          39358000,
+          40311000,
+          40411000
+        ],
+        "median_native_ns": 40073000,
+        "midpoint_ns": 40355000,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 5,
+          "45": 0,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "eager_estimate_ns": [
+          38763003,
+          38763003
+        ],
+        "convex_estimate_interval_ns": [
+          35654000,
+          41872005
+        ],
+        "lazy_paths": [
+          "anchors",
+          "anchors"
+        ],
+        "lazy_over_budget": [
+          false,
+          false
+        ],
+        "measured": {
+          "eager": {
+            "calls": 2,
+            "paths": {
+              "anchors": 0,
+              "scan": 0,
+              "branch": 2
+            },
+            "scan_calls": 2,
+            "scan_cpu_us": 12647,
+            "branch_calls": 2,
+            "branch_cpu_us": 1064745,
+            "child_cpu_us": 1077392,
+            "router_cpu_ns": 3687728,
+            "combined_cpu_ns": 1081079728,
+            "elapsed_ns": 1080631963
+          },
+          "lazy": {
+            "calls": 2,
+            "paths": {
+              "anchors": 2,
+              "scan": 0,
+              "branch": 0
+            },
+            "scan_calls": 0,
+            "scan_cpu_us": 0,
+            "branch_calls": 0,
+            "branch_cpu_us": 0,
+            "child_cpu_us": 0,
+            "router_cpu_ns": 35810,
+            "combined_cpu_ns": 35810,
+            "elapsed_ns": 38521
+          }
+        }
+      }
+    }
+  }
+}
