@@ -271,12 +271,14 @@ def check(row, mode):
     e, m, wb = rep["execution"], rep["measurement"], rep["work_budget"]
     if not (e.get("cleanup_complete") and e.get("records_cleanup_complete")):
         err.append("cleanup incomplete")
+    if mode in ("budget-half", "budget-large") and wb and wb.get("limit") != row["budget"]:
+        err.append("receipt limit differs from the requested budget")
     if mode == "budget-half":
         if row["exit"] != 123 or e.get("state") != "work_budget_exceeded":
             err.append(f"expected work_budget_exceeded/123, got {e.get('state')}/{row['exit']}")
         if not wb or wb.get("status") != "exceeded" or wb.get("observation") != "live":
             err.append(f"expected exceeded/live receipt, got {wb and (wb.get('status'), wb.get('observation'))}")
-        elif wb["instructions"] + wb["movs_bytes"] + wb["stos_bytes"] <= wb["limit"]:
+        elif wb["instructions"] + wb["movs_bytes"] + wb["stos_bytes"] <= row["budget"]:
             err.append("receipt does not exceed its limit")
         if m.get("complete") or m.get("instructions") is not None:
             err.append("forced stop exposed a complete measurement")
@@ -293,6 +295,8 @@ def check(row, mode):
         elif (wb["instructions"], wb["movs_bytes"], wb["stos_bytes"]) != (
                 m["instructions"], rb.get("movs_bytes"), rb.get("stos_bytes")):
             err.append("terminal receipt differs from measurement")
+        elif work_units(m) > row["budget"]:
+            err.append("terminal work exceeds the requested budget")
     elif wb is not None:
         err.append("unrequested work budget receipt")
     if mode == "latency":
@@ -429,7 +433,8 @@ def main(argv=None):
         for lang in selected_langs:
             spec = LANGS[lang]
             src = CONTEST / problem / spec.source
-            if not src.exists():
+            if not src.is_file():
+                build_failures.append({"problem": problem, "lang": lang, "error": f"submission source missing: {src}"})
                 continue
             out = args.output_dir / "build" / problem / lang
             out.mkdir(parents=True)
@@ -448,6 +453,15 @@ def main(argv=None):
                           "env": clean_env(EXTRA_ENV.get((lang, problem)))})
     summaries, rows = [], []
     results = args.output_dir / "results.json"
+    def write_results():
+        results.write_text(json.dumps({"schema": 1, "build_failures": build_failures, "builds": builds,
+                                       "summaries": summaries, "rows": rows,
+                                       "settings": {"timeout_ms": args.timeout_ms, "stack_limit": args.stack_limit,
+                                                    "latency_timeout_ms": args.latency_timeout_ms,
+                                                    "cpus": args.cpus, "repeat": args.repeat, "no_aslr": args.no_aslr}},
+                                      indent=1, default=str) + "\n")
+
+    write_results()
     started = time.monotonic()
     for cell in cells:
         summary, cell_rows = run_cell(args, cell)
@@ -458,12 +472,7 @@ def main(argv=None):
               + "".join("\n    " + e for e in summary["errors"][:6]), flush=True)
         for row in cell_rows:
             row["command"] = [str(c) for c in row["command"]]
-        results.write_text(json.dumps({"schema": 1, "build_failures": build_failures, "builds": builds,
-                                       "summaries": summaries, "rows": rows,
-                                       "settings": {"timeout_ms": args.timeout_ms, "stack_limit": args.stack_limit,
-                                                    "latency_timeout_ms": args.latency_timeout_ms,
-                                                    "cpus": args.cpus, "repeat": args.repeat, "no_aslr": args.no_aslr}},
-                                      indent=1, default=str) + "\n")
+        write_results()
     print(table(summaries, rows))
     for failure in build_failures:
         print("BUILD FAIL", failure["problem"], failure["lang"], failure["error"][:300])
