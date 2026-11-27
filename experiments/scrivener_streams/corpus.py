@@ -10,23 +10,23 @@ NAMES = ("ascending", "shuffled", "lanes32", "lanes24", "lanes64", "descending48
          "tiles64_lanes48", "tiles512_lanes48", "bitrev_tiles512")
 
 
-def _ranks(name, size):
-    if name == "bitrev_tiles512":
-        order = [0]
-        for bit in reversed(range(9)):
-            order += [rank + (1 << bit) for rank in order]
-        for start in range(0, size, 512):
-            yield from (start + rank for rank in order if start + rank < size)
-        return
-    lanes = {"lanes24": 24, "lanes64": 64, "descending48": 48,
-             "tiles64_lanes48": 48, "tiles512_lanes48": 48}[name]
+def bit_reversed_tiles(size, width):
+    if width < 1 or width & (width - 1):
+        raise ValueError("tile width must be a power of two")
+    order = [0]
+    for bit in reversed(range(width.bit_length() - 1)):
+        order += [rank + (1 << bit) for rank in order]
+    for start in range(0, size, width):
+        yield from (start + rank for rank in order if start + rank < size)
+
+
+def interleaved_ranks(size, lanes, *, descending=False, tile_size=0, seed=20121128):
     runs = [list(range(i * size // lanes, (i + 1) * size // lanes)) for i in range(lanes)]
-    if name == "descending48":
+    if descending:
         for run in runs:
             run.reverse()
-    elif name.startswith("tiles"):
-        tile_size = 64 if name == "tiles64_lanes48" else 512
-        rng = Random(20121128)
+    if tile_size:
+        rng = Random(seed)
         for run in runs:
             for start in range(0, len(run), tile_size):
                 tile = run[start:start + tile_size]
@@ -36,19 +36,32 @@ def _ranks(name, size):
         yield from (rank for rank in column if rank is not None)
 
 
+def _ranks(name, size):
+    if name == "bitrev_tiles512":
+        return bit_reversed_tiles(size, 512)
+    lanes = {"lanes24": 24, "lanes64": 64, "descending48": 48,
+             "tiles64_lanes48": 48, "tiles512_lanes48": 48}[name]
+    tile_size = {"tiles64_lanes48": 64, "tiles512_lanes48": 512}.get(name, 0)
+    return interleaved_ranks(size, lanes, descending=name == "descending48", tile_size=tile_size)
+
+
+def reorder_queries(size, ranks):
+    text, answers = pages.make("ascending", size)
+    lines = text.splitlines(keepends=True)
+    queries = lines[size + 1:]
+    # Reorder the character-lookup oracle and the query referring to it together.
+    answer_lines = answers.splitlines(keepends=True)
+    order = list(ranks)
+    return ("".join(lines[:size + 1]) + "".join(queries[i] for i in order),
+            "".join(answer_lines[i] for i in order))
+
+
 def make(name, size=SIZE):
     if name in ("ascending", "shuffled", "lanes32"):
         return pages.make(name, size)
     if name not in NAMES:
         raise ValueError(f"unknown Scrivener order {name}")
-    text, answers = pages.make("ascending", size)
-    lines = text.splitlines(keepends=True)
-    queries = lines[size + 1:]
-    # The ascending oracle looks up the typed character at each position.
-    answer_lines = answers.splitlines(keepends=True)
-    order = list(_ranks(name, size))
-    return ("".join(lines[:size + 1]) + "".join(queries[i] for i in order),
-            "".join(answer_lines[i] for i in order))
+    return reorder_queries(size, _ranks(name, size))
 
 
 def features(text):
