@@ -165,6 +165,7 @@ typedef struct {
 _Static_assert(sizeof(live_work_t) == 48 && __atomic_always_lock_free(8, 0),
                "live work requires lock-free aligned 64-bit counters");
 static live_work_t *live_work;
+static bool live_work_require_eligible;
 static int app_exit_code;
 static size_t file_bytes;
 #ifdef DURANTE_TEST_COUNT_LOCATIONS
@@ -965,6 +966,8 @@ static void observe_rep(app_pc pc, int opcode, int bytes, int count_reg) {
   if (resumed)
     return;
   if (bytes == 0) {
+    if (live_work_require_eligible)
+      invalidate_live_work();
     if (data->unsupported_rep_entries == UINT64_MAX)
       counter_error(&data->rep_error);
     else
@@ -2277,6 +2280,8 @@ static void post_syscall(void *ctx, int number) {
 }
 static dr_signal_action_t signal_event(void *ctx, dr_siginfo_t *info) {
   (void)info;
+  if (live_work_require_eligible)
+    invalidate_live_work();
   thread_data_t *d = thread_state(ctx);
   if (!d || d->signals == UINT64_MAX)
     fail("signal accounting overflow");
@@ -2396,7 +2401,8 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
   if (argc < 3 || strcmp(argv[1], "-outdir"))
     fail("usage: -c libdurante.so -outdir NEW_PRIVATE_DIRECTORY [-rep_bytes] "
          "[-disallow_cpu_feature avx|simd] [-cpuid_profile x86-64-v1|x86-64-v2] "
-         "[-latency_bound [-memory_operand_bytes]] [-live_work_v1 OWNER_FILE] -- program");
+         "[-latency_bound [-memory_operand_bytes]] "
+         "[-live_work_v1 OWNER_FILE [-live_work_require_eligible]] -- program");
   if (strlen(argv[2]) >= sizeof(outdir) || argv[2][0] != '/')
     fail("report directory must be absolute");
   memcpy(outdir, argv[2], strlen(argv[2]) + 1);
@@ -2411,6 +2417,8 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
 #endif
     } else if (strcmp(argv[i], "-live_work_v1") == 0 && !live_path && i + 1 < argc) {
       live_path = argv[++i];
+    } else if (strcmp(argv[i], "-live_work_require_eligible") == 0 && !live_work_require_eligible) {
+      live_work_require_eligible = true;
     } else if (strcmp(argv[i], "-latency_bound") == 0 && !latency_bound_enabled) {
       latency_bound_enabled = true;
     } else if (strcmp(argv[i], "-memory_operand_bytes") == 0 && !memory_operand_bytes_enabled) {
@@ -2434,6 +2442,8 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
   }
   if (memory_operand_bytes_enabled && !latency_bound_enabled)
     fail("memory operand bytes require -latency_bound");
+  if (live_work_require_eligible && !live_path)
+    fail("-live_work_require_eligible requires -live_work_v1");
   if (live_path) {
     if (!rep_bytes_enabled)
       fail("live work requires -rep_bytes");

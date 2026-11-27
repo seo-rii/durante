@@ -60,9 +60,18 @@ A thread that another thread's `exit_group` stops publishes its remainder from
 its exit event, so the total includes the final block prefix that its terminal
 record also counts. Signals and CMPS/SCAS entries keep the page usable, as they
 keep the terminal record valid: a CMPS/SCAS entry charges its one instruction
-and no bytes, because the unit has no CMPS/SCAS bytes. Accounting errors, a
-replay that cannot be settled, and exec while other threads still run invalidate
-live eligibility. Missing or inconsistent progress leaves the external deadline
+and no bytes, because the unit has no CMPS/SCAS bytes.
+
+An owner whose weighted time policy rejects signals and unsupported REP entries
+can add the client option `-live_work_require_eligible` to `-live_work_v1`.
+The first observed signal or CMPS/SCAS entry in any participating thread or
+process sets the shared invalidity word. The owner must then use its external
+deadline. The option affects only the live page. A naturally completed role
+still reports its counters and quality fields for terminal evaluation. A budget
+decision made before such an event covers only the observed execution prefix.
+
+Accounting errors, a replay that cannot be settled, and exec while other
+threads still run also invalidate live eligibility. Missing or inconsistent progress leaves the external deadline
 active. A budgeted natural completion requires a matching terminal report.
 
 Components may be read at slightly different instants. Their sum provides a
