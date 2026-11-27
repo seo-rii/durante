@@ -53,6 +53,32 @@ that XSAVE. It keeps the early exception clear and preserves the separate
 XMM/YMM/ZMM, mask-register and XSAVE-header restoration. The strict status-bit
 assertions remain enabled for every supported ISA.
 
+## Frames that cannot be written
+
+When the kernel cannot write a signal frame to the stack it delivers SIGSEGV
+instead, and when the frame for SIGSEGV itself cannot be written it resets the
+handler and kills the process with SIGSEGV (`force_sigsegv()`).
+`tests/signal_stack.py` runs `tests/signal_stack.c` natively, under the release
+and debug cores and under `durante run`, with an 8 MiB stack:
+
+| Case | Native result |
+| --- | --- |
+| A recursion overflows the stack that its SIGSEGV handler uses | SIGSEGV |
+| The same with the handler on an alternate stack | handler runs (42) |
+| `ud2` with an unwritable stack pointer and a SIGILL handler | SIGSEGV |
+| The same with a SIGSEGV handler on an alternate stack | that handler runs (43) |
+| A SIGUSR1 sent to itself with an unwritable stack pointer | SIGSEGV |
+| The same with a SIGSEGV handler on an alternate stack | that handler runs (43) |
+| The same with a SIGSEGV handler on the unwritable stack | SIGSEGV |
+
+Every run must end as natively. The upstream runtime crashed on the first, third
+and fourth cases (it freed a pending-signal entry that a fault delivered from
+the code cache never had) and looped on the last (it forged the same SIGSEGV
+again for ever). The pinned runtime patch delivers SIGSEGV as the kernel does.
+A contest submission reaches the first case when it recurses too deep while
+a runtime has a SIGSEGV handler without an alternate stack, for example Node
+without `--disable-wasm-trap-handler`.
+
 ## Reproduce and inspect
 
 Build the SDK, client and release CLI as described in the repository README,
