@@ -51,6 +51,8 @@ The smaller worst error comes with a cost at individual deadlines. At 45 ms the 
 
 To reproduce the weight selection, per-guest accuracy and vote counts from the published data, run `python3 -B experiments/scrivener_lazy/midpoint_comparison.py`. [Reanalysis](../experiments/scrivener_lazy/midpoint_comparison.py) · [Prior held-out cases](GCE_SCRIVENER_STREAMS.md)
 
+A subsequent prospective experiment tests whether revisit age or displacement can repair the 60 ms false timeout, records the earlier regressions separately, and evaluates the midpoint adjustment on eight fresh orders. [Page-revisit experiment](GCE_SCRIVENER_RANK.md)
+
 ## How the deadline is decided
 
 The previous Scrivener clock estimates CPU time for a known solver using two native reference inputs. It measures the median native time for an ascending and a globally shuffled query order. It measures two features at both anchors and on the candidate input. One feature counts disruptive page revisits in the input order. The other counts simulated conditional branch mispredictions in the compiled solver. The clock normalizes each feature against its two anchors, clamps it to the unit interval, averages the two fractions and interpolates the native reference times. Equal feature anchors contribute one half. The clock rounds its final estimate up to an integer nanosecond. [Original model](GCE_SCRIVENER_STREAMS.md)
