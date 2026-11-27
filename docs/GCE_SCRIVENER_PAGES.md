@@ -25,6 +25,8 @@ The 16-stream and 32-stream inputs expose the specific limit of the 16-entry LRU
 
 The shared input scan cost a median **6.28 / 6.30 ms** per execution. Median per-executable branch-only profiling cost **526.32 / 522.33 ms**, ordinary Durante profiling **179.83 / 176.33 ms**, and native execution **40.19 / 38.88 ms**. Using only the cheap page scan covered 9/10 held-out pairs within ±20% on each guest, with worst errors above 54%. The combined model pays for both the scan and the branch profile. Branch counts matched across both repetitions and both guests on every pair. Ordinary work differed by at most 16 counts between repetitions. Both guests recorded zero CPU steal ticks across their 203 scheduled processes. These results cover two known static executables, one problem and one CPU family. [First collection](../experiments/results/gce-scrivener-pages/collection.json) · [Second collection](../experiments/results/gce-scrivener-pages-repeat/collection.json)
 
+A subsequent study revisits the 65 ms boundary and tests a scan that remembers the last position queried in each page on six new orders. [Stream-locality experiment](GCE_SCRIVENER_STREAMS.md)
+
 ## Inputs and timing
 
 The compact jump-tree solver and the binary-lifting solver each build the same 180,000-character document and print the same multiset of 180,000 positions. Only query order changes. The five new orders visit bit-reversed ranks, alternate the first and last remaining ranks, interleave 16 or 32 sorted streams, or permute 512-query blocks while preserving their inner order. A character lookup in the original document supplies the output oracle. [Input generator](../experiments/scrivener_pages/corpus.py) · [Scrivener order controls](GCE_SCRIVENER_ORDER.md)
