@@ -21,6 +21,8 @@ Averaging the two native anchors requires no additional profiling per input. Thi
 
 The input scan itself cost a median 7.23 / 7.21 ms per input, shared by both solvers. Branch simulation cost 526.66 / 530.15 ms per executable/input, ordinary Durante profiling took 180.36 / 182.67 ms, and direct native execution took 42.24 / 42.65 ms. Using the revised scan alone reduced worst error versus the original scan on both guests, but introduced four and five unanimous false passes. The scan-only model failed its deadline criterion.
 
+A follow-up measures how often an exact deadline decision can skip the input scan or the branch profiler, and tracks native error on six further orders. [Demand-driven deadline experiment](GCE_SCRIVENER_LAZY.md)
+
 ## The 65 ms control and the remaining error
 
 For the compact solver on the historical 32-stream control, the original LRU missed all 180,000 queries. Only 414 of these met the revised criterion. The old combined forecast was 66.86 / 66.25 ms and the new forecast was **50.13 / 49.89 ms**. The native medians were **45.71 / 45.32 ms** and all 18 native runs passed at 65 ms. This input informed the new design and is excluded from the fresh-input table.
