@@ -1,0 +1,129 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "platform": {
+    "machine": "n2d-standard-4",
+    "cpu_platform": "AMD Milan",
+    "threads_per_core": 1,
+    "cpu": 1,
+    "independent_boots": 2
+  },
+  "cpu": 1,
+  "timeout_s": 120,
+  "native_reps": 9,
+  "profile_reps": 2,
+  "scan_reps": 3,
+  "anchors": [
+    "ascending",
+    "shuffled"
+  ],
+  "fixed_limits_ms": [
+    30,
+    35,
+    40,
+    45,
+    50,
+    55,
+    60,
+    65,
+    70,
+    75,
+    80,
+    85
+  ],
+  "durante_client_revision": "b43685c76b94a365886031359b032899b009cd1b",
+  "valgrind_package": {
+    "name": "valgrind",
+    "version": "1:3.19.0-1",
+    "arch": "amd64",
+    "sha256": "324842f2308a1e42abf2d81ff5eb19a9475fc9db95647f4d9da71444eda4087f"
+  },
+  "tools": {
+    "reader": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a",
+    "current": "27051cef2450f484c08d79023607e39a6e75a8d7c22b077e028379e3b51d921c",
+    "drrun": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "engine": "f2478395d33e2d8e4a6fb4158fd826777cca37ee02e94924757696b08d7fb06f",
+    "valgrind": "6cf6e12cf59b2a28625e65045b39564a82406604cca0d9c4cc5dffe8635c72c6",
+    "cachegrind": "768b94ae8257c6f5224257342729c6ce691aa80785fc436aaf67522b67b25459",
+    "preload": "2f2a3ccb9ebf10e4d6b2d6854e349e89b8852d3c0dfca9a55d7bc4d2939ac324",
+    "scan": "c0c82dc3e05e73910b212698915394a492d7076912dc0585ae5ee6155ee62287"
+  },
+  "runtime_sha256": {
+    ".durante-runtime.json": "adb27bebcc760ece7ae0cd18f5a779e56dad3beeb86aee17f78682be5d4030a7",
+    "bin64/drrun": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "ext/lib64/debug/libdrmgr.so": "0011d0732cebbefcded9afdbe2094e799d6aae80017eca5aab3401bd31f79500",
+    "ext/lib64/release/libdrmgr.so": "372cc1f1f95ffa29a1f11de4be14f99de5938bbcae11294a38d0a7932069429a",
+    "lib32/debug/libdynamorio.so": "f12fb2006a9c3c5ae74ce2a6edf58f3b2404835b24fc41fbb46a2475d6639bb8",
+    "lib32/release/libdynamorio.so": "08c166e09ea8c97d579e8f6a1bc5ebf5bf39cbd937eb357fe0797066ec1afa63",
+    "lib64/debug/libdrpreload.so": "0cf77ae7149ed7bcfc7d2105fccf34ff9077c06566dde2475f31532a5b41b98f",
+    "lib64/debug/libdynamorio.so": "45e13a209ac3c03a0adfa722fb4c23ddedd91061b636d6a0d409066c364407f1",
+    "lib64/release/libdrpreload.so": "fd220281583ecc7de1395d63a82338f265b46fda1af8acfbeeabdf33c88e6113",
+    "lib64/release/libdynamorio.so": "f2478395d33e2d8e4a6fb4158fd826777cca37ee02e94924757696b08d7fb06f"
+  },
+  "binaries": {
+    "scrivener": "5a918d9eb725f4a0492ed3f891a155e6c08a3a30092215c9036648e8e3e9a60e",
+    "scrivener_lifting": "9f79bdb4bd631018fd950801d5fddcc58423ce264193ca91b5d99b7d80cb6246"
+  },
+  "cases": [
+    {
+      "name": "ascending",
+      "group": "anchor",
+      "stdin_sha256": "44a9e1a322b6f9a39794d511b61dad59d96958f58ae55bf21b82d0c448c5f83f",
+      "stdout_sha256": "cb29dc1dbedc06d2f5a0b9667e3eeb75dd115e6b1a4ce7efa2bd3761952b0dfa",
+      "scan_sha256": "f64db1df05ea73b26383b1f443097b04d498a1a05cb8e2b75464540d22216567"
+    },
+    {
+      "name": "shuffled",
+      "group": "anchor",
+      "stdin_sha256": "1611756acc33b9d1f0f0e02af1979091247d047fbe820015e58f972ee5f0af3d",
+      "stdout_sha256": "97b39b4d0dbe56a7fd1d1c7d5fd03a6ed9c5c4956f66d834c802beec2a02e7d8",
+      "scan_sha256": "547a404ad55271b83006f5f7b7ba0192a33cf4e6e990164fedca120677a3eb70"
+    },
+    {
+      "name": "bit_reverse",
+      "group": "holdout",
+      "stdin_sha256": "2e1e22cb2d3a99d37538bbad6e9c1af4aabe40fa8f566925535fd9ffb20d9048",
+      "stdout_sha256": "80e24ad9f6c441bb965d3fc22de6d86b595611e2180e77848e13bf87c2c9eb20",
+      "scan_sha256": "8af15d2c9f69951d239e04024261f2d502847969f50499f902e48f380ae69089"
+    },
+    {
+      "name": "alternate_extremes",
+      "group": "holdout",
+      "stdin_sha256": "8830d36b579e95664d4b64cc0a050243994ab112ffc51fe263b01a20a64a5a0c",
+      "stdout_sha256": "7f4a49d3196252a3281c545f2d62f771e25c12f51afa32be7b61d7d331de602d",
+      "scan_sha256": "8a2c6ae7475eb65f6b46da16a3f94783d2ae36ea9f55155cda67671ef5529881"
+    },
+    {
+      "name": "lanes16",
+      "group": "holdout",
+      "stdin_sha256": "5807a48352cae5d51ca73a6e106a500afdaffe429beb78eab8063c9a3e46ca06",
+      "stdout_sha256": "8b3d202feb8040b1fe350a0c1168ada0e23ea8ce1d86287f3a7502b1cb60147b",
+      "scan_sha256": "8872b3f52e8cf5ead5282b1a7ba8ecd4b222dcd7b217efe08a52385d0a68ec22"
+    },
+    {
+      "name": "lanes32",
+      "group": "holdout",
+      "stdin_sha256": "b80c408c5ee5161dd4fdafc185c953b244495d939f9f3bc1b4cf90e48d4383f4",
+      "stdout_sha256": "eaa25f0903dcae6bbf6685794addecf0d2b6ae5e0c1282dbce83f519ecd7b190",
+      "scan_sha256": "799812c3f09a2dc4783a04abb4f861859786fde63878d75c77213fc8079e0c4d"
+    },
+    {
+      "name": "shuffled_blocks",
+      "group": "holdout",
+      "stdin_sha256": "c38378a2a4fd769efc77112b03318c2f0526565c97949b4322cb5150c674f553",
+      "stdout_sha256": "4cad9ad0b0415bb24bb0364246113e65e439fbae560ad8e01ba6536b62c87fe5",
+      "scan_sha256": "b77ff7db5412acabc3858cdb4662db4030366f98054831981371c029211a2df0"
+    }
+  ],
+  "design": "Each solver has two native anchors. Collect three shared input scans per case and rotate two ordinary Durante v12 and two branch-only Cachegrind runs per executable and input. Rotate nine native anchor runs per pair. Seal all six predictions for all five held-out inputs and both solvers, and hash the preceding journal, before running any native held-out process. Rotate nine held-out native runs per pair. Reuse the same static payload on a second independent Milan guest.",
+  "methods": {
+    "ordinary": "Ascending native median multiplied by the ratio of ordinary work (instructions plus requested REP bytes, both weighted one).",
+    "midpoint": "Mean of the two native anchor medians.",
+    "distance": "Clamped interpolation between anchor times using the sum of bit lengths of consecutive absolute print-position distances.",
+    "pages": "Same interpolation using misses in the 16-entry LRU over floor(position / 512).",
+    "branch": "Same interpolation using simulated conditional branch mispredictions (Bcm); cache simulation disabled.",
+    "branch_pages": "Use the unweighted mean of the clamped page and branch fractions before interpolating. For an equal-feature anchor pair use 1/2. All estimates use exact fractions and one final ceil to nanoseconds. Use the first of each profile and scan. Each method uses the same executable and boot for both anchor and test."
+  },
+  "accuracy_gate": "The primary comparison is branch_pages versus branch across ten unseen input/executable pairs per guest. A replicated accuracy improvement requires strictly lower worst absolute relative error on both guests. Report median errors and coverage within \u00b120% for all methods. Report pages versus distance as a secondary comparison using only the same shared input scan.",
+  "deadline_gate": "Across the 120 fixed case/ELF/budget comparisons on each boot, require fewer unanimous false passes and no additional unanimous false timeouts for branch_pages versus branch on BOTH boots. Timing and deadline gates are independent. Decisions are projected from completed executions; report majority errors, unanimous errors and mixed native votes separately."
+}

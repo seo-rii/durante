@@ -1,0 +1,1010 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "plan_sha256": "e291ea25531af3a52d509a0342ab68e7968426e3fa439e5a908ea1fb56d26798",
+  "run_sha256": "6f0d07f4ca6809024aa389d479031c42d5d35d90b885a396ea99e0a83edbb0c6",
+  "predictions_sha256": "0ad98184a4733331e26cfdc676224971abce8dc05d40392d09530c8d6e226b6d",
+  "boot_sha256": "814ed4964368de240e9bc1b9b259776a44c966f0d6e30b2f4390d99cfe949aac",
+  "cpu_steal_ticks": 0,
+  "verified_pids": 203,
+  "sealed_prefix_rows": 113,
+  "cases": {
+    "bit_reverse": {
+      "scrivener": {
+        "native_ns": [
+          73564000,
+          75277000,
+          76368000,
+          75778000,
+          74058000,
+          72812000,
+          70224000,
+          71547000,
+          73322000
+        ],
+        "median_native_ns": 73564000,
+        "predictions_ns": {
+          "midpoint": 52349000,
+          "distance": 69485000,
+          "pages": 69485000,
+          "branch": 67619554,
+          "branch_pages": 68552277,
+          "ordinary": 35213003
+        },
+        "signed_error_ppm": {
+          "midpoint": -288388,
+          "distance": -55448,
+          "pages": -55448,
+          "branch": -80806,
+          "branch_pages": -68127,
+          "ordinary": -521328
+        },
+        "within_20pct": {
+          "midpoint": false,
+          "distance": true,
+          "pages": true,
+          "branch": true,
+          "branch_pages": true,
+          "ordinary": false
+        },
+        "native_min_ns": 70224000,
+        "native_max_ns": 76368000,
+        "native_spread_ppm": 83519,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 9,
+          "45": 9,
+          "50": 9,
+          "55": 9,
+          "60": 9,
+          "65": 9,
+          "70": 9,
+          "75": 3,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 178973,
+          "position_bits": 2969222,
+          "work": 262240998,
+          "bcm": 1757639
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      },
+      "scrivener_lifting": {
+        "native_ns": [
+          46103000,
+          43877000,
+          44675000,
+          44562000,
+          44099000,
+          44084000,
+          44137000,
+          44111000,
+          44232000
+        ],
+        "median_native_ns": 44137000,
+        "predictions_ns": {
+          "midpoint": 39677000,
+          "distance": 43876000,
+          "pages": 43876000,
+          "branch": 43186682,
+          "branch_pages": 43531341,
+          "ordinary": 35478003
+        },
+        "signed_error_ppm": {
+          "midpoint": -101049,
+          "distance": -5913,
+          "pages": -5913,
+          "branch": -21531,
+          "branch_pages": -13722,
+          "ordinary": -196185
+        },
+        "within_20pct": {
+          "midpoint": true,
+          "distance": true,
+          "pages": true,
+          "branch": true,
+          "branch_pages": true,
+          "ordinary": true
+        },
+        "native_min_ns": 43877000,
+        "native_max_ns": 46103000,
+        "native_spread_ppm": 50434,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 9,
+          "45": 1,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 178973,
+          "position_bits": 2969222,
+          "work": 268544992,
+          "bcm": 572336
+        },
+        "feature_spread": {
+          "work": 16,
+          "bcm": 0
+        }
+      }
+    },
+    "alternate_extremes": {
+      "scrivener": {
+        "native_ns": [
+          38106000,
+          39555000,
+          39893000,
+          38745000,
+          38392000,
+          38928000,
+          38707000,
+          39876000,
+          38337000
+        ],
+        "median_native_ns": 38745000,
+        "predictions_ns": {
+          "midpoint": 52349000,
+          "distance": 69485000,
+          "pages": 35213000,
+          "branch": 57548316,
+          "branch_pages": 46380658,
+          "ordinary": 35212999
+        },
+        "signed_error_ppm": {
+          "midpoint": 351116,
+          "distance": 793393,
+          "pages": -91160,
+          "branch": 485309,
+          "branch_pages": 197075,
+          "ordinary": -91160
+        },
+        "within_20pct": {
+          "midpoint": false,
+          "distance": false,
+          "pages": true,
+          "branch": false,
+          "branch_pages": true,
+          "ordinary": true
+        },
+        "native_min_ns": 38106000,
+        "native_max_ns": 39893000,
+        "native_spread_ppm": 46122,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 0,
+          "45": 0,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 352,
+          "position_bits": 2976805,
+          "work": 262240965,
+          "bcm": 1664061
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      },
+      "scrivener_lifting": {
+        "native_ns": [
+          36133000,
+          36277000,
+          35723000,
+          36090000,
+          35919000,
+          35838000,
+          36123000,
+          35418000,
+          35964000
+        ],
+        "median_native_ns": 35964000,
+        "predictions_ns": {
+          "midpoint": 39677000,
+          "distance": 43876000,
+          "pages": 35478000,
+          "branch": 38763013,
+          "branch_pages": 37120507,
+          "ordinary": 35477999
+        },
+        "signed_error_ppm": {
+          "midpoint": 103242,
+          "distance": 219998,
+          "pages": -13514,
+          "branch": 77828,
+          "branch_pages": 32157,
+          "ordinary": -13514
+        },
+        "within_20pct": {
+          "midpoint": true,
+          "distance": false,
+          "pages": true,
+          "branch": true,
+          "branch_pages": true,
+          "ordinary": true
+        },
+        "native_min_ns": 35418000,
+        "native_max_ns": 36277000,
+        "native_spread_ppm": 23885,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 0,
+          "45": 0,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 352,
+          "position_bits": 2976805,
+          "work": 268544959,
+          "bcm": 547340
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      }
+    },
+    "lanes16": {
+      "scrivener": {
+        "native_ns": [
+          44377000,
+          44934000,
+          43551000,
+          43696000,
+          42817000,
+          44803000,
+          43366000,
+          43331000,
+          44506000
+        ],
+        "median_native_ns": 43696000,
+        "predictions_ns": {
+          "midpoint": 52349000,
+          "distance": 65930065,
+          "pages": 35215795,
+          "branch": 66886419,
+          "branch_pages": 51051107,
+          "ordinary": 35213003
+        },
+        "signed_error_ppm": {
+          "midpoint": 198027,
+          "distance": 508835,
+          "pages": -194073,
+          "branch": 530722,
+          "branch_pages": 168324,
+          "ordinary": -194137
+        },
+        "within_20pct": {
+          "midpoint": true,
+          "distance": false,
+          "pages": true,
+          "branch": false,
+          "branch_pages": true,
+          "ordinary": true
+        },
+        "native_min_ns": 42817000,
+        "native_max_ns": 44934000,
+        "native_spread_ppm": 48448,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 9,
+          "45": 0,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 366,
+          "position_bits": 2564982,
+          "work": 262240995,
+          "bcm": 1750827
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      },
+      "scrivener_lifting": {
+        "native_ns": [
+          38649000,
+          39240000,
+          38777000,
+          38670000,
+          39027000,
+          38839000,
+          38838000,
+          38377000,
+          38533000
+        ],
+        "median_native_ns": 38777000,
+        "predictions_ns": {
+          "midpoint": 39677000,
+          "distance": 43004900,
+          "pages": 35478685,
+          "branch": 43876000,
+          "branch_pages": 39677343,
+          "ordinary": 35478003
+        },
+        "signed_error_ppm": {
+          "midpoint": 23210,
+          "distance": 109031,
+          "pages": -85059,
+          "branch": 131495,
+          "branch_pages": 23218,
+          "ordinary": -85076
+        },
+        "within_20pct": {
+          "midpoint": true,
+          "distance": true,
+          "pages": true,
+          "branch": true,
+          "branch_pages": true,
+          "ordinary": true
+        },
+        "native_min_ns": 38377000,
+        "native_max_ns": 39240000,
+        "native_spread_ppm": 22255,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 0,
+          "45": 0,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 366,
+          "position_bits": 2564982,
+          "work": 268544989,
+          "bcm": 576799
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      }
+    },
+    "lanes32": {
+      "scrivener": {
+        "native_ns": [
+          46357000,
+          44964000,
+          44314000,
+          45993000,
+          45616000,
+          44388000,
+          45011000,
+          45186000,
+          43511000
+        ],
+        "median_native_ns": 45011000,
+        "predictions_ns": {
+          "midpoint": 52349000,
+          "distance": 63414156,
+          "pages": 69485000,
+          "branch": 64627284,
+          "branch_pages": 67056142,
+          "ordinary": 35213003
+        },
+        "signed_error_ppm": {
+          "midpoint": 163027,
+          "distance": 408859,
+          "pages": 543734,
+          "branch": 435811,
+          "branch_pages": 489772,
+          "ordinary": -217680
+        },
+        "within_20pct": {
+          "midpoint": true,
+          "distance": false,
+          "pages": false,
+          "branch": false,
+          "branch_pages": false,
+          "ordinary": false
+        },
+        "native_min_ns": 43511000,
+        "native_max_ns": 46357000,
+        "native_spread_ppm": 63229,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 9,
+          "45": 5,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 180000,
+          "position_bits": 2368107,
+          "work": 262240998,
+          "bcm": 1729836
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      },
+      "scrivener_lifting": {
+        "native_ns": [
+          38530000,
+          38812000,
+          38793000,
+          38553000,
+          38730000,
+          39545000,
+          38496000,
+          38759000,
+          38791000
+        ],
+        "median_native_ns": 38759000,
+        "predictions_ns": {
+          "midpoint": 39677000,
+          "distance": 42388403,
+          "pages": 43876000,
+          "branch": 43876000,
+          "branch_pages": 43876000,
+          "ordinary": 35478003
+        },
+        "signed_error_ppm": {
+          "midpoint": 23685,
+          "distance": 93640,
+          "pages": 132021,
+          "branch": 132021,
+          "branch_pages": 132021,
+          "ordinary": -84651
+        },
+        "within_20pct": {
+          "midpoint": true,
+          "distance": true,
+          "pages": true,
+          "branch": true,
+          "branch_pages": true,
+          "ordinary": true
+        },
+        "native_min_ns": 38496000,
+        "native_max_ns": 39545000,
+        "native_spread_ppm": 27065,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 0,
+          "45": 0,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 180000,
+          "position_bits": 2368107,
+          "work": 268544992,
+          "bcm": 576741
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      }
+    },
+    "shuffled_blocks": {
+      "scrivener": {
+        "native_ns": [
+          35299000,
+          36220000,
+          35869000,
+          35966000,
+          35670000,
+          36102000,
+          35305000,
+          35057000,
+          35382000
+        ],
+        "median_native_ns": 35670000,
+        "predictions_ns": {
+          "midpoint": 52349000,
+          "distance": 35279900,
+          "pages": 35278879,
+          "branch": 35324068,
+          "branch_pages": 35301474,
+          "ordinary": 35213005
+        },
+        "signed_error_ppm": {
+          "midpoint": 467592,
+          "distance": -10936,
+          "pages": -10965,
+          "branch": -9698,
+          "branch_pages": -10332,
+          "ordinary": -12812
+        },
+        "within_20pct": {
+          "midpoint": false,
+          "distance": true,
+          "pages": true,
+          "branch": true,
+          "branch_pages": true,
+          "ordinary": true
+        },
+        "native_min_ns": 35057000,
+        "native_max_ns": 36220000,
+        "native_spread_ppm": 32604,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 0,
+          "45": 0,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 682,
+          "position_bits": 166544,
+          "work": 262241007,
+          "bcm": 1457562
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      },
+      "scrivener_lifting": {
+        "native_ns": [
+          35630000,
+          35350000,
+          35511000,
+          35114000,
+          35095000,
+          53948000,
+          35317000,
+          35704000,
+          35965000
+        ],
+        "median_native_ns": 35511000,
+        "predictions_ns": {
+          "midpoint": 39677000,
+          "distance": 35494393,
+          "pages": 35494143,
+          "branch": 35533571,
+          "branch_pages": 35513857,
+          "ordinary": 35478004
+        },
+        "signed_error_ppm": {
+          "midpoint": 117316,
+          "distance": -468,
+          "pages": -475,
+          "branch": 636,
+          "branch_pages": 80,
+          "ordinary": -929
+        },
+        "within_20pct": {
+          "midpoint": true,
+          "distance": true,
+          "pages": true,
+          "branch": true,
+          "branch_pages": true,
+          "ordinary": true
+        },
+        "native_min_ns": 35095000,
+        "native_max_ns": 53948000,
+        "native_spread_ppm": 530906,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 1,
+          "45": 1,
+          "50": 1,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 682,
+          "position_bits": 166544,
+          "work": 268545001,
+          "bcm": 529092
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      }
+    },
+    "ascending": {
+      "scrivener": {
+        "native_ns": [
+          34932000,
+          35213000,
+          36559000,
+          38924000,
+          36165000,
+          34931000,
+          35142000,
+          35148000,
+          35721000
+        ],
+        "median_native_ns": 35213000,
+        "native_min_ns": 34931000,
+        "native_max_ns": 38924000,
+        "native_spread_ppm": 113396,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 7,
+          "40": 0,
+          "45": 0,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 352,
+          "position_bits": 161309,
+          "work": 262240977,
+          "bcm": 1456530
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      },
+      "scrivener_lifting": {
+        "native_ns": [
+          35708000,
+          35389000,
+          35623000,
+          35761000,
+          35472000,
+          35148000,
+          35478000,
+          35780000,
+          35394000
+        ],
+        "median_native_ns": 35478000,
+        "native_min_ns": 35148000,
+        "native_max_ns": 35780000,
+        "native_spread_ppm": 17814,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 0,
+          "45": 0,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 352,
+          "position_bits": 161309,
+          "work": 268544971,
+          "bcm": 528778
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      }
+    },
+    "shuffled": {
+      "scrivener": {
+        "native_ns": [
+          67473000,
+          70634000,
+          69485000,
+          66388000,
+          69554000,
+          68635000,
+          69891000,
+          70794000,
+          68233000
+        ],
+        "median_native_ns": 69485000,
+        "native_min_ns": 66388000,
+        "native_max_ns": 70794000,
+        "native_spread_ppm": 63409,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 9,
+          "45": 9,
+          "50": 9,
+          "55": 9,
+          "60": 9,
+          "65": 9,
+          "70": 2,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 172029,
+          "position_bits": 2843163,
+          "work": 262241040,
+          "bcm": 1774972
+        },
+        "feature_spread": {
+          "work": 0,
+          "bcm": 0
+        }
+      },
+      "scrivener_lifting": {
+        "native_ns": [
+          44442000,
+          44468000,
+          43807000,
+          44440000,
+          43662000,
+          43640000,
+          43566000,
+          43876000,
+          43915000
+        ],
+        "median_native_ns": 43876000,
+        "native_min_ns": 43566000,
+        "native_max_ns": 44468000,
+        "native_spread_ppm": 20558,
+        "native_tle_votes": {
+          "30": 9,
+          "35": 9,
+          "40": 9,
+          "45": 0,
+          "50": 0,
+          "55": 0,
+          "60": 0,
+          "65": 0,
+          "70": 0,
+          "75": 0,
+          "80": 0,
+          "85": 0
+        },
+        "features": {
+          "accesses": 180000,
+          "misses": 172029,
+          "position_bits": 2843163,
+          "work": 268545050,
+          "bcm": 576231
+        },
+        "feature_spread": {
+          "work": 16,
+          "bcm": 0
+        }
+      }
+    }
+  },
+  "summary": {
+    "midpoint": {
+      "cases": 10,
+      "median_absolute_error_ppm": 140171,
+      "worst_absolute_error_ppm": 467592,
+      "within_20pct": 7,
+      "fixed_limits": 120,
+      "majority_correct": 106,
+      "mixed_limits": 6,
+      "unanimous_correct": 100,
+      "unanimous_false_timeout": 9,
+      "unanimous_false_pass": 5,
+      "majority_false_pass": 5,
+      "majority_false_timeout": 9
+    },
+    "ordinary": {
+      "cases": 10,
+      "median_absolute_error_ppm": 88118,
+      "worst_absolute_error_ppm": 521328,
+      "within_20pct": 8,
+      "fixed_limits": 120,
+      "majority_correct": 109,
+      "mixed_limits": 6,
+      "unanimous_correct": 104,
+      "unanimous_false_timeout": 0,
+      "unanimous_false_pass": 10,
+      "majority_false_pass": 11,
+      "majority_false_timeout": 0
+    },
+    "distance": {
+      "cases": 10,
+      "median_absolute_error_ppm": 101336,
+      "worst_absolute_error_ppm": 793393,
+      "within_20pct": 6,
+      "fixed_limits": 120,
+      "majority_correct": 102,
+      "mixed_limits": 6,
+      "unanimous_correct": 96,
+      "unanimous_false_timeout": 17,
+      "unanimous_false_pass": 1,
+      "majority_false_pass": 1,
+      "majority_false_timeout": 17
+    },
+    "pages": {
+      "cases": 10,
+      "median_absolute_error_ppm": 70253,
+      "worst_absolute_error_ppm": 543734,
+      "within_20pct": 9,
+      "fixed_limits": 120,
+      "majority_correct": 113,
+      "mixed_limits": 6,
+      "unanimous_correct": 107,
+      "unanimous_false_timeout": 5,
+      "unanimous_false_pass": 2,
+      "majority_false_pass": 2,
+      "majority_false_timeout": 5
+    },
+    "branch": {
+      "cases": 10,
+      "median_absolute_error_ppm": 106151,
+      "worst_absolute_error_ppm": 530722,
+      "within_20pct": 7,
+      "fixed_limits": 120,
+      "majority_correct": 105,
+      "mixed_limits": 6,
+      "unanimous_correct": 99,
+      "unanimous_false_timeout": 14,
+      "unanimous_false_pass": 1,
+      "majority_false_pass": 1,
+      "majority_false_timeout": 14
+    },
+    "branch_pages": {
+      "cases": 10,
+      "median_absolute_error_ppm": 50142,
+      "worst_absolute_error_ppm": 489772,
+      "within_20pct": 9,
+      "fixed_limits": 120,
+      "majority_correct": 110,
+      "mixed_limits": 6,
+      "unanimous_correct": 104,
+      "unanimous_false_timeout": 9,
+      "unanimous_false_pass": 1,
+      "majority_false_pass": 1,
+      "majority_false_timeout": 9
+    }
+  },
+  "profile_cost": {
+    "scan": {
+      "runs": 21,
+      "total_cpu_us": 133331,
+      "median_cpu_us": 6295
+    },
+    "ordinary": {
+      "runs": 28,
+      "total_cpu_us": 5077632,
+      "median_cpu_us": 176331.0
+    },
+    "branch": {
+      "runs": 28,
+      "total_cpu_us": 14777109,
+      "median_cpu_us": 522327.0
+    },
+    "native": {
+      "runs": 126,
+      "total_cpu_us": 5553429,
+      "median_cpu_us": 38881.5
+    }
+  },
+  "qualification": {
+    "accuracy_gate": true,
+    "deadline_gate": false,
+    "unanimous_error_changes": {
+      "false_pass_fixed": [],
+      "false_pass_added": [],
+      "false_timeout_fixed": [
+        [
+          "alternate_extremes",
+          "scrivener",
+          50
+        ],
+        [
+          "alternate_extremes",
+          "scrivener",
+          55
+        ],
+        [
+          "lanes16",
+          "scrivener",
+          55
+        ],
+        [
+          "lanes16",
+          "scrivener",
+          60
+        ],
+        [
+          "lanes16",
+          "scrivener",
+          65
+        ],
+        [
+          "lanes16",
+          "scrivener_lifting",
+          40
+        ]
+      ],
+      "false_timeout_added": [
+        [
+          "lanes32",
+          "scrivener",
+          65
+        ]
+      ]
+    }
+  }
+}
