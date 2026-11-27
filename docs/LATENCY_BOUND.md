@@ -80,7 +80,12 @@ at the top level, on every process and on every selected image segment. The CLI
 report adds `latency_bound_version: 1` when the bound was requested; a complete
 measurement without the object (or with it when it was not requested) is
 reported as unavailable (`client latency bound does not match the request`).
-Combined instruction and REP counters are unchanged by the option.
+The option does not change how instructions and REP bytes are counted. A
+program that reads `/proc/self/maps` still runs a little longer with it: that
+file also lists the runtime's own mappings, and the larger instrumented blocks
+take a few more code-cache units. A Rust program (whose start-up parses the
+file to find the main thread's stack) counted 659,893 instructions without the
+option and 672,643 with it, each the same in every run without ASLR.
 
 ## Memory operand bytes
 
