@@ -40,7 +40,7 @@ def prepare(out, previous_bundle, current_bundle):
     finish_guest(out, plan, HERE.name, TOOL_PATHS)
 
 
-def finish_guest(out, plan, study, tool_paths):
+def finish_guest(out, plan, study, tool_paths, *, sources=None):
     # The guest's collectors and corpus generators use repository-relative imports.
     shutil.copytree(HERE.parent, out / "repo/experiments",
                     ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "results"))
@@ -49,8 +49,9 @@ def finish_guest(out, plan, study, tool_paths):
             "release tools or reader differ from registration")
     binaries = out / "binaries"
     binaries.mkdir()
-    sources = {"scrivener": HERE.parent / "contest_warm/scrivener.cpp",
-               "scrivener_lifting": HERE.parent / "contest_submissions/scrivener_lifting.cpp"}
+    if sources is None:
+        sources = {"scrivener": HERE.parent / "contest_warm/scrivener.cpp",
+                   "scrivener_lifting": HERE.parent / "contest_submissions/scrivener_lifting.cpp"}
     require(sources.keys() == plan["binaries"].keys(), "different registered program set")
     for name, source in sources.items():
         binary = binaries / name
