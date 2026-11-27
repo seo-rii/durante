@@ -1,0 +1,196 @@
+{
+  "schema": 1,
+  "authority": "diagnostic_only",
+  "platform": {
+    "machine": "n2d-standard-4",
+    "cpu_platform": "AMD Milan",
+    "threads_per_core": 1,
+    "cpu": 1,
+    "independent_boots": 2
+  },
+  "cpu": 1,
+  "timeout_s": 120,
+  "native_reps": 9,
+  "profile_reps": 2,
+  "scan_reps": 3,
+  "anchors": [
+    "ascending",
+    "shuffled"
+  ],
+  "fixed_limits_ms": [
+    30,
+    35,
+    40,
+    45,
+    50,
+    55,
+    60,
+    65,
+    70,
+    75,
+    80,
+    85
+  ],
+  "durante_client_revision": "b43685c76b94a365886031359b032899b009cd1b",
+  "valgrind_package": {
+    "name": "valgrind",
+    "version": "1:3.19.0-1",
+    "arch": "amd64",
+    "sha256": "324842f2308a1e42abf2d81ff5eb19a9475fc9db95647f4d9da71444eda4087f"
+  },
+  "tools": {
+    "reader": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a",
+    "current": "27051cef2450f484c08d79023607e39a6e75a8d7c22b077e028379e3b51d921c",
+    "drrun": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "engine": "f2478395d33e2d8e4a6fb4158fd826777cca37ee02e94924757696b08d7fb06f",
+    "valgrind": "6cf6e12cf59b2a28625e65045b39564a82406604cca0d9c4cc5dffe8635c72c6",
+    "cachegrind": "768b94ae8257c6f5224257342729c6ce691aa80785fc436aaf67522b67b25459",
+    "preload": "2f2a3ccb9ebf10e4d6b2d6854e349e89b8852d3c0dfca9a55d7bc4d2939ac324",
+    "scan": "4c35ee92a0e00ba809b8e4ab1b7bc1df2d7072a501516c6fe13c1e26d01afa5a"
+  },
+  "runtime_sha256": {
+    ".durante-runtime.json": "adb27bebcc760ece7ae0cd18f5a779e56dad3beeb86aee17f78682be5d4030a7",
+    "bin64/drrun": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "ext/lib64/debug/libdrmgr.so": "0011d0732cebbefcded9afdbe2094e799d6aae80017eca5aab3401bd31f79500",
+    "ext/lib64/release/libdrmgr.so": "372cc1f1f95ffa29a1f11de4be14f99de5938bbcae11294a38d0a7932069429a",
+    "lib32/debug/libdynamorio.so": "f12fb2006a9c3c5ae74ce2a6edf58f3b2404835b24fc41fbb46a2475d6639bb8",
+    "lib32/release/libdynamorio.so": "08c166e09ea8c97d579e8f6a1bc5ebf5bf39cbd937eb357fe0797066ec1afa63",
+    "lib64/debug/libdrpreload.so": "0cf77ae7149ed7bcfc7d2105fccf34ff9077c06566dde2475f31532a5b41b98f",
+    "lib64/debug/libdynamorio.so": "45e13a209ac3c03a0adfa722fb4c23ddedd91061b636d6a0d409066c364407f1",
+    "lib64/release/libdrpreload.so": "fd220281583ecc7de1395d63a82338f265b46fda1af8acfbeeabdf33c88e6113",
+    "lib64/release/libdynamorio.so": "f2478395d33e2d8e4a6fb4158fd826777cca37ee02e94924757696b08d7fb06f"
+  },
+  "binaries": {
+    "scrivener": "5a918d9eb725f4a0492ed3f891a155e6c08a3a30092215c9036648e8e3e9a60e",
+    "scrivener_lifting": "9f79bdb4bd631018fd950801d5fddcc58423ce264193ca91b5d99b7d80cb6246"
+  },
+  "previous_registration": "2f9e8ca2cd009d1aa552e355cb531685eb9b172f",
+  "controls": [
+    "bitrev_tiles256",
+    "lanes80",
+    "descending40",
+    "tiles96_lanes40"
+  ],
+  "cases": [
+    {
+      "name": "ascending",
+      "group": "anchor",
+      "stdin_sha256": "44a9e1a322b6f9a39794d511b61dad59d96958f58ae55bf21b82d0c448c5f83f",
+      "stdout_sha256": "cb29dc1dbedc06d2f5a0b9667e3eeb75dd115e6b1a4ce7efa2bd3761952b0dfa",
+      "scan_sha256": "ef214a56af3500362b370e013db21215ac9318e9215c578ce38d66bd0051cb71"
+    },
+    {
+      "name": "shuffled",
+      "group": "anchor",
+      "stdin_sha256": "1611756acc33b9d1f0f0e02af1979091247d047fbe820015e58f972ee5f0af3d",
+      "stdout_sha256": "97b39b4d0dbe56a7fd1d1c7d5fd03a6ed9c5c4956f66d834c802beec2a02e7d8",
+      "scan_sha256": "0c28d31a1bfa923b6302373aafed7b449e956ac32a3fe91ca5b1ec51cddede56"
+    },
+    {
+      "name": "bitrev_tiles256",
+      "group": "control",
+      "stdin_sha256": "05f7cf1001cf0ae7dce14662bc0268da4023e2229678b9edf88ee2bae7ba3567",
+      "stdout_sha256": "b992d18ec467908d0f501f1dfb16cb3aad1fa3b737d8dacc1632f546b6bf280f",
+      "scan_sha256": "42b0a72bc9e01b83531d1b2cb33a52504ca5b0ff3953c50e4ef8766ab52a514a"
+    },
+    {
+      "name": "lanes80",
+      "group": "control",
+      "stdin_sha256": "31d595785578eb1f9c6aba325d3d3d3fd916243541b1e676d0cbde8cd12c85ec",
+      "stdout_sha256": "4bebdbbf1393a4581219fbfcdc522de1c50240df7e74e58a9bc680537372092f",
+      "scan_sha256": "b0906277aca647a1b8e9b2e4b7b1eca38ba775c2763dee61fe764bb90e7d56dc"
+    },
+    {
+      "name": "descending40",
+      "group": "control",
+      "stdin_sha256": "275ead2abdb7a1f070128e76d5dc67844380687f3a47fc3f66707bf419796e32",
+      "stdout_sha256": "daa059c19a92735f3d75edb019e856e86a1398ebf16e35a3b93af780a5b68949",
+      "scan_sha256": "31fe90cff76a064cad2f4da18241f86eeba1dfac5f1838e68080f86ada3e9fe5"
+    },
+    {
+      "name": "tiles96_lanes40",
+      "group": "control",
+      "stdin_sha256": "2aa97e70e7136c4c27a5a8a1bd0d31d44e87c604b78f2ec64304a20466c04ce6",
+      "stdout_sha256": "5e2d39296b56824d45d3b0865f5cc23473f6a48684915c6a7da91242a83dc2f9",
+      "scan_sha256": "6e8cb97dc379f4035c55d548e9d82f7e8e65081a47f7fd0e9eac01bea65863db"
+    },
+    {
+      "name": "adjacent_swaps",
+      "group": "holdout",
+      "stdin_sha256": "0e9f58e4773b33f2b54240f2512152cfefd8f284813171600293abf6a7d6f9bb",
+      "stdout_sha256": "d44b4fa3f3a7da413fed82a65fe3f43189e17f8eca91f41fce216bcd76111f8e",
+      "scan_sha256": "ddfda8666e30def9844969428edee8d9472333a5a2cacb7e318c0d85386221ad"
+    },
+    {
+      "name": "shuffle_seven_eighths",
+      "group": "holdout",
+      "stdin_sha256": "aac1c589fcb86f963221d1a54bda5f8bc3540d014f68142c75f74aea51ef4a0f",
+      "stdout_sha256": "7d0d8df1969e8817a1dcc90739863437ff4a480d9c0bab74e8c2169f37afef4c",
+      "scan_sha256": "586e73fae7a9149d535f854c28565573c88b02654127b868cc0cecff753b8b41"
+    },
+    {
+      "name": "tiles192_lanes112",
+      "group": "holdout",
+      "stdin_sha256": "803b3b969d88a24a362d710597a60aabcfda0df776d33ce4608293b3c62230cb",
+      "stdout_sha256": "40df796c02a660bc5919eabfb6ada81bf053bc73212a6dc0bc51269ffc879f04",
+      "scan_sha256": "95b29b36c9c61a703778558e79327ef55076fbe9229972fc6b2c4cd65a4fe518"
+    },
+    {
+      "name": "tiles192_lanes144",
+      "group": "holdout",
+      "stdin_sha256": "e59047ec6961dccb6334fd2a2febb61f625d3125d5a4bfd11e8825776d83b546",
+      "stdout_sha256": "221e6a1f8f1c20d7472152ec7640e3cb08c91cc535fd6e759bb6d17a45a4fba8",
+      "scan_sha256": "c17b3847a6c54cb54c2732b852d74c20a696734a1da8ba18159427200c4ee6c8"
+    },
+    {
+      "name": "tiles160_lanes36",
+      "group": "holdout",
+      "stdin_sha256": "420e739370c005311c470959023f3a7c1d7606a9088de46fdd86724f986c2c8e",
+      "stdout_sha256": "4d11c7829d37a4562cdaaf47422f553e41da2703c7cd079720db57e833d76b27",
+      "scan_sha256": "b378acba6bdeedad16a88c08ee8187c96c005c059688cd4b2306090808d26675"
+    },
+    {
+      "name": "tiles768_lanes52",
+      "group": "holdout",
+      "stdin_sha256": "68dbb165f9280ac87e93776889df50c0227fad63d8778a83696f12e68e63dd30",
+      "stdout_sha256": "f34e4c0af0842caaaf210c2cb7663c6d5f5c749e79704f56f38afe34814da91e",
+      "scan_sha256": "b227f7bb22a0a3e8f1a2d9233ba00abededa4e8bc77a604d72453efa4c901aaa"
+    },
+    {
+      "name": "bitrev_tiles128",
+      "group": "holdout",
+      "stdin_sha256": "dfacbe5bbb79726bfec8bb65abec98c11421c58242ffe731475cbe3badbaa21e",
+      "stdout_sha256": "fd9651c9b8414e16c3aa77aede346b0b3a4ab63a19a5cfa593f47dfedd2d1b53",
+      "scan_sha256": "6b96b38c12ab1058193df888352798cd58e8815e9d814eefcb6675d9e7195b5d"
+    },
+    {
+      "name": "descending56",
+      "group": "holdout",
+      "stdin_sha256": "df1f2e37cae0e7267f1666516c1fa3c105924e254a624b6204661778dc3a8048",
+      "stdout_sha256": "cc5625aadbd7211db499b7cf89a2f44a94d4838d64da812138df6df722fa07e6",
+      "scan_sha256": "7770a11dcc33c3af3bf9e704380eab4d7b8a17ca1fc2f6ce997eb209623ee8bd"
+    }
+  ],
+  "design": "Two independent private GCE Milan guests, CPU 1 affinity and cpuset, SMT one thread/core. Use identical registered static solver and scanner ELFs. Three paid scanner repetitions per input, two ordinary and branch profiling repetitions per solver/input, nine rotated native repetitions per solver/input. Only two native anchors per solver/boot may enter the calculation. Before native validation, seal predictions for four historical controls and eight fresh orders, using first profile and scanner repetitions. Native reference is the median wait4 child user plus system CPU. Report known failures separately. Assess whether extending the input scan improves timing estimates; scan CPU is a measured per-input cost. No production policy changes.",
+  "methods": {
+    "ordinary": "Ascending native median multiplied by the ratio of ordinary work (instructions plus requested REP bytes, both weighted one).",
+    "midpoint": "Mean of the two native anchor medians.",
+    "distance": "Clamped interpolation between anchor times using the sum of bit lengths of consecutive absolute print-position distances.",
+    "pages": "Same interpolation using misses in the 16-entry LRU over floor(position / 512).",
+    "branch": "Same interpolation using simulated conditional branch mispredictions (Bcm); cache simulation disabled.",
+    "branch_pages": "Use the unweighted mean of the clamped page and branch fractions before interpolating. For an equal-feature anchor pair use 1/2. All estimates use exact fractions and one final ceil to nanoseconds. Use the first of each profile and scan. Each method uses the same executable and boot for both anchor and test.",
+    "stream": "Clamped interpolation using the count of 16-entry logical LRU misses which are either the first visit to a 512-position page or more than eight character positions from the most recent query to that same page. Update the remembered position on every query, including hits. The eight-position threshold is fixed for this logical statistic. Use the same two native anchors as pages.",
+    "branch_stream": "Interpolate once from the arithmetic mean of the individually clamped fractions for Bcm and the stream statistic. Use the same exact rational arithmetic, equal-anchor midpoint fallback and final ceil as branch_pages.",
+    "midpoint_adjusted": "Previously selected 50 percent adjustment: ceil((midpoint estimate + branch_stream estimate)/2) using those two already-rounded integer nanosecond estimates. Fixed before any new native observations.",
+    "branch_stale": "Primary. Count disruptive misses that first visit a page or revisit it after at least 128 intervening P operations. Update last visit on every P, including hits. Normalize this count between its own ascending/shuffled anchors, clamp to [0,1], take the smaller of this fraction and the normalized disruptive count, then average with the normalized Bcm fraction before interpolating native anchor times. If auxiliary counts coincide at anchors, use the original disruptive fraction. Exact arithmetic, single final ceil.",
+    "branch_displacement": "Secondary. On disruptive misses with a prior visit to the page sum the absolute distance to the last queried position on that page. First visits contribute zero displacement. Use the same normalization, cap, equal-auxiliary fallback and interpolation as branch_stale, replacing stale counts with total displacement."
+  },
+  "accuracy_gate": "Independently for branch_stale and branch_displacement versus branch_stream, across sixteen fresh pairs require strictly lower worst absolute relative error and no greater median absolute relative error on each of two boots. Report all inherited methods and the prospective midpoint_adjusted comparator. Evaluate midpoint_adjusted with the same criteria. Use exact error ratios before rounding for display. The 4 controls and 2 anchors cannot qualify a model.",
+  "deadline_gate": "Across 192 within-guest fresh input/solver/budget comparisons (8 orders, 2 solvers, 12 deadlines 30..85 ms), require at least one previously wrong unanimous native decision corrected and zero newly introduced unanimous false passes or timeouts versus branch_stream per boot. Compare paired outcomes at identical budgets. Strictly greater times time out; equality passes. Report native majority and mixed votes separately. Track compact bitrev_tiles256 at 45 ms, lanes80 at 50 ms, descending40 at 50 ms and tiles96_lanes40 at 60 ms separately outside fresh scores. Gate success requires both boots; method cost and absolute errors are descriptive.",
+  "regression_limits_ms": {
+    "bitrev_tiles256": 45,
+    "lanes80": 50,
+    "descending40": 50,
+    "tiles96_lanes40": 60
+  }
+}
