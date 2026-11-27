@@ -127,14 +127,26 @@ impl Clock {
         if self.unavailable {
             return None;
         }
-        match self.read() {
+        let sample = self.read();
+        self.accept_sample(sample)
+    }
+
+    fn accept_sample(&mut self, sample: io::Result<[u64; 6]>) -> Option<Progress> {
+        match sample {
             Ok([0, 0, ..]) if self.previous.is_none() => None,
             Ok([1, 0, i, m, s, overflow]) => {
                 let now = Progress {
                     counts: [i, m, s],
                     overflow,
                 };
-                if now.well_formed() && self.previous.is_none_or(|old| now.contains(old)) {
+                // The page copy can see invalid=0 before it copies counters
+                // published after invalidation. Check the sticky word last.
+                let mut invalid = [0; 8];
+                if now.well_formed()
+                    && self.previous.is_none_or(|old| now.contains(old))
+                    && self.file.read_exact_at(&mut invalid, 8).is_ok()
+                    && invalid == [0; 8]
+                {
                     self.previous = Some(now);
                     return Some(now);
                 }
@@ -197,6 +209,25 @@ mod tests {
             publish(&clock, bad);
             assert!(clock.poll().is_none());
             publish(&clock, [1, 0, 350, 9, 0, 0]);
+            assert!(clock.poll().is_none());
+        }
+    }
+
+    #[test]
+    fn invalidation_during_a_crossing_sample_is_sticky() {
+        for truncate in [false, true] {
+            let mut clock = Clock::create().unwrap();
+            publish(&clock, [1, 0, 10, 0, 0, 0]);
+            assert!(!clock.poll().unwrap().exceeds(10));
+            publish(&clock, [1, 0, 11, 0, 0, 0]);
+            let sample = clock.read();
+            if truncate {
+                clock.file.set_len(8).unwrap();
+            } else {
+                clock.file.write_all_at(&1u64.to_le_bytes(), 8).unwrap();
+            }
+            assert!(clock.accept_sample(sample).is_none());
+            publish(&clock, [1, 0, 12, 0, 0, 0]);
             assert!(clock.poll().is_none());
         }
     }
