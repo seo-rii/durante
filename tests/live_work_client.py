@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 from pathlib import Path
+import select
 import signal
 import struct
 import subprocess
@@ -39,22 +40,38 @@ int main(void) {
 TIMEOUT = 10
 
 
-def check_run(prefix, work, name, command, *, valid=True, stdin=None):
+def check_run(prefix, work, name, command, *, valid=True, stdin=None, require_eligible=False,
+              checkpoints=False):
     directory = work / name
     directory.mkdir()
     records = directory / "records"
     records.mkdir()
     page = directory / "live"
     page.write_bytes(bytes(PAGE.size))
+    policy = ["-live_work_require_eligible"] if require_eligible else []
     proc = subprocess.Popen([*prefix, "-outdir", str(records), "-rep_bytes", "-live_work_v1",
-                             str(page), "--", *command], start_new_session=True, cwd=directory, stdin=stdin)
+                             str(page), *policy, "--", *command], start_new_session=True, cwd=directory,
+                            stdin=subprocess.PIPE if checkpoints else stdin,
+                            stdout=subprocess.PIPE if checkpoints else None)
     try:
+        if checkpoints:
+            for invalid in (0, int(not valid)):
+                if not select.select([proc.stdout], [], [], TIMEOUT)[0] or len(proc.stdout.read(1)) != 1:
+                    raise ValueError(f"{name}: missing fixture checkpoint")
+                ready, observed, *_, overflow = PAGE.unpack(page.read_bytes())
+                if (ready, observed, overflow) != (1, invalid, 0):
+                    raise ValueError(f"{name}: expected invalid={invalid}, got {ready, observed, overflow}")
+                proc.stdin.write(b"x")
+                proc.stdin.flush()
         if proc.wait(timeout=TIMEOUT) != 0:
             raise RuntimeError(f"{name}: fixture exited {proc.returncode}")
     finally:
         if proc.poll() is None:
             os.killpg(proc.pid, signal.SIGKILL)
             proc.wait()
+        if checkpoints:
+            proc.stdin.close()
+            proc.stdout.close()
         if not cleanup_orphans():
             raise RuntimeError(f"{name}: failed to reap fixture")
     return compare_page(name, page, records, proc.pid, valid)
@@ -65,14 +82,16 @@ def compare_page(name, page, records, root_pid, valid=True):
     ready, invalid, instructions, movs, stos, overflow = PAGE.unpack(page.read_bytes())
     if (ready, invalid, overflow) != (1, int(not valid), 0):
         raise ValueError(f"{name}: unexpected ready/invalid/overflow {(ready, invalid, overflow)}")
+    measurement = collector.collect(records, root_pid)
+    if not measurement.get("complete") or not measurement.get("valid"):
+        raise ValueError(f"{name}: invalid terminal measurement: {measurement.get('reason')}")
     if valid:
-        measurement = collector.collect(records, root_pid)
         rep = measurement.get("rep_breakdown", {})
         actual = (instructions, movs, stos)
         expected = (measurement.get("instructions"), rep.get("movs_bytes"), rep.get("stos_bytes"))
-        if not measurement.get("complete") or not measurement.get("valid") or actual != expected:
-            raise ValueError(f"{name}: live {actual}, terminal {expected}, {measurement.get('reason')}")
-        return measurement
+        if actual != expected:
+            raise ValueError(f"{name}: live {actual}, terminal {expected}")
+    return measurement
 
 
 def symbols(path, names):
@@ -189,6 +208,18 @@ def main():
         # observable just like SIGUSR1; exercise that invalidation separately.
         previous_mask = signal.pthread_sigmask(signal.SIG_BLOCK, {signal.SIGCHLD})
         try:
+            eligibility = work / "eligibility"
+            subprocess.run(["cc", "-static", "-nostdlib", "-no-pie",
+                            ROOT / "tests/live_work_eligibility.S", "-o", eligibility], check=True)
+            for mode, quality in (("none", (0, 0)), ("signal", (1, 0)),
+                                  ("cmps", (0, 1)), ("repne-scas", (0, 1))):
+                for strict in (False, True):
+                    name = f"eligibility-{mode}-{'strict' if strict else 'raw'}"
+                    result = check_run(prefix, work, name, [eligibility, mode], checkpoints=True,
+                                       require_eligible=strict, valid=not (strict and any(quality)))
+                    observed = (result["signals_observed"], result["unsupported_rep_entries"])
+                    if observed != quality:
+                        raise ValueError(f"{name}: expected terminal quality {quality}, got {observed}")
             boundaries = work / "clock-boundaries"
             subprocess.run(["cc", "-static", "-nostdlib", "-no-pie",
                             ROOT / "experiments/l1d_probe/clock_control.S", "-o", boundaries], check=True)
