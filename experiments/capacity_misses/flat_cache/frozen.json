@@ -1,0 +1,82 @@
+{
+  "cases": {
+    "reference": {
+      "stdin": "inputs/graph",
+      "stdin_sha256": "6e9dbe24b653a8fb261668e8675e6dea82187a510c5c94f4014482e94fb8f708",
+      "expected_sha256": "59c0af841dc79f04e14f03779fece88d8ec15672a36fa1bdbed5388d4b6f465d",
+      "elf_sha256": "3329d2981760ac275e2ffd17ed4ddc22b409fb6046b7bd05703510602597a091"
+    },
+    "block8": {
+      "stdin": "inputs/graph",
+      "stdin_sha256": "6e9dbe24b653a8fb261668e8675e6dea82187a510c5c94f4014482e94fb8f708",
+      "expected_sha256": "59c0af841dc79f04e14f03779fece88d8ec15672a36fa1bdbed5388d4b6f465d",
+      "elf_sha256": "5f0c09a7480bef14d8d157e2617b8cb2bb7d8b640aed781fcdd100fa18106f9c"
+    },
+    "block2048": {
+      "stdin": "inputs/graph",
+      "stdin_sha256": "6e9dbe24b653a8fb261668e8675e6dea82187a510c5c94f4014482e94fb8f708",
+      "expected_sha256": "59c0af841dc79f04e14f03779fece88d8ec15672a36fa1bdbed5388d4b6f465d",
+      "elf_sha256": "222bce6027054a9da318d140cdb4cb26f800723bd64655a7f3108169a363d78e"
+    }
+  },
+  "protocol": {
+    "programs": [
+      "reference",
+      "block8",
+      "block2048"
+    ],
+    "modes": {
+      "native": [],
+      "outer": [
+        "-rep_bytes",
+        "-latency_bound",
+        "-probe_l1d",
+        "-probe_outer"
+      ],
+      "flat_outer": [
+        "-rep_bytes",
+        "-latency_bound",
+        "-probe_l1d",
+        "-probe_outer"
+      ]
+    },
+    "clients": {
+      "native": "original.so",
+      "outer": "original.so",
+      "flat_outer": "flat.so"
+    },
+    "rounds": [
+      "native",
+      "outer",
+      "flat_outer",
+      "outer",
+      "flat_outer",
+      "native",
+      "flat_outer",
+      "native",
+      "outer",
+      "native",
+      "flat_outer",
+      "outer",
+      "flat_outer",
+      "outer",
+      "native"
+    ],
+    "cpu": 1,
+    "cpuid": "x86-64-v2",
+    "comparison": "Compare five process user+system CPU samples per arm, program and boot with the complete order reversed on a second new n2d-standard-4 Milan boot. Report within-boot and pooled medians, all cross-pair speedup bounds, ratios to native, and CPU1 exec traces.",
+    "validation": "Require the registered original ELF, stdin and stdout in all arms. Check every instruction, latency, REP and cache diagnostic field and all eight frozen ML4 features between the original and flat full-cache clients. Report confidence separately for same-boot and cross-boot equality. A discrepancy in shared counter values or native behavior for a fixture disqualifies the tested candidate."
+  },
+  "clients": {
+    "original.so": "09898f86e63751526b5870309351dc8fc1a7ee7e16b459cd7849b59d7243355a",
+    "flat.so": "4c4bb17cb4dc0efa4b85804c5f29fc0eb7272ac37e4a1be6a1d497fcadb33ebd"
+  },
+  "build_inputs": {
+    "client/durante.c": "f3b6efbf36589a22f18a91f4c1f366c630ec95c0f859028cf6269bf0157a7841",
+    "client/latency_bound.h": "51ea8177b786753196b24e80de74141af62df27395258cc94ab95b6eba4cfed5",
+    "experiments/l1d_probe/probe.h": "38f925fd88f5baa5a0e6ac81b9915e4f11f5d22e30d25ff9ac6f662f0d27b53b",
+    "experiments/l1d_probe/cache.h": "69e8dcc17a19921c741b9635f99a9e10ec690088e66238a1cdec7ecac5d0bfa9",
+    "experiments/l1d_probe/outer.h": "6ba977b0307c8bb76b6aca4c16da7d7478adffb172f6b3679c0299d9277cf5e6",
+    "experiments/capacity_misses/flat_cache/CMakeLists.txt": "5b24cb752692f3ec0c0fa2ff1e25e95b08eda60d016e9f9066d43d1acdd7a392"
+  }
+}

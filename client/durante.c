@@ -2654,6 +2654,8 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
   state_lock = dr_mutex_create();
 #ifdef DURANTE_TEST_COUNT_LOCATIONS
   const bool flat_candidate = false; /* The location profile needs entry callbacks. */
+#elif defined(DURANTE_TEST_FLAT_CACHE) && defined(DURANTE_L1D_PROBE)
+  const bool flat_candidate = !memory_operand_bytes_enabled;
 #elif defined(DURANTE_TEST_LATENCY_CALLBACK) && defined(DURANTE_L1D_PROBE)
   /* Isolate the existing non-flat accounting path in the graph cost experiment. */
   const bool flat_candidate = false;
@@ -2664,6 +2666,10 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
   raw_tls_enabled = (static_text_end != 0 || flat_candidate) &&
                     dr_raw_tls_calloc(&raw_tls_register, &raw_tls_offset, RAW_TLS_SLOTS, 0);
   flat_inline = flat_candidate && raw_tls_enabled;
+#ifdef DURANTE_TEST_FLAT_CACHE
+  if (flat_candidate && cache_probe_enabled() && !flat_inline)
+    fail("flat cache experiment requires raw TLS");
+#endif
   tls_index = drmgr_register_tls_field();
   cpuid_rewrite = cpuid_profile != DURANTE_CPUID_NONE;
   if (!state_lock || tls_index < 0 ||

@@ -363,6 +363,13 @@ static bool probe_instrument_operands(void *ctx, instrlist_t *bb, instr_t *where
     }
   }
 
+#ifdef DURANTE_TEST_FLAT_CACHE
+  /* Cache observations never replace the ordinary flat write checkpoint.
+   * Still identify every write and combine both touches of an RMW operand. */
+  if (flat_inline)
+    fused = false;
+#endif
+
   /* Emit reads in order, holding the final operand until we know whether
    * the matching write can share its cache lookup. */
   opnd_t pending = opnd_create_null();
