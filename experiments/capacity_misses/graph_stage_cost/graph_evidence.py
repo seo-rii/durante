@@ -45,7 +45,7 @@ def decode(pid, arm, process, stderr):
     return features
 
 
-def read_boot(phase, host, reg, plan, *, evidence, freeze, client_by_arm=None):
+def read_boot(phase, host, reg, plan, *, evidence, freeze, client_by_arm=None, diagnostic_by_arm=None):
     path = evidence / (phase + ".tar.gz")
     raw = path.read_bytes()
     p, end = host["platform"], host["cleanup"]
@@ -96,7 +96,8 @@ def read_boot(phase, host, reg, plan, *, evidence, freeze, client_by_arm=None):
                 require(not records and "output/" + stderr not in files, "unexpected native diagnostic")
             else:
                 require(records == {"output/" + record}, "different process record set")
-                features = decode(pid, arm, get(record), get(stderr))
+                diagnostic = diagnostic_by_arm[arm] if diagnostic_by_arm is not None else arm
+                features = decode(pid, diagnostic, get(record), get(stderr))
             samples[name][arm].append(dict(cpu_us=cpu, counters=features))
     steal = int(platform["after"].split()[8]) - int(platform["before"].split()[8])
     require(steal >= 0, "negative steal ticks")

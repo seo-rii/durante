@@ -1,0 +1,129 @@
+{
+  "memory": {
+    "work": {
+      "schema": 1,
+      "client_version": 1,
+      "authority": "diagnostic_only",
+      "metric": "bb_entry_app_instructions",
+      "seq": 2,
+      "event": "end",
+      "instructions": 239,
+      "rep_bytes": 72,
+      "rep_entries": 2,
+      "rep_movs_bytes": 66,
+      "rep_stos_bytes": 6,
+      "rep_movs_entries": 1,
+      "rep_stos_entries": 1,
+      "unsupported_rep_entries": 0,
+      "signals_observed": 0,
+      "threads_started": 1,
+      "threads_finished": 1,
+      "threads_complete": true,
+      "accounting_error": false,
+      "app_exit_seen": true,
+      "app_exit_code": 0,
+      "valid": true,
+      "quality": "uninterrupted",
+      "latency_bound_x16": 956
+    },
+    "diagnostic": [
+      "PROBE_L1D refs=291 lines=297 misses=16 skipped=0 rep=2 threads=1",
+      "PROBE_OUTER capacities=4096,32768,524288 accesses=16 misses=15,15,15 stream=5,5,5 dependent=0,0,0 l1d_dependent=0 dependent_sites=0 load_sites=147"
+    ]
+  },
+  "memory-warm": {
+    "work": {
+      "schema": 1,
+      "client_version": 1,
+      "authority": "diagnostic_only",
+      "metric": "bb_entry_app_instructions",
+      "seq": 2,
+      "event": "end",
+      "instructions": 262384,
+      "rep_bytes": 72,
+      "rep_entries": 2,
+      "rep_movs_bytes": 66,
+      "rep_stos_bytes": 6,
+      "rep_movs_entries": 1,
+      "rep_stos_entries": 1,
+      "unsupported_rep_entries": 0,
+      "signals_observed": 0,
+      "threads_started": 1,
+      "threads_finished": 1,
+      "threads_complete": true,
+      "accounting_error": false,
+      "app_exit_seen": true,
+      "app_exit_code": 0,
+      "valid": true,
+      "quality": "uninterrupted",
+      "latency_bound_x16": 4195252
+    },
+    "diagnostic": [
+      "PROBE_L1D refs=291 lines=297 misses=16 skipped=0 rep=2 threads=1",
+      "PROBE_OUTER capacities=4096,32768,524288 accesses=16 misses=15,15,15 stream=5,5,5 dependent=0,0,0 l1d_dependent=0 dependent_sites=0 load_sites=147"
+    ]
+  },
+  "address-dependency": {
+    "work": {
+      "schema": 1,
+      "client_version": 1,
+      "authority": "diagnostic_only",
+      "metric": "bb_entry_app_instructions",
+      "seq": 2,
+      "event": "end",
+      "instructions": 11,
+      "rep_bytes": 0,
+      "rep_entries": 0,
+      "rep_movs_bytes": 0,
+      "rep_stos_bytes": 0,
+      "rep_movs_entries": 0,
+      "rep_stos_entries": 0,
+      "unsupported_rep_entries": 0,
+      "signals_observed": 0,
+      "threads_started": 1,
+      "threads_finished": 1,
+      "threads_complete": true,
+      "accounting_error": false,
+      "app_exit_seen": true,
+      "app_exit_code": 0,
+      "valid": true,
+      "quality": "uninterrupted",
+      "latency_bound_x16": 44
+    },
+    "diagnostic": [
+      "PROBE_L1D refs=4 lines=4 misses=4 skipped=0 rep=0 threads=1",
+      "PROBE_OUTER capacities=4096,32768,524288 accesses=4 misses=4,4,4 stream=3,3,3 dependent=2,2,2 l1d_dependent=2 dependent_sites=2 load_sites=4"
+    ]
+  },
+  "handled-signal": {
+    "work": {
+      "schema": 1,
+      "client_version": 1,
+      "authority": "diagnostic_only",
+      "metric": "bb_entry_app_instructions",
+      "seq": 2,
+      "event": "end",
+      "instructions": 55,
+      "rep_bytes": 0,
+      "rep_entries": 0,
+      "rep_movs_bytes": 0,
+      "rep_stos_bytes": 0,
+      "rep_movs_entries": 0,
+      "rep_stos_entries": 0,
+      "unsupported_rep_entries": 0,
+      "signals_observed": 1,
+      "threads_started": 1,
+      "threads_finished": 1,
+      "threads_complete": true,
+      "accounting_error": false,
+      "app_exit_seen": true,
+      "app_exit_code": 0,
+      "valid": true,
+      "quality": "signals_observed",
+      "latency_bound_x16": 220
+    },
+    "diagnostic": [
+      "durante: incomplete cache probe measurement"
+    ]
+  }
+}
