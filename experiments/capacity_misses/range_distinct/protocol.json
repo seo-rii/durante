@@ -1,0 +1,89 @@
+{
+  "cpu": 1,
+  "cpuid": "x86-64-v2",
+  "groups": {
+    "shuffled": [
+      "shuffled-fenwick",
+      "shuffled-mo",
+      "shuffled-bitset"
+    ],
+    "runs": [
+      "runs-fenwick",
+      "runs-mo",
+      "runs-bitset"
+    ]
+  },
+  "factors": [
+    1,
+    1.25,
+    1.5,
+    2,
+    3
+  ],
+  "models": [
+    "ML4",
+    "ML4_plus_misses",
+    "dependent",
+    "ML4_plus_3_3"
+  ],
+  "unanimity_models": [
+    "ML4",
+    "ML4_plus_misses",
+    "dependent"
+  ],
+  "model_definitions": {
+    "ML4": "Use the frozen Dijkstra ML4 weights in order_statistics_transfer/frozen.json (frozen commit b410405414138ea67f79d40ed7d8a6db1541aa3c), seconds per count times 10^9 in ns.",
+    "ML4_plus_misses": "ML4 ns plus 6.92658480142496 ns per simulated gshare misprediction, unchanged from that same registration.",
+    "dependent": "latency_bound_x16 + 700 * l1d_dependent in original counter units with no scaling of the latency word (witness in #125 commit e3f7ccd7084b28c23936fd0d06b445aaa72f8729). A positive constant scale cancels in relative deadlines.",
+    "ML4_plus_3_3": "ML4 ns plus exactly 33/10 ns per gshare misprediction. Chosen from the retrospective feasible interval (3.07892785,3.54116450) ns/miss on the two preceding development problems in #126 before collecting this third problem. Apply identically to submission and reference. Report individually. Exclude this candidate from the previously specified three-model unanimity."
+  },
+  "inputs": {
+    "seed": 20261130,
+    "array_length": 32768,
+    "queries": 32768,
+    "colors": 256,
+    "window": 512,
+    "description": "Identical data and query multiset. Half of shuffled queries have two independent endpoints; the other half spans 0\u201395 more indices, capped at the last element. runs lexicographically sorts each 512-query window in alternating directions. Each solver must return the answer for every inclusive query in its original input ordinal, including duplicates; the two ordered output digests are independently verified."
+  },
+  "modes": {
+    "native": [],
+    "outer": [
+      "-rep_bytes",
+      "-latency_bound",
+      "-probe_l1d",
+      "-probe_outer"
+    ],
+    "flat": [
+      "-rep_bytes",
+      "-latency_bound",
+      "-probe_l1d",
+      "-probe_outer"
+    ],
+    "branch": [
+      "-rep_bytes",
+      "-latency_bound"
+    ]
+  },
+  "clients": {
+    "native": "original.so",
+    "outer": "original.so",
+    "flat": "flat.so",
+    "branch": "original.so"
+  },
+  "rounds": [
+    "native",
+    "branch",
+    "native",
+    "flat",
+    "native",
+    "outer",
+    "native",
+    "flat",
+    "native",
+    "branch",
+    "native",
+    "outer",
+    "native"
+  ],
+  "evaluation": "No fitting or policy changes. Per boot and pooled, for each of the two input orders, use the last-occurrence Fenwick implementation as the reference and evaluate the two others. Classify all submission/reference endpoint pairs at inclusive 1, 1.25, 1.5, 2 and 3 x deadlines: accept when all satisfy, timeout when all exceed, otherwise mixed. Keep all 20 variant/factor cells. For native and model timings, use median(submission)/median(reference); report signed relative ratio error and count absolute error <=20% across four variant/order pairs. Report signed false accepts/timeouts, mixed native and model cells, losses and gains for each extension against baseline. For the original three models only, predict when all three are individually decisive and unanimous. Report coverage among all and among native-decisive cells, wrong covered decisions in each direction, native mixed, and reasons for abstention. Do not count repetitions or boots as new workloads. Quantify native process CPU, original and flat cache, gshare and flat+branch two-pass cost. The scoring concerns reference-relative deadlines on a novel problem, not absolute time or live judging."
+}
