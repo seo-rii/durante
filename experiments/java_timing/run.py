@@ -23,6 +23,8 @@ import sys
 import tempfile
 from pathlib import Path
 
+from summarize import validate_profiles
+
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tests"))
 sys.path.insert(0, str(ROOT / "tests" / "contest"))
@@ -80,17 +82,25 @@ def main():
     parser.add_argument("--problem", action="append", choices=PROBLEMS)
     args = parser.parse_args()
     args.runner_bin = args.runner_bin.resolve()
-    configs = {}
-    for spec in args.config:
-        name, paths = spec.split("=", 1)
-        sdk, client = paths.split(",")
-        configs[name] = (Path(sdk).resolve(), Path(client).resolve())
-    langs = {}
-    for spec in args.lang:
-        lang, names = spec.split("=", 1)
-        langs[lang] = names.split(",")
-        assert lang in ("java", "java-cds") and all(n in configs for n in langs[lang]), spec
+    configs, langs = {}, {}
+    try:
+        for spec in args.config:
+            name, paths = spec.split("=", 1)
+            sdk, client = paths.split(",")
+            if not name or not sdk or not client or name in configs:
+                raise ValueError(f"invalid or repeated configuration: {spec!r}")
+            configs[name] = (Path(sdk).resolve(), Path(client).resolve())
+        for spec in args.lang:
+            lang, names = spec.split("=", 1)
+            if lang in langs:
+                raise ValueError(f"repeated profile: {lang!r}")
+            langs[lang] = names.split(",")
+        validate_profiles(langs, configs)
+    except ValueError as error:
+        parser.error(str(error))
     selected = args.problem or PROBLEMS
+    if args.rounds <= 0 or len(set(selected)) != len(selected):
+        parser.error("use positive rounds and name each problem once")
     env = cc.clean_env()
     result = {"schema": 1, "provenance": provenance(args, configs), "langs": langs, "samples": []}
     with tempfile.TemporaryDirectory(prefix="java-timing-") as tmp:

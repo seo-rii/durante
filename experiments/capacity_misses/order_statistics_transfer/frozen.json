@@ -1,0 +1,204 @@
+{
+  "protocol": {
+    "cpu": 1,
+    "cpuid": "x86-64-v2",
+    "groups": {
+      "uniform": [
+        "uniform-dsu",
+        "uniform-multiset",
+        "uniform-fenwick"
+      ],
+      "clustered": [
+        "clustered-dsu",
+        "clustered-multiset",
+        "clustered-fenwick"
+      ],
+      "shuffled": [
+        "shuffled-merge",
+        "shuffled-fenwick",
+        "shuffled-segtree"
+      ],
+      "runs": [
+        "runs-merge",
+        "runs-fenwick",
+        "runs-segtree"
+      ]
+    },
+    "training_examples": [
+      "uniform",
+      "clustered"
+    ],
+    "holdout": [
+      "shuffled",
+      "runs"
+    ],
+    "factors": [
+      1,
+      1.25,
+      1.5,
+      2,
+      3
+    ],
+    "models": [
+      "ML4",
+      "gshare",
+      "ML4_plus_misses"
+    ],
+    "modes": {
+      "native": [],
+      "outer": [
+        "-rep_bytes",
+        "-latency_bound",
+        "-probe_l1d",
+        "-probe_outer"
+      ],
+      "flat": [
+        "-rep_bytes",
+        "-latency_bound",
+        "-probe_l1d",
+        "-probe_outer"
+      ],
+      "branch": [
+        "-rep_bytes",
+        "-latency_bound"
+      ]
+    },
+    "clients": {
+      "native": "original.so",
+      "outer": "original.so",
+      "flat": "flat.so",
+      "branch": "original.so"
+    },
+    "rounds": [
+      "native",
+      "branch",
+      "native",
+      "flat",
+      "native",
+      "outer",
+      "native",
+      "flat",
+      "native",
+      "branch",
+      "native",
+      "native"
+    ],
+    "inputs": {
+      "n": 262144,
+      "seed": 20261129,
+      "max_rank": 262144,
+      "run": 512
+    },
+    "models_source": "Use the exact decimal values frozen in predecessor/frozen.json (Dijkstra ML4 seconds per counter), and milan/gshare/protocol.json with_gshare (ns per count). Full ML4 in ns is its weighted sum in seconds times 1e9. gshare uses its entire original independently fitted instruction/REP/load/miss weight vector. ML4_plus_misses adds only the original 6.92658480142496 ns times each simulated miss to the ML4 score in ns. This additive transfer could double-count existing costs; it is a hypothesis, not an independently trained joint fit. No parameter selection or fitting on any of these cases.",
+    "comparison": "For each model and each input divide submission score by that model\u2019s intended-solver score. Compare all score endpoint pairs to the inclusive registered factor and all native submission/reference CPU endpoint pairs independently. Preserve per-boot and pooled disagreements and indeterminacy, median ratio errors, \u00b120% counts, and maxima. The primary candidate is ML4_plus_misses vs frozen ML4; standalone gshare is a secondary control. Require removal of both historical Fenwick 1x false timeouts on each new boot with decisive native and model outcomes. On the inversion holdout report all comparisons including 1x, both error directions and indecision; improvement requires no lost previously correct native-decisive verdict and lower median absolute relative-ratio error on both boots.",
+    "provenance": "Copy all six exact #118 ELF/input pairs. Hold out six inversion-count combinations on two inputs with identical rank multisets, merge counting as the reference. Inversion counting has appeared in Aonohako; the new solver implementations, input shapes and cross-model comparison are new here. Verify every stdout, sealed records, CPU1 exec trace, repeated branch count and full cache equivalence between the deployed and flat research client. Report each instrumentation arm/native cost; a combined ML4_plus_misses collection uses two completed passes. No real verdict deployment."
+  },
+  "cases": {
+    "uniform-dsu": {
+      "elf_sha256": "f2c45a69228bde4e479bcaab81b038e60663c0250849dd7d4343ce94e768f2a5",
+      "stdin": "inputs/uniform",
+      "stdin_sha256": "534a5461d0dcc1cf3f8361b52a63f616c50c060e78c3c2cb9222eac727661d08",
+      "expected_sha256": "94378024c46839d7daae89c081af9a6cc9417b41c43b481b427e31a372aa0e15"
+    },
+    "uniform-multiset": {
+      "elf_sha256": "ef16735d2aa46d6d66b78c1a869692dee5d05df32c1f15a19954a89cd0100b33",
+      "stdin": "inputs/uniform",
+      "stdin_sha256": "534a5461d0dcc1cf3f8361b52a63f616c50c060e78c3c2cb9222eac727661d08",
+      "expected_sha256": "94378024c46839d7daae89c081af9a6cc9417b41c43b481b427e31a372aa0e15"
+    },
+    "uniform-fenwick": {
+      "elf_sha256": "b3217f393095e261058a54283c577244c9b85ee9ac359cc928324df586bdeedf",
+      "stdin": "inputs/uniform",
+      "stdin_sha256": "534a5461d0dcc1cf3f8361b52a63f616c50c060e78c3c2cb9222eac727661d08",
+      "expected_sha256": "94378024c46839d7daae89c081af9a6cc9417b41c43b481b427e31a372aa0e15"
+    },
+    "clustered-dsu": {
+      "elf_sha256": "f2c45a69228bde4e479bcaab81b038e60663c0250849dd7d4343ce94e768f2a5",
+      "stdin": "inputs/clustered",
+      "stdin_sha256": "7d8d0d63fd681ee70b2226687eff696ed49f8b5ac7bb38a244ac3382984226d6",
+      "expected_sha256": "8e3b532b4187deb6d6a06b039663606da11420651d363c50782be7653aec7da3"
+    },
+    "clustered-multiset": {
+      "elf_sha256": "ef16735d2aa46d6d66b78c1a869692dee5d05df32c1f15a19954a89cd0100b33",
+      "stdin": "inputs/clustered",
+      "stdin_sha256": "7d8d0d63fd681ee70b2226687eff696ed49f8b5ac7bb38a244ac3382984226d6",
+      "expected_sha256": "8e3b532b4187deb6d6a06b039663606da11420651d363c50782be7653aec7da3"
+    },
+    "clustered-fenwick": {
+      "elf_sha256": "b3217f393095e261058a54283c577244c9b85ee9ac359cc928324df586bdeedf",
+      "stdin": "inputs/clustered",
+      "stdin_sha256": "7d8d0d63fd681ee70b2226687eff696ed49f8b5ac7bb38a244ac3382984226d6",
+      "expected_sha256": "8e3b532b4187deb6d6a06b039663606da11420651d363c50782be7653aec7da3"
+    },
+    "shuffled-merge": {
+      "stdin": "inputs/shuffled",
+      "stdin_sha256": "c55d5bef24c539b6682133ce10011bea45e2b21a926a71f47e4e38cf8a8433a4",
+      "elf_sha256": "56f3eceacaad73592370762816f049bd257dab682d36391ee8cf4968b0cca396",
+      "expected_sha256": "123645f056e35980a3a5826a958f02516806975680eefe2b406d030d1cf7caef"
+    },
+    "shuffled-fenwick": {
+      "stdin": "inputs/shuffled",
+      "stdin_sha256": "c55d5bef24c539b6682133ce10011bea45e2b21a926a71f47e4e38cf8a8433a4",
+      "elf_sha256": "97d728b38b1a91cd1a78e3816c9a62daa57f981d43aace2d953c5fea07951cca",
+      "expected_sha256": "123645f056e35980a3a5826a958f02516806975680eefe2b406d030d1cf7caef"
+    },
+    "shuffled-segtree": {
+      "stdin": "inputs/shuffled",
+      "stdin_sha256": "c55d5bef24c539b6682133ce10011bea45e2b21a926a71f47e4e38cf8a8433a4",
+      "elf_sha256": "c64986c98c21de4e0d3236f4633b761038ccf741a710eea02dcf6d11d8c57f53",
+      "expected_sha256": "123645f056e35980a3a5826a958f02516806975680eefe2b406d030d1cf7caef"
+    },
+    "runs-merge": {
+      "stdin": "inputs/runs",
+      "stdin_sha256": "f91b7d2713ef9dd087a66702eeb5de0165d1186bb2c42f229030537166877ebf",
+      "elf_sha256": "56f3eceacaad73592370762816f049bd257dab682d36391ee8cf4968b0cca396",
+      "expected_sha256": "6b2164341c40474012f571c5920b5c4b2e67bc56d9a1494f8ba8d260ad6f1db6"
+    },
+    "runs-fenwick": {
+      "stdin": "inputs/runs",
+      "stdin_sha256": "f91b7d2713ef9dd087a66702eeb5de0165d1186bb2c42f229030537166877ebf",
+      "elf_sha256": "97d728b38b1a91cd1a78e3816c9a62daa57f981d43aace2d953c5fea07951cca",
+      "expected_sha256": "6b2164341c40474012f571c5920b5c4b2e67bc56d9a1494f8ba8d260ad6f1db6"
+    },
+    "runs-segtree": {
+      "stdin": "inputs/runs",
+      "stdin_sha256": "f91b7d2713ef9dd087a66702eeb5de0165d1186bb2c42f229030537166877ebf",
+      "elf_sha256": "c64986c98c21de4e0d3236f4633b761038ccf741a710eea02dcf6d11d8c57f53",
+      "expected_sha256": "6b2164341c40474012f571c5920b5c4b2e67bc56d9a1494f8ba8d260ad6f1db6"
+    }
+  },
+  "ml4": {
+    "latency_x16": 1.9610536920428108e-11,
+    "rep_bytes": 2.2231881518169566e-11,
+    "l1d_misses": 5.696914949612691e-11,
+    "random_2m": 3.6329907111055703e-09,
+    "random_32m": 6.462605458925904e-09,
+    "stream_2m": 1.0698559144892158e-08,
+    "l1d_dependent": 4.7700178852992235e-09,
+    "dependent_2m": 7.817536652521212e-08
+  },
+  "gshare": {
+    "instructions": 0.11400208036234295,
+    "rep_bytes": 0.03515017240371441,
+    "load_instructions": 0.0,
+    "gshare_mispredicts": 6.92658480142496
+  },
+  "clients": {
+    "original.so": "09898f86e63751526b5870309351dc8fc1a7ee7e16b459cd7849b59d7243355a",
+    "flat.so": "4c4bb17cb4dc0efa4b85804c5f29fc0eb7272ac37e4a1be6a1d497fcadb33ebd",
+    "branch.so": "39263dad716da7d5eeadb5cd40fc3b0affd4d39cf93251f442d114a39933ad40"
+  },
+  "source_sha256": {
+    "guest.py": "e24827ffdd1ddcd38994023826a71ff12ba3561ccbabe4947adf8db8d8fb4496",
+    "inputs.py": "d04b25c02fb09cc9ef3cf58e4f96c303cf651bd0df2c9b05799fd6c5767fc03f",
+    "inversions.cpp": "e82c21f0d5bfd4e8a835f1d3a01da827bc0b4b72279be5f8d8cc1db1a452d101"
+  },
+  "compiler": "12.2.0",
+  "flags": [
+    "-std=c++20",
+    "-O2",
+    "-static",
+    "-s",
+    "-Wl,--build-id=none"
+  ]
+}
