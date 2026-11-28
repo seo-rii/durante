@@ -77,19 +77,18 @@ def criterion(baseline, candidate):
             and all(candidate["counts"][k] <= baseline["counts"][k] for k in ("false_accept", "false_timeout")))
 
 
-def replay():
-    reg, plan = registered()
+def measured_panels(directory, plan, reg, freeze):
     proto, prior = plan["protocol"], clock["previous"]
     weights = {k: Fraction(str(v)) * 10**9 for k, v in plan["ml4"].items()}
     penalty = Fraction(str(plan["gshare_miss_ns"]))
-    evidence = HERE / "evidence"
+    evidence = directory / "evidence"
     cloud = read(evidence / "cloud.json")
     for key in ("instance_id", "boot_disk_id", "boot_sha256"):
         require(len({v[key] for v in cloud.values()}) == 2, "reused guest identity")
     clients = {a: plan["clients"][n] for a, n in proto["clients"].items()}
     panels, steal, work = {}, {}, {}
     for phase in ("primary", "repeat"):
-        arms, steal[phase] = prior["read_boot"](phase, cloud[phase], reg, plan, evidence=evidence, freeze=FREEZE,
+        arms, steal[phase] = prior["read_boot"](phase, cloud[phase], reg, plan, evidence=evidence, freeze=freeze,
             client_by_arm=clients, diagnostic_by_arm={"outer": "outer", "flat": "outer", "branch": "latency"})
         prior["read_branch"](evidence / (phase + ".tar.gz"), arms)
         panel, work[phase] = {}, {}
@@ -101,6 +100,13 @@ def replay():
         panels[phase] = panel
     panels["pooled"] = {name: (n + panels["repeat"][name][0], s + panels["repeat"][name][1])
                         for name, (n, s) in panels["primary"].items()}
+    return panels, steal, work
+
+
+def replay():
+    reg, plan = registered()
+    proto = plan["protocol"]
+    panels, steal, work = measured_panels(HERE, plan, reg, FREEZE)
     out = {}
     for phase, panel in panels.items():
         baseline = evaluate(phase, panel, proto, 0)

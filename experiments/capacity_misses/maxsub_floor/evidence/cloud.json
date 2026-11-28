@@ -1,0 +1,56 @@
+{
+  "primary": {
+    "raw_sha256": "84a456e1eec817c437cc5a87917329ce1704bc5b3d23dc9f413475749b8ee035",
+    "exit": 0,
+    "boot_sha256": "1d8a365b870a7431f52e71aff4211de26466d06b5adc254bf0a3b3273cbbb68f",
+    "archive_sha256": "fb221da44e03a5f6326cf5094e3c5460e620788bbb0680e923fb336ef72f218e",
+    "platform": {
+      "zone": "asia-northeast3-a",
+      "machine_type": "n2d-standard-4",
+      "threads_per_core": 1,
+      "cpu_platform": "AMD Milan",
+      "image": "debian-12-bookworm-v20261117",
+      "disk_auto_delete": true,
+      "external_ip": false,
+      "service_account": false,
+      "created_at": "2026-11-28T02:59:42.572-08:00"
+    },
+    "cleanup": {
+      "instance_http": 404,
+      "boot_disk_http": 404,
+      "key_removed": true,
+      "verified_at": "2026-11-28T11:02:26.707254+00:00"
+    },
+    "started_at": "2026-11-28T10:59:31.863085+00:00",
+    "registration_commit": "a3605470692248ef20751ddf593cc268f1084a0f",
+    "instance_id": "7629975779092663025",
+    "boot_disk_id": "6331928918691875569"
+  },
+  "repeat": {
+    "raw_sha256": "6c6060ef7f69ac70aa97827fc28b1d1b7fc99d6275a0bab59b7246395792ea55",
+    "exit": 0,
+    "boot_sha256": "8d23eec0db64bd258fc9d89bd12ae4734a0ff792d01aa8a12f338ee80b94ec53",
+    "archive_sha256": "fb221da44e03a5f6326cf5094e3c5460e620788bbb0680e923fb336ef72f218e",
+    "platform": {
+      "zone": "asia-northeast3-a",
+      "machine_type": "n2d-standard-4",
+      "threads_per_core": 1,
+      "cpu_platform": "AMD Milan",
+      "image": "debian-12-bookworm-v20261117",
+      "disk_auto_delete": true,
+      "external_ip": false,
+      "service_account": false,
+      "created_at": "2026-11-28T02:59:42.209-08:00"
+    },
+    "cleanup": {
+      "instance_http": 404,
+      "boot_disk_http": 404,
+      "key_removed": true,
+      "verified_at": "2026-11-28T11:02:25.318192+00:00"
+    },
+    "started_at": "2026-11-28T10:59:31.705374+00:00",
+    "registration_commit": "a3605470692248ef20751ddf593cc268f1084a0f",
+    "instance_id": "4534683137667959537",
+    "boot_disk_id": "7268462613647264497"
+  }
+}
