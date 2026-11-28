@@ -79,7 +79,8 @@ problems (minimum of repeats):
 | C++ (clang++) | 2.7x | 2.8x |
 | Rust | 2.2x | 2.6x |
 | Go | 3.2x | 3.3x |
-| Java | 7.8x | 9.0x |
+| Java 21 (`java`) | 8.2x | 9.5x |
+| Java 21 (`java-cds`, class data sharing) | 8.2x | 10.2x |
 | Node | 7.9x | 8.1x |
 | PyPy | 3.7x | 3.7x |
 | CPython | 4.5x | 5.0x |
@@ -89,12 +90,16 @@ problems (minimum of repeats):
 | PHP with JIT | 6.3x | 5.9x |
 | Lua | 4.3x | 4.5x |
 
-The Java row was measured again (OpenJDK 21, same CPUs) after the runtime began
-flushing only the written pages of the JVM's code cache and the client began
-storing each write checkpoint with one move
-([JIT_LIFECYCLE.md](JIT_LIFECYCLE.md#writes-to-a-large-code-cache)). It was 17.1x
-and 18.2x, mostly JVM start-up at about 9 s of CPU per run; the geometric mean
-is now 3.7 s. The `java-cds` cells measured 7.6x and 9.7x (3.2 s).
+The Java rows come from a separate run with the runtime and client of #112
+([experiments/java_timing](../experiments/java_timing/README.md)): OpenJDK 21,
+the same two CPUs, 5 rotated rounds, minimum, each profile divided by its own
+native time. That directory has every sample, the binaries' hashes and the
+aggregation command. With main's runtime and client the same run measured
+19.9x / 21.1x (`java`) and 19.4x / 21.6x (`java-cds`). The runtime change
+(per-page flushing of a JIT's code cache) accounts for almost all of the
+difference. On the new runtime, the client's one-move write checkpoint then
+cuts the plain `java` time by 14%. These are performance observations; they do
+not qualify Java for time-limit verdicts.
 
 The corpus showed two problems, both fixed with it:
 

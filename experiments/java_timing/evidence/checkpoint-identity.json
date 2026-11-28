@@ -1,0 +1,1324 @@
+{
+ "schema": 1,
+ "client_source_commit": "3b3a96529485d666fa179ecf5311cb9ed58bc9f3",
+ "command": [
+  "python3",
+  "tests/checkpoint_identity.py",
+  "--sdk",
+  "toolkit/sdk/DynamoRIO-Linux-11.3.0-1",
+  "--client",
+  "build-checkpoint-identity/libcheckpoint_identity.so",
+  "--runner-bin",
+  "target/release/durante",
+  "--output-dir",
+  "OUT"
+ ],
+ "client_sha256": "59ece49823c479285e5e4f5e3c9241e683cb30f990909ee42b6832a00cdfb1c7",
+ "cases": 75,
+ "failures": [],
+ "counts": {
+  "settled": 2931241,
+  "rep": 2854869,
+  "retry": 51807,
+  "after_write": 8000,
+  "other": 16565,
+  "unnamed": 16565,
+  "foreign": 1856,
+  "packed_blocks": 8834831,
+  "unfit_blocks": 49
+ },
+ "rows": [
+  {
+   "case": "fixture-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 6005,
+    "rep": 4004,
+    "retry": 1,
+    "after_write": 2000,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 8678,
+    "unfit_blocks": 0
+   },
+   "instructions": 425428
+  },
+  {
+   "case": "fixture-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 6005,
+    "rep": 4004,
+    "retry": 1,
+    "after_write": 2000,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 8678,
+    "unfit_blocks": 0
+   },
+   "instructions": 425428
+  },
+  {
+   "case": "fixture-latency",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 6005,
+    "rep": 4004,
+    "retry": 1,
+    "after_write": 2000,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 6679,
+    "unfit_blocks": 0
+   },
+   "instructions": 425428
+  },
+  {
+   "case": "fixture-elision",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 6005,
+    "rep": 4004,
+    "retry": 1,
+    "after_write": 2000,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 8316,
+    "unfit_blocks": 49
+   },
+   "instructions": null
+  },
+  {
+   "case": "jit-stress",
+   "errors": [],
+   "processes": 130,
+   "counts": {
+    "settled": 63282,
+    "rep": 6396,
+    "retry": 40610,
+    "after_write": 0,
+    "other": 16276,
+    "unnamed": 16276,
+    "foreign": 0,
+    "packed_blocks": 574364,
+    "unfit_blocks": 0
+   },
+   "instructions": null
+  },
+  {
+   "case": "bfs_grid-java-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 26112,
+    "rep": 25803,
+    "retry": 301,
+    "after_write": 0,
+    "other": 8,
+    "unnamed": 8,
+    "foreign": 131,
+    "packed_blocks": 196478,
+    "unfit_blocks": 0
+   },
+   "instructions": 1996440411
+  },
+  {
+   "case": "bfs_grid-java-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 24129,
+    "rep": 23741,
+    "retry": 378,
+    "after_write": 0,
+    "other": 10,
+    "unnamed": 10,
+    "foreign": 131,
+    "packed_blocks": 183574,
+    "unfit_blocks": 0
+   },
+   "instructions": 1820604850
+  },
+  {
+   "case": "bfs_grid-java-cds-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 11658,
+    "rep": 11310,
+    "retry": 338,
+    "after_write": 0,
+    "other": 10,
+    "unnamed": 10,
+    "foreign": 2,
+    "packed_blocks": 196245,
+    "unfit_blocks": 0
+   },
+   "instructions": 2120933459
+  },
+  {
+   "case": "bfs_grid-java-cds-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 11140,
+    "rep": 10784,
+    "retry": 347,
+    "after_write": 0,
+    "other": 9,
+    "unnamed": 9,
+    "foreign": 2,
+    "packed_blocks": 180586,
+    "unfit_blocks": 0
+   },
+   "instructions": 1896720345
+  },
+  {
+   "case": "bfs_grid-node-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 48401,
+    "rep": 48394,
+    "retry": 7,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 106484,
+    "unfit_blocks": 0
+   },
+   "instructions": 1413394578
+  },
+  {
+   "case": "bfs_grid-node-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 48401,
+    "rep": 48394,
+    "retry": 7,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 123016,
+    "unfit_blocks": 0
+   },
+   "instructions": 1161997285
+  },
+  {
+   "case": "bfs_grid-pypy-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 22709,
+    "rep": 22683,
+    "retry": 26,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 48757,
+    "unfit_blocks": 0
+   },
+   "instructions": 2062384018
+  },
+  {
+   "case": "bfs_grid-pypy-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 22709,
+    "rep": 22683,
+    "retry": 26,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 48770,
+    "unfit_blocks": 0
+   },
+   "instructions": 2062550763
+  },
+  {
+   "case": "bfs_grid-php-jit-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 1178,
+    "rep": 1177,
+    "retry": 1,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 186593,
+    "unfit_blocks": 0
+   },
+   "instructions": 560973253
+  },
+  {
+   "case": "bfs_grid-php-jit-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 1178,
+    "rep": 1177,
+    "retry": 1,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 186589,
+    "unfit_blocks": 0
+   },
+   "instructions": 561228655
+  },
+  {
+   "case": "dijkstra-java-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 29574,
+    "rep": 29111,
+    "retry": 456,
+    "after_write": 0,
+    "other": 7,
+    "unnamed": 7,
+    "foreign": 131,
+    "packed_blocks": 187915,
+    "unfit_blocks": 0
+   },
+   "instructions": 1892205079
+  },
+  {
+   "case": "dijkstra-java-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 31767,
+    "rep": 31312,
+    "retry": 441,
+    "after_write": 0,
+    "other": 14,
+    "unnamed": 14,
+    "foreign": 131,
+    "packed_blocks": 179314,
+    "unfit_blocks": 0
+   },
+   "instructions": 1799944835
+  },
+  {
+   "case": "dijkstra-java-cds-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 12574,
+    "rep": 12180,
+    "retry": 384,
+    "after_write": 0,
+    "other": 10,
+    "unnamed": 10,
+    "foreign": 2,
+    "packed_blocks": 175433,
+    "unfit_blocks": 0
+   },
+   "instructions": 1430670529
+  },
+  {
+   "case": "dijkstra-java-cds-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 15053,
+    "rep": 14590,
+    "retry": 447,
+    "after_write": 0,
+    "other": 16,
+    "unnamed": 16,
+    "foreign": 2,
+    "packed_blocks": 172134,
+    "unfit_blocks": 0
+   },
+   "instructions": 1919672862
+  },
+  {
+   "case": "dijkstra-node-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 48705,
+    "rep": 48693,
+    "retry": 12,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 109644,
+    "unfit_blocks": 0
+   },
+   "instructions": 1515658575
+  },
+  {
+   "case": "dijkstra-node-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 48601,
+    "rep": 48591,
+    "retry": 10,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 127246,
+    "unfit_blocks": 0
+   },
+   "instructions": 1477908027
+  },
+  {
+   "case": "dijkstra-pypy-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 235333,
+    "rep": 235182,
+    "retry": 150,
+    "after_write": 0,
+    "other": 1,
+    "unnamed": 1,
+    "foreign": 0,
+    "packed_blocks": 61414,
+    "unfit_blocks": 0
+   },
+   "instructions": 2084050009
+  },
+  {
+   "case": "dijkstra-pypy-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 235333,
+    "rep": 235182,
+    "retry": 150,
+    "after_write": 0,
+    "other": 1,
+    "unnamed": 1,
+    "foreign": 0,
+    "packed_blocks": 61418,
+    "unfit_blocks": 0
+   },
+   "instructions": 2083502247
+  },
+  {
+   "case": "dijkstra-php-jit-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 1492,
+    "rep": 1491,
+    "retry": 1,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 52222,
+    "unfit_blocks": 0
+   },
+   "instructions": 1336286636
+  },
+  {
+   "case": "dijkstra-php-jit-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 1492,
+    "rep": 1491,
+    "retry": 1,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 52213,
+    "unfit_blocks": 0
+   },
+   "instructions": 1336554739
+  },
+  {
+   "case": "lcs-java-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 18779,
+    "rep": 18643,
+    "retry": 132,
+    "after_write": 0,
+    "other": 4,
+    "unnamed": 4,
+    "foreign": 130,
+    "packed_blocks": 161612,
+    "unfit_blocks": 0
+   },
+   "instructions": 2520488734
+  },
+  {
+   "case": "lcs-java-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 18737,
+    "rep": 18626,
+    "retry": 107,
+    "after_write": 0,
+    "other": 4,
+    "unnamed": 4,
+    "foreign": 130,
+    "packed_blocks": 150333,
+    "unfit_blocks": 0
+   },
+   "instructions": 2706188776
+  },
+  {
+   "case": "lcs-java-cds-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 6192,
+    "rep": 5954,
+    "retry": 230,
+    "after_write": 0,
+    "other": 8,
+    "unnamed": 8,
+    "foreign": 2,
+    "packed_blocks": 155441,
+    "unfit_blocks": 0
+   },
+   "instructions": 2360867348
+  },
+  {
+   "case": "lcs-java-cds-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 3493,
+    "rep": 3407,
+    "retry": 83,
+    "after_write": 0,
+    "other": 3,
+    "unnamed": 3,
+    "foreign": 2,
+    "packed_blocks": 136946,
+    "unfit_blocks": 0
+   },
+   "instructions": 2475985835
+  },
+  {
+   "case": "lcs-node-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 48343,
+    "rep": 48339,
+    "retry": 4,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 97366,
+    "unfit_blocks": 0
+   },
+   "instructions": 2690436540
+  },
+  {
+   "case": "lcs-node-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 48343,
+    "rep": 48339,
+    "retry": 4,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 97337,
+    "unfit_blocks": 0
+   },
+   "instructions": 2799086324
+  },
+  {
+   "case": "lcs-pypy-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 11901,
+    "rep": 11888,
+    "retry": 13,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 47171,
+    "unfit_blocks": 0
+   },
+   "instructions": 4261076264
+  },
+  {
+   "case": "lcs-pypy-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 11901,
+    "rep": 11888,
+    "retry": 13,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 47181,
+    "unfit_blocks": 0
+   },
+   "instructions": 4261103462
+  },
+  {
+   "case": "lcs-php-jit-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 3346,
+    "rep": 3345,
+    "retry": 1,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 43620,
+    "unfit_blocks": 0
+   },
+   "instructions": 1429992553
+  },
+  {
+   "case": "lcs-php-jit-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 3346,
+    "rep": 3345,
+    "retry": 1,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 43612,
+    "unfit_blocks": 0
+   },
+   "instructions": 1430284117
+  },
+  {
+   "case": "fenwick-java-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 38418,
+    "rep": 37761,
+    "retry": 641,
+    "after_write": 0,
+    "other": 16,
+    "unnamed": 16,
+    "foreign": 130,
+    "packed_blocks": 192391,
+    "unfit_blocks": 0
+   },
+   "instructions": 2725060903
+  },
+  {
+   "case": "fenwick-java-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 42246,
+    "rep": 41623,
+    "retry": 606,
+    "after_write": 0,
+    "other": 17,
+    "unnamed": 17,
+    "foreign": 130,
+    "packed_blocks": 183164,
+    "unfit_blocks": 0
+   },
+   "instructions": 2887163322
+  },
+  {
+   "case": "fenwick-java-cds-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 24819,
+    "rep": 24216,
+    "retry": 581,
+    "after_write": 0,
+    "other": 22,
+    "unnamed": 22,
+    "foreign": 2,
+    "packed_blocks": 191259,
+    "unfit_blocks": 0
+   },
+   "instructions": 2635247773
+  },
+  {
+   "case": "fenwick-java-cds-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 24317,
+    "rep": 23780,
+    "retry": 520,
+    "after_write": 0,
+    "other": 17,
+    "unnamed": 17,
+    "foreign": 2,
+    "packed_blocks": 176419,
+    "unfit_blocks": 0
+   },
+   "instructions": 2614215274
+  },
+  {
+   "case": "fenwick-node-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 48943,
+    "rep": 48936,
+    "retry": 7,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 118615,
+    "unfit_blocks": 0
+   },
+   "instructions": 2394536777
+  },
+  {
+   "case": "fenwick-node-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 48905,
+    "rep": 48898,
+    "retry": 7,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 141631,
+    "unfit_blocks": 0
+   },
+   "instructions": 2370287390
+  },
+  {
+   "case": "fenwick-pypy-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 18920,
+    "rep": 18902,
+    "retry": 18,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 49333,
+    "unfit_blocks": 0
+   },
+   "instructions": 1721931671
+  },
+  {
+   "case": "fenwick-pypy-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 18920,
+    "rep": 18902,
+    "retry": 18,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 49319,
+    "unfit_blocks": 0
+   },
+   "instructions": 1722003182
+  },
+  {
+   "case": "fenwick-php-jit-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 1355,
+    "rep": 1354,
+    "retry": 1,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 44638,
+    "unfit_blocks": 0
+   },
+   "instructions": 1021802219
+  },
+  {
+   "case": "fenwick-php-jit-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 1355,
+    "rep": 1354,
+    "retry": 1,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 44661,
+    "unfit_blocks": 0
+   },
+   "instructions": 1022104053
+  },
+  {
+   "case": "kmp-java-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 21299,
+    "rep": 20809,
+    "retry": 480,
+    "after_write": 0,
+    "other": 10,
+    "unnamed": 10,
+    "foreign": 131,
+    "packed_blocks": 188524,
+    "unfit_blocks": 0
+   },
+   "instructions": 2760124374
+  },
+  {
+   "case": "kmp-java-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 20851,
+    "rep": 20469,
+    "retry": 373,
+    "after_write": 0,
+    "other": 9,
+    "unnamed": 9,
+    "foreign": 131,
+    "packed_blocks": 171822,
+    "unfit_blocks": 0
+   },
+   "instructions": 2755604501
+  },
+  {
+   "case": "kmp-java-cds-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 7886,
+    "rep": 7549,
+    "retry": 328,
+    "after_write": 0,
+    "other": 9,
+    "unnamed": 9,
+    "foreign": 2,
+    "packed_blocks": 184157,
+    "unfit_blocks": 0
+   },
+   "instructions": 2883511795
+  },
+  {
+   "case": "kmp-java-cds-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 5565,
+    "rep": 5232,
+    "retry": 325,
+    "after_write": 0,
+    "other": 8,
+    "unnamed": 8,
+    "foreign": 2,
+    "packed_blocks": 167562,
+    "unfit_blocks": 0
+   },
+   "instructions": 2717341233
+  },
+  {
+   "case": "kmp-node-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 49065,
+    "rep": 49058,
+    "retry": 7,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 101831,
+    "unfit_blocks": 0
+   },
+   "instructions": 3514241605
+  },
+  {
+   "case": "kmp-node-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 49065,
+    "rep": 49058,
+    "retry": 7,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 102952,
+    "unfit_blocks": 0
+   },
+   "instructions": 3533840095
+  },
+  {
+   "case": "kmp-pypy-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 17895,
+    "rep": 17877,
+    "retry": 18,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 46263,
+    "unfit_blocks": 0
+   },
+   "instructions": 2609287862
+  },
+  {
+   "case": "kmp-pypy-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 17895,
+    "rep": 17877,
+    "retry": 18,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 46250,
+    "unfit_blocks": 0
+   },
+   "instructions": 2609325989
+  },
+  {
+   "case": "kmp-php-jit-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 1111,
+    "rep": 1110,
+    "retry": 1,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 43626,
+    "unfit_blocks": 0
+   },
+   "instructions": 672222870
+  },
+  {
+   "case": "kmp-php-jit-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 1111,
+    "rep": 1110,
+    "retry": 1,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 43624,
+    "unfit_blocks": 0
+   },
+   "instructions": 672416361
+  },
+  {
+   "case": "sort_bs-java-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 37701,
+    "rep": 37294,
+    "retry": 398,
+    "after_write": 0,
+    "other": 9,
+    "unnamed": 9,
+    "foreign": 130,
+    "packed_blocks": 189520,
+    "unfit_blocks": 0
+   },
+   "instructions": 2701474422
+  },
+  {
+   "case": "sort_bs-java-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 47577,
+    "rep": 47111,
+    "retry": 453,
+    "after_write": 0,
+    "other": 13,
+    "unnamed": 13,
+    "foreign": 130,
+    "packed_blocks": 176957,
+    "unfit_blocks": 0
+   },
+   "instructions": 3142340082
+  },
+  {
+   "case": "sort_bs-java-cds-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 24695,
+    "rep": 24361,
+    "retry": 327,
+    "after_write": 0,
+    "other": 7,
+    "unnamed": 7,
+    "foreign": 2,
+    "packed_blocks": 186004,
+    "unfit_blocks": 0
+   },
+   "instructions": 2993438582
+  },
+  {
+   "case": "sort_bs-java-cds-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 29250,
+    "rep": 28819,
+    "retry": 418,
+    "after_write": 0,
+    "other": 13,
+    "unnamed": 13,
+    "foreign": 2,
+    "packed_blocks": 177892,
+    "unfit_blocks": 0
+   },
+   "instructions": 2942187972
+  },
+  {
+   "case": "sort_bs-node-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 48753,
+    "rep": 48747,
+    "retry": 6,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 112876,
+    "unfit_blocks": 0
+   },
+   "instructions": 1797967295
+  },
+  {
+   "case": "sort_bs-node-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 48753,
+    "rep": 48747,
+    "retry": 6,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 125105,
+    "unfit_blocks": 0
+   },
+   "instructions": 1673858292
+  },
+  {
+   "case": "sort_bs-pypy-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 32609,
+    "rep": 32594,
+    "retry": 15,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 52275,
+    "unfit_blocks": 0
+   },
+   "instructions": 1876591679
+  },
+  {
+   "case": "sort_bs-pypy-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 32609,
+    "rep": 32594,
+    "retry": 15,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 52282,
+    "unfit_blocks": 0
+   },
+   "instructions": 1876683435
+  },
+  {
+   "case": "sort_bs-php-jit-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 1521,
+    "rep": 1520,
+    "retry": 1,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 43194,
+    "unfit_blocks": 0
+   },
+   "instructions": 1614588288
+  },
+  {
+   "case": "sort_bs-php-jit-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 1521,
+    "rep": 1520,
+    "retry": 1,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 43206,
+    "unfit_blocks": 0
+   },
+   "instructions": 1614797148
+  },
+  {
+   "case": "deep_dfs-java-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 25150,
+    "rep": 24789,
+    "retry": 355,
+    "after_write": 0,
+    "other": 6,
+    "unnamed": 6,
+    "foreign": 131,
+    "packed_blocks": 185457,
+    "unfit_blocks": 0
+   },
+   "instructions": 1767833382
+  },
+  {
+   "case": "deep_dfs-java-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 24365,
+    "rep": 23914,
+    "retry": 439,
+    "after_write": 0,
+    "other": 12,
+    "unnamed": 12,
+    "foreign": 131,
+    "packed_blocks": 167745,
+    "unfit_blocks": 0
+   },
+   "instructions": 1439769992
+  },
+  {
+   "case": "deep_dfs-java-cds-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 9895,
+    "rep": 9603,
+    "retry": 287,
+    "after_write": 0,
+    "other": 5,
+    "unnamed": 5,
+    "foreign": 2,
+    "packed_blocks": 182715,
+    "unfit_blocks": 0
+   },
+   "instructions": 1203259812
+  },
+  {
+   "case": "deep_dfs-java-cds-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 14838,
+    "rep": 14445,
+    "retry": 382,
+    "after_write": 0,
+    "other": 11,
+    "unnamed": 11,
+    "foreign": 2,
+    "packed_blocks": 178127,
+    "unfit_blocks": 0
+   },
+   "instructions": 1507716190
+  },
+  {
+   "case": "deep_dfs-node-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 49007,
+    "rep": 48997,
+    "retry": 10,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 108046,
+    "unfit_blocks": 0
+   },
+   "instructions": 35008102181
+  },
+  {
+   "case": "deep_dfs-node-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 49000,
+    "rep": 48988,
+    "retry": 12,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 129430,
+    "unfit_blocks": 0
+   },
+   "instructions": 35268839065
+  },
+  {
+   "case": "deep_dfs-pypy-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 425943,
+    "rep": 425925,
+    "retry": 18,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 59391,
+    "unfit_blocks": 0
+   },
+   "instructions": 3484255329
+  },
+  {
+   "case": "deep_dfs-pypy-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 425943,
+    "rep": 425925,
+    "retry": 18,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 59376,
+    "unfit_blocks": 0
+   },
+   "instructions": 3484365655
+  },
+  {
+   "case": "deep_dfs-php-jit-plain",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 1479,
+    "rep": 1478,
+    "retry": 1,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 46910,
+    "unfit_blocks": 0
+   },
+   "instructions": 1219107225
+  },
+  {
+   "case": "deep_dfs-php-jit-live",
+   "errors": [],
+   "processes": 1,
+   "counts": {
+    "settled": 1469,
+    "rep": 1468,
+    "retry": 1,
+    "after_write": 0,
+    "other": 0,
+    "unnamed": 0,
+    "foreign": 0,
+    "packed_blocks": 46903,
+    "unfit_blocks": 0
+   },
+   "instructions": 1219319451
+  }
+ ],
+ "note": "Run before the jit-replay case was added to tests/checkpoint_identity.py. A later run of that case with the same client is jit_replay below: its 30 instrumented cases counted the oracle's instructions.",
+ "jit_replay": {
+  "oracle_exact": 30,
+  "errors": [],
+  "processes": 30,
+  "counts": {
+   "settled": 153,
+   "rep": 102,
+   "retry": 36,
+   "after_write": 5,
+   "other": 10,
+   "unnamed": 10,
+   "foreign": 0,
+   "packed_blocks": 455,
+   "unfit_blocks": 0
+  }
+ }
+}

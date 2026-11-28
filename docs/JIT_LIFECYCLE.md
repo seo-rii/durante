@@ -123,7 +123,8 @@ update, threw away the interpreter and all compiled code, which then had to be
 rebuilt as it ran again. An OpenJDK 21 hello world under the engine with the
 counter flushed its 624-page (2.5 MiB) code cache 2,452 times. It built 134,816
 blocks, of which 83,505 were distinct, and changed the protection of 3.1 million
-pages.
+pages. 75% of its CPU profile was in the runtime, mostly decoding and emitting
+rebuilt blocks.
 
 The prepared runtime tracks code in writable memory one page at a time
 (`-page_granular_writable_code`, on by default here). A new executable area in
@@ -132,30 +133,22 @@ then flushes only the blocks of the pages it writes. On a contest `bfs_grid`
 run, write faults fell to 244 and flushed blocks to 2,037, and 168,534 of the
 170,145 blocks built were distinct.
 
-CPU seconds on one pinned CPU of a 4-vCPU Xeon guest, median of 3 interleaved
-runs, with the counter as the supervisor runs it. Java uses the corpus flags
-with compressed class pointers disabled (the flags before CDS was kept):
-
-| Program | native | whole-region | per page |
-|---|---:|---:|---:|
-| hello world | 0.08 | 2.91 | 1.45 |
-| compute loop (1.75 s native) | 1.75 | 5.64 | 4.01 |
-| `bfs_grid` | 0.35 | 7.02 | 3.53 |
-| `dijkstra` | 0.33 | 7.47 | 3.41 |
-| `lcs` | 0.34 | 4.35 | 2.51 |
-| `fenwick` | 0.42 | 6.80 | 4.13 |
-| `kmp` | 0.81 | 7.56 | 3.92 |
-| `sort_bs` | 0.57 | 7.47 | 4.56 |
-| `deep_dfs` | 0.60 | 7.64 | 3.84 |
-
-With class data sharing kept as well (`-XX:CompressedClassSpaceSize=64m`, the
-corpus's `java-cds` cells and aonohako's `java21_cds` profile), the geometric
-mean over the seven problems fell from 6.80 s with the whole-region runtime and
-the default flags to 3.14 s (14.7x to 6.8x the default flags' native time).
+[experiments/java_timing](../experiments/java_timing/README.md) has the timing,
+with the binaries, inputs and placement. In that run, OpenJDK 21 ran the seven
+contest problems on two pinned CPUs for 5 rotated rounds, each profile divided
+by its own native time. With main's client and only the runtime changed, the
+`java` profile's geometric mean fell from 8.26 to 3.97 CPU seconds (19.9x to
+9.5x native) in plain runs, and from 8.78 to 4.01 s with a large work budget.
+Per problem it fell to between 0.41 (`deep_dfs`, `dijkstra`) and 0.58
+(`sort_bs`) of main's time. With the branch client as well, it was 3.39 s
+(8.2x). The `java-cds` profile, which keeps class data sharing, went from
+7.18 s (19.4x) with main's runtime and client to 3.05 s (8.2x) with the
+branch's. These are performance observations; they do not qualify Java for
+time-limit verdicts.
 
 Node, PyPy, PHP's tracing JIT and CPython changed within noise on `bfs_grid`,
-`dijkstra` and `sort_bs` (PyPy `dijkstra` fell from 3.57 to 2.94 s). Peak RSS
-of the Java runs is unchanged.
+`dijkstra` and `sort_bs` in an earlier exploratory comparison (one CPU, median
+of 3). PyPy `dijkstra` fell from 3.57 to 2.94 s.
 
 ## Replay matrix
 

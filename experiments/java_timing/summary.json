@@ -1,0 +1,694 @@
+{
+ "rounds": 5,
+ "problems": [
+  "bfs_grid",
+  "deep_dfs",
+  "dijkstra",
+  "fenwick",
+  "kmp",
+  "lcs",
+  "sort_bs"
+ ],
+ "profiles": {
+  "java": {
+   "native_cpu_s": {
+    "bfs_grid": {
+     "min": 0.3145,
+     "median": 0.3811
+    },
+    "deep_dfs": {
+     "min": 0.4859,
+     "median": 0.4872
+    },
+    "dijkstra": {
+     "min": 0.2859,
+     "median": 0.3309
+    },
+    "fenwick": {
+     "min": 0.3861,
+     "median": 0.4323
+    },
+    "kmp": {
+     "min": 0.7229,
+     "median": 0.7453
+    },
+    "lcs": {
+     "min": 0.3403,
+     "median": 0.373
+    },
+    "sort_bs": {
+     "min": 0.5183,
+     "median": 0.5912
+    }
+   },
+   "configs": {
+    "main": {
+     "durante": {
+      "per_problem": {
+       "bfs_grid": {
+        "min": 8.4003,
+        "median": 9.6521,
+        "ratio_min": 26.71,
+        "ratio_median": 25.3269
+       },
+       "deep_dfs": {
+        "min": 9.4717,
+        "median": 10.1895,
+        "ratio_min": 19.4931,
+        "ratio_median": 20.9144
+       },
+       "dijkstra": {
+        "min": 9.3301,
+        "median": 10.2812,
+        "ratio_min": 32.6341,
+        "ratio_median": 31.0704
+       },
+       "fenwick": {
+        "min": 8.5351,
+        "median": 9.9557,
+        "ratio_min": 22.1059,
+        "ratio_median": 23.0296
+       },
+       "kmp": {
+        "min": 9.5283,
+        "median": 9.9705,
+        "ratio_min": 13.1807,
+        "ratio_median": 13.3778
+       },
+       "lcs": {
+        "min": 5.2852,
+        "median": 5.582,
+        "ratio_min": 15.531,
+        "ratio_median": 14.9651
+       },
+       "sort_bs": {
+        "min": 8.2365,
+        "median": 9.7506,
+        "ratio_min": 15.8914,
+        "ratio_median": 16.4929
+       }
+      },
+      "geomean_ratio_min": 19.8677,
+      "geomean_ratio_median": 19.9357,
+      "geomean_cpu_s_min": 8.2621,
+      "geomean_cpu_s_median": 9.1725
+     },
+     "budget-large": {
+      "per_problem": {
+       "bfs_grid": {
+        "min": 8.9217,
+        "median": 9.7878,
+        "ratio_min": 28.3679,
+        "ratio_median": 25.683
+       },
+       "deep_dfs": {
+        "min": 9.6868,
+        "median": 10.8651,
+        "ratio_min": 19.9358,
+        "ratio_median": 22.3011
+       },
+       "dijkstra": {
+        "min": 9.6285,
+        "median": 10.8565,
+        "ratio_min": 33.6779,
+        "ratio_median": 32.809
+       },
+       "fenwick": {
+        "min": 9.062,
+        "median": 10.2663,
+        "ratio_min": 23.4706,
+        "ratio_median": 23.7481
+       },
+       "kmp": {
+        "min": 9.2951,
+        "median": 10.0584,
+        "ratio_min": 12.8581,
+        "ratio_median": 13.4958
+       },
+       "lcs": {
+        "min": 6.075,
+        "median": 7.4891,
+        "ratio_min": 17.8519,
+        "ratio_median": 20.078
+       },
+       "sort_bs": {
+        "min": 9.4462,
+        "median": 10.2642,
+        "ratio_min": 18.2254,
+        "ratio_median": 17.3616
+       }
+      },
+      "geomean_ratio_min": 21.1131,
+      "geomean_ratio_median": 21.4649,
+      "geomean_cpu_s_min": 8.78,
+      "geomean_cpu_s_median": 9.8761
+     }
+    },
+    "runtime": {
+     "durante": {
+      "per_problem": {
+       "bfs_grid": {
+        "min": 4.0514,
+        "median": 4.4991,
+        "ratio_min": 12.882,
+        "ratio_median": 11.8056
+       },
+       "deep_dfs": {
+        "min": 3.8625,
+        "median": 4.3342,
+        "ratio_min": 7.9492,
+        "ratio_median": 8.8961
+       },
+       "dijkstra": {
+        "min": 3.79,
+        "median": 3.9539,
+        "ratio_min": 13.2564,
+        "ratio_median": 11.9489
+       },
+       "fenwick": {
+        "min": 4.4162,
+        "median": 4.5967,
+        "ratio_min": 11.438,
+        "ratio_median": 10.6331
+       },
+       "kmp": {
+        "min": 4.1424,
+        "median": 4.1973,
+        "ratio_min": 5.7303,
+        "ratio_median": 5.6317
+       },
+       "lcs": {
+        "min": 2.9958,
+        "median": 3.2639,
+        "ratio_min": 8.8034,
+        "ratio_median": 8.7504
+       },
+       "sort_bs": {
+        "min": 4.7465,
+        "median": 5.2127,
+        "ratio_min": 9.1578,
+        "ratio_median": 8.8172
+       }
+      },
+      "geomean_ratio_min": 9.5364,
+      "geomean_ratio_median": 9.2509,
+      "geomean_cpu_s_min": 3.9658,
+      "geomean_cpu_s_median": 4.2564
+     },
+     "budget-large": {
+      "per_problem": {
+       "bfs_grid": {
+        "min": 3.9693,
+        "median": 4.3504,
+        "ratio_min": 12.621,
+        "ratio_median": 11.4154
+       },
+       "deep_dfs": {
+        "min": 3.9655,
+        "median": 4.336,
+        "ratio_min": 8.1611,
+        "ratio_median": 8.8998
+       },
+       "dijkstra": {
+        "min": 4.1303,
+        "median": 4.3448,
+        "ratio_min": 14.4467,
+        "ratio_median": 13.1303
+       },
+       "fenwick": {
+        "min": 4.4244,
+        "median": 4.9758,
+        "ratio_min": 11.4592,
+        "ratio_median": 11.5101
+       },
+       "kmp": {
+        "min": 4.3407,
+        "median": 4.675,
+        "ratio_min": 6.0046,
+        "ratio_median": 6.2726
+       },
+       "lcs": {
+        "min": 3.0793,
+        "median": 3.4701,
+        "ratio_min": 9.0488,
+        "ratio_median": 9.3032
+       },
+       "sort_bs": {
+        "min": 4.3623,
+        "median": 5.2937,
+        "ratio_min": 8.4166,
+        "ratio_median": 8.9542
+       }
+      },
+      "geomean_ratio_min": 9.6509,
+      "geomean_ratio_median": 9.6902,
+      "geomean_cpu_s_min": 4.0134,
+      "geomean_cpu_s_median": 4.4585
+     }
+    },
+    "client": {
+     "durante": {
+      "per_problem": {
+       "bfs_grid": {
+        "min": 8.6619,
+        "median": 9.4863,
+        "ratio_min": 27.5418,
+        "ratio_median": 24.8919
+       },
+       "deep_dfs": {
+        "min": 9.0853,
+        "median": 9.5885,
+        "ratio_min": 18.6979,
+        "ratio_median": 19.6808
+       },
+       "dijkstra": {
+        "min": 9.6694,
+        "median": 10.7294,
+        "ratio_min": 33.8209,
+        "ratio_median": 32.4249
+       },
+       "fenwick": {
+        "min": 7.0558,
+        "median": 8.884,
+        "ratio_min": 18.2745,
+        "ratio_median": 20.5505
+       },
+       "kmp": {
+        "min": 9.3524,
+        "median": 9.6386,
+        "ratio_min": 12.9373,
+        "ratio_median": 12.9325
+       },
+       "lcs": {
+        "min": 5.3045,
+        "median": 5.7932,
+        "ratio_min": 15.5877,
+        "ratio_median": 15.5314
+       },
+       "sort_bs": {
+        "min": 9.3679,
+        "median": 10.11,
+        "ratio_min": 18.0743,
+        "ratio_median": 17.1008
+       }
+      },
+      "geomean_ratio_min": 19.721,
+      "geomean_ratio_median": 19.6253,
+      "geomean_cpu_s_min": 8.2011,
+      "geomean_cpu_s_median": 9.0297
+     },
+     "budget-large": {
+      "per_problem": {
+       "bfs_grid": {
+        "min": 9.0696,
+        "median": 10.1897,
+        "ratio_min": 28.8382,
+        "ratio_median": 26.7376
+       },
+       "deep_dfs": {
+        "min": 9.7339,
+        "median": 10.3948,
+        "ratio_min": 20.0327,
+        "ratio_median": 21.3358
+       },
+       "dijkstra": {
+        "min": 8.8893,
+        "median": 10.5335,
+        "ratio_min": 31.0923,
+        "ratio_median": 31.8329
+       },
+       "fenwick": {
+        "min": 9.5737,
+        "median": 10.3106,
+        "ratio_min": 24.7959,
+        "ratio_median": 23.8506
+       },
+       "kmp": {
+        "min": 9.954,
+        "median": 10.6213,
+        "ratio_min": 13.7695,
+        "ratio_median": 14.251
+       },
+       "lcs": {
+        "min": 6.3781,
+        "median": 6.6532,
+        "ratio_min": 18.7426,
+        "ratio_median": 17.837
+       },
+       "sort_bs": {
+        "min": 9.387,
+        "median": 9.8457,
+        "ratio_min": 18.1111,
+        "ratio_median": 16.6538
+       }
+      },
+      "geomean_ratio_min": 21.439,
+      "geomean_ratio_median": 21.0536,
+      "geomean_cpu_s_min": 8.9156,
+      "geomean_cpu_s_median": 9.6869
+     }
+    },
+    "both": {
+     "durante": {
+      "per_problem": {
+       "bfs_grid": {
+        "min": 3.9318,
+        "median": 4.4291,
+        "ratio_min": 12.5017,
+        "ratio_median": 11.6219
+       },
+       "deep_dfs": {
+        "min": 3.0052,
+        "median": 3.4052,
+        "ratio_min": 6.1848,
+        "ratio_median": 6.9893
+       },
+       "dijkstra": {
+        "min": 2.9687,
+        "median": 3.0903,
+        "ratio_min": 10.3837,
+        "ratio_median": 9.3391
+       },
+       "fenwick": {
+        "min": 3.3888,
+        "median": 4.0545,
+        "ratio_min": 8.777,
+        "ratio_median": 9.3789
+       },
+       "kmp": {
+        "min": 3.7972,
+        "median": 4.3053,
+        "ratio_min": 5.2527,
+        "ratio_median": 5.7766
+       },
+       "lcs": {
+        "min": 2.7131,
+        "median": 3.0825,
+        "ratio_min": 7.9727,
+        "ratio_median": 8.2641
+       },
+       "sort_bs": {
+        "min": 4.2372,
+        "median": 4.3965,
+        "ratio_min": 8.1752,
+        "ratio_median": 7.4366
+       }
+      },
+      "geomean_ratio_min": 8.1617,
+      "geomean_ratio_median": 8.2154,
+      "geomean_cpu_s_min": 3.3941,
+      "geomean_cpu_s_median": 3.78
+     },
+     "budget-large": {
+      "per_problem": {
+       "bfs_grid": {
+        "min": 4.2159,
+        "median": 4.5372,
+        "ratio_min": 13.4051,
+        "ratio_median": 11.9055
+       },
+       "deep_dfs": {
+        "min": 4.0461,
+        "median": 4.3114,
+        "ratio_min": 8.327,
+        "ratio_median": 8.8493
+       },
+       "dijkstra": {
+        "min": 3.6762,
+        "median": 3.8348,
+        "ratio_min": 12.8583,
+        "ratio_median": 11.589
+       },
+       "fenwick": {
+        "min": 4.3396,
+        "median": 5.369,
+        "ratio_min": 11.2396,
+        "ratio_median": 12.4196
+       },
+       "kmp": {
+        "min": 4.2974,
+        "median": 4.7525,
+        "ratio_min": 5.9447,
+        "ratio_median": 6.3766
+       },
+       "lcs": {
+        "min": 2.7603,
+        "median": 3.3,
+        "ratio_min": 8.1114,
+        "ratio_median": 8.8472
+       },
+       "sort_bs": {
+        "min": 4.6051,
+        "median": 4.8868,
+        "ratio_min": 8.885,
+        "ratio_median": 8.2659
+       }
+      },
+      "geomean_ratio_min": 9.486,
+      "geomean_ratio_median": 9.517,
+      "geomean_cpu_s_min": 3.9448,
+      "geomean_cpu_s_median": 4.3788
+     }
+    }
+   }
+  },
+  "java-cds": {
+   "native_cpu_s": {
+    "bfs_grid": {
+     "min": 0.3234,
+     "median": 0.3385
+    },
+    "deep_dfs": {
+     "min": 0.4122,
+     "median": 0.435
+    },
+    "dijkstra": {
+     "min": 0.2374,
+     "median": 0.2651
+    },
+    "fenwick": {
+     "min": 0.3081,
+     "median": 0.403
+    },
+    "kmp": {
+     "min": 0.6711,
+     "median": 0.7062
+    },
+    "lcs": {
+     "min": 0.3117,
+     "median": 0.3159
+    },
+    "sort_bs": {
+     "min": 0.4644,
+     "median": 0.5171
+    }
+   },
+   "configs": {
+    "main": {
+     "durante": {
+      "per_problem": {
+       "bfs_grid": {
+        "min": 8.1185,
+        "median": 8.9432,
+        "ratio_min": 25.1036,
+        "ratio_median": 26.4201
+       },
+       "deep_dfs": {
+        "min": 8.1738,
+        "median": 9.0977,
+        "ratio_min": 19.8297,
+        "ratio_median": 20.9143
+       },
+       "dijkstra": {
+        "min": 7.9272,
+        "median": 8.6624,
+        "ratio_min": 33.3917,
+        "ratio_median": 32.676
+       },
+       "fenwick": {
+        "min": 7.7801,
+        "median": 8.6408,
+        "ratio_min": 25.2519,
+        "ratio_median": 21.4412
+       },
+       "kmp": {
+        "min": 7.3159,
+        "median": 8.3561,
+        "ratio_min": 10.9014,
+        "ratio_median": 11.8325
+       },
+       "lcs": {
+        "min": 4.1414,
+        "median": 4.3818,
+        "ratio_min": 13.2865,
+        "ratio_median": 13.8708
+       },
+       "sort_bs": {
+        "min": 7.9602,
+        "median": 8.3464,
+        "ratio_min": 17.1408,
+        "ratio_median": 16.1408
+       }
+      },
+      "geomean_ratio_min": 19.421,
+      "geomean_ratio_median": 19.3767,
+      "geomean_cpu_s_min": 7.1835,
+      "geomean_cpu_s_median": 7.8647
+     },
+     "budget-large": {
+      "per_problem": {
+       "bfs_grid": {
+        "min": 8.878,
+        "median": 9.1264,
+        "ratio_min": 27.4521,
+        "ratio_median": 26.9613
+       },
+       "deep_dfs": {
+        "min": 8.9705,
+        "median": 10.7007,
+        "ratio_min": 21.7625,
+        "ratio_median": 24.5993
+       },
+       "dijkstra": {
+        "min": 8.1366,
+        "median": 9.1688,
+        "ratio_min": 34.2738,
+        "ratio_median": 34.5862
+       },
+       "fenwick": {
+        "min": 8.6154,
+        "median": 9.1022,
+        "ratio_min": 27.963,
+        "ratio_median": 22.5861
+       },
+       "kmp": {
+        "min": 8.2009,
+        "median": 8.9385,
+        "ratio_min": 12.2201,
+        "ratio_median": 12.6572
+       },
+       "lcs": {
+        "min": 5.1808,
+        "median": 5.9783,
+        "ratio_min": 16.6211,
+        "ratio_median": 18.9247
+       },
+       "sort_bs": {
+        "min": 8.8242,
+        "median": 9.2207,
+        "ratio_min": 19.0013,
+        "ratio_median": 17.8316
+       }
+      },
+      "geomean_ratio_min": 21.6225,
+      "geomean_ratio_median": 21.6269,
+      "geomean_cpu_s_min": 7.9978,
+      "geomean_cpu_s_median": 8.778
+     }
+    },
+    "both": {
+     "durante": {
+      "per_problem": {
+       "bfs_grid": {
+        "min": 3.6458,
+        "median": 3.8833,
+        "ratio_min": 11.2733,
+        "ratio_median": 11.4721
+       },
+       "deep_dfs": {
+        "min": 2.7758,
+        "median": 2.8088,
+        "ratio_min": 6.7341,
+        "ratio_median": 6.457
+       },
+       "dijkstra": {
+        "min": 2.7175,
+        "median": 3.039,
+        "ratio_min": 11.4469,
+        "ratio_median": 11.4636
+       },
+       "fenwick": {
+        "min": 3.1546,
+        "median": 3.7164,
+        "ratio_min": 10.2389,
+        "ratio_median": 9.2218
+       },
+       "kmp": {
+        "min": 3.2029,
+        "median": 3.3343,
+        "ratio_min": 4.7726,
+        "ratio_median": 4.7215
+       },
+       "lcs": {
+        "min": 2.6603,
+        "median": 2.7446,
+        "ratio_min": 8.5348,
+        "ratio_median": 8.6882
+       },
+       "sort_bs": {
+        "min": 3.3127,
+        "median": 3.7712,
+        "ratio_min": 7.1333,
+        "ratio_median": 7.293
+       }
+      },
+      "geomean_ratio_min": 8.2428,
+      "geomean_ratio_median": 8.1276,
+      "geomean_cpu_s_min": 3.0488,
+      "geomean_cpu_s_median": 3.2989
+     },
+     "budget-large": {
+      "per_problem": {
+       "bfs_grid": {
+        "min": 4.0262,
+        "median": 4.1241,
+        "ratio_min": 12.4496,
+        "ratio_median": 12.1835
+       },
+       "deep_dfs": {
+        "min": 3.6538,
+        "median": 3.8328,
+        "ratio_min": 8.8641,
+        "ratio_median": 8.811
+       },
+       "dijkstra": {
+        "min": 3.6679,
+        "median": 3.9039,
+        "ratio_min": 15.4503,
+        "ratio_median": 14.7261
+       },
+       "fenwick": {
+        "min": 4.0015,
+        "median": 4.7793,
+        "ratio_min": 12.9877,
+        "ratio_median": 11.8593
+       },
+       "kmp": {
+        "min": 4.0848,
+        "median": 4.6349,
+        "ratio_min": 6.0867,
+        "ratio_median": 6.5632
+       },
+       "lcs": {
+        "min": 2.8444,
+        "median": 3.2542,
+        "ratio_min": 9.1254,
+        "ratio_median": 10.3014
+       },
+       "sort_bs": {
+        "min": 4.2753,
+        "median": 4.5523,
+        "ratio_min": 9.2061,
+        "ratio_median": 8.8035
+       }
+      },
+      "geomean_ratio_min": 10.1791,
+      "geomean_ratio_median": 10.1578,
+      "geomean_cpu_s_min": 3.7651,
+      "geomean_cpu_s_median": 4.1229
+     }
+    }
+   }
+  }
+ }
+}

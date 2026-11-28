@@ -1,0 +1,3587 @@
+{
+ "schema": 1,
+ "command": [
+  "python3",
+  "-B",
+  "experiments/java_timing/parity.py",
+  "--output",
+  "evidence/count-parity.json",
+  "--runner-bin",
+  "target/release/durante",
+  "--config",
+  "main=SDK_MAIN,CLIENT_MAIN",
+  "--config",
+  "runtime=SDK_BRANCH,CLIENT_MAIN",
+  "--config",
+  "client=SDK_MAIN,CLIENT_BRANCH",
+  "--config",
+  "both=SDK_BRANCH,CLIENT_BRANCH"
+ ],
+ "git_head": "f1b06f6f5b87db0a3e567bb52d6212e9ec6548f2",
+ "langs": [
+  "cpp-static",
+  "cpp-dyn",
+  "rust"
+ ],
+ "configs": {
+  "main": {
+   "libdynamorio_release_sha256": "71bede0d6baa75546835e2de776149738a8acefd1cb8b927443617640b341427",
+   "client_sha256": "052d0ef72863a3552d3319e7d11b54add0b101086bdcd739fab7fb24e880dbdd"
+  },
+  "runtime": {
+   "libdynamorio_release_sha256": "fd694243551283819f0f2b05e3cbd73ff5141551bb88564fff6004d38c963fed",
+   "client_sha256": "052d0ef72863a3552d3319e7d11b54add0b101086bdcd739fab7fb24e880dbdd"
+  },
+  "client": {
+   "libdynamorio_release_sha256": "71bede0d6baa75546835e2de776149738a8acefd1cb8b927443617640b341427",
+   "client_sha256": "3301351b4b5c0eca14b416a4fd7de079e86a97907bf6926ee56aa998c3a9bcfa"
+  },
+  "both": {
+   "libdynamorio_release_sha256": "fd694243551283819f0f2b05e3cbd73ff5141551bb88564fff6004d38c963fed",
+   "client_sha256": "3301351b4b5c0eca14b416a4fd7de079e86a97907bf6926ee56aa998c3a9bcfa"
+  }
+ },
+ "cells": {
+  "main": {
+   "bfs_grid/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 364565633,
+    "rep_bytes": 32002396,
+    "rep_entries": 9
+   },
+   "bfs_grid/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 364565633,
+    "rep_bytes": 32002396,
+    "rep_entries": 9
+   },
+   "bfs_grid/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "bfs_grid/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 364565633,
+    "rep_bytes": 32002396,
+    "rep_entries": 9
+   },
+   "bfs_grid/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 365786643,
+    "rep_bytes": 32004836,
+    "rep_entries": 12
+   },
+   "bfs_grid/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 365786643,
+    "rep_bytes": 32004836,
+    "rep_entries": 12
+   },
+   "bfs_grid/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "bfs_grid/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 365786643,
+    "rep_bytes": 32004836,
+    "rep_entries": 12
+   },
+   "bfs_grid/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 248227002,
+    "rep_bytes": 16068900,
+    "rep_entries": 5
+   },
+   "bfs_grid/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 248239442,
+    "rep_bytes": 16068900,
+    "rep_entries": 5
+   },
+   "bfs_grid/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "bfs_grid/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 248241976,
+    "rep_bytes": 16068900,
+    "rep_entries": 5
+   },
+   "dijkstra/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 318895125,
+    "rep_bytes": 13602348,
+    "rep_entries": 14
+   },
+   "dijkstra/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 318895125,
+    "rep_bytes": 13602348,
+    "rep_entries": 14
+   },
+   "dijkstra/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "dijkstra/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 318895125,
+    "rep_bytes": 13602348,
+    "rep_entries": 14
+   },
+   "dijkstra/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 320010349,
+    "rep_bytes": 13604788,
+    "rep_entries": 17
+   },
+   "dijkstra/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 320010349,
+    "rep_bytes": 13604788,
+    "rep_entries": 17
+   },
+   "dijkstra/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "dijkstra/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 320010349,
+    "rep_bytes": 13604788,
+    "rep_entries": 17
+   },
+   "dijkstra/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 290084085,
+    "rep_bytes": 1734368,
+    "rep_entries": 6
+   },
+   "dijkstra/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 290096585,
+    "rep_bytes": 1734368,
+    "rep_entries": 6
+   },
+   "dijkstra/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "dijkstra/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 290099059,
+    "rep_bytes": 1734368,
+    "rep_entries": 6
+   },
+   "lcs/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 673037911,
+    "rep_bytes": 18176,
+    "rep_entries": 9
+   },
+   "lcs/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 673037911,
+    "rep_bytes": 18176,
+    "rep_entries": 9
+   },
+   "lcs/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "lcs/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 673037911,
+    "rep_bytes": 18176,
+    "rep_entries": 9
+   },
+   "lcs/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 674180802,
+    "rep_bytes": 20584,
+    "rep_entries": 12
+   },
+   "lcs/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 674180802,
+    "rep_bytes": 20584,
+    "rep_entries": 12
+   },
+   "lcs/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "lcs/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 674180802,
+    "rep_bytes": 20584,
+    "rep_entries": 12
+   },
+   "lcs/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1424810287,
+    "rep_bytes": 67424,
+    "rep_entries": 5
+   },
+   "lcs/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1424822742,
+    "rep_bytes": 67424,
+    "rep_entries": 5
+   },
+   "lcs/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "lcs/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1424830271,
+    "rep_bytes": 67424,
+    "rep_entries": 5
+   },
+   "fenwick/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 594804461,
+    "rep_bytes": 9795311,
+    "rep_entries": 4
+   },
+   "fenwick/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 594804461,
+    "rep_bytes": 9795311,
+    "rep_entries": 4
+   },
+   "fenwick/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "fenwick/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 594804461,
+    "rep_bytes": 9795311,
+    "rep_entries": 4
+   },
+   "fenwick/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 598105301,
+    "rep_bytes": 9799103,
+    "rep_entries": 12
+   },
+   "fenwick/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 598105301,
+    "rep_bytes": 9799103,
+    "rep_entries": 12
+   },
+   "fenwick/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "fenwick/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 598105301,
+    "rep_bytes": 9799103,
+    "rep_entries": 12
+   },
+   "fenwick/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 505849912,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "fenwick/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 505862382,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "fenwick/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "fenwick/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 505864874,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "kmp/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 411783414,
+    "rep_bytes": 53467204,
+    "rep_entries": 2461
+   },
+   "kmp/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 411783414,
+    "rep_bytes": 53467204,
+    "rep_entries": 2461
+   },
+   "kmp/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "kmp/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 411783414,
+    "rep_bytes": 53467204,
+    "rep_entries": 2461
+   },
+   "kmp/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 412946848,
+    "rep_bytes": 53469644,
+    "rep_entries": 2464
+   },
+   "kmp/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 412946848,
+    "rep_bytes": 53469644,
+    "rep_entries": 2464
+   },
+   "kmp/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "kmp/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 412946848,
+    "rep_bytes": 53469644,
+    "rep_entries": 2464
+   },
+   "kmp/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 556298939,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "kmp/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 556311370,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "kmp/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "kmp/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 556318947,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "sort_bs/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1324672719,
+    "rep_bytes": 2004727,
+    "rep_entries": 9
+   },
+   "sort_bs/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1324672719,
+    "rep_bytes": 2004727,
+    "rep_entries": 9
+   },
+   "sort_bs/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "sort_bs/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1324672719,
+    "rep_bytes": 2004727,
+    "rep_entries": 9
+   },
+   "sort_bs/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1329797846,
+    "rep_bytes": 2007215,
+    "rep_entries": 12
+   },
+   "sort_bs/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1329797846,
+    "rep_bytes": 2007215,
+    "rep_entries": 12
+   },
+   "sort_bs/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "sort_bs/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1329797846,
+    "rep_bytes": 2007215,
+    "rep_entries": 12
+   },
+   "sort_bs/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 489752829,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "sort_bs/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 489765299,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "sort_bs/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "sort_bs/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 489767791,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "deep_dfs/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1531979740,
+    "rep_bytes": 20002380,
+    "rep_entries": 10
+   },
+   "deep_dfs/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1531979740,
+    "rep_bytes": 20002380,
+    "rep_entries": 10
+   },
+   "deep_dfs/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "deep_dfs/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1531979740,
+    "rep_bytes": 20002380,
+    "rep_entries": 10
+   },
+   "deep_dfs/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1347797242,
+    "rep_bytes": 20004820,
+    "rep_entries": 13
+   },
+   "deep_dfs/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1347797242,
+    "rep_bytes": 20004820,
+    "rep_entries": 13
+   },
+   "deep_dfs/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "deep_dfs/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1347797242,
+    "rep_bytes": 20004820,
+    "rep_entries": 13
+   },
+   "deep_dfs/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 294454742,
+    "rep_bytes": 4069536,
+    "rep_entries": 6
+   },
+   "deep_dfs/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 294467146,
+    "rep_bytes": 4069536,
+    "rep_entries": 6
+   },
+   "deep_dfs/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "deep_dfs/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 294474697,
+    "rep_bytes": 4069536,
+    "rep_entries": 6
+   }
+  },
+  "runtime": {
+   "bfs_grid/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 364565633,
+    "rep_bytes": 32002396,
+    "rep_entries": 9
+   },
+   "bfs_grid/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 364565633,
+    "rep_bytes": 32002396,
+    "rep_entries": 9
+   },
+   "bfs_grid/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "bfs_grid/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 364565633,
+    "rep_bytes": 32002396,
+    "rep_entries": 9
+   },
+   "bfs_grid/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 365786643,
+    "rep_bytes": 32004836,
+    "rep_entries": 12
+   },
+   "bfs_grid/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 365786643,
+    "rep_bytes": 32004836,
+    "rep_entries": 12
+   },
+   "bfs_grid/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "bfs_grid/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 365786643,
+    "rep_bytes": 32004836,
+    "rep_entries": 12
+   },
+   "bfs_grid/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 248227002,
+    "rep_bytes": 16068900,
+    "rep_entries": 5
+   },
+   "bfs_grid/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 248239442,
+    "rep_bytes": 16068900,
+    "rep_entries": 5
+   },
+   "bfs_grid/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "bfs_grid/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 248241976,
+    "rep_bytes": 16068900,
+    "rep_entries": 5
+   },
+   "dijkstra/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 318895125,
+    "rep_bytes": 13602348,
+    "rep_entries": 14
+   },
+   "dijkstra/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 318895125,
+    "rep_bytes": 13602348,
+    "rep_entries": 14
+   },
+   "dijkstra/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "dijkstra/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 318895125,
+    "rep_bytes": 13602348,
+    "rep_entries": 14
+   },
+   "dijkstra/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 320010349,
+    "rep_bytes": 13604788,
+    "rep_entries": 17
+   },
+   "dijkstra/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 320010349,
+    "rep_bytes": 13604788,
+    "rep_entries": 17
+   },
+   "dijkstra/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "dijkstra/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 320010349,
+    "rep_bytes": 13604788,
+    "rep_entries": 17
+   },
+   "dijkstra/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 290084085,
+    "rep_bytes": 1734368,
+    "rep_entries": 6
+   },
+   "dijkstra/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 290096585,
+    "rep_bytes": 1734368,
+    "rep_entries": 6
+   },
+   "dijkstra/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "dijkstra/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 290099059,
+    "rep_bytes": 1734368,
+    "rep_entries": 6
+   },
+   "lcs/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 673037911,
+    "rep_bytes": 18176,
+    "rep_entries": 9
+   },
+   "lcs/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 673037911,
+    "rep_bytes": 18176,
+    "rep_entries": 9
+   },
+   "lcs/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "lcs/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 673037911,
+    "rep_bytes": 18176,
+    "rep_entries": 9
+   },
+   "lcs/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 674180802,
+    "rep_bytes": 20584,
+    "rep_entries": 12
+   },
+   "lcs/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 674180802,
+    "rep_bytes": 20584,
+    "rep_entries": 12
+   },
+   "lcs/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "lcs/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 674180802,
+    "rep_bytes": 20584,
+    "rep_entries": 12
+   },
+   "lcs/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1424810287,
+    "rep_bytes": 67424,
+    "rep_entries": 5
+   },
+   "lcs/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1424822742,
+    "rep_bytes": 67424,
+    "rep_entries": 5
+   },
+   "lcs/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "lcs/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1424830271,
+    "rep_bytes": 67424,
+    "rep_entries": 5
+   },
+   "fenwick/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 594804461,
+    "rep_bytes": 9795311,
+    "rep_entries": 4
+   },
+   "fenwick/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 594804461,
+    "rep_bytes": 9795311,
+    "rep_entries": 4
+   },
+   "fenwick/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "fenwick/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 594804461,
+    "rep_bytes": 9795311,
+    "rep_entries": 4
+   },
+   "fenwick/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 598105301,
+    "rep_bytes": 9799103,
+    "rep_entries": 12
+   },
+   "fenwick/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 598105301,
+    "rep_bytes": 9799103,
+    "rep_entries": 12
+   },
+   "fenwick/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "fenwick/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 598105301,
+    "rep_bytes": 9799103,
+    "rep_entries": 12
+   },
+   "fenwick/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 505849912,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "fenwick/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 505862382,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "fenwick/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "fenwick/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 505864874,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "kmp/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 411783414,
+    "rep_bytes": 53467204,
+    "rep_entries": 2461
+   },
+   "kmp/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 411783414,
+    "rep_bytes": 53467204,
+    "rep_entries": 2461
+   },
+   "kmp/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "kmp/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 411783414,
+    "rep_bytes": 53467204,
+    "rep_entries": 2461
+   },
+   "kmp/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 412946848,
+    "rep_bytes": 53469644,
+    "rep_entries": 2464
+   },
+   "kmp/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 412946848,
+    "rep_bytes": 53469644,
+    "rep_entries": 2464
+   },
+   "kmp/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "kmp/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 412946848,
+    "rep_bytes": 53469644,
+    "rep_entries": 2464
+   },
+   "kmp/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 556298939,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "kmp/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 556311370,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "kmp/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "kmp/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 556318947,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "sort_bs/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1324672719,
+    "rep_bytes": 2004727,
+    "rep_entries": 9
+   },
+   "sort_bs/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1324672719,
+    "rep_bytes": 2004727,
+    "rep_entries": 9
+   },
+   "sort_bs/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "sort_bs/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1324672719,
+    "rep_bytes": 2004727,
+    "rep_entries": 9
+   },
+   "sort_bs/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1329797846,
+    "rep_bytes": 2007215,
+    "rep_entries": 12
+   },
+   "sort_bs/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1329797846,
+    "rep_bytes": 2007215,
+    "rep_entries": 12
+   },
+   "sort_bs/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "sort_bs/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1329797846,
+    "rep_bytes": 2007215,
+    "rep_entries": 12
+   },
+   "sort_bs/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 489752829,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "sort_bs/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 489765299,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "sort_bs/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "sort_bs/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 489767791,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "deep_dfs/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1531979740,
+    "rep_bytes": 20002380,
+    "rep_entries": 10
+   },
+   "deep_dfs/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1531979740,
+    "rep_bytes": 20002380,
+    "rep_entries": 10
+   },
+   "deep_dfs/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "deep_dfs/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1531979740,
+    "rep_bytes": 20002380,
+    "rep_entries": 10
+   },
+   "deep_dfs/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1347797242,
+    "rep_bytes": 20004820,
+    "rep_entries": 13
+   },
+   "deep_dfs/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1347797242,
+    "rep_bytes": 20004820,
+    "rep_entries": 13
+   },
+   "deep_dfs/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "deep_dfs/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1347797242,
+    "rep_bytes": 20004820,
+    "rep_entries": 13
+   },
+   "deep_dfs/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 294454742,
+    "rep_bytes": 4069536,
+    "rep_entries": 6
+   },
+   "deep_dfs/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 294467146,
+    "rep_bytes": 4069536,
+    "rep_entries": 6
+   },
+   "deep_dfs/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "deep_dfs/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 294474697,
+    "rep_bytes": 4069536,
+    "rep_entries": 6
+   }
+  },
+  "client": {
+   "bfs_grid/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 364565633,
+    "rep_bytes": 32002396,
+    "rep_entries": 9
+   },
+   "bfs_grid/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 364565633,
+    "rep_bytes": 32002396,
+    "rep_entries": 9
+   },
+   "bfs_grid/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "bfs_grid/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 364565633,
+    "rep_bytes": 32002396,
+    "rep_entries": 9
+   },
+   "bfs_grid/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 365786643,
+    "rep_bytes": 32004836,
+    "rep_entries": 12
+   },
+   "bfs_grid/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 365786643,
+    "rep_bytes": 32004836,
+    "rep_entries": 12
+   },
+   "bfs_grid/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "bfs_grid/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 365786643,
+    "rep_bytes": 32004836,
+    "rep_entries": 12
+   },
+   "bfs_grid/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 248227026,
+    "rep_bytes": 16068900,
+    "rep_entries": 5
+   },
+   "bfs_grid/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 248239406,
+    "rep_bytes": 16068900,
+    "rep_entries": 5
+   },
+   "bfs_grid/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "bfs_grid/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 248242000,
+    "rep_bytes": 16068900,
+    "rep_entries": 5
+   },
+   "dijkstra/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 318895125,
+    "rep_bytes": 13602348,
+    "rep_entries": 14
+   },
+   "dijkstra/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 318895125,
+    "rep_bytes": 13602348,
+    "rep_entries": 14
+   },
+   "dijkstra/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "dijkstra/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 318895125,
+    "rep_bytes": 13602348,
+    "rep_entries": 14
+   },
+   "dijkstra/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 320010349,
+    "rep_bytes": 13604788,
+    "rep_entries": 17
+   },
+   "dijkstra/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 320010349,
+    "rep_bytes": 13604788,
+    "rep_entries": 17
+   },
+   "dijkstra/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "dijkstra/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 320010349,
+    "rep_bytes": 13604788,
+    "rep_entries": 17
+   },
+   "dijkstra/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 290084049,
+    "rep_bytes": 1734368,
+    "rep_entries": 6
+   },
+   "dijkstra/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 290096477,
+    "rep_bytes": 1734368,
+    "rep_entries": 6
+   },
+   "dijkstra/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "dijkstra/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 290098987,
+    "rep_bytes": 1734368,
+    "rep_entries": 6
+   },
+   "lcs/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 673037911,
+    "rep_bytes": 18176,
+    "rep_entries": 9
+   },
+   "lcs/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 673037911,
+    "rep_bytes": 18176,
+    "rep_entries": 9
+   },
+   "lcs/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "lcs/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 673037911,
+    "rep_bytes": 18176,
+    "rep_entries": 9
+   },
+   "lcs/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 674180802,
+    "rep_bytes": 20584,
+    "rep_entries": 12
+   },
+   "lcs/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 674180802,
+    "rep_bytes": 20584,
+    "rep_entries": 12
+   },
+   "lcs/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "lcs/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 674180802,
+    "rep_bytes": 20584,
+    "rep_entries": 12
+   },
+   "lcs/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1424810251,
+    "rep_bytes": 67424,
+    "rep_entries": 5
+   },
+   "lcs/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1424822634,
+    "rep_bytes": 67424,
+    "rep_entries": 5
+   },
+   "lcs/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "lcs/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1424825162,
+    "rep_bytes": 67424,
+    "rep_entries": 5
+   },
+   "fenwick/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 594804461,
+    "rep_bytes": 9795311,
+    "rep_entries": 4
+   },
+   "fenwick/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 594804461,
+    "rep_bytes": 9795311,
+    "rep_entries": 4
+   },
+   "fenwick/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "fenwick/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 594804461,
+    "rep_bytes": 9795311,
+    "rep_entries": 4
+   },
+   "fenwick/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 598105301,
+    "rep_bytes": 9799103,
+    "rep_entries": 12
+   },
+   "fenwick/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 598105301,
+    "rep_bytes": 9799103,
+    "rep_entries": 12
+   },
+   "fenwick/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "fenwick/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 598105301,
+    "rep_bytes": 9799103,
+    "rep_entries": 12
+   },
+   "fenwick/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 505849876,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "fenwick/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 505862274,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "fenwick/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "fenwick/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 505864802,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "kmp/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 411783414,
+    "rep_bytes": 53467204,
+    "rep_entries": 2461
+   },
+   "kmp/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 411783414,
+    "rep_bytes": 53467204,
+    "rep_entries": 2461
+   },
+   "kmp/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "kmp/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 411783414,
+    "rep_bytes": 53467204,
+    "rep_entries": 2461
+   },
+   "kmp/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 412946848,
+    "rep_bytes": 53469644,
+    "rep_entries": 2464
+   },
+   "kmp/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 412946848,
+    "rep_bytes": 53469644,
+    "rep_entries": 2464
+   },
+   "kmp/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "kmp/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 412946848,
+    "rep_bytes": 53469644,
+    "rep_entries": 2464
+   },
+   "kmp/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 556298867,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "kmp/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 556311274,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "kmp/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "kmp/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 556313778,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "sort_bs/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1324672719,
+    "rep_bytes": 2004727,
+    "rep_entries": 9
+   },
+   "sort_bs/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1324672719,
+    "rep_bytes": 2004727,
+    "rep_entries": 9
+   },
+   "sort_bs/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "sort_bs/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1324672719,
+    "rep_bytes": 2004727,
+    "rep_entries": 9
+   },
+   "sort_bs/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1329797846,
+    "rep_bytes": 2007215,
+    "rep_entries": 12
+   },
+   "sort_bs/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1329797846,
+    "rep_bytes": 2007215,
+    "rep_entries": 12
+   },
+   "sort_bs/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "sort_bs/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1329797846,
+    "rep_bytes": 2007215,
+    "rep_entries": 12
+   },
+   "sort_bs/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 489752793,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "sort_bs/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 489765191,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "sort_bs/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "sort_bs/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 489767719,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "deep_dfs/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1531979740,
+    "rep_bytes": 20002380,
+    "rep_entries": 10
+   },
+   "deep_dfs/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1531979740,
+    "rep_bytes": 20002380,
+    "rep_entries": 10
+   },
+   "deep_dfs/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "deep_dfs/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1531979740,
+    "rep_bytes": 20002380,
+    "rep_entries": 10
+   },
+   "deep_dfs/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1347797242,
+    "rep_bytes": 20004820,
+    "rep_entries": 13
+   },
+   "deep_dfs/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1347797242,
+    "rep_bytes": 20004820,
+    "rep_entries": 13
+   },
+   "deep_dfs/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "deep_dfs/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1347797242,
+    "rep_bytes": 20004820,
+    "rep_entries": 13
+   },
+   "deep_dfs/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 294454838,
+    "rep_bytes": 4069536,
+    "rep_entries": 6
+   },
+   "deep_dfs/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 294467362,
+    "rep_bytes": 4069536,
+    "rep_entries": 6
+   },
+   "deep_dfs/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "deep_dfs/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 294469848,
+    "rep_bytes": 4069536,
+    "rep_entries": 6
+   }
+  },
+  "both": {
+   "bfs_grid/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 364565633,
+    "rep_bytes": 32002396,
+    "rep_entries": 9
+   },
+   "bfs_grid/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 364565633,
+    "rep_bytes": 32002396,
+    "rep_entries": 9
+   },
+   "bfs_grid/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "bfs_grid/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 364565633,
+    "rep_bytes": 32002396,
+    "rep_entries": 9
+   },
+   "bfs_grid/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 365786643,
+    "rep_bytes": 32004836,
+    "rep_entries": 12
+   },
+   "bfs_grid/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 365786643,
+    "rep_bytes": 32004836,
+    "rep_entries": 12
+   },
+   "bfs_grid/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "bfs_grid/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 365786643,
+    "rep_bytes": 32004836,
+    "rep_entries": 12
+   },
+   "bfs_grid/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 248227026,
+    "rep_bytes": 16068900,
+    "rep_entries": 5
+   },
+   "bfs_grid/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 248239406,
+    "rep_bytes": 16068900,
+    "rep_entries": 5
+   },
+   "bfs_grid/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "bfs_grid/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 248242000,
+    "rep_bytes": 16068900,
+    "rep_entries": 5
+   },
+   "dijkstra/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 318895125,
+    "rep_bytes": 13602348,
+    "rep_entries": 14
+   },
+   "dijkstra/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 318895125,
+    "rep_bytes": 13602348,
+    "rep_entries": 14
+   },
+   "dijkstra/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "dijkstra/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 318895125,
+    "rep_bytes": 13602348,
+    "rep_entries": 14
+   },
+   "dijkstra/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 320010349,
+    "rep_bytes": 13604788,
+    "rep_entries": 17
+   },
+   "dijkstra/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 320010349,
+    "rep_bytes": 13604788,
+    "rep_entries": 17
+   },
+   "dijkstra/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "dijkstra/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 320010349,
+    "rep_bytes": 13604788,
+    "rep_entries": 17
+   },
+   "dijkstra/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 290084049,
+    "rep_bytes": 1734368,
+    "rep_entries": 6
+   },
+   "dijkstra/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 290096477,
+    "rep_bytes": 1734368,
+    "rep_entries": 6
+   },
+   "dijkstra/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "dijkstra/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 290098987,
+    "rep_bytes": 1734368,
+    "rep_entries": 6
+   },
+   "lcs/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 673037911,
+    "rep_bytes": 18176,
+    "rep_entries": 9
+   },
+   "lcs/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 673037911,
+    "rep_bytes": 18176,
+    "rep_entries": 9
+   },
+   "lcs/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "lcs/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 673037911,
+    "rep_bytes": 18176,
+    "rep_entries": 9
+   },
+   "lcs/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 674180802,
+    "rep_bytes": 20584,
+    "rep_entries": 12
+   },
+   "lcs/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 674180802,
+    "rep_bytes": 20584,
+    "rep_entries": 12
+   },
+   "lcs/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "lcs/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 674180802,
+    "rep_bytes": 20584,
+    "rep_entries": 12
+   },
+   "lcs/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1424810251,
+    "rep_bytes": 67424,
+    "rep_entries": 5
+   },
+   "lcs/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1424822634,
+    "rep_bytes": 67424,
+    "rep_entries": 5
+   },
+   "lcs/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "lcs/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1424825162,
+    "rep_bytes": 67424,
+    "rep_entries": 5
+   },
+   "fenwick/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 594804461,
+    "rep_bytes": 9795311,
+    "rep_entries": 4
+   },
+   "fenwick/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 594804461,
+    "rep_bytes": 9795311,
+    "rep_entries": 4
+   },
+   "fenwick/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "fenwick/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 594804461,
+    "rep_bytes": 9795311,
+    "rep_entries": 4
+   },
+   "fenwick/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 598105301,
+    "rep_bytes": 9799103,
+    "rep_entries": 12
+   },
+   "fenwick/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 598105301,
+    "rep_bytes": 9799103,
+    "rep_entries": 12
+   },
+   "fenwick/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "fenwick/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 598105301,
+    "rep_bytes": 9799103,
+    "rep_entries": 12
+   },
+   "fenwick/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 505849876,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "fenwick/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 505862274,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "fenwick/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "fenwick/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 505864802,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "kmp/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 411783414,
+    "rep_bytes": 53467204,
+    "rep_entries": 2461
+   },
+   "kmp/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 411783414,
+    "rep_bytes": 53467204,
+    "rep_entries": 2461
+   },
+   "kmp/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "kmp/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 411783414,
+    "rep_bytes": 53467204,
+    "rep_entries": 2461
+   },
+   "kmp/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 412946848,
+    "rep_bytes": 53469644,
+    "rep_entries": 2464
+   },
+   "kmp/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 412946848,
+    "rep_bytes": 53469644,
+    "rep_entries": 2464
+   },
+   "kmp/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "kmp/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 412946848,
+    "rep_bytes": 53469644,
+    "rep_entries": 2464
+   },
+   "kmp/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 556298867,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "kmp/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 556311274,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "kmp/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "kmp/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 556313778,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "sort_bs/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1324672719,
+    "rep_bytes": 2004727,
+    "rep_entries": 9
+   },
+   "sort_bs/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1324672719,
+    "rep_bytes": 2004727,
+    "rep_entries": 9
+   },
+   "sort_bs/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "sort_bs/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1324672719,
+    "rep_bytes": 2004727,
+    "rep_entries": 9
+   },
+   "sort_bs/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1329797846,
+    "rep_bytes": 2007215,
+    "rep_entries": 12
+   },
+   "sort_bs/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1329797846,
+    "rep_bytes": 2007215,
+    "rep_entries": 12
+   },
+   "sort_bs/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "sort_bs/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1329797846,
+    "rep_bytes": 2007215,
+    "rep_entries": 12
+   },
+   "sort_bs/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 489752793,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "sort_bs/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 489765191,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "sort_bs/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "sort_bs/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 489767719,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "deep_dfs/cpp-static/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1531979740,
+    "rep_bytes": 20002380,
+    "rep_entries": 10
+   },
+   "deep_dfs/cpp-static/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1531979740,
+    "rep_bytes": 20002380,
+    "rep_entries": 10
+   },
+   "deep_dfs/cpp-static/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "deep_dfs/cpp-static/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1531979740,
+    "rep_bytes": 20002380,
+    "rep_entries": 10
+   },
+   "deep_dfs/cpp-dyn/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1347797242,
+    "rep_bytes": 20004820,
+    "rep_entries": 13
+   },
+   "deep_dfs/cpp-dyn/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1347797242,
+    "rep_bytes": 20004820,
+    "rep_entries": 13
+   },
+   "deep_dfs/cpp-dyn/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "deep_dfs/cpp-dyn/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1347797242,
+    "rep_bytes": 20004820,
+    "rep_entries": 13
+   },
+   "deep_dfs/rust/durante": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 294454838,
+    "rep_bytes": 4069536,
+    "rep_entries": 6
+   },
+   "deep_dfs/rust/budget-large": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 294467362,
+    "rep_bytes": 4069536,
+    "rep_entries": 6
+   },
+   "deep_dfs/rust/budget-half": {
+    "errors": [],
+    "valid": false,
+    "complete": false,
+    "instructions": null,
+    "rep_bytes": null,
+    "rep_entries": null
+   },
+   "deep_dfs/rust/latency": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 294469848,
+    "rep_bytes": 4069536,
+    "rep_entries": 6
+   }
+  }
+ },
+ "compared": 189,
+ "differences": [],
+ "maps_dependent_differences": [
+  {
+   "cell": "bfs_grid/rust/durante",
+   "config": "client",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 248227002,
+    "rep_bytes": 16068900,
+    "rep_entries": 5
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 248227026,
+    "rep_bytes": 16068900,
+    "rep_entries": 5
+   }
+  },
+  {
+   "cell": "bfs_grid/rust/durante",
+   "config": "both",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 248227002,
+    "rep_bytes": 16068900,
+    "rep_entries": 5
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 248227026,
+    "rep_bytes": 16068900,
+    "rep_entries": 5
+   }
+  },
+  {
+   "cell": "bfs_grid/rust/budget-large",
+   "config": "client",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 248239442,
+    "rep_bytes": 16068900,
+    "rep_entries": 5
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 248239406,
+    "rep_bytes": 16068900,
+    "rep_entries": 5
+   }
+  },
+  {
+   "cell": "bfs_grid/rust/budget-large",
+   "config": "both",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 248239442,
+    "rep_bytes": 16068900,
+    "rep_entries": 5
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 248239406,
+    "rep_bytes": 16068900,
+    "rep_entries": 5
+   }
+  },
+  {
+   "cell": "bfs_grid/rust/latency",
+   "config": "client",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 248241976,
+    "rep_bytes": 16068900,
+    "rep_entries": 5
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 248242000,
+    "rep_bytes": 16068900,
+    "rep_entries": 5
+   }
+  },
+  {
+   "cell": "bfs_grid/rust/latency",
+   "config": "both",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 248241976,
+    "rep_bytes": 16068900,
+    "rep_entries": 5
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 248242000,
+    "rep_bytes": 16068900,
+    "rep_entries": 5
+   }
+  },
+  {
+   "cell": "dijkstra/rust/durante",
+   "config": "client",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 290084085,
+    "rep_bytes": 1734368,
+    "rep_entries": 6
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 290084049,
+    "rep_bytes": 1734368,
+    "rep_entries": 6
+   }
+  },
+  {
+   "cell": "dijkstra/rust/durante",
+   "config": "both",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 290084085,
+    "rep_bytes": 1734368,
+    "rep_entries": 6
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 290084049,
+    "rep_bytes": 1734368,
+    "rep_entries": 6
+   }
+  },
+  {
+   "cell": "dijkstra/rust/budget-large",
+   "config": "client",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 290096585,
+    "rep_bytes": 1734368,
+    "rep_entries": 6
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 290096477,
+    "rep_bytes": 1734368,
+    "rep_entries": 6
+   }
+  },
+  {
+   "cell": "dijkstra/rust/budget-large",
+   "config": "both",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 290096585,
+    "rep_bytes": 1734368,
+    "rep_entries": 6
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 290096477,
+    "rep_bytes": 1734368,
+    "rep_entries": 6
+   }
+  },
+  {
+   "cell": "dijkstra/rust/latency",
+   "config": "client",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 290099059,
+    "rep_bytes": 1734368,
+    "rep_entries": 6
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 290098987,
+    "rep_bytes": 1734368,
+    "rep_entries": 6
+   }
+  },
+  {
+   "cell": "dijkstra/rust/latency",
+   "config": "both",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 290099059,
+    "rep_bytes": 1734368,
+    "rep_entries": 6
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 290098987,
+    "rep_bytes": 1734368,
+    "rep_entries": 6
+   }
+  },
+  {
+   "cell": "lcs/rust/durante",
+   "config": "client",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1424810287,
+    "rep_bytes": 67424,
+    "rep_entries": 5
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1424810251,
+    "rep_bytes": 67424,
+    "rep_entries": 5
+   }
+  },
+  {
+   "cell": "lcs/rust/durante",
+   "config": "both",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1424810287,
+    "rep_bytes": 67424,
+    "rep_entries": 5
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1424810251,
+    "rep_bytes": 67424,
+    "rep_entries": 5
+   }
+  },
+  {
+   "cell": "lcs/rust/budget-large",
+   "config": "client",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1424822742,
+    "rep_bytes": 67424,
+    "rep_entries": 5
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1424822634,
+    "rep_bytes": 67424,
+    "rep_entries": 5
+   }
+  },
+  {
+   "cell": "lcs/rust/budget-large",
+   "config": "both",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1424822742,
+    "rep_bytes": 67424,
+    "rep_entries": 5
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1424822634,
+    "rep_bytes": 67424,
+    "rep_entries": 5
+   }
+  },
+  {
+   "cell": "lcs/rust/latency",
+   "config": "client",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1424830271,
+    "rep_bytes": 67424,
+    "rep_entries": 5
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1424825162,
+    "rep_bytes": 67424,
+    "rep_entries": 5
+   }
+  },
+  {
+   "cell": "lcs/rust/latency",
+   "config": "both",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1424830271,
+    "rep_bytes": 67424,
+    "rep_entries": 5
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 1424825162,
+    "rep_bytes": 67424,
+    "rep_entries": 5
+   }
+  },
+  {
+   "cell": "fenwick/rust/durante",
+   "config": "client",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 505849912,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 505849876,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   }
+  },
+  {
+   "cell": "fenwick/rust/durante",
+   "config": "both",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 505849912,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 505849876,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   }
+  },
+  {
+   "cell": "fenwick/rust/budget-large",
+   "config": "client",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 505862382,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 505862274,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   }
+  },
+  {
+   "cell": "fenwick/rust/budget-large",
+   "config": "both",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 505862382,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 505862274,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   }
+  },
+  {
+   "cell": "fenwick/rust/latency",
+   "config": "client",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 505864874,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 505864802,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   }
+  },
+  {
+   "cell": "fenwick/rust/latency",
+   "config": "both",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 505864874,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 505864802,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   }
+  },
+  {
+   "cell": "kmp/rust/durante",
+   "config": "client",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 556298939,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 556298867,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   }
+  },
+  {
+   "cell": "kmp/rust/durante",
+   "config": "both",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 556298939,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 556298867,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   }
+  },
+  {
+   "cell": "kmp/rust/budget-large",
+   "config": "client",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 556311370,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 556311274,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   }
+  },
+  {
+   "cell": "kmp/rust/budget-large",
+   "config": "both",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 556311370,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 556311274,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   }
+  },
+  {
+   "cell": "kmp/rust/latency",
+   "config": "client",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 556318947,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 556313778,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   }
+  },
+  {
+   "cell": "kmp/rust/latency",
+   "config": "both",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 556318947,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 556313778,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   }
+  },
+  {
+   "cell": "sort_bs/rust/durante",
+   "config": "client",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 489752829,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 489752793,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   }
+  },
+  {
+   "cell": "sort_bs/rust/durante",
+   "config": "both",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 489752829,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 489752793,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   }
+  },
+  {
+   "cell": "sort_bs/rust/budget-large",
+   "config": "client",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 489765299,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 489765191,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   }
+  },
+  {
+   "cell": "sort_bs/rust/budget-large",
+   "config": "both",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 489765299,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 489765191,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   }
+  },
+  {
+   "cell": "sort_bs/rust/latency",
+   "config": "client",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 489767791,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 489767719,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   }
+  },
+  {
+   "cell": "sort_bs/rust/latency",
+   "config": "both",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 489767791,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 489767719,
+    "rep_bytes": 68904,
+    "rep_entries": 4
+   }
+  },
+  {
+   "cell": "deep_dfs/rust/durante",
+   "config": "client",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 294454742,
+    "rep_bytes": 4069536,
+    "rep_entries": 6
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 294454838,
+    "rep_bytes": 4069536,
+    "rep_entries": 6
+   }
+  },
+  {
+   "cell": "deep_dfs/rust/durante",
+   "config": "both",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 294454742,
+    "rep_bytes": 4069536,
+    "rep_entries": 6
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 294454838,
+    "rep_bytes": 4069536,
+    "rep_entries": 6
+   }
+  },
+  {
+   "cell": "deep_dfs/rust/budget-large",
+   "config": "client",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 294467146,
+    "rep_bytes": 4069536,
+    "rep_entries": 6
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 294467362,
+    "rep_bytes": 4069536,
+    "rep_entries": 6
+   }
+  },
+  {
+   "cell": "deep_dfs/rust/budget-large",
+   "config": "both",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 294467146,
+    "rep_bytes": 4069536,
+    "rep_entries": 6
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 294467362,
+    "rep_bytes": 4069536,
+    "rep_entries": 6
+   }
+  },
+  {
+   "cell": "deep_dfs/rust/latency",
+   "config": "client",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 294474697,
+    "rep_bytes": 4069536,
+    "rep_entries": 6
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 294469848,
+    "rep_bytes": 4069536,
+    "rep_entries": 6
+   }
+  },
+  {
+   "cell": "deep_dfs/rust/latency",
+   "config": "both",
+   "base": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 294474697,
+    "rep_bytes": 4069536,
+    "rep_entries": 6
+   },
+   "other": {
+    "errors": [],
+    "valid": true,
+    "complete": true,
+    "instructions": 294469848,
+    "rep_bytes": 4069536,
+    "rep_entries": 6
+   }
+  }
+ ],
+ "git_head_note": "Recorded at 52c6d5da706478ad721e7303fb36d28ac5f5b7dd, a local commit rewritten as f1b06f6f5b87db0a3e567bb52d6212e9ec6548f2 before it was pushed; parity.py and the corpus files it runs are identical in both."
+}
