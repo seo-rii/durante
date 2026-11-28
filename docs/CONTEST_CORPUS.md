@@ -79,7 +79,7 @@ problems (minimum of repeats):
 | C++ (clang++) | 2.7x | 2.8x |
 | Rust | 2.2x | 2.6x |
 | Go | 3.2x | 3.3x |
-| Java | 17.1x | 18.2x |
+| Java | 7.8x | 9.0x |
 | Node | 7.9x | 8.1x |
 | PyPy | 3.7x | 3.7x |
 | CPython | 4.5x | 5.0x |
@@ -89,7 +89,12 @@ problems (minimum of repeats):
 | PHP with JIT | 6.3x | 5.9x |
 | Lua | 4.3x | 4.5x |
 
-Java's figure is mostly JVM start-up under the runtime, about 9 s per run.
+The Java row was measured again (OpenJDK 21, same CPUs) after the runtime began
+flushing only the written pages of the JVM's code cache and the client began
+storing each write checkpoint with one move
+([JIT_LIFECYCLE.md](JIT_LIFECYCLE.md#writes-to-a-large-code-cache)). It was 17.1x
+and 18.2x, mostly JVM start-up at about 9 s of CPU per run; the geometric mean
+is now 3.7 s. The `java-cds` cells measured 7.6x and 9.7x (3.2 s).
 
 The corpus showed two problems, both fixed with it:
 
