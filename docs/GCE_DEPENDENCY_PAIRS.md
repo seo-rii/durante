@@ -66,3 +66,21 @@ python3 "$study/followup/replay.py" score "$second/dataset.json.gz" --verify "$s
 python3 "$study/followup/replay.py" receipts "$second/dataset.json.gz" "$second/samples.tar.xz"
 python3 "$study/followup/replay.py" placement "$second/dataset.json.gz" "$second/placement.json.gz" --platform "$second/platform.json"
 ```
+
+## Partial flag dependencies
+
+A separate x86-64 control checks how the version 1 static latency model handles a carry chain. It runs two five-instruction loops with the same initial carry. One decrements the loop counter with `DEC`, which preserves the carry written by `IMUL`. The other uses `SUB`, which clears carry when subtracting one from a positive counter. The next iteration's `ADC` therefore reads a different bit. At both 100 and 1,000 iterations the native and instrumented executables write the byte `01` for `DEC` and `fe` for `SUB`. [Assembly control](../experiments/dependency_pairs/carry_control.S)
+
+| Steady-state cost in sixteenths of a modeled cycle per iteration | DEC | SUB |
+|---|---:|---:|
+| Production latency v1, difference between the two iteration counts | 20 | 20 |
+| Reference schedule tracking carry and zero flags independently | 64 | 20 |
+
+The v1 model gives every flag the readiness of the most recent flag-writing instruction. Both countdowns then replace the multiply's carry readiness. Tracking carry separately preserves the `ADC` → `IMUL` → next `ADC` dependency across `DEC`, worth four modeled cycles per iteration. The `SUB` loop clears that dependency and reaches the five-instruction issue floor of 1.25 modeled cycles. These are deterministic counter and schedule comparisons. The experiment collects no elapsed-time measurements.
+
+From the repository root with the prepared SDK, production client, GCC and GNU binutils installed, run
+
+```sh
+python3 -B experiments/dependency_pairs/carry_control.py \
+  --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so
+```
