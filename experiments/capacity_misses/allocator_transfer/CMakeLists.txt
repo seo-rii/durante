@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.16)
+project(allocator_entries C)
+find_package(DynamoRIO 11.3 EXACT REQUIRED)
+add_library(allocator_entries SHARED entries.c)
+configure_DynamoRIO_client(allocator_entries)
+target_compile_options(allocator_entries PRIVATE -Wall -Wextra -Werror -mgeneral-regs-only)
