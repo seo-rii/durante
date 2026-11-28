@@ -1,0 +1,37 @@
+{
+  "payload": {
+    "base_guest.py": "f40041f01615e33cc53afcb1b757836c48b58554e3f85f6c9dfa74833497fe5a",
+    "bin/long-delta": "c4114f3f2603f5f14572ac766dca5ace588b7df4fdf9bc39c1c7257b608126c9",
+    "bin/long-roll": "7d79bfa2982b35bdd4f2b2bbf0bd43a1047f12929a1807859fce25b830b878be",
+    "bin/long-table": "5a8ee1f1b2b71de80df393ba605ee016dcc49da3e1a2bc3045065cf88ab10e27",
+    "bin/short-delta": "c4114f3f2603f5f14572ac766dca5ace588b7df4fdf9bc39c1c7257b608126c9",
+    "bin/short-roll": "7d79bfa2982b35bdd4f2b2bbf0bd43a1047f12929a1807859fce25b830b878be",
+    "bin/short-table": "5a8ee1f1b2b71de80df393ba605ee016dcc49da3e1a2bc3045065cf88ab10e27",
+    "branch.so": "39263dad716da7d5eeadb5cd40fc3b0affd4d39cf93251f442d114a39933ad40",
+    "collect.py": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a",
+    "dynamorio/.durante-runtime.json": "da8ed212cbc485d30886397d4710f29c6f639eef2e5592f8b297a7b61c19a025",
+    "dynamorio/bin64/drrun": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+    "dynamorio/ext/lib64/debug/libdrmgr.so": "0011d0732cebbefcded9afdbe2094e799d6aae80017eca5aab3401bd31f79500",
+    "dynamorio/ext/lib64/release/libdrmgr.so": "372cc1f1f95ffa29a1f11de4be14f99de5938bbcae11294a38d0a7932069429a",
+    "dynamorio/lib32/debug/libdynamorio.so": "f12fb2006a9c3c5ae74ce2a6edf58f3b2404835b24fc41fbb46a2475d6639bb8",
+    "dynamorio/lib32/release/libdynamorio.so": "08c166e09ea8c97d579e8f6a1bc5ebf5bf39cbd937eb357fe0797066ec1afa63",
+    "dynamorio/lib64/debug/libdrpreload.so": "0cf77ae7149ed7bcfc7d2105fccf34ff9077c06566dde2475f31532a5b41b98f",
+    "dynamorio/lib64/debug/libdynamorio.so": "4fdf28cffef6e08151002cedd037e5022a7936c42da293ee6976ca042a5f9d7a",
+    "dynamorio/lib64/release/libdrpreload.so": "fd220281583ecc7de1395d63a82338f265b46fda1af8acfbeeabdf33c88e6113",
+    "dynamorio/lib64/release/libdynamorio.so": "621b4ac63d0b2641574e42dba1cbd0bf71f4ec102d22fe1a2cc5305405ff6b0f",
+    "experiments/capacity_misses/collect.py": "e4489fa7e2f1804ac0bffb70c6a6a6bc6a4fdf57f5883ed0780ec2c32ee8d492",
+    "experiments/capacity_misses/repeatability.py": "b60b2c8fe27c906cfdef9489b145133398a5deacc32b8a34f9ef9762e69b215e",
+    "flat.so": "4c4bb17cb4dc0efa4b85804c5f29fc0eb7272ac37e4a1be6a1d497fcadb33ebd",
+    "guest.py": "e24827ffdd1ddcd38994023826a71ff12ba3561ccbabe4947adf8db8d8fb4496",
+    "guest.sh": "120cc0a719380bf1e433dc0249727930cfd0230b156f9269f1a9881bb708cbee",
+    "inputs/long": "8b6132053574936f257dedd2ec61c36432ce126ac972d8625bc035ea4a11e5d1",
+    "inputs/short": "364795fdf31f57ca79c2e36b2908653c612cad7e70922668437e4869c1b6b0ac",
+    "original.so": "09898f86e63751526b5870309351dc8fc1a7ee7e16b459cd7849b59d7243355a",
+    "plan.json": "916f544ccd3fb72d68acf2f0878383385291c0384772a7dd91f8d5a030de3748",
+    "tests/contest/problems.py": "67c11cbb5ecd5e6d88e771c38b2f0db9187698c5b43a640a575a106e43ae8e48"
+  },
+  "archive_sha256": "e04896034d2cb4677ed0c7ab28b9c6fda5b03575170b0e8f96cb22a3bd3e34d8",
+  "expected_rows": {
+    ".": 78
+  }
+}
