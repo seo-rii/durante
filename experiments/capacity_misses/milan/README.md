@@ -22,6 +22,8 @@ weights preceded both GCE boots. [Frozen source revision](https://github.com/seo
 | M4, M2 and dependent misses | 2/17 | 1/12 | 1 | 0 | 12/18 |
 | ML4, latency bound, REP and memory features | 1/17 | 0/12 | 0 | 0 | 12/18 |
 
+The [set-Dijkstra breakdown](set_gap/README.md) compares the frozen feature ratios against the native 2× cutoff and tests an additional operand counter on the registered programs.
+
 Pooling compares the full ranges across both guests. Six comparisons have
 overlapping native ranges. One of them, set-based Dijkstra at 2×, was a clear
 ML4 false accept on the primary guest. Its repeat-run native range crossed
