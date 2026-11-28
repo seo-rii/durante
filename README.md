@@ -300,6 +300,10 @@ makes writable only around each patch no longer keeps running in its old form:
 a block built while the protection change was still pending was taken for
 read-only code
 ([stress modes](docs/JIT_LIFECYCLE.md#code-that-keeps-changing-under-load)).
+A write to one page of a JIT's code cache no longer flushes the code of all its
+pages: the original runtime protected and flushed the whole mapping, so a JVM
+rebuilt its interpreter and compiled code after every new method
+([measurements](docs/JIT_LIFECYCLE.md#writes-to-a-large-code-cache)).
 Updating this patch requires rebuilding the prepared SDK, client and CLI together;
 `isolate` checks the reviewed patch digest.
 

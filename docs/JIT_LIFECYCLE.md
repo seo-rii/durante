@@ -112,6 +112,46 @@ With the prepared runtime the five modes pass 40 of 40 cases in two repeats.
 With four busy threads on the same machine, every mode passes 8 of 8 engine runs
 with each core.
 
+## Writes to a large code cache
+
+A JIT keeps its code in one large writable and executable mapping: HotSpot's
+code cache holds the template interpreter, stubs and compiled methods. The
+original runtime made the whole mapping read-only once code ran from it, and
+merged its executable areas, so every write to any of its pages flushed every
+block built from it. A new method next to running code, or an inline-cache
+update, threw away the interpreter and all compiled code, which then had to be
+rebuilt as it ran again. An OpenJDK 21 hello world under the engine with the
+counter flushed its 624-page (2.5 MiB) code cache 2,452 times. It built 134,816
+blocks, of which 83,505 were distinct, and changed the protection of 3.1 million
+pages.
+
+The prepared runtime tracks code in writable memory one page at a time
+(`-page_granular_writable_code`, on by default here). A new executable area in
+writable memory covers only its page, and such areas are not merged. A write
+then flushes only the blocks of the pages it writes. On a contest `bfs_grid`
+run, write faults fell to 244 and flushed blocks to 2,037, and 168,534 of the
+170,145 blocks built were distinct.
+
+CPU seconds on one pinned CPU of a 4-vCPU Xeon guest, median of 3 interleaved
+runs, with the counter as the supervisor runs it. Java uses the corpus flags
+with compressed class pointers disabled (the flags before CDS was kept):
+
+| Program | native | whole-region | per page |
+|---|---:|---:|---:|
+| hello world | 0.08 | 2.91 | 1.45 |
+| compute loop (1.75 s native) | 1.75 | 5.64 | 4.01 |
+| `bfs_grid` | 0.35 | 7.02 | 3.53 |
+| `dijkstra` | 0.33 | 7.47 | 3.41 |
+| `lcs` | 0.34 | 4.35 | 2.51 |
+| `fenwick` | 0.42 | 6.80 | 4.13 |
+| `kmp` | 0.81 | 7.56 | 3.92 |
+| `sort_bs` | 0.57 | 7.47 | 4.56 |
+| `deep_dfs` | 0.60 | 7.64 | 3.84 |
+
+Node, PyPy, PHP's tracing JIT and CPython changed within noise on `bfs_grid`,
+`dijkstra` and `sort_bs` (PyPy `dijkstra` fell from 3.57 to 2.94 s). Peak RSS
+of the Java runs is unchanged.
+
 ## Replay matrix
 
 `tests/jit_replay.py` covers earlier executed work, partially completed writes,
