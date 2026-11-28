@@ -25,11 +25,14 @@ The inline entry preserves application flags, including values a signal handler
 may inspect. Its scratch registers spill to client-owned TLS slots.
 A restore-state handler recovers them if the runtime translates a thread inside
 the entry. Each memory write records its replay checkpoint as one packed word in
-another slot: the write's address, its length and its block suffix, stored as
-two immediates with no scratch register. A block entry stores zero there.
-Callbacks settle the word into the checkpoint state before they read or replace
-it. A write that does not fit the word (a suffix above 4095 instructions) takes
-the callback instead. It also returns a stored entry charge when a relocated
+another slot: the low 17 bits of the write's address, its length and its block
+suffix, stored by one move of a sign-extended 32-bit immediate with no scratch
+register. A block entry stores zero there. Callbacks settle the word into the
+checkpoint state before they read or replace it. Each knows the write it
+expects (the REP instruction it observes, or the write or continuation the
+runtime replays) and takes the full address from it; a word whose low bits do
+not match leaves no checkpoint. A write that does not fit the word (a suffix
+above 1023 instructions) takes the callback instead. It also returns a stored entry charge when a relocated
 thread will enter the same block again. The layout depends only on the block, so
 no translations are stored. A retry's first-block checks move from block entry
 to the replay, REP, signal and snapshot callbacks. The entry sequence for each

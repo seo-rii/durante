@@ -740,21 +740,32 @@ static void set_raw_accounting_state(thread_data_t *d) {
 }
 
 /* Flat inline code keeps the write checkpoint as one word in RAW_TLS_WRITE,
- * stored with immediates and no scratch register: the write's address, its
- * length and its block suffix. A block entry stores zero. Callbacks settle
- * the word into the checkpoint fields before they read or replace them, and
- * leave WRITE_WORD_SETTLED while the fields are current. A packed word has a
+ * stored with one move of a sign-extended 32-bit immediate and no scratch
+ * register: the low bits of the write's address, its length and its block
+ * suffix, with bit 31 clear so that the upper half is zero. A block entry
+ * stores zero. Callbacks settle the word into the checkpoint fields before
+ * they read or replace them, and leave WRITE_WORD_SETTLED while the fields are
+ * current. A callback knows which write it expects (the REP instruction it
+ * observes, or the write the runtime replays): settling takes the address from
+ * it and keeps the checkpoint only if the low bits match. A packed word has a
  * nonzero length, so it equals neither marker. */
-enum { WRITE_WORD_PC_BITS = 48, WRITE_WORD_LENGTH_BITS = 4, WRITE_WORD_SETTLED = 1 };
-#define WRITE_WORD_MAX_SUFFIX \
-  ((UINT64_C(1) << (64 - WRITE_WORD_PC_BITS - WRITE_WORD_LENGTH_BITS)) - 1)
+enum {
+  WRITE_WORD_PC_BITS = 17,
+  WRITE_WORD_LENGTH_BITS = 4,
+  WRITE_WORD_SUFFIX_BITS = 10,
+  WRITE_WORD_SETTLED = 1
+};
+_Static_assert(WRITE_WORD_PC_BITS + WRITE_WORD_LENGTH_BITS + WRITE_WORD_SUFFIX_BITS == 31,
+               "a packed write word is a non-negative 32-bit immediate");
+#define WRITE_WORD_MAX_SUFFIX ((UINT64_C(1) << WRITE_WORD_SUFFIX_BITS) - 1)
+#define WRITE_WORD_PC_MASK ((UINT64_C(1) << WRITE_WORD_PC_BITS) - 1)
 
 static bool pack_write_checkpoint(app_pc pc, app_pc next_pc, int suffix, uint64_t *word) {
   uint64_t address = (uint64_t)(ptr_uint_t)pc, kept = suffix > 0 ? (uint64_t)suffix : 0;
   if (!pc || next_pc <= pc || next_pc - pc >= 1 << WRITE_WORD_LENGTH_BITS ||
-      address >> WRITE_WORD_PC_BITS || kept > WRITE_WORD_MAX_SUFFIX)
+      address >> 48 || kept > WRITE_WORD_MAX_SUFFIX)
     return false;
-  *word = address | (uint64_t)(next_pc - pc) << WRITE_WORD_PC_BITS |
+  *word = (address & WRITE_WORD_PC_MASK) | (uint64_t)(next_pc - pc) << WRITE_WORD_PC_BITS |
           kept << (WRITE_WORD_PC_BITS + WRITE_WORD_LENGTH_BITS);
   return true;
 }
@@ -765,7 +776,10 @@ SCALAR static inline uint64_t *write_word(thread_data_t *d) {
              : NULL;
 }
 
-static void settle_write_checkpoint(thread_data_t *d) {
+/* Settle a packed word stored by the write at expect_pc, or by the write that
+ * ends at expect_next when expect_pc is NULL. A word stored by any other write
+ * leaves no checkpoint, as a block entry after it does. */
+static void settle_write_checkpoint(thread_data_t *d, app_pc expect_pc, app_pc expect_next) {
   uint64_t *word = write_word(d);
   if (!word || *word == WRITE_WORD_SETTLED)
     return;
@@ -775,9 +789,14 @@ static void settle_write_checkpoint(thread_data_t *d) {
     d->write_pc = NULL; /* A block was entered after the last checkpoint. */
     return;
   }
-  app_pc pc = (app_pc)(ptr_uint_t)(packed & ((UINT64_C(1) << WRITE_WORD_PC_BITS) - 1));
+  uint length = (uint)(packed >> WRITE_WORD_PC_BITS & ((1 << WRITE_WORD_LENGTH_BITS) - 1));
+  app_pc pc = expect_pc ? expect_pc : expect_next ? expect_next - length : NULL;
+  if (!pc || ((ptr_uint_t)pc & WRITE_WORD_PC_MASK) != (packed & WRITE_WORD_PC_MASK)) {
+    d->write_pc = NULL;
+    return;
+  }
   d->write_pc = pc;
-  d->write_next_pc = pc + (packed >> WRITE_WORD_PC_BITS & ((1 << WRITE_WORD_LENGTH_BITS) - 1));
+  d->write_next_pc = pc + length;
   d->write_suffix = packed >> (WRITE_WORD_PC_BITS + WRITE_WORD_LENGTH_BITS);
   d->write_rep = false;
   /* An entry zeroes the word before it replaces the block fields, so a packed
@@ -977,7 +996,7 @@ static void observe_rep(app_pc pc, int opcode, int bytes, int count_reg) {
   if (data == NULL)
     fail("REP observation without thread state");
   settle_restart(data);
-  settle_write_checkpoint(data);
+  settle_write_checkpoint(data, pc, NULL);
   set_fast_until(data, 0);
   uint64_t repeats = 0;
   if (bytes != 0) {
@@ -1881,10 +1900,10 @@ static const patched_template_t *write_checkpoint_template(void *ctx) {
                           "cannot lay out the write checkpoint");
 }
 
-/* Flat write checkpoint: the two halves of the packed word, stored straight
- * to the raw TLS slot. It needs no scratch register, so restore_state() has
- * nothing to recover inside it. */
-enum { PACKED_LOW, PACKED_HIGH, PACKED_IMMEDIATES };
+/* Flat write checkpoint: the packed word, stored straight to the raw TLS slot
+ * by one move that sign-extends its 32-bit immediate. It needs no scratch
+ * register, so restore_state() has nothing to recover inside it. */
+enum { PACKED_WORD, PACKED_IMMEDIATES };
 static patched_template_t *packed_checkpoint_template;
 
 static const patched_template_t *packed_write_template(void *ctx) {
@@ -1893,13 +1912,8 @@ static const patched_template_t *packed_write_template(void *ctx) {
     return t;
   instrlist_t *ilist = instrlist_create(ctx);
   instr_t *imm[PACKED_IMMEDIATES];
-  for (int i = 0; i < PACKED_IMMEDIATES; ++i) {
-    opnd_t half = raw_slot(RAW_TLS_WRITE);
-    opnd_set_disp(&half, opnd_get_disp(half) + 4 * i);
-    opnd_set_size(&half, OPSZ_4);
-    imm[i] = INSTR_CREATE_mov_st(ctx, half, OPND_CREATE_INT32(0x7fffffff));
-    instrlist_meta_append(ilist, imm[i]);
-  }
+  imm[PACKED_WORD] = INSTR_CREATE_mov_st(ctx, raw_slot(RAW_TLS_WRITE), OPND_CREATE_INT32(0x7fffffff));
+  instrlist_meta_append(ilist, imm[PACKED_WORD]);
   return publish_template(ctx, &packed_checkpoint_template, ilist, imm, PACKED_IMMEDIATES,
                           "cannot lay out the packed write checkpoint");
 }
@@ -1912,7 +1926,7 @@ static bool insert_write_checkpoint(void *ctx, instrlist_t *bb, instr_t *where,
     uint64_t word;
     if (!pack_write_checkpoint(pc, next_pc, suffix, &word))
       return false;
-    const uint32_t value[PACKED_IMMEDIATES] = {(uint32_t)word, (uint32_t)(word >> 32)};
+    const uint32_t value[PACKED_IMMEDIATES] = {(uint32_t)word};
     insert_patched(ctx, bb, where, packed_write_template(ctx), value, PACKED_IMMEDIATES);
     return true;
   }
@@ -1965,7 +1979,9 @@ static void code_replay(void *ctx, int reason, app_pc source_pc,
   }
   check_flat_counter(d);
   settle_restart(d);
-  settle_write_checkpoint(d);
+  /* A retry names the write; a completed write names where it continues. */
+  settle_write_checkpoint(d, reason == DR_DURANTE_REPLAY_RETRY ? source_pc : NULL,
+                          reason == DR_DURANTE_REPLAY_AFTER_WRITE ? target_pc : NULL);
   set_fast_until(d, 0);
   if (reason == DR_DURANTE_REPLAY_ENTRY) {
     /* Cache validation ran before client entry instrumentation. Nothing was
