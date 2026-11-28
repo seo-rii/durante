@@ -2658,6 +2658,9 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
   state_lock = dr_mutex_create();
 #ifdef DURANTE_TEST_COUNT_LOCATIONS
   const bool flat_candidate = false; /* The location profile needs entry callbacks. */
+#elif defined(DURANTE_TEST_LATENCY_CALLBACK) && defined(DURANTE_L1D_PROBE)
+  /* Isolate the existing non-flat accounting path in the graph cost experiment. */
+  const bool flat_candidate = false;
 #else
   /* Operand bytes keep their entry and write callbacks. */
   const bool flat_candidate = !memory_operand_bytes_enabled && !cache_probe_enabled();
