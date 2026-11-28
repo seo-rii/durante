@@ -38,8 +38,14 @@ pub struct Options {
     /// Request the versioned static memory operand byte counter alongside the latency bound.
     pub memory_operand_bytes: bool,
     pub work_budget: Option<u64>,
+    /// Isolate the meter from the application (client `-protect_meter`).
+    pub protect_meter: bool,
     pub command: Vec<OsString>,
 }
+
+/// The prepared runtime's private window for every runtime allocation when the
+/// meter is protected. It is reserved before the application image is mapped.
+pub(crate) const METER_WINDOW: &str = "0x600000000000";
 
 extern "C" fn cancelled(signal: libc::c_int) {
     // A lock-free atomic is the only operation performed in the signal handler.
@@ -452,6 +458,11 @@ pub fn run(options: Options) -> Result<i32, String> {
     })?;
     verify_report_path(&output, &options.report, 0)
         .map_err(|_| "report must be a new or explicitly supplied empty private file".to_owned())?;
+    // Under meter protection the client refuses any descriptor for the report.
+    let report_identity = output
+        .metadata()
+        .map(|m| (m.dev(), m.ino()))
+        .map_err(|_| "cannot inspect report file".to_owned())?;
     let started = Instant::now();
     let mut result = json!({"schema":1,"authority":"diagnostic_only",
         "integrity_verified":false,"measurement_contract":durante::report::measurement_contract(),
@@ -476,7 +487,10 @@ pub fn run(options: Options) -> Result<i32, String> {
     if let Some(limit) = options.work_budget {
         result["work_budget"] = work_budget::unavailable(limit);
     }
-    let outcome = execute(&options, drrun, client, &mut result);
+    if options.protect_meter {
+        result["meter_protection_requested"] = json!(true);
+    }
+    let outcome = execute(&options, drrun, client, report_identity, &mut result);
     result["execution"]["wall_time_ms"] =
         json!(started.elapsed().as_millis().min(u64::MAX as u128) as u64);
     let exit = match outcome {
@@ -486,6 +500,7 @@ pub fn run(options: Options) -> Result<i32, String> {
             1
         }
     };
+    publish_meter_receipt(&mut result, options.protect_meter);
     verify_report_path(&output, &options.report, 0)
         .map_err(|_| "final report path was replaced or linked".to_owned())?;
     serde_json::to_writer_pretty(&mut output, &result)
@@ -545,6 +560,30 @@ pub(crate) fn cpuid_profile_matches(report: &Value, expected: Option<&str>) -> b
     }
 }
 
+/// The outer receipt describes the finalized measurement. A requested mode is
+/// also present on a setup failure, a partial run or a rejected collection, so
+/// it is recorded separately as `meter_protection_requested`.
+fn publish_meter_receipt(result: &mut Value, requested: bool) {
+    let measured = &result["measurement"];
+    if requested
+        && measured["valid"] == true
+        && measured["complete"] == true
+        && meter_protection_matches(measured, true)
+    {
+        result["meter_protection"] = json!({"version": 1});
+        result["security"]["counter_integrity"] = json!("protected_in_process_v1");
+    }
+}
+
+/// A protected run requires the client's protection receipt in every image; an
+/// unprotected run must not carry one.
+pub(crate) fn meter_protection_matches(report: &Value, requested: bool) -> bool {
+    match report.get("meter_protection") {
+        None => !requested,
+        Some(value) => requested && *value == json!({"version": 1}),
+    }
+}
+
 /// Each optional counter must match the version and units requested by the caller.
 pub(crate) fn counter_matches(report: &Value, name: &str, unit: &str, requested: bool) -> bool {
     counter_value(report, name, unit, requested).is_some()
@@ -570,6 +609,7 @@ fn execute(
     options: &Options,
     drrun: PathBuf,
     client: PathBuf,
+    report_identity: (u64, u64),
     result: &mut Value,
 ) -> Result<i32, &'static str> {
     let mut records = Records::create(options.records_dir.as_deref(), options.keep_records)
@@ -585,19 +625,28 @@ fn execute(
     let _owner = ProcessOwner::new().map_err(|_| "cannot establish process-tree ownership")?;
     let parent_pid = std::process::id() as libc::pid_t;
     let mut command = Command::new(drrun);
-    command
-        .args([
-            "-quiet",
-            "-follow_children",
-            // The pinned trace path fails JVM lifecycle workloads. Execute
-            // the qualified basic-block path without trace construction.
-            "-disable_traces",
+    command.args([
+        "-quiet",
+        "-follow_children",
+        // The pinned trace path fails JVM lifecycle workloads. Execute
+        // the qualified basic-block path without trace construction.
+        "-disable_traces",
+    ]);
+    if options.protect_meter {
+        // All runtime memory, heap included, lives in one reachable
+        // reservation inside the window; nothing may fall back outside it.
+        command.args([
             "-vm_size",
-            "32M",
-            "-vmheap_size",
-            "32M",
-            "-c",
-        ])
+            "512M",
+            "-reachable_heap",
+            "-durante_window",
+            METER_WINDOW,
+        ]);
+    } else {
+        command.args(["-vm_size", "32M", "-vmheap_size", "32M"]);
+    }
+    command
+        .arg("-c")
         .arg(client)
         .arg("-outdir")
         .arg(&records.path)
@@ -616,6 +665,12 @@ fn execute(
     }
     if options.memory_operand_bytes {
         command.arg("-memory_operand_bytes");
+    }
+    if options.protect_meter {
+        command
+            .arg("-protect_meter")
+            .arg("-protect_file")
+            .arg(format!("{}:{}", report_identity.0, report_identity.1));
     }
     command
         .arg("--")
@@ -817,6 +872,15 @@ fn execute(
                 "client memory operand bytes do not match the request",
             );
         }
+        if measurement["valid"] == true
+            && measurement["complete"] == true
+            && !meter_protection_matches(&measurement, options.protect_meter)
+        {
+            measurement = invalid_measurement(
+                Some(root_pid),
+                "client meter protection does not match the request",
+            );
+        }
         if measurement["valid"] == true && measurement["complete"] == true {
             let recorded_exit = measurement["processes"]
                 .as_array()
@@ -885,6 +949,33 @@ fn execute(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn outer_protection_receipt_requires_a_validated_terminal_measurement() {
+        for (requested, valid, complete, receipt, published) in [
+            (true, true, true, true, true),
+            (false, true, true, true, false),
+            (true, false, true, true, false),
+            (true, true, false, true, false),
+            (true, true, true, false, false),
+        ] {
+            let mut result = json!({
+                "security":{"counter_integrity":"application_mutable"},
+                "measurement":{"valid":valid,"complete":complete},
+            });
+            if receipt {
+                result["measurement"]["meter_protection"] = json!({"version":1});
+            }
+            publish_meter_receipt(&mut result, requested);
+            assert_eq!(result.get("meter_protection").is_some(), published);
+            let expected = if published {
+                "protected_in_process_v1"
+            } else {
+                "application_mutable"
+            };
+            assert_eq!(result["security"]["counter_integrity"], expected);
+        }
+    }
 
     #[test]
     fn cleanup_requires_a_matching_signal_for_each_effective_kill() {

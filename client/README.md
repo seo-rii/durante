@@ -2,7 +2,12 @@
 
 Build `libdurante.so` using the [repository instructions](../README.md).
 Launch it with `-outdir ABSOLUTE_PRIVATE_DIRECTORY`, optionally followed by
-`-rep_bytes`. Add `-disallow_cpu_feature avx` and/or
+`-rep_bytes`. Add `-protect_meter` to isolate the counters, code cache and
+records from the measured application; this requires the prepared runtime
+launched with `-durante_window BASE` (the `durante run --protect-meter` flag
+sets both) and reports `meter_protection` in each image's start record. See
+`client/meter_protect.h` and `SECURITY.md` for the protected ranges, the
+per-store range check and the allow-listed system calls. Add `-disallow_cpu_feature avx` and/or
 `-disallow_cpu_feature simd` to stop before selected instructions execute.
 Add `-cpuid_profile x86-64-v1` or `x86-64-v2` to report one fixed virtual
 processor to application CPUID/XGETBV ([CPUID profiles](../docs/CPUID_PROFILE.md)).
@@ -20,11 +25,25 @@ The inline entry preserves application flags, including values a signal handler
 may inspect. Its scratch registers spill to client-owned TLS slots.
 A restore-state handler recovers them if the runtime translates a thread inside
 the entry. Each memory write records its replay checkpoint as one packed word in
-another slot: the write's address, its length and its block suffix, stored as
-two immediates with no scratch register. A block entry stores zero there.
-Callbacks settle the word into the checkpoint state before they read or replace
-it. A write that does not fit the word (a suffix above 4095 instructions) takes
-the callback instead. It also returns a stored entry charge when a relocated
+another slot: the low 17 bits of the write's address, its length and its block
+suffix, stored by one move of a sign-extended 32-bit immediate with no scratch
+register. A block entry stores zero there. Callbacks settle the word into the
+checkpoint state before they read or replace it. Each knows the write it
+expects (the REP instruction it observes, or the write or continuation the
+runtime replays) and takes the full address from it; a word whose low bits do
+not match leaves no checkpoint. The low bits identify the write because the word
+and the expected write are in the block being executed: every entry clears the
+word, and every settling callback names a write of the current block. Traces
+are off, and the runtime does not elide jumps or calls for a client, so a block
+is about `-max_bb_instrs` (256) contiguous instructions, under 4 KiB. A block whose code still spans 128 KiB
+less 16 bytes or more (with `-max_elide_jmp` or `-max_elide_call`) stores no
+packed words. A write that does not fit the word (a suffix above 1023
+instructions) or such a block takes the callback instead.
+`tests/checkpoint_identity.py` runs a build that also stores every write's full
+address and aborts if a settled word is kept or dropped differently from the
+full address; it covers HotSpot, V8, PyPy, PHP's JIT, `tests/jit_stress.py` and
+a fixture that writes its own code. The restore-state handler also returns a
+stored entry charge when a relocated
 thread will enter the same block again. The layout depends only on the block, so
 no translations are stored. A retry's first-block checks move from block entry
 to the replay, REP, signal and snapshot callbacks. The entry sequence for each

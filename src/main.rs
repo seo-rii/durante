@@ -81,6 +81,10 @@ enum Command {
         /// Stop after more than this many software-work units (instructions + MOVS/STOS bytes).
         #[arg(long)]
         work_budget: Option<u64>,
+        /// Isolate the counter, code cache and records from the application (requires the
+        /// prepared runtime); an attempt to change them stops the run as an integrity violation.
+        #[arg(long = "protect-meter", conflicts_with = "memory_operand_bytes")]
+        protect_meter: bool,
         /// Target executable and arguments, passed directly without a shell.
         #[arg(required = true, last = true, num_args = 1..)]
         command: Vec<OsString>,
@@ -257,6 +261,7 @@ fn main() {
             latency_bound,
             memory_operand_bytes,
             work_budget,
+            protect_meter,
             command,
         } => {
             #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
@@ -274,6 +279,7 @@ fn main() {
                     latency_bound,
                     memory_operand_bytes,
                     work_budget,
+                    protect_meter,
                     command,
                 })
             }
@@ -292,6 +298,7 @@ fn main() {
                     latency_bound,
                     memory_operand_bytes,
                     work_budget,
+                    protect_meter,
                     command,
                 );
                 Err("durante run requires Linux x86-64".to_owned())

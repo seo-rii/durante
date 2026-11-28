@@ -112,6 +112,44 @@ With the prepared runtime the five modes pass 40 of 40 cases in two repeats.
 With four busy threads on the same machine, every mode passes 8 of 8 engine runs
 with each core.
 
+## Writes to a large code cache
+
+A JIT keeps its code in one large writable and executable mapping: HotSpot's
+code cache holds the template interpreter, stubs and compiled methods. The
+original runtime made the whole mapping read-only once code ran from it, and
+merged its executable areas, so every write to any of its pages flushed every
+block built from it. A new method next to running code, or an inline-cache
+update, threw away the interpreter and all compiled code, which then had to be
+rebuilt as it ran again. An OpenJDK 21 hello world under the engine with the
+counter flushed its 624-page (2.5 MiB) code cache 2,452 times. It built 134,816
+blocks, of which 83,505 were distinct, and changed the protection of 3.1 million
+pages. 75% of its CPU profile was in the runtime, mostly decoding and emitting
+rebuilt blocks.
+
+The prepared runtime tracks code in writable memory one page at a time
+(`-page_granular_writable_code`, on by default here). A new executable area in
+writable memory covers only its page, and such areas are not merged. A write
+then flushes only the blocks of the pages it writes. On a contest `bfs_grid`
+run, write faults fell to 244 and flushed blocks to 2,037, and 168,534 of the
+170,145 blocks built were distinct.
+
+[experiments/java_timing](../experiments/java_timing/README.md) has the timing,
+with the binaries, inputs and placement. In that run, OpenJDK 21 ran the seven
+contest problems on two pinned CPUs for 5 rotated rounds, each profile divided
+by its own native time. With main's client and only the runtime changed, the
+`java` profile's geometric mean fell from 8.26 to 3.97 CPU seconds (19.9x to
+9.5x native) in plain runs, and from 8.78 to 4.01 s with a large work budget.
+Per problem it fell to between 0.41 (`deep_dfs`, `dijkstra`) and 0.58
+(`sort_bs`) of main's time. With the branch client as well, it was 3.39 s
+(8.2x). The `java-cds` profile, which keeps class data sharing, went from
+7.18 s (19.4x) with main's runtime and client to 3.05 s (8.2x) with the
+branch's. These are performance observations; they do not qualify Java for
+time-limit verdicts.
+
+Node, PyPy, PHP's tracing JIT and CPython changed within noise on `bfs_grid`,
+`dijkstra` and `sort_bs` in an earlier exploratory comparison (one CPU, median
+of 3). PyPy `dijkstra` fell from 3.57 to 2.94 s.
+
 ## Replay matrix
 
 `tests/jit_replay.py` covers earlier executed work, partially completed writes,

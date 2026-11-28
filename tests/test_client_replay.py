@@ -86,6 +86,9 @@ ssize_t dr_fprintf(file_t file, const char *format, ...) {
     return -1;
 }
 void dr_abort(void) { abort(); }
+void dr_abort_with_code(int code) { (void)code; abort(); }
+bool dr_set_mcontext(void *ctx, dr_mcontext_t *mc) { assert(ctx == CTX); (void)mc; return true; }
+void reg_set_value(reg_id_t reg, dr_mcontext_t *mc, reg_t value) { (void)reg; (void)mc; (void)value; }
 int dr_snprintf(char *buffer, size_t size, const char *format, ...) {
     va_list args;
     va_start(args, format);
@@ -1040,49 +1043,64 @@ int main(int argc, char **argv) {
         /* An entry since the last settle discards a stale checkpoint. */
         state.write_pc = START;
         *word = 0;
-        settle_write_checkpoint(&state);
+        settle_write_checkpoint(&state, START, NULL);
         assert(!state.write_pc && *word == WRITE_WORD_SETTLED);
-        /* A packed word restores exactly what the write stored. */
+        /* A packed word restores what the write stored, given the write. */
         state.write_rep = true;
         flat_write(WRITE, NEXT, 3);
-        settle_write_checkpoint(&state);
+        settle_write_checkpoint(&state, WRITE, NULL);
         assert(state.write_pc == WRITE && state.write_next_pc == NEXT && state.write_suffix == 3);
         assert(!state.write_rep && *word == WRITE_WORD_SETTLED);
+        /* Or given where it continues. */
+        flat_write(WRITE, NEXT, 3);
+        settle_write_checkpoint(&state, NULL, NEXT);
+        assert(state.write_pc == WRITE && state.write_next_pc == NEXT && state.write_suffix == 3);
         /* Settled fields are current and are not rewritten. */
         state.write_suffix = 9;
-        settle_write_checkpoint(&state);
+        settle_write_checkpoint(&state, WRITE, NULL);
         assert(state.write_pc == WRITE && state.write_suffix == 9);
-        /* The widest fields and a non-positive suffix. */
+        /* One move stores the word: its immediate is a non-negative int32. */
         app_pc high = PC((UINT64_C(1) << 47) - 16);
-        assert(pack_write_checkpoint(high, high + 15, 4095, &packed));
+        assert(pack_write_checkpoint(high, high + 15, 1023, &packed));
+        assert(packed <= INT32_MAX);
         *word = packed;
-        settle_write_checkpoint(&state);
+        settle_write_checkpoint(&state, high, NULL);
         assert(state.write_pc == high && state.write_next_pc == high + 15 &&
-               state.write_suffix == 4095);
+               state.write_suffix == 1023);
         assert(pack_write_checkpoint(WRITE, NEXT, -1, &packed));
         *word = packed;
-        settle_write_checkpoint(&state);
+        settle_write_checkpoint(&state, WRITE, NULL);
         assert(state.write_pc == WRITE && state.write_suffix == 0);
+        /* A word stored by another write leaves no checkpoint. */
+        flat_write(WRITE, NEXT, 3);
+        settle_write_checkpoint(&state, WRITE + 1, NULL);
+        assert(!state.write_pc && *word == WRITE_WORD_SETTLED);
+        flat_write(WRITE, NEXT, 3);
+        settle_write_checkpoint(&state, NULL, NEXT + 1);
+        assert(!state.write_pc);
+        flat_write(WRITE, NEXT, 3);
+        settle_write_checkpoint(&state, NULL, NULL);
+        assert(!state.write_pc);
         /* Checkpoints that do not fit take the callback instead. */
         assert(!pack_write_checkpoint(NULL, NEXT, 1, &packed));
         assert(!pack_write_checkpoint(WRITE, WRITE, 1, &packed));
         assert(!pack_write_checkpoint(WRITE, WRITE + 16, 1, &packed));
         assert(!pack_write_checkpoint(PC(UINT64_C(1) << 48), PC((UINT64_C(1) << 48) + 2), 1, &packed));
-        assert(!pack_write_checkpoint(WRITE, NEXT, 4096, &packed));
+        assert(!pack_write_checkpoint(WRITE, NEXT, 1024, &packed));
         flat_write(START, START + 2, 5);
         before_write(WRITE, WRITE + 16, 7);
         assert(*word == WRITE_WORD_SETTLED);
-        settle_write_checkpoint(&state);
+        settle_write_checkpoint(&state, WRITE, NULL);
         assert(state.write_pc == WRITE && state.write_next_pc == WRITE + 16 && state.write_suffix == 7);
         /* A discarded checkpoint cannot return at a later settle. */
         flat_write(WRITE, NEXT, 3);
         kernel_xfer(CTX, NULL);
         assert(!state.write_pc && *word == WRITE_WORD_SETTLED);
-        settle_write_checkpoint(&state);
+        settle_write_checkpoint(&state, WRITE, NULL);
         assert(!state.write_pc);
         flat_write(WRITE, NEXT, 3);
         clear_write_checkpoint(&state);
-        settle_write_checkpoint(&state);
+        settle_write_checkpoint(&state, WRITE, NULL);
         assert(!state.write_pc);
         /* The boundary callback is a block entry. */
         live_work_t page = {0};
@@ -1114,7 +1132,7 @@ int main(int argc, char **argv) {
         flat_inline = false;
         assert(!write_word(&state));
         before_write(WRITE, NEXT, 3);
-        settle_write_checkpoint(&state);
+        settle_write_checkpoint(&state, WRITE, NULL);
         assert(state.write_pc == WRITE && state.write_suffix == 3);
     } else if (!strcmp(test, "missing-tls")) {
         active = NULL;
@@ -1339,12 +1357,11 @@ __asm__(
     ".size boundary_probe, .-boundary_probe\n");
 
 /* One 32-bit half of the raw TLS write word. */
-static bool is_raw_slot_half(opnd_t opnd, int half) {
+static bool is_raw_write_word(opnd_t opnd) {
     return opnd_is_far_base_disp(opnd) && opnd_get_segment(opnd) == raw_tls_register &&
            opnd_get_base(opnd) == DR_REG_NULL && opnd_get_index(opnd) == DR_REG_NULL &&
-           opnd_get_size(opnd) == OPSZ_4 &&
-           opnd_get_disp(opnd) ==
-               (int)(raw_tls_offset + RAW_TLS_WRITE * sizeof(void *)) + 4 * half;
+           opnd_get_size(opnd) == OPSZ_8 &&
+           opnd_get_disp(opnd) == (int)(raw_tls_offset + RAW_TLS_WRITE * sizeof(void *));
 }
 
 /* The emitted sequences address raw TLS through GS. Point it at slots only
@@ -1774,8 +1791,8 @@ int main(void) {
     byte *large_end = instrlist_encode(ctx, bb, large, true);
     assert(large_end && large_end <= routine);
     instrlist_clear_and_destroy(ctx, bb);
-    /* The packed write checkpoint: immediate stores to the raw TLS word that
-     * read or write no register and no flag. */
+    /* The packed write checkpoint: one immediate store of the whole raw TLS
+     * word that reads or writes no register and no flag. */
     byte *write_code = entry + 3 * page / 4;
     flat_inline = true;
     bb = instrlist_create(ctx);
@@ -1785,7 +1802,7 @@ int main(void) {
     instrlist_meta_preinsert(bb, ret, report);
     instrlist_meta_preinsert(bb, ret, XINST_CREATE_move(ctx, opnd_create_reg(DR_REG_RDX),
                                                         opnd_create_reg(DR_REG_R11)));
-    assert(insert_write_checkpoint(ctx, bb, report, ENTRY_PC, ENTRY_PC + 7, 9));
+    assert(insert_write_checkpoint(ctx, bb, report, ENTRY_PC, ENTRY_PC + 7, 9, true));
     byte *write_end = instrlist_encode(ctx, bb, write_code, true);
     assert(write_end && write_end <= entry + page);
     instrlist_clear_and_destroy(ctx, bb);
@@ -1797,20 +1814,41 @@ int main(void) {
         assert(next);
         assert(!(instr_get_arith_flags(&in, DR_QUERY_DEFAULT) & (EFLAGS_READ_6 | EFLAGS_WRITE_6)));
         if (instr_get_opcode(&in) == OP_mov_st && opnd_is_immed_int(instr_get_src(&in, 0))) {
-            assert(is_raw_slot_half(instr_get_dst(&in, 0), stores));
+            assert(is_raw_write_word(instr_get_dst(&in, 0)));
             ++stores;
         }
         instr_free(ctx, &in);
         pc = next;
     }
-    assert(stores == 2);
+    assert(stores == 1);
     /* A checkpoint that does not pack inserts nothing; the caller uses the callback. */
     bb = instrlist_create(ctx);
     ret = INSTR_CREATE_ret(ctx);
     instrlist_append(bb, ret);
-    assert(!insert_write_checkpoint(ctx, bb, ret, ENTRY_PC, ENTRY_PC + 16, 9));
-    assert(!insert_write_checkpoint(ctx, bb, ret, ENTRY_PC, ENTRY_PC + 7, 4096));
+    assert(!insert_write_checkpoint(ctx, bb, ret, ENTRY_PC, ENTRY_PC + 16, 9, true));
+    assert(!insert_write_checkpoint(ctx, bb, ret, ENTRY_PC, ENTRY_PC + 7, 4096, true));
+    /* Nor does one in a block whose code is too far apart for packed words. */
+    assert(!insert_write_checkpoint(ctx, bb, ret, ENTRY_PC, ENTRY_PC + 7, 9, false));
     assert(instrlist_first(bb) == ret);
+    instrlist_clear_and_destroy(ctx, bb);
+    /* Packed words fit a block whose application code, from its lowest
+     * address to the end of its highest instruction, spans less than
+     * WRITE_WORD_PACKED_SPAN bytes, on either side of its first instruction
+     * (a jump the runtime elided can lead backward). */
+    bb = instrlist_create(ctx);
+    instr_t *first_nop = INSTR_CREATE_nop(ctx), *other_nop = INSTR_CREATE_nop(ctx);
+    instr_set_translation(first_nop, ENTRY_PC);
+    instrlist_append(bb, first_nop);
+    instrlist_meta_append(bb, INSTR_CREATE_nop(ctx)); /* Meta code has no address. */
+    instrlist_append(bb, other_nop);
+    instr_set_translation(other_nop, ENTRY_PC + WRITE_WORD_PACKED_SPAN - 2);
+    assert(packed_checkpoints_fit(ctx, bb));
+    instr_set_translation(other_nop, ENTRY_PC + WRITE_WORD_PACKED_SPAN - 1);
+    assert(!packed_checkpoints_fit(ctx, bb));
+    instr_set_translation(other_nop, ENTRY_PC - WRITE_WORD_PACKED_SPAN + 2);
+    assert(packed_checkpoints_fit(ctx, bb));
+    instr_set_translation(other_nop, ENTRY_PC - WRITE_WORD_PACKED_SPAN + 1);
+    assert(!packed_checkpoints_fit(ctx, bb));
     instrlist_clear_and_destroy(ctx, bb);
     /* A live entry that only returns, and the boundary routine as the client
      * generates it. The routine names the callback once, as an absolute
@@ -1938,19 +1976,20 @@ int main(void) {
         settle_live_count(&d);
         assert(d.instructions == 50 + FLAT_ENTRY_CACHE + 1);
     }
-    /* The emitted checkpoint stores exactly the packed word and leaves both
-     * scratch registers alone; settling it restores the callback's fields. */
+    /* The emitted checkpoint stores exactly the packed word, upper half
+     * included, and leaves both scratch registers alone; settling it restores
+     * the callback's fields. */
     {
         thread_data_t d = {.raw_tls_base = (byte *)slots, .write_rep = true};
         slots[RAW_TLS_STATE] = (reg_t)&d;
-        slots[RAW_TLS_WRITE] = 0;
+        slots[RAW_TLS_WRITE] = ~(reg_t)0;
         reg_t rcx, r11;
         uint64_t expected;
         run_entry(write_code, 0x3333, 0x4444, &rcx, &r11);
         assert(rcx == 0x3333 && r11 == 0x4444);
         assert(pack_write_checkpoint(ENTRY_PC, ENTRY_PC + 7, 9, &expected));
         assert(slots[RAW_TLS_WRITE] == expected);
-        settle_write_checkpoint(&d);
+        settle_write_checkpoint(&d, ENTRY_PC, NULL);
         assert(d.write_pc == ENTRY_PC && d.write_next_pc == ENTRY_PC + 7 && d.write_suffix == 9);
         assert(!d.write_rep && slots[RAW_TLS_WRITE] == WRITE_WORD_SETTLED);
     }

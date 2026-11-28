@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "inputs": {
+    "source_commit": "6847bb210bea0ca11d1bf47704383d6a075da490",
+    "source_sha256": "e2b7d3f1917ff64e644b81efd96a610a3c622f4857c75593fef5d5e581c231f6",
+    "patch_sha256": "bc899631e407d25e36bccdee29cf9a8451f479ea925a0f5d3d59781f9cf0e159",
+    "code_replay_patch_sha256": "aad0137aadca8a0932ca22f67ea95260880eb6bb93a229fd540c01241dc80d9d",
+    "recipe": 1,
+    "cmake_options": [
+      "-DCMAKE_POLICY_DEFAULT_CMP0067=NEW",
+      "-DCMAKE_C_STANDARD=17",
+      "-DCMAKE_C_STANDARD_REQUIRED=ON",
+      "-DVERSION_NUMBER=11.3.0",
+      "-DBUILD_NUMBER=1",
+      "-DBUILD_EXT=OFF",
+      "-DBUILD_TOOLS=OFF",
+      "-DBUILD_DOCS=OFF",
+      "-DBUILD_TESTS=OFF",
+      "-DBUILD_SAMPLES=OFF",
+      "-DBUILD_CLIENTS=OFF"
+    ],
+    "profiles": {
+      "release": "Release",
+      "debug": "Debug"
+    }
+  },
+  "artifacts": {
+    "lib64/release/libdynamorio.so": "71bede0d6baa75546835e2de776149738a8acefd1cb8b927443617640b341427",
+    "lib64/release/libdynamorio.so.debug": "d960e41f50a66a97240384c153e3ef237efc27c35132181d31603cec43c7acb3",
+    "lib64/debug/libdynamorio.so": "273fe4cdf72202d31f2472310b04cdfc15c4c55ea53a3534fe292312ee7854e0",
+    "lib64/debug/libdynamorio.so.debug": "3ca8066e0e85384fb9cf90c6609edf2e36cbef31fe7032fd6373e421603953c5"
+  }
+}

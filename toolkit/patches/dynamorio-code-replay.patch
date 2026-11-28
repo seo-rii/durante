@@ -11,6 +11,11 @@ returns to, so a signal there is delivered as promptly as in a clean callee.
 Leave a clean callee's signal alone while DR flushes for it: the flush
 completion callback and fragment deletion events run with DR's locks held.
 
+Track code in writable memory one page at a time (-page_granular_writable_code,
+on here).  DR otherwise made a whole writable OS region read-only once code ran
+from it and merged its executable areas, so a write to any page of a JIT's code
+cache flushed every block built from the cache.
+
 --- a/core/arch/x86/mangle.c
 +++ b/core/arch/x86/mangle.c
 @@ -3111,9 +3111,35 @@
@@ -515,3 +520,455 @@ diff --git a/core/arch/clean_call_opt_shared.c b/core/arch/clean_call_opt_shared
          return;
      if (is_on_dstack(dcontext, xsp)) {
          /* Only a clean callee runs on the dstack while control is still in the
+diff --git a/core/heap.c b/core/heap.c
+--- a/core/heap.c
++++ b/core/heap.c
+@@ -793,11 +793,39 @@ report_w_xor_x_fatal_error_and_exit(void)
+     ASSERT_NOT_REACHED();
+ }
+ 
++bool
++vmcode_reservation_ready(void)
++{
++    return heapmgt != NULL && heapmgt->vmcode.start_addr != NULL &&
++        heapmgt->vmcode.blocks != NULL;
++}
++
+ static void
+ vmm_place_vmcode(vm_heap_t *vmh, /*INOUT*/ size_t *size, heap_error_code_t *error_code)
+ {
+     ptr_uint_t preferred = 0;
+ #ifdef X64
++    if (DYNAMO_OPTION(durante_window) != 0) {
++        /* Durante: the code cache and, with -reachable_heap, all heap live at a fixed
++         * slot of the window.  There is no fallback outside it.
++         */
++        if (!REACHABLE_HEAP() || DYNAMO_OPTION(satisfy_w_xor_x) ||
++            *size > DURANTE_WINDOW_VMCODE_MAX ||
++            !ALIGNED(DURANTE_WINDOW_VMCODE_OFFSET, DYNAMO_OPTION(vmm_block_size))) {
++            vmh->alloc_start = vmh->start_addr = NULL;
++            *error_code = HEAP_ERROR_NOT_AT_PREFERRED;
++            return;
++        }
++        vmh->alloc_start = durante_window_reserve_slot(DURANTE_WINDOW_VMCODE_OFFSET, *size);
++        vmh->alloc_size = *size;
++        vmh->start_addr = vmh->alloc_start;
++        if (vmh->start_addr == NULL) {
++            *error_code = HEAP_ERROR_NOT_AT_PREFERRED;
++            return;
++        }
++        request_region_be_heap_reachable(vmh->start_addr, *size);
++        return;
++    }
+     LOG(GLOBAL, LOG_HEAP, 1, "%s: vm heap allowed range " PFX "-" PFX "\n", __FUNCTION__,
+         heap_allowable_region_start, heap_allowable_region_end);
+     /* -heap_in_lower_4GB takes top priority and has already set heap_allowable_region_*.
+@@ -1604,6 +1632,8 @@ vmm_heap_reserve(size_t size, heap_error_code_t *error_code, bool executable,
+                 /* FIXME - for our testing would be nice to have some release build
+                  * notification of this ... */
+             });
++            if (DYNAMO_OPTION(durante_window) != 0)
++                report_low_on_memory(which, OOM_RESERVE, HEAP_ERROR_NOT_AT_PREFERRED);
+             reached_beyond_vmm(which);
+ #ifdef X64
+             if (TEST(VMM_REACHABLE, which) || REACHABLE_HEAP()) {
+@@ -1690,6 +1720,10 @@ vmm_heap_reserve(size_t size, heap_error_code_t *error_code, bool executable,
+         });
+     }
+     /* if we fail to allocate from our reservation we fall back to the OS */
++    if (DYNAMO_OPTION(durante_window) != 0) {
++        /* Durante: memory outside the window would be writable by the application. */
++        report_low_on_memory(which, OOM_RESERVE, HEAP_ERROR_NOT_AT_PREFERRED);
++    }
+     reached_beyond_vmm(which);
+ #ifdef X64
+     if (TEST(VMM_REACHABLE, which) || REACHABLE_HEAP()) {
+@@ -1938,6 +1972,9 @@ vmm_heap_init()
+ #endif
+     if (DYNAMO_OPTION(vm_reserve)) {
+         vmm_heap_unit_init(&heapmgt->vmcode, DYNAMO_OPTION(vm_size), true, "vmcode");
++        if (DYNAMO_OPTION(durante_window) != 0 && !REACHABLE_HEAP())
++            vmm_heap_unit_init_failed(&heapmgt->vmheap, HEAP_ERROR_NOT_AT_PREFERRED,
++                                      "vmheap");
+         if (!REACHABLE_HEAP()) {
+             vmm_heap_unit_init(
+                 &heapmgt->vmheap,
+@@ -3098,6 +3135,10 @@ heap_mmap_reserve_post_stack(dcontext_t *dcontext, size_t reserve_size,
+     if (vmm_is_reserved_unit(vmh, stack_reserve_end, reserve_size)) {
+         /* Memory is already reserved with OS */
+         p = stack_reserve_end;
++    } else if (DYNAMO_OPTION(durante_window) != 0) {
++        /* Durante: never reserve outside the window. */
++        dynamo_vm_areas_unlock();
++        return heap_mmap_reserve(reserve_size, commit_size, prot, which);
+     } else {
+         p = os_heap_reserve(stack_reserve_end, reserve_size, &error_code, true /*+x*/);
+ #ifdef X64
+diff --git a/core/heap.h b/core/heap.h
+--- a/core/heap.h
++++ b/core/heap.h
+@@ -234,6 +234,12 @@ heap_reserve_for_external_mapping(byte *preferred, size_t size, which_vmm_t whic
+ bool
+ heap_unreserve_for_external_mapping(byte *p, size_t size, which_vmm_t which);
+ 
++/* Durante: whether the vmcode reservation (which then holds every runtime
++ * mapping inside -durante_window) has been placed.
++ */
++bool
++vmcode_reservation_ready(void);
++
+ /* updates dynamo_areas and calls the os_ versions */
+ byte *
+ d_r_map_file(file_t f, size_t *size DR_PARAM_INOUT, uint64 offs, app_pc addr, uint prot,
+diff --git a/core/optionsx.h b/core/optionsx.h
+--- a/core/optionsx.h
++++ b/core/optionsx.h
+@@ -1658,6 +1658,13 @@ OPTION_DEFAULT(bool, vm_allow_not_at_base, true,
+ OPTION_DEFAULT(bool, vm_allow_smaller, true,
+                "if we can't allocate vm heap of "
+                "requested size, try smaller sizes instead of dying")
++/* Durante: a 4GB-aligned window that holds every writable DynamoRIO and client
++ * allocation (the core image, the code cache and all heap), reserved PROT_NONE in full
++ * before the application is mapped.  Requires early injection and -reachable_heap.
++ * Out-of-window fallbacks are fatal while it is set.
++ */
++OPTION_DEFAULT(uint_addr, durante_window, 0,
++               "Durante: base of the private 4GB window holding all runtime memory")
+ OPTION_DEFAULT(bool, vm_base_near_app, true,
+                "allocate vm region near the app if possible (if not, if "
+                "-vm_allow_not_at_base, will try elsewhere)")
+diff --git a/core/unix/loader.c b/core/unix/loader.c
+--- a/core/unix/loader.c
++++ b/core/unix/loader.c
+@@ -476,6 +476,12 @@ static void
+ privload_check_new_map_bounds(elf_loader_t *elf, byte *map_base, byte *map_end)
+ {
+     /* This is only called for MAP_FIXED. */
++    if (durante_window_overlaps(map_base, map_end - map_base)) {
++        /* Durante: nothing of the application may live in the protected window. */
++        external_error(__FILE__, __LINE__,
++                       "fixed application mapping overlaps the Durante window");
++        ASSERT_NOT_REACHED();
++    }
+     if (get_dynamorio_dll_start() < map_end && get_dynamorio_dll_end() > map_base) {
+         FATAL_USAGE_ERROR(FIXED_MAP_OVERLAPS_DR, 3, get_application_name(),
+                           get_application_pid(), elf->filename);
+@@ -2024,6 +2030,21 @@ relocate_dynamorio(byte *dr_map, size_t dr_size, byte *sp)
+     os_page_size_init(env, true);
+ }
+ 
++/* Durante: the fixed base for the reloaded core inside the reserved window. */
++static byte *durante_reload_base;
++
++static byte *
++durante_reload_map(file_t f, size_t *size DR_PARAM_INOUT, uint64 offs, app_pc addr,
++                   uint prot, map_flags_t map_flags)
++{
++    /* The loader's first mapping reserves the whole image; place it at the slot. */
++    if (durante_reload_base != NULL && !TEST(MAP_FILE_FIXED, map_flags)) {
++        addr = durante_reload_base;
++        map_flags |= MAP_FILE_FIXED;
++    }
++    return os_map_file(f, size, offs, addr, prot, map_flags);
++}
++
+ /* i#1227: on a conflict with the app we reload ourselves.
+  * Does not return.
+  */
+@@ -2053,7 +2074,8 @@ reload_dynamorio(void **init_sp, app_pc conflict_start, app_pc conflict_end)
+      * the kernel picking an address, so we have to block out the conflicting
+      * region first, avoiding any existing mappings (like vvar+vdso: i#2641).
+      */
+-    if (memquery_iterator_start(&iter, NULL, false /*no heap*/)) {
++    if (durante_reload_base == NULL &&
++        memquery_iterator_start(&iter, NULL, false /*no heap*/)) {
+         /* Strategy: track the leading edge ("tocover_start") of the conflict region.
+          * Find the next block beyond that edge so we know the safe endpoint for a
+          * temp mmap.
+@@ -2091,11 +2113,18 @@ reload_dynamorio(void **init_sp, app_pc conflict_start, app_pc conflict_end)
+     }
+ 
+     /* Now load the 2nd libdynamorio.so */
+-    dr_map = elf_loader_map_phdrs(&dr_ld, false /*!fixed*/, os_map_file, os_unmap_file,
++    dr_map = elf_loader_map_phdrs(&dr_ld, false /*!fixed*/,
++                                  durante_reload_base != NULL ? durante_reload_map
++                                                              : os_map_file,
++                                  os_unmap_file,
+                                   os_set_protection, privload_check_new_map_bounds,
+                                   memset, privload_map_flags(0 /*!reachable*/));
+     ASSERT(dr_map != NULL);
+     ASSERT(is_elf_so_header(dr_map, 0));
++    if (durante_reload_base != NULL && dr_map != durante_reload_base) {
++        external_error(__FILE__, __LINE__, "cannot place the core in the Durante window");
++        ASSERT_NOT_REACHED();
++    }
+ 
+     /* Relocate it */
+     memset(&opd, 0, sizeof(opd));
+@@ -2221,9 +2250,46 @@ privload_early_inject(void **sp, byte *old_libdr_base, size_t old_libdr_size)
+      */
+     dynamorio_app_init_part_one_options();
+ 
++    if (DYNAMO_OPTION(durante_window) != 0) {
++        /* Durante: reserve the whole window before anything of the application is
++         * mapped, then run the core from its fixed slot inside it.  A core image
++         * inside the window can only come from that reload.
++         */
++        byte *window = (byte *)DYNAMO_OPTION(durante_window);
++        if (!ALIGNED(window, DURANTE_WINDOW_SIZE) ||
++            (ptr_uint_t)window + DURANTE_WINDOW_SIZE - 1 > 0x7fffffffffffULL) {
++            external_error(__FILE__, __LINE__, "invalid Durante window");
++            ASSERT_NOT_REACHED();
++        }
++        size_t image = get_dynamorio_dll_end() - get_dynamorio_dll_start();
++        if (get_dynamorio_dll_start() >= window &&
++            get_dynamorio_dll_end() <= window + DURANTE_WINDOW_SIZE) {
++            if (get_dynamorio_dll_start() != window + DURANTE_WINDOW_IMAGE_OFFSET) {
++                external_error(__FILE__, __LINE__, "unexpected core placement");
++                ASSERT_NOT_REACHED();
++            }
++            durante_window_ready = true;
++        } else {
++            if (!durante_window_reserve_all() ||
++                image > DURANTE_WINDOW_VMCODE_OFFSET - DURANTE_WINDOW_IMAGE_OFFSET) {
++                external_error(__FILE__, __LINE__, "cannot reserve the Durante window");
++                ASSERT_NOT_REACHED();
++            }
++            elf_loader_destroy(&exe_ld);
++            durante_reload_base = window + DURANTE_WINDOW_IMAGE_OFFSET;
++            reload_dynamorio(sp, NULL, NULL);
++            ASSERT_NOT_REACHED();
++        }
++    }
++
+     /* Find range of app */
+     exe_map = module_vaddr_from_prog_header((app_pc)exe_ld.phdrs, exe_ld.ehdr->e_phnum,
+                                             NULL, &exe_end);
++    /* Durante: the application image and its brk room stay outside the window. */
++    if (durante_window_overlaps(exe_map, exe_end + APP_BRK_GAP - exe_map)) {
++        external_error(__FILE__, __LINE__, "application image overlaps the Durante window");
++        ASSERT_NOT_REACHED();
++    }
+     /* i#1227: on a conflict with the app (+ room for the brk): reload ourselves */
+     if (get_dynamorio_dll_start() < exe_end + APP_BRK_GAP &&
+         get_dynamorio_dll_end() > exe_map) {
+@@ -2238,6 +2304,10 @@ privload_early_inject(void **sp, byte *old_libdr_base, size_t old_libdr_size)
+      * very often.
+      */
+     if (!dynamorio_lib_gap_empty()) {
++        if (DYNAMO_OPTION(durante_window) != 0) {
++            external_error(__FILE__, __LINE__, "unexpected mapping inside the core");
++            ASSERT_NOT_REACHED();
++        }
+         elf_loader_destroy(&exe_ld);
+         reload_dynamorio(sp, get_dynamorio_dll_start(), get_dynamorio_dll_end());
+         ASSERT_NOT_REACHED();
+diff --git a/core/unix/os.c b/core/unix/os.c
+--- a/core/unix/os.c
++++ b/core/unix/os.c
+@@ -4587,6 +4587,50 @@ os_write(file_t f, const void *buf, size_t count)
+     return write_syscall(f, buf, count);
+ }
+ 
++/* Set once this core instance runs inside the reserved -durante_window. */
++bool durante_window_ready;
++
++bool
++durante_window_overlaps(const byte *start, size_t size)
++{
++    ptr_uint_t base = DYNAMO_OPTION(durante_window);
++    if (base == 0 || size == 0)
++        return false;
++    ptr_uint_t first = (ptr_uint_t)start;
++    ptr_uint_t last = first + size - 1;
++    if (last < first)
++        last = POINTER_MAX; /* A wrapping range reaches the top of the address space. */
++    return first < base + DURANTE_WINDOW_SIZE && last >= base;
++}
++
++bool
++durante_window_reserve_all(void)
++{
++    byte *window = (byte *)DYNAMO_OPTION(durante_window);
++    byte *map = mmap_syscall(window, DURANTE_WINDOW_SIZE, PROT_NONE,
++                             MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE |
++                                 MAP_FIXED_NOREPLACE,
++                             -1, 0);
++    if (map == window)
++        return true;
++    if (mmap_syscall_succeeded(map))
++        munmap_syscall(map, DURANTE_WINDOW_SIZE);
++    return false;
++}
++
++byte *
++durante_window_reserve_slot(ptr_uint_t offset, size_t size)
++{
++    ptr_uint_t base = DYNAMO_OPTION(durante_window);
++    if (base == 0 || !durante_window_ready || offset < DURANTE_WINDOW_GUARD ||
++        size > DURANTE_WINDOW_SIZE - DURANTE_WINDOW_GUARD - offset)
++        return NULL;
++    byte *slot = (byte *)(base + offset);
++    byte *map = mmap_syscall(slot, size, PROT_NONE,
++                             MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE | MAP_FIXED, -1, 0);
++    return map == slot ? slot : NULL;
++}
++
+ /* There are enough differences vs the shared drlibc_os.c version that we override
+  * it here.  We use a loop to ensure reachability for the core.
+  */
+@@ -4627,6 +4671,28 @@ os_map_file(file_t f, size_t *size DR_PARAM_INOUT, uint64 offs, app_pc addr, uin
+     if (TEST(MAP_FILE_FIXED, map_flags))
+         flags |= MAP_FIXED;
+ #if defined(X64)
++    /* Durante: once the vmcode reservation exists inside the window, every runtime
++     * mapping that is neither the application's nor placed at a fixed address goes
++     * inside it.  Nothing falls back to a kernel-chosen address outside the window.
++     */
++    bool in_window = DYNAMO_OPTION(durante_window) != 0 && durante_window_ready &&
++        vmcode_reservation_ready() && !TESTANY(MAP_FILE_FIXED | MAP_FILE_APP, map_flags);
++    if (in_window) {
++        map = heap_reserve_for_external_mapping(NULL, *size,
++                                                VMM_SPECIAL_MMAP | VMM_REACHABLE);
++        if (map == NULL)
++            return NULL;
++        byte *placed = mmap_syscall(map, *size, memprot_to_osprot(prot), flags | MAP_FIXED,
++                                    f, offs);
++        if (!mmap_syscall_succeeded(placed) || placed != map) {
++            mmap_syscall(map, *size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED,
++                         -1, 0);
++            heap_unreserve_for_external_mapping(map, *size,
++                                                VMM_SPECIAL_MMAP | VMM_REACHABLE);
++            return NULL;
++        }
++        return placed;
++    }
+     if (!TEST(MAP_32BIT, flags) && TEST(MAP_FILE_REACHABLE, map_flags)) {
+         vmcode_get_reachable_region(&region_start, &region_end);
+         /* addr need not be NULL: we'll use it if it's in the region */
+diff --git a/core/unix/os_exports.h b/core/unix/os_exports.h
+--- a/core/unix/os_exports.h
++++ b/core/unix/os_exports.h
+@@ -669,4 +669,25 @@ rseq_insert_start_label(dcontext_t *dcontext, app_pc tag, instrlist_t *ilist);
+ 
+ #endif
+ 
++/* Durante protected window (-durante_window).  Every writable runtime and client
++ * allocation lies inside [base, base + DURANTE_WINDOW_SIZE); the first and last
++ * DURANTE_WINDOW_GUARD bytes are never mapped accessible.
++ */
++#define DURANTE_WINDOW_SIZE (((ptr_uint_t)1) << 32)
++#define DURANTE_WINDOW_GUARD (((ptr_uint_t)16) << 20)
++#define DURANTE_WINDOW_IMAGE_OFFSET ((ptr_uint_t)0x10000000)
++#define DURANTE_WINDOW_VMCODE_OFFSET ((ptr_uint_t)0x20000000)
++#define DURANTE_WINDOW_VMCODE_MAX ((ptr_uint_t)0x80000000)
++bool
++durante_window_overlaps(const byte *start, size_t size);
++/* Reserves the whole window PROT_NONE without replacing anything; false on failure. */
++bool
++durante_window_reserve_all(void);
++/* Replaces part of the window's PROT_NONE reservation with a fresh PROT_NONE
++ * reservation of its own; returns NULL on failure.
++ */
++byte *
++durante_window_reserve_slot(ptr_uint_t offset, size_t size);
++extern bool durante_window_ready;
++
+ #endif /* _OS_EXPORTS_H_ */
+diff --git a/core/unix/signal.c b/core/unix/signal.c
+--- a/core/unix/signal.c
++++ b/core/unix/signal.c
+@@ -3988,6 +3988,15 @@ copy_frame_to_stack(dcontext_t *dcontext, thread_sig_info_t *info, int sig,
+ 
+     LOG(THREAD, LOG_ASYNCH, 3, "copy_frame_to_stack: rt=%d, src=" PFX ", sp=" PFX "\n",
+         rtframe, frame, sp);
++    if (durante_window_overlaps(sp, size)) {
++        /* Durante: the runtime itself must never write an application signal frame
++         * into the protected window.  This is an integrity violation: stop the
++         * process before writing anything.
++         */
++        SYSLOG_INTERNAL_ERROR("signal frame overlaps the Durante window");
++        os_terminate_with_code(dcontext, TERMINATE_PROCESS, 125);
++        ASSERT_NOT_REACHED();
++    }
+     fixup_siginfo(dcontext, sig, frame);
+ 
+     /* We avoid querying memory as it incurs global contended locks. */
+diff --git a/core/optionsx.h b/core/optionsx.h
+--- a/core/optionsx.h
++++ b/core/optionsx.h
+@@ -1501,6 +1501,12 @@ OPTION_DEFAULT(uint, ro2sandbox_threshold, 10,
+ OPTION_DEFAULT(
+     uint, sandbox2ro_threshold, 20,
+     "#executions in a sandboxed region before switching to page prot, 0 to disable")
++/* Durante: on by default; JIT code caches otherwise lose all their blocks on
++ * every write to any of their pages.
++ */
++OPTION_DEFAULT(bool, page_granular_writable_code, true,
++               "track code in writable memory one page at a time, so that a write "
++               "flushes only the fragments of the pages it writes")
+ 
+ OPTION_COMMAND(
+     bool, sandbox_writable, false, "sandbox_writable",
+diff --git a/core/vmareas.c b/core/vmareas.c
+--- a/core/vmareas.c
++++ b/core/vmareas.c
+@@ -948,6 +948,12 @@ add_vm_area(vm_area_vector_t *v, app_pc start, app_pc end, uint vm_flags, uint f
+              /* never merge coarse-grain */
+              !TEST(FRAG_COARSE_GRAIN, v->buf[i].frag_flags) &&
+              !TEST(VECTOR_NEVER_MERGE_ADJACENT, v->flags) &&
++             /* With -page_granular_writable_code, a merged area would be flushed
++              * whole when any of its pages is written.
++              */
++             !(DYNAMO_OPTION(page_granular_writable_code) &&
++               TEST(VM_WRITABLE, vm_flags) &&
++               (v == executable_areas || TEST(VECTOR_FRAGMENT_LIST, v->flags))) &&
+              (v->should_merge_func == NULL ||
+               v->should_merge_func(true /*adjacent*/, data, v->buf[i].custom.client)))) {
+             ASSERT(!(start < v->buf[i].end && end > v->buf[i].start) ||
+@@ -7558,6 +7564,27 @@ allow_xfer_for_frag_flags(dcontext_t *dcontext, app_pc pc, uint src_flags, uint
+     return allow;
+ }
+ 
++/* With -page_granular_writable_code, a new executable area in writable memory
++ * covers only the page holding pc, and such areas are not merged (see
++ * add_vm_area()).  A write fault then flushes only the fragments of the pages
++ * it writes, rather than every fragment from the enclosing OS region: a JIT
++ * that writes new code next to code it is running keeps the rest.
++ */
++static void
++clip_writable_code_to_page(app_pc pc, app_pc *base_pc, size_t *size)
++{
++    app_pc start = (app_pc)PAGE_START(pc), end = start + PAGE_SIZE;
++    if (!DYNAMO_OPTION(page_granular_writable_code))
++        return;
++    if (start < *base_pc)
++        start = *base_pc;
++    if (end > *base_pc + *size)
++        end = *base_pc + *size;
++    ASSERT(start <= pc && pc < end);
++    *base_pc = start;
++    *size = end - start;
++}
++
+ /* check origins of code for several purposes:
+  * 1) we need list of areas where this thread's fragments come
+  *    from, for faster flushing on munmaps
+@@ -8175,6 +8202,9 @@ check_thread_vm_area(dcontext_t *dcontext, app_pc pc, app_pc tag, void **vmlist,
+             STATS_INC(num_ro2sandbox_other_sub);
+     }
+ 
++    if (area == NULL && TEST(MEMPROT_WRITE, prot))
++        clip_writable_code_to_page(pc, &base_pc, &size);
++
+     /* now that we know about new area, decide whether it's compatible to be
+      * in the same bb as previous areas, as dictated by old flags
+      * N.B.: we only care about FRAG_ flags here, not VM_ flags
+@@ -8333,6 +8363,7 @@ check_thread_vm_area(dcontext_t *dcontext, app_pc pc, app_pc tag, void **vmlist,
+                     prot |= (cur_prot & MEMPROT_WRITE);
+             }
+             if (TEST(MEMPROT_WRITE, prot) || becoming_writable) {
++                clip_writable_code_to_page(pc, &base_pc, &size);
+                 vm_flags |= VM_WRITABLE;
+                 STATS_INC(num_writable_code_regions);
+                 /* Now that new area bounds are finalized, see if it should be

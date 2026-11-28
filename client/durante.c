@@ -51,7 +51,9 @@ static uint32_t DURANTE_TEST_BLOCK_LATENCY_BOUND(void *drcontext, void *tag, ins
 #include <linux/mman.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
+#include <signal.h>
 #include <sys/syscall.h>
+#include <sys/uio.h>
 #include <unistd.h>
 #ifndef X86_64
 #error "durante supports Linux x86-64 only"
@@ -128,6 +130,15 @@ typedef struct {
    * the two registers it keeps here while that stack is in use. */
   byte *boundary_stack, *boundary_stack_top;
   reg_t boundary_rsp;
+  /* -protect_meter syscall state (meter_protect.h): a parameter replaced by a
+   * validated copy for the current syscall, and the copies themselves. */
+  int protect_param;
+  reg_t protect_param_value, protect_param_saved;
+  bool protect_open, protect_map;
+  int protect_open_flags;
+  struct iovec protect_iov[64];
+  stack_t protect_stack;
+  uint64_t protect_clone_args[16];
 } thread_data_t;
 /* Flat and live entries address these fields with 8-bit displacements. */
 _Static_assert(offsetof(thread_data_t, entry_base) + 8 <= 128 &&
@@ -143,7 +154,18 @@ static uint raw_tls_offset;
  * the flat write checkpoint. Private spill slots let restore_state() recognize
  * exactly this client's sequences; the runtime's shared spill slots are also
  * used by its mangling. */
-enum { RAW_TLS_STATE, RAW_TLS_SPILL_RCX, RAW_TLS_SPILL_R11, RAW_TLS_WRITE, RAW_TLS_SLOTS };
+enum {
+  RAW_TLS_STATE,
+  RAW_TLS_SPILL_RCX,
+  RAW_TLS_SPILL_R11,
+  RAW_TLS_WRITE,
+#ifdef DURANTE_TEST_CHECKPOINT_IDENTITY
+  RAW_TLS_WRITE_PC, /* The full address of the write that stored the word. */
+#endif
+  RAW_TLS_SLOTS
+};
+/* -protect_meter adds one slot: set by a failed inline store check. */
+enum { RAW_TLS_VIOLATION = RAW_TLS_SLOTS, RAW_TLS_PROTECT_SLOTS };
 /* Without a live clock nothing is published between syscalls. Every block and
  * store then uses flag-free inline accounting, including shared libraries and
  * generated code. Restart validation moves from block entry to the callbacks
@@ -160,6 +182,9 @@ static uint64_t total_rep_movs_bytes, total_rep_stos_bytes,
     total_rep_movs_entries, total_rep_stos_entries;
 static bool rep_bytes_enabled, accounting_error, app_exit_seen, report_written;
 static bool deny_avx, deny_simd;
+/* -protect_meter: isolate the meter from the application (meter_protect.h). */
+static bool protect_meter;
+static uint64_t live_dev, live_ino;
 static bool latency_bound_enabled, memory_operand_bytes_enabled;
 static uint64_t total_latency_bound_x16, total_memory_operand_bytes;
 static app_pc cpu_policy_exit_pc;
@@ -307,6 +332,8 @@ static void open_live_work(const char *path) {
   if (fd < 0 || fstat(fd, &st) != 0 || !S_ISREG(st.st_mode) ||
       st.st_nlink != 1 || st.st_size != (off_t)sizeof(*live_work))
     fail("invalid live work file");
+  live_dev = st.st_dev;
+  live_ino = st.st_ino;
   size_t size = sizeof(*live_work);
   void *mapping = dr_map_file(fd, &size, 0, NULL, DR_MEMPROT_READ | DR_MEMPROT_WRITE, 0);
   close(fd);
@@ -548,10 +575,11 @@ static void start_record(thread_data_t *d, const char *origin,
               ",\"origin\":\"%s\",\"parent_pid\":%d,"
               "\"parent_segment\":\"%s\",\"rep_bytes_enabled\":%s,"
               "\"rep_breakdown_version\":1,\"sdk_"
-              "version\":\"11.3.0\"%s%s%s%s",
+              "version\":\"11.3.0\"%s%s%s%s%s",
               origin, (int)parent, parent_segment,
               rep_bytes_enabled ? "true" : "false", policy_fields, cpuid_fields,
-              latency_fields, memory_operand_bytes_enabled ? ",\"memory_operand_bytes_version\":1" : "");
+              latency_fields, memory_operand_bytes_enabled ? ",\"memory_operand_bytes_version\":1" : "",
+              protect_meter ? ",\"meter_protection_version\":1" : "");
   route_event(d, "start", fields);
 }
 static void open_stream(const char *origin, process_id_t parent,
@@ -721,21 +749,101 @@ static void set_raw_accounting_state(thread_data_t *d) {
 }
 
 /* Flat inline code keeps the write checkpoint as one word in RAW_TLS_WRITE,
- * stored with immediates and no scratch register: the write's address, its
- * length and its block suffix. A block entry stores zero. Callbacks settle
- * the word into the checkpoint fields before they read or replace them, and
- * leave WRITE_WORD_SETTLED while the fields are current. A packed word has a
- * nonzero length, so it equals neither marker. */
-enum { WRITE_WORD_PC_BITS = 48, WRITE_WORD_LENGTH_BITS = 4, WRITE_WORD_SETTLED = 1 };
-#define WRITE_WORD_MAX_SUFFIX \
-  ((UINT64_C(1) << (64 - WRITE_WORD_PC_BITS - WRITE_WORD_LENGTH_BITS)) - 1)
+ * stored with one move of a sign-extended 32-bit immediate and no scratch
+ * register: the low bits of the write's address, its length and its block
+ * suffix, with bit 31 clear so that the upper half is zero. A block entry
+ * stores zero. Callbacks settle the word into the checkpoint fields before
+ * they read or replace them, and leave WRITE_WORD_SETTLED while the fields are
+ * current. A callback knows which write it expects (the REP instruction it
+ * observes, or the write the runtime replays): settling takes the address from
+ * it and keeps the checkpoint only if the low bits match. A packed word has a
+ * nonzero length, so it equals neither marker.
+ *
+ * The low bits identify the write because the word and the expected write
+ * belong to the block being executed. Every flat block entry clears the word,
+ * inline or in the callback that charges it, and so do before_write(),
+ * kernel transfers and fork. Each settling callback names a write of the
+ * current block: observe_rep() runs at its own REP instruction (one that does
+ * not write, such as REPE CMPS, finds the word of an earlier write of the
+ * block, which it rejects as the full address did), a retry names
+ * the write that faulted in it, and a completed write names the instruction
+ * after a write that just ran in it. Traces are disabled, so a fragment is one
+ * block entered at its top. For a client the runtime elides no direct jumps
+ * or calls by default, so a block is contiguous code of about -max_bb_instrs
+ * instructions; with -max_elide_jmp or -max_elide_call it can join distant
+ * code. Flat code therefore stores packed words only in blocks whose
+ * application code spans less than WRITE_WORD_PACKED_SPAN bytes
+ * (packed_checkpoints_fit()). Two addresses of
+ * such a block, or one of them and an expected address up to 15 bytes before
+ * it, differ by less than 2^WRITE_WORD_PC_BITS, so equal low bits mean equal
+ * addresses. Other blocks take the full checkpoint of before_write(). A test
+ * build (DURANTE_TEST_CHECKPOINT_IDENTITY) also stores each write's full
+ * address and checks every settled word against it. */
+enum {
+  WRITE_WORD_PC_BITS = 17,
+  WRITE_WORD_LENGTH_BITS = 4,
+  WRITE_WORD_SUFFIX_BITS = 10,
+  WRITE_WORD_SETTLED = 1
+};
+_Static_assert(WRITE_WORD_PC_BITS + WRITE_WORD_LENGTH_BITS + WRITE_WORD_SUFFIX_BITS == 31,
+               "a packed write word is a non-negative 32-bit immediate");
+#define WRITE_WORD_MAX_SUFFIX ((UINT64_C(1) << WRITE_WORD_SUFFIX_BITS) - 1)
+#define WRITE_WORD_PC_MASK ((UINT64_C(1) << WRITE_WORD_PC_BITS) - 1)
+#define WRITE_WORD_PACKED_SPAN \
+  ((UINT64_C(1) << WRITE_WORD_PC_BITS) - (UINT64_C(1) << WRITE_WORD_LENGTH_BITS))
+
+#ifdef DURANTE_TEST_CHECKPOINT_IDENTITY
+static uint64_t identity_settled, identity_unnamed, identity_foreign, identity_packed_blocks,
+    identity_unfit_blocks;
+enum { IDENTITY_REP, IDENTITY_RETRY, IDENTITY_AFTER_WRITE, IDENTITY_OTHER, IDENTITY_KINDS };
+static uint64_t identity_kind[IDENTITY_KINDS];
+
+/* Count the packed words each kind of callback settles. */
+static void note_checkpoint_identity(const uint64_t *word, int kind) {
+  if (word && *word >> WRITE_WORD_PC_BITS != 0)
+    __atomic_fetch_add(&identity_kind[kind], 1, __ATOMIC_RELAXED);
+}
+
+/* The full checkpoint of the old layout would have kept this word exactly
+ * when the write that stored it is the expected write. */
+static void check_checkpoint_identity(const uint64_t *word, app_pc expected, bool kept) {
+  app_pc stored = (app_pc)(ptr_uint_t)word[RAW_TLS_WRITE_PC - RAW_TLS_WRITE];
+  __atomic_fetch_add(&identity_settled, 1, __ATOMIC_RELAXED);
+  if (expected == NULL)
+    __atomic_fetch_add(&identity_unnamed, 1, __ATOMIC_RELAXED);
+  else if (stored != expected)
+    __atomic_fetch_add(&identity_foreign, 1, __ATOMIC_RELAXED);
+  if (kept != (expected != NULL && stored == expected)) {
+    dr_fprintf(STDERR, "durante: packed checkpoint of %p settled as %p\n", stored, expected);
+    dr_abort();
+  }
+}
+
+static void report_checkpoint_identity(void) {
+  dr_fprintf(STDERR,
+             "durante-checkpoint-identity: pid=%d settled=%llu rep=%llu retry=%llu "
+             "after_write=%llu other=%llu unnamed=%llu foreign=%llu packed_blocks=%llu "
+             "unfit_blocks=%llu\n",
+             (int)dr_get_process_id(),
+             (unsigned long long)__atomic_load_n(&identity_settled, __ATOMIC_RELAXED),
+             (unsigned long long)__atomic_load_n(&identity_kind[IDENTITY_REP], __ATOMIC_RELAXED),
+             (unsigned long long)__atomic_load_n(&identity_kind[IDENTITY_RETRY], __ATOMIC_RELAXED),
+             (unsigned long long)__atomic_load_n(&identity_kind[IDENTITY_AFTER_WRITE],
+                                                 __ATOMIC_RELAXED),
+             (unsigned long long)__atomic_load_n(&identity_kind[IDENTITY_OTHER], __ATOMIC_RELAXED),
+             (unsigned long long)__atomic_load_n(&identity_unnamed, __ATOMIC_RELAXED),
+             (unsigned long long)__atomic_load_n(&identity_foreign, __ATOMIC_RELAXED),
+             (unsigned long long)__atomic_load_n(&identity_packed_blocks, __ATOMIC_RELAXED),
+             (unsigned long long)__atomic_load_n(&identity_unfit_blocks, __ATOMIC_RELAXED));
+}
+#endif
 
 static bool pack_write_checkpoint(app_pc pc, app_pc next_pc, int suffix, uint64_t *word) {
   uint64_t address = (uint64_t)(ptr_uint_t)pc, kept = suffix > 0 ? (uint64_t)suffix : 0;
   if (!pc || next_pc <= pc || next_pc - pc >= 1 << WRITE_WORD_LENGTH_BITS ||
-      address >> WRITE_WORD_PC_BITS || kept > WRITE_WORD_MAX_SUFFIX)
+      address >> 48 || kept > WRITE_WORD_MAX_SUFFIX)
     return false;
-  *word = address | (uint64_t)(next_pc - pc) << WRITE_WORD_PC_BITS |
+  *word = (address & WRITE_WORD_PC_MASK) | (uint64_t)(next_pc - pc) << WRITE_WORD_PC_BITS |
           kept << (WRITE_WORD_PC_BITS + WRITE_WORD_LENGTH_BITS);
   return true;
 }
@@ -746,7 +854,10 @@ SCALAR static inline uint64_t *write_word(thread_data_t *d) {
              : NULL;
 }
 
-static void settle_write_checkpoint(thread_data_t *d) {
+/* Settle a packed word stored by the write at expect_pc, or by the write that
+ * ends at expect_next when expect_pc is NULL. A word stored by any other write
+ * leaves no checkpoint, as a block entry after it does. */
+static void settle_write_checkpoint(thread_data_t *d, app_pc expect_pc, app_pc expect_next) {
   uint64_t *word = write_word(d);
   if (!word || *word == WRITE_WORD_SETTLED)
     return;
@@ -756,9 +867,18 @@ static void settle_write_checkpoint(thread_data_t *d) {
     d->write_pc = NULL; /* A block was entered after the last checkpoint. */
     return;
   }
-  app_pc pc = (app_pc)(ptr_uint_t)(packed & ((UINT64_C(1) << WRITE_WORD_PC_BITS) - 1));
+  uint length = (uint)(packed >> WRITE_WORD_PC_BITS & ((1 << WRITE_WORD_LENGTH_BITS) - 1));
+  app_pc pc = expect_pc ? expect_pc : expect_next ? expect_next - length : NULL;
+  bool kept = pc && ((ptr_uint_t)pc & WRITE_WORD_PC_MASK) == (packed & WRITE_WORD_PC_MASK);
+#ifdef DURANTE_TEST_CHECKPOINT_IDENTITY
+  check_checkpoint_identity(word, pc, kept);
+#endif
+  if (!kept) {
+    d->write_pc = NULL;
+    return;
+  }
   d->write_pc = pc;
-  d->write_next_pc = pc + (packed >> WRITE_WORD_PC_BITS & ((1 << WRITE_WORD_LENGTH_BITS) - 1));
+  d->write_next_pc = pc + length;
   d->write_suffix = packed >> (WRITE_WORD_PC_BITS + WRITE_WORD_LENGTH_BITS);
   d->write_rep = false;
   /* An entry zeroes the word before it replaces the block fields, so a packed
@@ -778,6 +898,8 @@ SCALAR static void clear_write_checkpoint(thread_data_t *d) {
 
 enum { BOUNDARY_STACK_BYTES = 16 * 1024 };
 static void set_boundary_state(void *ctx, thread_data_t *d);
+static void protect_check_thread(thread_data_t *d);
+static void integrity_violation(void *ctx, const char *vector);
 
 static void free_thread_state(void *ctx, thread_data_t *d) {
   /* The runtime must stop reading boundary_pc before it is freed. */
@@ -800,8 +922,10 @@ static void thread_init(void *ctx) {
   d->child_file = -1;
   if (!drmgr_set_tls_field(ctx, tls_index, d))
     fail("TLS init failed");
+  d->protect_param = -1;
   set_raw_accounting_state(d);
   set_boundary_state(ctx, d);
+  protect_check_thread(d);
   set_fast_until(d, 0);
   process_id_t process = dr_get_process_id();
   if (process != owner_pid) {
@@ -954,7 +1078,10 @@ static void observe_rep(app_pc pc, int opcode, int bytes, int count_reg) {
   if (data == NULL)
     fail("REP observation without thread state");
   settle_restart(data);
-  settle_write_checkpoint(data);
+#ifdef DURANTE_TEST_CHECKPOINT_IDENTITY
+  note_checkpoint_identity(write_word(data), IDENTITY_REP);
+#endif
+  settle_write_checkpoint(data, pc, NULL);
   set_fast_until(data, 0);
   uint64_t repeats = 0;
   if (bytes != 0) {
@@ -1056,6 +1183,8 @@ static void cpu_policy_exit(void) {
  * the child's client running. Measurement-only mode preserves the instruction
  * but invalidates the partial tree. CPU policy mode stops before execution. */
 static void unsupported_syscall_abi(void) {
+  if (protect_meter)
+    integrity_violation(dr_get_current_drcontext(), "syscall_abi");
   __atomic_store_n(&static_text_revoked, true, __ATOMIC_RELEASE);
   invalidate_live_work();
   if (deny_avx || deny_simd) {
@@ -1155,6 +1284,8 @@ static opnd_t raw_slot(uint slot) {
 static opnd_t state_field(size_t offset) {
   return opnd_create_base_disp(DR_REG_R11, DR_REG_NULL, 0, (int)offset, OPSZ_8);
 }
+
+#include "meter_protect.h"
 
 /* MOV, MOVZX, LEA and these branches preserve all arithmetic flags. The
  * scratch registers are restored before the first application instruction.
@@ -1854,10 +1985,10 @@ static const patched_template_t *write_checkpoint_template(void *ctx) {
                           "cannot lay out the write checkpoint");
 }
 
-/* Flat write checkpoint: the two halves of the packed word, stored straight
- * to the raw TLS slot. It needs no scratch register, so restore_state() has
- * nothing to recover inside it. */
-enum { PACKED_LOW, PACKED_HIGH, PACKED_IMMEDIATES };
+/* Flat write checkpoint: the packed word, stored straight to the raw TLS slot
+ * by one move that sign-extends its 32-bit immediate. It needs no scratch
+ * register, so restore_state() has nothing to recover inside it. */
+enum { PACKED_WORD, PACKED_IMMEDIATES };
 static patched_template_t *packed_checkpoint_template;
 
 static const patched_template_t *packed_write_template(void *ctx) {
@@ -1866,27 +1997,52 @@ static const patched_template_t *packed_write_template(void *ctx) {
     return t;
   instrlist_t *ilist = instrlist_create(ctx);
   instr_t *imm[PACKED_IMMEDIATES];
-  for (int i = 0; i < PACKED_IMMEDIATES; ++i) {
-    opnd_t half = raw_slot(RAW_TLS_WRITE);
-    opnd_set_disp(&half, opnd_get_disp(half) + 4 * i);
-    opnd_set_size(&half, OPSZ_4);
-    imm[i] = INSTR_CREATE_mov_st(ctx, half, OPND_CREATE_INT32(0x7fffffff));
-    instrlist_meta_append(ilist, imm[i]);
-  }
+  imm[PACKED_WORD] = INSTR_CREATE_mov_st(ctx, raw_slot(RAW_TLS_WRITE), OPND_CREATE_INT32(0x7fffffff));
+  instrlist_meta_append(ilist, imm[PACKED_WORD]);
   return publish_template(ctx, &packed_checkpoint_template, ilist, imm, PACKED_IMMEDIATES,
                           "cannot lay out the packed write checkpoint");
 }
 
+/* Whether the low bits of a packed word identify each write of this block:
+ * its application code, as rewritten for the client, spans less than
+ * WRITE_WORD_PACKED_SPAN bytes (see the packed word above). */
+static bool packed_checkpoints_fit(void *ctx, instrlist_t *bb) {
+  app_pc low = NULL, high = NULL;
+  for (instr_t *ins = instrlist_first_app(bb); ins != NULL; ins = instr_get_next_app(ins)) {
+    app_pc pc = instr_get_app_pc(ins);
+    if (pc == NULL)
+      continue; /* Its write, if any, cannot be packed. */
+    app_pc end = pc + instr_length(ctx, ins);
+    if (low == NULL || pc < low)
+      low = pc;
+    if (high == NULL || end > high)
+      high = end;
+  }
+  return low == NULL || (uint64_t)(high - low) < WRITE_WORD_PACKED_SPAN;
+}
+
 /* Returns false when this write needs the callback instead: flat code only
- * stores checkpoints that fit the packed word. */
+ * stores checkpoints that fit the packed word, in blocks where it fits. */
 static bool insert_write_checkpoint(void *ctx, instrlist_t *bb, instr_t *where,
-                                    app_pc pc, app_pc next_pc, int suffix) {
+                                    app_pc pc, app_pc next_pc, int suffix, bool packed_fit) {
   if (flat_inline) {
     uint64_t word;
-    if (!pack_write_checkpoint(pc, next_pc, suffix, &word))
+    if (!packed_fit || !pack_write_checkpoint(pc, next_pc, suffix, &word))
       return false;
-    const uint32_t value[PACKED_IMMEDIATES] = {(uint32_t)word, (uint32_t)(word >> 32)};
+    const uint32_t value[PACKED_IMMEDIATES] = {(uint32_t)word};
     insert_patched(ctx, bb, where, packed_write_template(ctx), value, PACKED_IMMEDIATES);
+#ifdef DURANTE_TEST_CHECKPOINT_IDENTITY
+    for (int half = 0; half < 2; ++half)
+      instrlist_meta_preinsert(
+          bb, where,
+          INSTR_CREATE_mov_st(
+              ctx,
+              opnd_create_far_base_disp(raw_tls_register, DR_REG_NULL, DR_REG_NULL, 0,
+                                        (int)(raw_tls_offset + RAW_TLS_WRITE_PC * sizeof(void *) +
+                                              4 * half),
+                                        OPSZ_4),
+              OPND_CREATE_INT32((int)(uint32_t)((ptr_uint_t)pc >> (32 * half)))));
+#endif
     return true;
   }
   if (raw_tls_enabled) {
@@ -1938,7 +2094,15 @@ static void code_replay(void *ctx, int reason, app_pc source_pc,
   }
   check_flat_counter(d);
   settle_restart(d);
-  settle_write_checkpoint(d);
+  /* A retry names the write; a completed write names where it continues. */
+#ifdef DURANTE_TEST_CHECKPOINT_IDENTITY
+  note_checkpoint_identity(write_word(d), reason == DR_DURANTE_REPLAY_RETRY ? IDENTITY_RETRY
+                                          : reason == DR_DURANTE_REPLAY_AFTER_WRITE
+                                              ? IDENTITY_AFTER_WRITE
+                                              : IDENTITY_OTHER);
+#endif
+  settle_write_checkpoint(d, reason == DR_DURANTE_REPLAY_RETRY ? source_pc : NULL,
+                          reason == DR_DURANTE_REPLAY_AFTER_WRITE ? target_pc : NULL);
   set_fast_until(d, 0);
   if (reason == DR_DURANTE_REPLAY_ENTRY) {
     /* Cache validation ran before client entry instrumentation. Nothing was
@@ -2103,7 +2267,8 @@ static bool select_inline_block(void *ctx, instrlist_t *bb, bool translating,
 static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
                                         instrlist_t *bb, instr_t *where,
                                         bool first_in_block, bool translating,
-                                        void *user_data) {
+                                        void *user_data, protect_block_t *protect,
+                                        bool packed_fit) {
   (void)tag;
   dr_emit_flags_t flags = DR_EMIT_DEFAULT;
 #ifdef DURANTE_TEST_COUNT_LOCATIONS
@@ -2192,7 +2357,7 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
                            OPND_CREATE_INT32((int)suffix_memory_bytes(where)),
                            OPND_CREATE_INT32((int)instruction_memory_bytes(where)));
     } else if ((!latency_bound_enabled || flat_inline) && inline_write &&
-               insert_write_checkpoint(drcontext, bb, where, pc, next_pc, suffix)) {
+               insert_write_checkpoint(drcontext, bb, where, pc, next_pc, suffix, packed_fit)) {
       /* A flat checkpoint takes its block's bound when it is settled. */
       /* Flat layouts depend only on the block, so retranslation reproduces them. */
       if (!cache_probe_enabled() && !flat_inline)
@@ -2237,6 +2402,13 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
                               OPND_CREATE_INT32(DR_REG_NULL));
     }
   }
+  /* Last, so the store check is the final instrumentation before the store. */
+  if (protect_meter) {
+    if (instr_is_app(where))
+      protect_instrument(drcontext, bb, where, translating, protect);
+    else if (!instr_is_label(where))
+      protect_forget_all(protect);
+  }
   return flags;
 }
 
@@ -2262,12 +2434,20 @@ static dr_emit_flags_t durante_bb_event(void *drcontext, void *tag, instrlist_t 
     flags |= durante_cpuid_app2app(drcontext, tag, bb, for_trace, translating);
   void *user_data = NULL;
   flags |= analyze_block(drcontext, tag, bb, for_trace, translating, &user_data);
+  protect_block_t protect;
+  protect_forget_all(&protect);
+  bool packed_fit = flat_inline && packed_checkpoints_fit(drcontext, bb);
+#ifdef DURANTE_TEST_CHECKPOINT_IDENTITY
+  if (flat_inline && !translating)
+    __atomic_fetch_add(packed_fit ? &identity_packed_blocks : &identity_unfit_blocks, 1,
+                       __ATOMIC_RELAXED);
+#endif
   instr_t *first = instrlist_first(bb), *next;
   for (instr_t *where = first; where != NULL; where = next) {
     next = instr_get_next(where);
     instrlist_set_auto_predicate(bb, instr_get_predicate(where));
     flags |= instrument_block(drcontext, tag, bb, where, where == first, translating,
-                              user_data);
+                              user_data, &protect, packed_fit);
     instrlist_set_auto_predicate(bb, DR_PRED_NONE);
   }
   return flags;
@@ -2287,13 +2467,13 @@ static bool lifecycle_syscall(int number) {
 }
 static bool filter_syscall(void *ctx, int number) {
   (void)ctx;
-  return live_work || lifecycle_syscall(number);
+  return protect_meter || live_work || lifecycle_syscall(number);
 }
 /* Only the ordinary static-image live clock initializes static_text_end. */
 static bool static_input_syscall(int number) {
   return static_text_end && (number == SYS_read || number == SYS_readv);
 }
-static bool pre_syscall(void *ctx, int number) {
+static bool pre_syscall_body(void *ctx, int number) {
   if (static_text_end && !__atomic_load_n(&static_text_revoked, __ATOMIC_ACQUIRE) &&
       (x32_syscall(number) || changes_static_text(ctx, number)))
     __atomic_store_n(&static_text_revoked, true, __ATOMIC_RELEASE);
@@ -2363,7 +2543,7 @@ static bool pre_syscall(void *ctx, int number) {
 #endif
   if (spawn && (flags & CLONE_FILES_FLAG))
     unsupported = true;
-  if ((deny_avx || deny_simd) && unsupported) {
+  if ((deny_avx || deny_simd || protect_meter) && unsupported) {
     dr_syscall_set_result(ctx, (reg_t)-EPERM);
     return false;
   }
@@ -2404,7 +2584,33 @@ static bool pre_syscall(void *ctx, int number) {
   dr_mutex_unlock(state_lock);
   return true;
 }
+/* Meter protection validates (and may refuse) the call before the lifecycle
+ * bookkeeping, and replaces a parameter with its validated copy only once the
+ * call will run. */
+static bool pre_syscall(void *ctx, int number) {
+  thread_data_t *d = protect_meter ? thread_state(ctx) : NULL;
+  if (protect_meter) {
+    if (!d)
+      fail("syscall without TLS");
+    if (!protect_pre_syscall(ctx, number, d))
+      return false;
+  }
+  bool run = pre_syscall_body(ctx, number);
+  if (d) {
+    if (run)
+      protect_apply_rewrite(ctx, d);
+    else
+      d->protect_param = -1;
+  }
+  return run;
+}
 static void post_syscall(void *ctx, int number) {
+  if (protect_meter) {
+    thread_data_t *protected_state = thread_state(ctx);
+    if (!protected_state)
+      fail("post syscall without TLS");
+    protect_post_syscall(ctx, protected_state);
+  }
   bool ordinary = live_work && !lifecycle_syscall(number);
   if (ordinary && !static_input_syscall(number))
     return;
@@ -2439,10 +2645,11 @@ static void post_syscall(void *ctx, int number) {
   dr_mutex_unlock(state_lock);
 }
 static dr_signal_action_t signal_event(void *ctx, dr_siginfo_t *info) {
-  (void)info;
   if (live_work_require_eligible)
     invalidate_live_work();
   thread_data_t *d = thread_state(ctx);
+  if (protect_meter && d)
+    protect_signal(ctx, d, info);
   if (!d || d->signals == UINT64_MAX)
     fail("signal accounting overflow");
   ++d->signals;
@@ -2478,6 +2685,8 @@ static void fork_init(void *ctx) {
   byte *stack = d->boundary_stack; /* The child inherits the thread's allocations. */
   memset(d, 0, sizeof(*d));
   d->boundary_stack = stack;
+  d->protect_param = -1;
+  d->child_file = -1;
   set_raw_accounting_state(d);
   clear_write_checkpoint(d); /* The slot still holds the parent's word. */
   set_boundary_state(ctx, d);
@@ -2491,6 +2700,9 @@ static void pre_detach(void) {
   dr_mutex_unlock(state_lock);
 }
 static void process_exit(void) {
+#ifdef DURANTE_TEST_CHECKPOINT_IDENTITY
+  report_checkpoint_identity();
+#endif
   if (dr_get_process_id() != owner_pid)
     return;
   dr_mutex_lock(state_lock);
@@ -2517,7 +2729,7 @@ static void process_exit(void) {
   dr_unregister_durante_code_replay_event(code_replay);
   if (raw_tls_enabled) {
     drmgr_unregister_restore_state_ex_event(restore_state);
-    dr_raw_tls_cfree(raw_tls_offset, RAW_TLS_SLOTS);
+    dr_raw_tls_cfree(raw_tls_offset, protect_meter ? RAW_TLS_PROTECT_SLOTS : RAW_TLS_SLOTS);
   }
   drmgr_unregister_tls_field(tls_index);
 #ifdef DURANTE_L1D_PROBE
@@ -2566,7 +2778,7 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
     fail("usage: -c libdurante.so -outdir NEW_PRIVATE_DIRECTORY [-rep_bytes] "
          "[-disallow_cpu_feature avx|simd] [-cpuid_profile x86-64-v1|x86-64-v2] "
          "[-latency_bound [-memory_operand_bytes]] "
-         "[-live_work_v1 OWNER_FILE [-live_work_require_eligible]] -- program");
+         "[-live_work_v1 OWNER_FILE [-live_work_require_eligible]] [-protect_meter] -- program");
   if (strlen(argv[2]) >= sizeof(outdir) || argv[2][0] != '/')
     fail("report directory must be absolute");
   memcpy(outdir, argv[2], strlen(argv[2]) + 1);
@@ -2589,6 +2801,20 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
       latency_bound_enabled = true;
     } else if (strcmp(argv[i], "-memory_operand_bytes") == 0 && !memory_operand_bytes_enabled) {
       memory_operand_bytes_enabled = true;
+    } else if (strcmp(argv[i], "-protect_meter") == 0 && !protect_meter) {
+      protect_meter = true;
+    } else if (strcmp(argv[i], "-protect_file") == 0 && i + 1 < argc &&
+               protect_files < PROTECT_MAX_FILES) {
+      char *end;
+      const char *text = argv[++i];
+      protect_file_dev[protect_files] = strtoull(text, &end, 10);
+      if (end == text || *end != ':')
+        fail("-protect_file takes DEV:INO");
+      text = end + 1;
+      protect_file_ino[protect_files] = strtoull(text, &end, 10);
+      if (end == text || *end)
+        fail("-protect_file takes DEV:INO");
+      ++protect_files;
     } else if (strcmp(argv[i], "-disallow_cpu_feature") == 0 && i + 1 < argc) {
       const char *feature = argv[++i];
       if (strcmp(feature, "avx") == 0 && !deny_avx)
@@ -2618,6 +2844,13 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
 #endif
   if (live_work_require_eligible && !live_path)
     fail("-live_work_require_eligible requires -live_work_v1");
+  if (protect_files && !protect_meter)
+    fail("-protect_file requires -protect_meter");
+  if (protect_meter) {
+    if (memory_operand_bytes_enabled)
+      fail("-protect_meter is incompatible with -memory_operand_bytes");
+    protect_init();
+  }
   if (live_path) {
     if (!rep_bytes_enabled)
       fail("live work requires -rep_bytes");
@@ -2668,8 +2901,11 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
   const bool flat_candidate = !memory_operand_bytes_enabled && !cache_probe_enabled();
 #endif
   raw_tls_enabled = (static_text_end != 0 || flat_candidate) &&
-                    dr_raw_tls_calloc(&raw_tls_register, &raw_tls_offset, RAW_TLS_SLOTS, 0);
+                    dr_raw_tls_calloc(&raw_tls_register, &raw_tls_offset,
+                                      protect_meter ? RAW_TLS_PROTECT_SLOTS : RAW_TLS_SLOTS, 0);
   flat_inline = flat_candidate && raw_tls_enabled;
+  if (protect_meter && !flat_inline)
+    fail("-protect_meter requires the flat inline client");
 #ifdef DURANTE_TEST_FLAT_CACHE
   if (flat_candidate && cache_probe_enabled() && !flat_inline)
     fail("flat cache experiment requires raw TLS");
@@ -2692,6 +2928,8 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
   dr_register_fork_init_event(fork_init);
   dr_register_pre_detach_event(pre_detach);
   dr_register_exit_event(process_exit);
+  if (protect_meter)
+    protect_audit_layout();
   if (live_work)
     __atomic_store_n(&live_work->ready, 1, __ATOMIC_RELEASE);
 }
