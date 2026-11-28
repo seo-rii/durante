@@ -46,7 +46,7 @@ import problems  # noqa: E402
 MODES = ("native", "durante", "budget-large", "budget-half", "latency")
 # Typical judge settings (aonohako's Java/Node defaults, with more heap so the
 # largest inputs fit). Deep recursion settings are per problem, below.
-JAVA_FLAGS = ("-XX:ReservedCodeCacheSize=64m", "-XX:-UseCompressedClassPointers", "-Xmx256m",
+JAVA_FLAGS = ("-Xmx256m",
               "-Xss16384k", "-XX:MaxDirectMemorySize=16m", "-XX:MaxMetaspaceSize=64m",
               "-Dfile.encoding=UTF-8", "-XX:+UseSerialGC", "-DONLINE_JUDGE=1")
 NODE_FLAGS = ("--disable-wasm-trap-handler", "--max-old-space-size=256", "--max-semi-space-size=1")
@@ -88,11 +88,12 @@ class Lang:
             binary = out / "sol"
             compile_step(["go", "build", "-o", str(binary), str(src)], log)
             return [str(binary)]
-        if self.name == "java":
+        if self.name in ("java", "java-cds"):
             classes = out / "classes"
             classes.mkdir()
             compile_step(["javac", "-J-Xmx256m", "--release", "17", "-encoding", "UTF-8", "-d", str(classes), str(src)], log)
-            return ["java", *JAVA_FLAGS, "-cp", str(classes), "Main"]
+            class_space = "-XX:CompressedClassSpaceSize=64m" if self.name == "java-cds" else "-XX:-UseCompressedClassPointers"
+            return ["java", "-XX:ReservedCodeCacheSize=64m", class_space, *JAVA_FLAGS, "-cp", str(classes), "Main"]
         if self.name == "node":
             flags = list(NODE_FLAGS)
             # Depth 1e6: V8 needs a raised --stack-size; the stack rlimit backs it.
@@ -109,7 +110,7 @@ LANGS = {lang.name: lang for lang in (
     Lang("cpp-clang", "sol.cpp", "full", True),
     Lang("rust", "sol.rs", "full", True, reads_maps=True),
     Lang("go", "sol.go", "full"),
-    Lang("java", "Main.java", "full"),
+    Lang("java", "Main.java", "full", runtime="java"),
     Lang("node", "sol.js", "full"),
     Lang("pypy", "sol.py", "full", runtime="pypy3"),
     Lang("python", "sol.py", "lite", runtime="python3"),
@@ -119,6 +120,9 @@ LANGS = {lang.name: lang for lang in (
     Lang("php-jit", "sol.php", "lite"),
     Lang("lua", "sol.lua", "lite", runtime="lua5.4"),
 )}
+DEFAULT_LANGS = tuple(LANGS)
+LANGS["java-cds"] = Lang("java-cds", "Main.java", "full", runtime="java")
+
 # Ruby's deep_dfs recursion runs on a thread whose VM stack this sizes; Rust, Java and
 # PyPy size their own threads in the submission.
 EXTRA_ENV = {("ruby", "deep_dfs"): {"RUBY_THREAD_VM_STACK_SIZE": str(512 << 20)}}
@@ -421,9 +425,9 @@ def main(argv=None):
     args.stack = stack_limit(args.stack_limit)
     args.output_dir.mkdir(parents=True, exist_ok=False)
     selected_problems = args.problem or list(problems.PROBLEMS)
-    selected_langs = args.lang or list(LANGS)
+    selected_langs = args.lang or DEFAULT_LANGS
     missing = [lang for lang in selected_langs
-               if not shutil.which({"cpp-clang": "clang++", "rust": "rustc", "go": "go", "java": "java",
+               if not shutil.which({"cpp-clang": "clang++", "rust": "rustc", "go": "go",
                                     "node": "node", "php-jit": "php"}.get(lang, LANGS[lang].runtime or "g++"))]
     if missing:
         parser.error("toolchain missing for: " + ", ".join(missing))

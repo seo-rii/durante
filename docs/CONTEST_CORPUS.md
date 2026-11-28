@@ -22,7 +22,11 @@ it with an independent reference solver.
 Each problem has a submission in C++ (`g++` static and dynamic, `clang++`),
 Rust, Go, Java, JavaScript (Node), Python (CPython and PyPy), Ruby, Perl, PHP
 (with and without the tracing JIT) and Lua. Java and Node use the flags of a
-judge (aonohako's, with more heap). Interpreters get a smaller "lite" input so
+judge (aonohako's, with more heap). The default `java` cells keep the Java
+21 launcher's `-XX:-UseCompressedClassPointers`. Select `--lang java-cds` to
+exercise Aonohako's `java21_cds: 1` runtime profile with the same limits.
+Select both languages to compare them on the same inputs. Their rows and
+summaries have distinct `lang` values. Interpreters get a smaller "lite" input so
 that every cell finishes in seconds. `deep_dfs` recurses on a thread with a
 512 MiB stack where the runtime needs one (Java, PyPy, Rust, Ruby). Node uses
 `--stack-size`, and Lua uses an explicit stack. Every run has an unlimited

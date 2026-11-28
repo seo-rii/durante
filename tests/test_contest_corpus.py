@@ -28,6 +28,24 @@ def budget_row(mode, requested, reported, instructions):
 
 
 class ContestCorpusTest(unittest.TestCase):
+    def test_java_profiles_use_distinct_class_space_flags(self):
+        self.assertIn("java", corpus.DEFAULT_LANGS)
+        self.assertNotIn("java-cds", corpus.DEFAULT_LANGS)
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            expected = ["java", "-XX:ReservedCodeCacheSize=64m", "-XX:-UseCompressedClassPointers",
+                        "-Xmx256m", "-Xss16384k", "-XX:MaxDirectMemorySize=16m", "-XX:MaxMetaspaceSize=64m",
+                        "-Dfile.encoding=UTF-8", "-XX:+UseSerialGC", "-DONLINE_JUDGE=1"]
+            for lang in ("java", "java-cds"):
+                with self.subTest(lang=lang), patch.object(corpus, "compile_step"):
+                    out = root / lang
+                    out.mkdir()
+                    command = corpus.LANGS[lang].build("bfs_grid", Path("Main.java"), out, [])
+                    flags = expected.copy()
+                    if lang == "java-cds":
+                        flags[2] = "-XX:CompressedClassSpaceSize=64m"
+                    self.assertEqual(command, [*flags, "-cp", str(out / "classes"), "Main"])
+
     def test_budget_receipt_matches_requested_limit_and_observed_work(self):
         for mode, work, reported, accepted in (
             ("budget-half", 101, 100, True), ("budget-half", 101, 7, False),
