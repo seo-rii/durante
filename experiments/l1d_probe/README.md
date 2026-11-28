@@ -36,7 +36,8 @@ A stderr line beginning with `PROBE_OUTER` reports, per capacity, the misses, th
 stream misses (within two lines of one of the last 16 misses at that capacity) and the
 misses of dependent loads: loads whose address register holds a value loaded earlier
 in the same block, through register arithmetic or around a block that branches to its
-own start. `l1d_dependent` counts the dependent loads' L1D misses. The model test
+own start. `l1d_dependent` counts the dependent loads' L1D misses. A four-line assembly trace checks that LEA propagates a dependency through a loaded
+base or index and clears it when both are independent. The model test
 checks the counts, the full LRU order and every boundary against a literal
 stack-distance reference, also behind the L1D model and its bulk REP paths. See
 [docs/CAPACITY_MISSES.md](../../docs/CAPACITY_MISSES.md).

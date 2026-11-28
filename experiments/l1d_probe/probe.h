@@ -199,6 +199,8 @@ static void probe_find_dependent(instrlist_t *bb) {
         opnd_t src = instr_get_src(ins, i);
         if (opnd_is_reg(src))
           sources |= probe_gpr_bit(opnd_get_reg(src));
+        else if (op == OP_lea)
+          sources |= probe_address_regs(src); /* LEA consumes its base and index without a load. */
         else if (loads && opnd_is_memory_reference(src) && (probe_address_regs(src) & loaded))
           dependent = true;
       }
