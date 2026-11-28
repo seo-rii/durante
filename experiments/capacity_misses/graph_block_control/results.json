@@ -1,0 +1,545 @@
+{
+  "pooled": {
+    "block2048": {
+      "changes": {
+        "callback": {
+          "all_pair_delta_us": [
+            7706894,
+            7841968
+          ],
+          "median_delta_us": 7775416.0,
+          "percent_l1d_minus_latency": 99.24
+        },
+        "l1d": {
+          "all_pair_delta_us": [
+            -52017,
+            224797
+          ],
+          "median_delta_us": 59542.5,
+          "percent_l1d_minus_latency": 0.76
+        }
+      },
+      "cpu_us": {
+        "callback": [
+          7990477,
+          8054378.5,
+          8117675
+        ],
+        "l1d": [
+          8065658,
+          8113921.0,
+          8215274
+        ],
+        "latency": [
+          275707,
+          278962.5,
+          283583
+        ]
+      },
+      "distinct_readings_per_counter": {
+        "instructions": 1,
+        "l1d_lines": 1,
+        "l1d_misses": 1,
+        "l1d_refs": 1,
+        "l1d_rep": 1,
+        "l1d_skipped": 1,
+        "latency_x16": 1,
+        "movs_bytes": 1,
+        "movs_entries": 1,
+        "rep_bytes": 1,
+        "rep_entries": 1,
+        "stos_bytes": 1,
+        "stos_entries": 1,
+        "unsupported_rep_entries": 1,
+        "version": 1
+      },
+      "samples": {
+        "callback": 10,
+        "l1d": 10,
+        "latency": 10
+      }
+    },
+    "block8": {
+      "changes": {
+        "callback": {
+          "all_pair_delta_us": [
+            3975938,
+            4011505
+          ],
+          "median_delta_us": 3992186.5,
+          "percent_l1d_minus_latency": 107.665
+        },
+        "l1d": {
+          "all_pair_delta_us": [
+            -318514,
+            -258265
+          ],
+          "median_delta_us": -284208.5,
+          "percent_l1d_minus_latency": -7.665
+        }
+      },
+      "cpu_us": {
+        "callback": [
+          4394442,
+          4407218.5,
+          4425149
+        ],
+        "l1d": [
+          4106635,
+          4123010.0,
+          4136177
+        ],
+        "latency": [
+          413644,
+          415032.0,
+          418504
+        ]
+      },
+      "distinct_readings_per_counter": {
+        "instructions": 1,
+        "l1d_lines": 1,
+        "l1d_misses": 1,
+        "l1d_refs": 1,
+        "l1d_rep": 1,
+        "l1d_skipped": 1,
+        "latency_x16": 1,
+        "movs_bytes": 1,
+        "movs_entries": 1,
+        "rep_bytes": 1,
+        "rep_entries": 1,
+        "stos_bytes": 1,
+        "stos_entries": 1,
+        "unsupported_rep_entries": 1,
+        "version": 1
+      },
+      "samples": {
+        "callback": 10,
+        "l1d": 10,
+        "latency": 10
+      }
+    },
+    "reference": {
+      "changes": {
+        "callback": {
+          "all_pair_delta_us": [
+            641111,
+            678375
+          ],
+          "median_delta_us": 663184.0,
+          "percent_l1d_minus_latency": 83.999
+        },
+        "l1d": {
+          "all_pair_delta_us": [
+            97318,
+            150201
+          ],
+          "median_delta_us": 126333.0,
+          "percent_l1d_minus_latency": 16.001
+        }
+      },
+      "cpu_us": {
+        "callback": [
+          732630,
+          743180.5,
+          755000
+        ],
+        "l1d": [
+          852318,
+          869513.5,
+          882831
+        ],
+        "latency": [
+          76625,
+          79996.5,
+          91519
+        ]
+      },
+      "distinct_readings_per_counter": {
+        "instructions": 1,
+        "l1d_lines": 1,
+        "l1d_misses": 1,
+        "l1d_refs": 1,
+        "l1d_rep": 1,
+        "l1d_skipped": 1,
+        "latency_x16": 1,
+        "movs_bytes": 1,
+        "movs_entries": 1,
+        "rep_bytes": 1,
+        "rep_entries": 1,
+        "stos_bytes": 1,
+        "stos_entries": 1,
+        "unsupported_rep_entries": 1,
+        "version": 1
+      },
+      "samples": {
+        "callback": 10,
+        "l1d": 10,
+        "latency": 10
+      }
+    }
+  },
+  "primary": {
+    "cases": {
+      "block2048": {
+        "changes": {
+          "callback": {
+            "all_pair_delta_us": [
+              7802915,
+              7838144
+            ],
+            "median_delta_us": 7829414,
+            "percent_l1d_minus_latency": 99.23
+          },
+          "l1d": {
+            "all_pair_delta_us": [
+              10804,
+              128776
+            ],
+            "median_delta_us": 60732,
+            "percent_l1d_minus_latency": 0.77
+          }
+        },
+        "cpu_us": {
+          "callback": [
+            8086498,
+            8111252,
+            8117675
+          ],
+          "l1d": [
+            8128479,
+            8171984,
+            8215274
+          ],
+          "latency": [
+            279531,
+            281838,
+            283583
+          ]
+        },
+        "distinct_readings_per_counter": {
+          "instructions": 1,
+          "l1d_lines": 1,
+          "l1d_misses": 1,
+          "l1d_refs": 1,
+          "l1d_rep": 1,
+          "l1d_skipped": 1,
+          "latency_x16": 1,
+          "movs_bytes": 1,
+          "movs_entries": 1,
+          "rep_bytes": 1,
+          "rep_entries": 1,
+          "stos_bytes": 1,
+          "stos_entries": 1,
+          "unsupported_rep_entries": 1,
+          "version": 1
+        },
+        "samples": {
+          "callback": 5,
+          "l1d": 5,
+          "latency": 5
+        }
+      },
+      "block8": {
+        "changes": {
+          "callback": {
+            "all_pair_delta_us": [
+              3987576,
+              4009890
+            ],
+            "median_delta_us": 3997985,
+            "percent_l1d_minus_latency": 107.873
+          },
+          "l1d": {
+            "all_pair_delta_us": [
+              -305088,
+              -269903
+            ],
+            "median_delta_us": -291773,
+            "percent_l1d_minus_latency": -7.873
+          }
+        },
+        "cpu_us": {
+          "callback": [
+            4406080,
+            4414951,
+            4425149
+          ],
+          "l1d": [
+            4120061,
+            4123178,
+            4136177
+          ],
+          "latency": [
+            415259,
+            416966,
+            418504
+          ]
+        },
+        "distinct_readings_per_counter": {
+          "instructions": 1,
+          "l1d_lines": 1,
+          "l1d_misses": 1,
+          "l1d_refs": 1,
+          "l1d_rep": 1,
+          "l1d_skipped": 1,
+          "latency_x16": 1,
+          "movs_bytes": 1,
+          "movs_entries": 1,
+          "rep_bytes": 1,
+          "rep_entries": 1,
+          "stos_bytes": 1,
+          "stos_entries": 1,
+          "unsupported_rep_entries": 1,
+          "version": 1
+        },
+        "samples": {
+          "callback": 5,
+          "l1d": 5,
+          "latency": 5
+        }
+      },
+      "reference": {
+        "changes": {
+          "callback": {
+            "all_pair_delta_us": [
+              651611,
+              674804
+            ],
+            "median_delta_us": 667663,
+            "percent_l1d_minus_latency": 84.81
+          },
+          "l1d": {
+            "all_pair_delta_us": [
+              109081,
+              139701
+            ],
+            "median_delta_us": 119580,
+            "percent_l1d_minus_latency": 15.19
+          }
+        },
+        "cpu_us": {
+          "callback": [
+            743130,
+            750149,
+            755000
+          ],
+          "l1d": [
+            864081,
+            869729,
+            882831
+          ],
+          "latency": [
+            80196,
+            82486,
+            91519
+          ]
+        },
+        "distinct_readings_per_counter": {
+          "instructions": 1,
+          "l1d_lines": 1,
+          "l1d_misses": 1,
+          "l1d_refs": 1,
+          "l1d_rep": 1,
+          "l1d_skipped": 1,
+          "latency_x16": 1,
+          "movs_bytes": 1,
+          "movs_entries": 1,
+          "rep_bytes": 1,
+          "rep_entries": 1,
+          "stos_bytes": 1,
+          "stos_entries": 1,
+          "unsupported_rep_entries": 1,
+          "version": 1
+        },
+        "samples": {
+          "callback": 5,
+          "l1d": 5,
+          "latency": 5
+        }
+      }
+    },
+    "steal_ticks": 0
+  },
+  "repeat": {
+    "cases": {
+      "block2048": {
+        "changes": {
+          "callback": {
+            "all_pair_delta_us": [
+              7712083,
+              7746552
+            ],
+            "median_delta_us": 7742460,
+            "percent_l1d_minus_latency": 99.259
+          },
+          "l1d": {
+            "all_pair_delta_us": [
+              43399,
+              108886
+            ],
+            "median_delta_us": 57775,
+            "percent_l1d_minus_latency": 0.741
+          }
+        },
+        "cpu_us": {
+          "callback": [
+            7990477,
+            8020413,
+            8022259
+          ],
+          "l1d": [
+            8065658,
+            8078188,
+            8099363
+          ],
+          "latency": [
+            275707,
+            277953,
+            278394
+          ]
+        },
+        "distinct_readings_per_counter": {
+          "instructions": 1,
+          "l1d_lines": 1,
+          "l1d_misses": 1,
+          "l1d_refs": 1,
+          "l1d_rep": 1,
+          "l1d_skipped": 1,
+          "latency_x16": 1,
+          "movs_bytes": 1,
+          "movs_entries": 1,
+          "rep_bytes": 1,
+          "rep_entries": 1,
+          "stos_bytes": 1,
+          "stos_entries": 1,
+          "unsupported_rep_entries": 1,
+          "version": 1
+        },
+        "samples": {
+          "callback": 5,
+          "l1d": 5,
+          "latency": 5
+        }
+      },
+      "block8": {
+        "changes": {
+          "callback": {
+            "all_pair_delta_us": [
+              3979637,
+              3994713
+            ],
+            "median_delta_us": 3984849,
+            "percent_l1d_minus_latency": 107.85
+          },
+          "l1d": {
+            "all_pair_delta_us": [
+              -301722,
+              -264990
+            ],
+            "median_delta_us": -290035,
+            "percent_l1d_minus_latency": -7.85
+          }
+        },
+        "cpu_us": {
+          "callback": [
+            4394442,
+            4399171,
+            4408357
+          ],
+          "l1d": [
+            4106635,
+            4109136,
+            4129452
+          ],
+          "latency": [
+            413644,
+            414322,
+            414805
+          ]
+        },
+        "distinct_readings_per_counter": {
+          "instructions": 1,
+          "l1d_lines": 1,
+          "l1d_misses": 1,
+          "l1d_refs": 1,
+          "l1d_rep": 1,
+          "l1d_skipped": 1,
+          "latency_x16": 1,
+          "movs_bytes": 1,
+          "movs_entries": 1,
+          "rep_bytes": 1,
+          "rep_entries": 1,
+          "stos_bytes": 1,
+          "stos_entries": 1,
+          "unsupported_rep_entries": 1,
+          "version": 1
+        },
+        "samples": {
+          "callback": 5,
+          "l1d": 5,
+          "latency": 5
+        }
+      },
+      "reference": {
+        "changes": {
+          "callback": {
+            "all_pair_delta_us": [
+              652833,
+              666606
+            ],
+            "median_delta_us": 659808,
+            "percent_l1d_minus_latency": 84.757
+          },
+          "l1d": {
+            "all_pair_delta_us": [
+              109087,
+              140932
+            ],
+            "median_delta_us": 118660,
+            "percent_l1d_minus_latency": 15.243
+          }
+        },
+        "cpu_us": {
+          "callback": [
+            732630,
+            738180,
+            743231
+          ],
+          "l1d": [
+            852318,
+            856840,
+            873562
+          ],
+          "latency": [
+            76625,
+            78372,
+            79797
+          ]
+        },
+        "distinct_readings_per_counter": {
+          "instructions": 1,
+          "l1d_lines": 1,
+          "l1d_misses": 1,
+          "l1d_refs": 1,
+          "l1d_rep": 1,
+          "l1d_skipped": 1,
+          "latency_x16": 1,
+          "movs_bytes": 1,
+          "movs_entries": 1,
+          "rep_bytes": 1,
+          "rep_entries": 1,
+          "stos_bytes": 1,
+          "stos_entries": 1,
+          "unsupported_rep_entries": 1,
+          "version": 1
+        },
+        "samples": {
+          "callback": 5,
+          "l1d": 5,
+          "latency": 5
+        }
+      }
+    },
+    "steal_ticks": 0
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "programs": [
+    "reference",
+    "block8",
+    "block2048"
+  ],
+  "modes": {
+    "latency": [
+      "-rep_bytes",
+      "-latency_bound"
+    ],
+    "callback": [
+      "-rep_bytes",
+      "-latency_bound"
+    ],
+    "l1d": [
+      "-rep_bytes",
+      "-latency_bound",
+      "-probe_l1d"
+    ]
+  },
+  "clients": {
+    "latency": "original.so",
+    "callback": "callback.so",
+    "l1d": "original.so"
+  },
+  "rounds": [
+    "latency",
+    "l1d",
+    "callback",
+    "l1d",
+    "callback",
+    "latency",
+    "callback",
+    "latency",
+    "l1d",
+    "latency",
+    "l1d",
+    "callback",
+    "l1d",
+    "callback",
+    "latency"
+  ],
+  "cpu": 1,
+  "cpuid": "x86-64-v2",
+  "comparison": "Compare five complete runs per mode per original static graph ELF per new pinned boot. The second boot reverses the complete first schedule. All three arms execute the same client path; only callback selects the control ELF, which forces the existing non-flat accounting path. Its other code and compiler/toolchain are shared. Report user plus system CPU, ranges across all pairs, differences in medians, and shares of the L1D minus ordinary-latency difference. This partitions whole-mode costs; it is not a per-callback timer.",
+  "validation": "All outputs and eligible, uninterrupted terminal instruction/REP/latency counters must match. Require a single L1D line only in the L1D arm. Verify lifecycle and CPU1 via exec traces. These arms run to completion; no live-clock accuracy is inferred."
+}

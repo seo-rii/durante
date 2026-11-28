@@ -1,0 +1,1120 @@
+{
+  "local_ranges": {
+    "milan": {
+      "contest-bfs_grid": {
+        "direct": [
+          43697,
+          43697
+        ],
+        "indirect": [
+          3116,
+          3116
+        ],
+        "returns": [
+          46808,
+          46808
+        ],
+        "divide": [
+          2749989,
+          2749989
+        ],
+        "calls": [
+          46813,
+          46813
+        ],
+        "instructions": [
+          368569807,
+          368569807
+        ]
+      },
+      "bfs_grid--queue_pair_vecvec": {
+        "direct": [
+          2985695,
+          2985695
+        ],
+        "indirect": [
+          3116,
+          3116
+        ],
+        "returns": [
+          2988806,
+          2988806
+        ],
+        "divide": [
+          10,
+          10
+        ],
+        "calls": [
+          2988811,
+          2988811
+        ],
+        "instructions": [
+          463514477,
+          463514477
+        ]
+      },
+      "bfs_grid--list_queue": {
+        "direct": [
+          27602887,
+          27602887
+        ],
+        "indirect": [
+          3116,
+          3116
+        ],
+        "returns": [
+          27605998,
+          27605998
+        ],
+        "divide": [
+          11,
+          11
+        ],
+        "calls": [
+          27606003,
+          27606003
+        ],
+        "instructions": [
+          1059780341,
+          1059780341
+        ]
+      },
+      "contest-dijkstra": {
+        "direct": [
+          2025633,
+          2025633
+        ],
+        "indirect": [
+          317,
+          317
+        ],
+        "returns": [
+          2025945,
+          2025945
+        ],
+        "divide": [
+          193,
+          193
+        ],
+        "calls": [
+          2025950,
+          2025950
+        ],
+        "instructions": [
+          311666739,
+          311666739
+        ]
+      },
+      "dijkstra--vecvec_getchar_pq": {
+        "direct": [
+          2722104,
+          2722104
+        ],
+        "indirect": [
+          5932,
+          5932
+        ],
+        "returns": [
+          2728031,
+          2728031
+        ],
+        "divide": [
+          9,
+          9
+        ],
+        "calls": [
+          2728036,
+          2728036
+        ],
+        "instructions": [
+          405000763,
+          405000763
+        ]
+      },
+      "dijkstra--set_decrease_key": {
+        "direct": [
+          4648221,
+          4648221
+        ],
+        "indirect": [
+          5932,
+          5932
+        ],
+        "returns": [
+          4654148,
+          4654148
+        ],
+        "divide": [
+          9,
+          9
+        ],
+        "calls": [
+          4654153,
+          4654153
+        ],
+        "instructions": [
+          429146599,
+          429146599
+        ]
+      },
+      "contest-fenwick": {
+        "direct": [
+          3156106,
+          3156106
+        ],
+        "indirect": [
+          1058177,
+          1058177
+        ],
+        "returns": [
+          4214278,
+          4214278
+        ],
+        "divide": [
+          9,
+          9
+        ],
+        "calls": [
+          4214283,
+          4214283
+        ],
+        "instructions": [
+          662371667,
+          662371667
+        ]
+      },
+      "fenwick--segtree_bottom_up": {
+        "direct": [
+          351484,
+          351484
+        ],
+        "indirect": [
+          420,
+          420
+        ],
+        "returns": [
+          351899,
+          351899
+        ],
+        "divide": [
+          301,
+          301
+        ],
+        "calls": [
+          351904,
+          351904
+        ],
+        "instructions": [
+          537584668,
+          537584668
+        ]
+      },
+      "fenwick--range_bit_template": {
+        "direct": [
+          709802,
+          709802
+        ],
+        "indirect": [
+          9393,
+          9393
+        ],
+        "returns": [
+          719190,
+          719190
+        ],
+        "divide": [
+          9,
+          9
+        ],
+        "calls": [
+          719195,
+          719195
+        ],
+        "instructions": [
+          806833347,
+          806833347
+        ]
+      }
+    },
+    "aonohako_shortest_paths": {
+      "reference": {
+        "direct": [
+          640791,
+          640791
+        ],
+        "indirect": [
+          223,
+          223
+        ],
+        "returns": [
+          641009,
+          641009
+        ],
+        "divide": [
+          744013,
+          744013
+        ],
+        "calls": [
+          641014,
+          641014
+        ],
+        "instructions": [
+          63286861,
+          63286861
+        ]
+      },
+      "fast": {
+        "direct": [
+          643071,
+          643071
+        ],
+        "indirect": [
+          223,
+          223
+        ],
+        "returns": [
+          643289,
+          643289
+        ],
+        "divide": [
+          783681,
+          783681
+        ],
+        "calls": [
+          643294,
+          643294
+        ],
+        "instructions": [
+          49285291,
+          49285291
+        ]
+      },
+      "block8": {
+        "direct": [
+          563669,
+          563669
+        ],
+        "indirect": [
+          223,
+          223
+        ],
+        "returns": [
+          563887,
+          563887
+        ],
+        "divide": [
+          744013,
+          744013
+        ],
+        "calls": [
+          563892,
+          563892
+        ],
+        "instructions": [
+          414454640,
+          414454640
+        ]
+      },
+      "block2048": {
+        "direct": [
+          563666,
+          563666
+        ],
+        "indirect": [
+          223,
+          223
+        ],
+        "returns": [
+          563884,
+          563884
+        ],
+        "divide": [
+          744013,
+          744013
+        ],
+        "calls": [
+          563889,
+          563889
+        ],
+        "instructions": [
+          333796489,
+          333796489
+        ]
+      },
+      "block4": {
+        "direct": [
+          563669,
+          563669
+        ],
+        "indirect": [
+          223,
+          223
+        ],
+        "returns": [
+          563887,
+          563887
+        ],
+        "divide": [
+          744013,
+          744013
+        ],
+        "calls": [
+          563892,
+          563892
+        ],
+        "instructions": [
+          776935054,
+          776935054
+        ]
+      },
+      "slow": {
+        "direct": [
+          640688,
+          640688
+        ],
+        "indirect": [
+          223,
+          223
+        ],
+        "returns": [
+          640906,
+          640906
+        ],
+        "divide": [
+          744014,
+          744014
+        ],
+        "calls": [
+          640911,
+          640911
+        ],
+        "instructions": [
+          5856733983,
+          5856733983
+        ]
+      },
+      "ordered_set": {
+        "direct": [
+          955378,
+          955378
+        ],
+        "indirect": [
+          223,
+          223
+        ],
+        "returns": [
+          955596,
+          955596
+        ],
+        "divide": [
+          744013,
+          744013
+        ],
+        "calls": [
+          955601,
+          955601
+        ],
+        "instructions": [
+          78067894,
+          78067894
+        ]
+      }
+    }
+  },
+  "max_local_guest_instruction_delta_ppm": {
+    "milan": {
+      "contest-bfs_grid": 0.16,
+      "bfs_grid--queue_pair_vecvec": 0.043,
+      "bfs_grid--list_queue": 0.03,
+      "contest-dijkstra": 0.189,
+      "dijkstra--vecvec_getchar_pq": 0.259,
+      "dijkstra--set_decrease_key": 0.31,
+      "contest-fenwick": 0.089,
+      "fenwick--segtree_bottom_up": 0.004,
+      "fenwick--range_bit_template": 0.025
+    },
+    "aonohako_shortest_paths": {
+      "reference": 249.419,
+      "fast": 300.322,
+      "block8": 37.091,
+      "block2048": 45.961,
+      "block4": 19.786,
+      "slow": 2.625,
+      "ordered_set": 434.926
+    }
+  },
+  "baseline": {
+    "milan": {
+      "outcomes": {
+        "primary": {
+          "agree": 16,
+          "indeterminate": 1,
+          "false_accept": 1
+        },
+        "repeat": {
+          "agree": 12,
+          "indeterminate": 6
+        },
+        "pooled": {
+          "agree": 12,
+          "indeterminate": 6
+        }
+      },
+      "errors": {
+        "milan/primary/dijkstra--set_decrease_key/2": "false_accept"
+      }
+    },
+    "aonohako_shortest_paths": {
+      "outcomes": {
+        "primary": {
+          "agree": 6
+        },
+        "repeat": {
+          "agree": 6
+        },
+        "pooled": {
+          "agree": 6
+        }
+      },
+      "errors": {}
+    }
+  },
+  "candidates": {
+    "direct": {
+      "target": {
+        "feasible": true,
+        "lower": {
+          "ns_per_event": 77.90631533,
+          "exact": "5813320558638043143941827/74619375000000000000000",
+          "strict": true,
+          "cell": "milan/primary/dijkstra--set_decrease_key/2"
+        },
+        "upper": null,
+        "constant_failure": null
+      },
+      "training": {
+        "feasible": false,
+        "lower": {
+          "ns_per_event": 77.90631533,
+          "exact": "5813320558638043143941827/74619375000000000000000",
+          "strict": true,
+          "cell": "milan/primary/dijkstra--set_decrease_key/2"
+        },
+        "upper": {
+          "ns_per_event": 1.64127257,
+          "exact": "15053474681157998489988257/9171831000000000000000000",
+          "strict": false,
+          "cell": "milan/primary/bfs_grid--list_queue/2"
+        },
+        "constant_failure": null
+      },
+      "holdout": {
+        "feasible": true,
+        "lower": {
+          "ns_per_event": 0.0,
+          "exact": "0",
+          "strict": false,
+          "cell": "nonnegative"
+        },
+        "upper": {
+          "ns_per_event": 9.88295843,
+          "exact": "20723553368408087175242957451/2096897758250000000000000000",
+          "strict": true,
+          "cell": "aonohako_shortest_paths/repeat/block4/65000"
+        },
+        "constant_failure": null
+      },
+      "target_and_holdout": {
+        "feasible": false,
+        "lower": {
+          "ns_per_event": 77.90631533,
+          "exact": "5813320558638043143941827/74619375000000000000000",
+          "strict": true,
+          "cell": "milan/primary/dijkstra--set_decrease_key/2"
+        },
+        "upper": {
+          "ns_per_event": 9.88295843,
+          "exact": "20723553368408087175242957451/2096897758250000000000000000",
+          "strict": true,
+          "cell": "aonohako_shortest_paths/repeat/block4/65000"
+        },
+        "constant_failure": null
+      },
+      "all": {
+        "feasible": false,
+        "lower": {
+          "ns_per_event": 77.90631533,
+          "exact": "5813320558638043143941827/74619375000000000000000",
+          "strict": true,
+          "cell": "milan/primary/dijkstra--set_decrease_key/2"
+        },
+        "upper": {
+          "ns_per_event": 1.64127257,
+          "exact": "15053474681157998489988257/9171831000000000000000000",
+          "strict": false,
+          "cell": "milan/primary/bfs_grid--list_queue/2"
+        },
+        "constant_failure": null
+      },
+      "target_only_example": {
+        "ns_per_event": 78,
+        "training": {
+          "outcomes": {
+            "primary": {
+              "false_timeout": 5,
+              "agree": 10,
+              "indeterminate": 1,
+              "false_accept": 2
+            },
+            "repeat": {
+              "false_timeout": 5,
+              "agree": 6,
+              "indeterminate": 6,
+              "false_accept": 1
+            },
+            "pooled": {
+              "false_timeout": 5,
+              "agree": 6,
+              "indeterminate": 6,
+              "false_accept": 1
+            }
+          },
+          "errors": {
+            "milan/primary/bfs_grid--queue_pair_vecvec/1.5": "false_timeout",
+            "milan/primary/bfs_grid--queue_pair_vecvec/2": "false_timeout",
+            "milan/primary/bfs_grid--queue_pair_vecvec/3": "false_timeout",
+            "milan/primary/bfs_grid--list_queue/2": "false_timeout",
+            "milan/primary/bfs_grid--list_queue/3": "false_timeout",
+            "milan/primary/fenwick--range_bit_template/1.5": "false_accept",
+            "milan/primary/fenwick--range_bit_template/2": "false_accept",
+            "milan/repeat/bfs_grid--queue_pair_vecvec/1.5": "false_timeout",
+            "milan/repeat/bfs_grid--queue_pair_vecvec/2": "false_timeout",
+            "milan/repeat/bfs_grid--queue_pair_vecvec/3": "false_timeout",
+            "milan/repeat/bfs_grid--list_queue/2": "false_timeout",
+            "milan/repeat/bfs_grid--list_queue/3": "false_timeout",
+            "milan/repeat/fenwick--range_bit_template/1.5": "false_accept",
+            "milan/pooled/bfs_grid--queue_pair_vecvec/1.5": "false_timeout",
+            "milan/pooled/bfs_grid--queue_pair_vecvec/2": "false_timeout",
+            "milan/pooled/bfs_grid--queue_pair_vecvec/3": "false_timeout",
+            "milan/pooled/bfs_grid--list_queue/2": "false_timeout",
+            "milan/pooled/bfs_grid--list_queue/3": "false_timeout",
+            "milan/pooled/fenwick--range_bit_template/1.5": "false_accept"
+          }
+        },
+        "holdout": {
+          "outcomes": {
+            "primary": {
+              "agree": 5,
+              "false_accept": 1
+            },
+            "repeat": {
+              "agree": 5,
+              "false_accept": 1
+            },
+            "pooled": {
+              "agree": 5,
+              "false_accept": 1
+            }
+          },
+          "errors": {
+            "aonohako_shortest_paths/primary/block4/65000": "false_accept",
+            "aonohako_shortest_paths/repeat/block4/65000": "false_accept",
+            "aonohako_shortest_paths/pooled/block4/65000": "false_accept"
+          }
+        }
+      }
+    },
+    "indirect": {
+      "target": {
+        "feasible": true,
+        "lower": {
+          "ns_per_event": 8778.13598888,
+          "exact": "5813320558638043143941827/662250000000000000000",
+          "strict": true,
+          "cell": "milan/primary/dijkstra--set_decrease_key/2"
+        },
+        "upper": null,
+        "constant_failure": null
+      },
+      "training": {
+        "feasible": false,
+        "lower": {
+          "ns_per_event": 8778.13598888,
+          "exact": "5813320558638043143941827/662250000000000000000",
+          "strict": true,
+          "cell": "milan/primary/dijkstra--set_decrease_key/2"
+        },
+        "upper": {
+          "ns_per_event": 27.29092172,
+          "exact": "57500907715265896969576177/2106961000000000000000000",
+          "strict": true,
+          "cell": "milan/primary/fenwick--range_bit_template/2"
+        },
+        "constant_failure": null
+      },
+      "holdout": {
+        "feasible": true,
+        "lower": {
+          "ns_per_event": 0.0,
+          "exact": "0",
+          "strict": false,
+          "cell": "nonnegative"
+        },
+        "upper": {
+          "ns_per_event": 29368.96028878,
+          "exact": "6907851122802695725080985817/235209250000000000000000",
+          "strict": true,
+          "cell": "aonohako_shortest_paths/repeat/block4/65000"
+        },
+        "constant_failure": null
+      },
+      "target_and_holdout": {
+        "feasible": true,
+        "lower": {
+          "ns_per_event": 8778.13598888,
+          "exact": "5813320558638043143941827/662250000000000000000",
+          "strict": true,
+          "cell": "milan/primary/dijkstra--set_decrease_key/2"
+        },
+        "upper": {
+          "ns_per_event": 29368.96028878,
+          "exact": "6907851122802695725080985817/235209250000000000000000",
+          "strict": true,
+          "cell": "aonohako_shortest_paths/repeat/block4/65000"
+        },
+        "constant_failure": null
+      },
+      "all": {
+        "feasible": false,
+        "lower": {
+          "ns_per_event": 8778.13598888,
+          "exact": "5813320558638043143941827/662250000000000000000",
+          "strict": true,
+          "cell": "milan/primary/dijkstra--set_decrease_key/2"
+        },
+        "upper": {
+          "ns_per_event": 27.29092172,
+          "exact": "57500907715265896969576177/2106961000000000000000000",
+          "strict": true,
+          "cell": "milan/primary/fenwick--range_bit_template/2"
+        },
+        "constant_failure": null
+      },
+      "target_only_example": {
+        "ns_per_event": 8779,
+        "training": {
+          "outcomes": {
+            "primary": {
+              "agree": 14,
+              "false_accept": 3,
+              "indeterminate": 1
+            },
+            "repeat": {
+              "agree": 10,
+              "false_accept": 2,
+              "indeterminate": 6
+            },
+            "pooled": {
+              "agree": 10,
+              "false_accept": 2,
+              "indeterminate": 6
+            }
+          },
+          "errors": {
+            "milan/primary/bfs_grid--list_queue/1.5": "false_accept",
+            "milan/primary/fenwick--range_bit_template/1.5": "false_accept",
+            "milan/primary/fenwick--range_bit_template/2": "false_accept",
+            "milan/repeat/bfs_grid--list_queue/1.5": "false_accept",
+            "milan/repeat/fenwick--range_bit_template/1.5": "false_accept",
+            "milan/pooled/bfs_grid--list_queue/1.5": "false_accept",
+            "milan/pooled/fenwick--range_bit_template/1.5": "false_accept"
+          }
+        },
+        "holdout": {
+          "outcomes": {
+            "primary": {
+              "agree": 6
+            },
+            "repeat": {
+              "agree": 6
+            },
+            "pooled": {
+              "agree": 6
+            }
+          },
+          "errors": {}
+        }
+      }
+    },
+    "returns": {
+      "target": {
+        "feasible": true,
+        "lower": {
+          "ns_per_event": 77.22033492,
+          "exact": "5813320558638043143941827/75282250000000000000000",
+          "strict": true,
+          "cell": "milan/primary/dijkstra--set_decrease_key/2"
+        },
+        "upper": null,
+        "constant_failure": null
+      },
+      "training": {
+        "feasible": false,
+        "lower": {
+          "ns_per_event": 77.22033492,
+          "exact": "5813320558638043143941827/75282250000000000000000",
+          "strict": true,
+          "cell": "milan/primary/dijkstra--set_decrease_key/2"
+        },
+        "upper": {
+          "ns_per_event": 1.64145816,
+          "exact": "15053474681157998489988257/9170794000000000000000000",
+          "strict": false,
+          "cell": "milan/primary/bfs_grid--list_queue/2"
+        },
+        "constant_failure": null
+      },
+      "holdout": {
+        "feasible": true,
+        "lower": {
+          "ns_per_event": 0.0,
+          "exact": "0",
+          "strict": false,
+          "cell": "nonnegative"
+        },
+        "upper": {
+          "ns_per_event": 9.87970835,
+          "exact": "20723553368408087175242957451/2097587564750000000000000000",
+          "strict": true,
+          "cell": "aonohako_shortest_paths/repeat/block4/65000"
+        },
+        "constant_failure": null
+      },
+      "target_and_holdout": {
+        "feasible": false,
+        "lower": {
+          "ns_per_event": 77.22033492,
+          "exact": "5813320558638043143941827/75282250000000000000000",
+          "strict": true,
+          "cell": "milan/primary/dijkstra--set_decrease_key/2"
+        },
+        "upper": {
+          "ns_per_event": 9.87970835,
+          "exact": "20723553368408087175242957451/2097587564750000000000000000",
+          "strict": true,
+          "cell": "aonohako_shortest_paths/repeat/block4/65000"
+        },
+        "constant_failure": null
+      },
+      "all": {
+        "feasible": false,
+        "lower": {
+          "ns_per_event": 77.22033492,
+          "exact": "5813320558638043143941827/75282250000000000000000",
+          "strict": true,
+          "cell": "milan/primary/dijkstra--set_decrease_key/2"
+        },
+        "upper": {
+          "ns_per_event": 1.64145816,
+          "exact": "15053474681157998489988257/9170794000000000000000000",
+          "strict": false,
+          "cell": "milan/primary/bfs_grid--list_queue/2"
+        },
+        "constant_failure": null
+      },
+      "target_only_example": {
+        "ns_per_event": 78,
+        "training": {
+          "outcomes": {
+            "primary": {
+              "false_timeout": 5,
+              "agree": 10,
+              "indeterminate": 1,
+              "false_accept": 2
+            },
+            "repeat": {
+              "false_timeout": 5,
+              "agree": 6,
+              "indeterminate": 6,
+              "false_accept": 1
+            },
+            "pooled": {
+              "false_timeout": 5,
+              "agree": 6,
+              "indeterminate": 6,
+              "false_accept": 1
+            }
+          },
+          "errors": {
+            "milan/primary/bfs_grid--queue_pair_vecvec/1.5": "false_timeout",
+            "milan/primary/bfs_grid--queue_pair_vecvec/2": "false_timeout",
+            "milan/primary/bfs_grid--queue_pair_vecvec/3": "false_timeout",
+            "milan/primary/bfs_grid--list_queue/2": "false_timeout",
+            "milan/primary/bfs_grid--list_queue/3": "false_timeout",
+            "milan/primary/fenwick--range_bit_template/1.5": "false_accept",
+            "milan/primary/fenwick--range_bit_template/2": "false_accept",
+            "milan/repeat/bfs_grid--queue_pair_vecvec/1.5": "false_timeout",
+            "milan/repeat/bfs_grid--queue_pair_vecvec/2": "false_timeout",
+            "milan/repeat/bfs_grid--queue_pair_vecvec/3": "false_timeout",
+            "milan/repeat/bfs_grid--list_queue/2": "false_timeout",
+            "milan/repeat/bfs_grid--list_queue/3": "false_timeout",
+            "milan/repeat/fenwick--range_bit_template/1.5": "false_accept",
+            "milan/pooled/bfs_grid--queue_pair_vecvec/1.5": "false_timeout",
+            "milan/pooled/bfs_grid--queue_pair_vecvec/2": "false_timeout",
+            "milan/pooled/bfs_grid--queue_pair_vecvec/3": "false_timeout",
+            "milan/pooled/bfs_grid--list_queue/2": "false_timeout",
+            "milan/pooled/bfs_grid--list_queue/3": "false_timeout",
+            "milan/pooled/fenwick--range_bit_template/1.5": "false_accept"
+          }
+        },
+        "holdout": {
+          "outcomes": {
+            "primary": {
+              "agree": 5,
+              "false_accept": 1
+            },
+            "repeat": {
+              "agree": 5,
+              "false_accept": 1
+            },
+            "pooled": {
+              "agree": 5,
+              "false_accept": 1
+            }
+          },
+          "errors": {
+            "aonohako_shortest_paths/primary/block4/65000": "false_accept",
+            "aonohako_shortest_paths/repeat/block4/65000": "false_accept",
+            "aonohako_shortest_paths/pooled/block4/65000": "false_accept"
+          }
+        }
+      }
+    },
+    "divide": {
+      "target": {
+        "feasible": false,
+        "lower": {
+          "ns_per_event": 0.0,
+          "exact": "0",
+          "strict": false,
+          "cell": "nonnegative"
+        },
+        "upper": {
+          "ns_per_event": -123359.58745121,
+          "exact": "-5813320558638043143941827/47125000000000000000",
+          "strict": true,
+          "cell": "milan/primary/dijkstra--set_decrease_key/2"
+        },
+        "constant_failure": null
+      },
+      "training": {
+        "feasible": false,
+        "lower": {
+          "ns_per_event": 0.0,
+          "exact": "0",
+          "strict": false,
+          "cell": "nonnegative"
+        },
+        "upper": {
+          "ns_per_event": -123359.58745121,
+          "exact": "-5813320558638043143941827/47125000000000000000",
+          "strict": true,
+          "cell": "milan/primary/dijkstra--set_decrease_key/2"
+        },
+        "constant_failure": null
+      },
+      "holdout": {
+        "feasible": true,
+        "lower": {
+          "ns_per_event": 0.0,
+          "exact": "0",
+          "strict": false,
+          "cell": "nonnegative"
+        },
+        "upper": {
+          "ns_per_event": 8.8026394,
+          "exact": "6907851122802695725080985817/784747711750000000000000000",
+          "strict": true,
+          "cell": "aonohako_shortest_paths/repeat/block4/65000"
+        },
+        "constant_failure": null
+      },
+      "target_and_holdout": {
+        "feasible": false,
+        "lower": {
+          "ns_per_event": 0.0,
+          "exact": "0",
+          "strict": false,
+          "cell": "nonnegative"
+        },
+        "upper": {
+          "ns_per_event": -123359.58745121,
+          "exact": "-5813320558638043143941827/47125000000000000000",
+          "strict": true,
+          "cell": "milan/primary/dijkstra--set_decrease_key/2"
+        },
+        "constant_failure": null
+      },
+      "all": {
+        "feasible": false,
+        "lower": {
+          "ns_per_event": 0.0,
+          "exact": "0",
+          "strict": false,
+          "cell": "nonnegative"
+        },
+        "upper": {
+          "ns_per_event": -123359.58745121,
+          "exact": "-5813320558638043143941827/47125000000000000000",
+          "strict": true,
+          "cell": "milan/primary/dijkstra--set_decrease_key/2"
+        },
+        "constant_failure": null
+      }
+    },
+    "calls": {
+      "target": {
+        "feasible": true,
+        "lower": {
+          "ns_per_event": 77.22097602,
+          "exact": "5813320558638043143941827/75281625000000000000000",
+          "strict": true,
+          "cell": "milan/primary/dijkstra--set_decrease_key/2"
+        },
+        "upper": null,
+        "constant_failure": null
+      },
+      "training": {
+        "feasible": false,
+        "lower": {
+          "ns_per_event": 77.22097602,
+          "exact": "5813320558638043143941827/75281625000000000000000",
+          "strict": true,
+          "cell": "milan/primary/dijkstra--set_decrease_key/2"
+        },
+        "upper": {
+          "ns_per_event": 1.64145846,
+          "exact": "45160424043473995469964771/27512377000000000000000000",
+          "strict": false,
+          "cell": "milan/primary/bfs_grid--list_queue/2"
+        },
+        "constant_failure": null
+      },
+      "holdout": {
+        "feasible": true,
+        "lower": {
+          "ns_per_event": 0.0,
+          "exact": "0",
+          "strict": false,
+          "cell": "nonnegative"
+        },
+        "upper": {
+          "ns_per_event": 9.87963383,
+          "exact": "20723553368408087175242957451/2097603386000000000000000000",
+          "strict": true,
+          "cell": "aonohako_shortest_paths/repeat/block4/65000"
+        },
+        "constant_failure": null
+      },
+      "target_and_holdout": {
+        "feasible": false,
+        "lower": {
+          "ns_per_event": 77.22097602,
+          "exact": "5813320558638043143941827/75281625000000000000000",
+          "strict": true,
+          "cell": "milan/primary/dijkstra--set_decrease_key/2"
+        },
+        "upper": {
+          "ns_per_event": 9.87963383,
+          "exact": "20723553368408087175242957451/2097603386000000000000000000",
+          "strict": true,
+          "cell": "aonohako_shortest_paths/repeat/block4/65000"
+        },
+        "constant_failure": null
+      },
+      "all": {
+        "feasible": false,
+        "lower": {
+          "ns_per_event": 77.22097602,
+          "exact": "5813320558638043143941827/75281625000000000000000",
+          "strict": true,
+          "cell": "milan/primary/dijkstra--set_decrease_key/2"
+        },
+        "upper": {
+          "ns_per_event": 1.64145846,
+          "exact": "45160424043473995469964771/27512377000000000000000000",
+          "strict": false,
+          "cell": "milan/primary/bfs_grid--list_queue/2"
+        },
+        "constant_failure": null
+      },
+      "target_only_example": {
+        "ns_per_event": 78,
+        "training": {
+          "outcomes": {
+            "primary": {
+              "false_timeout": 5,
+              "agree": 10,
+              "indeterminate": 1,
+              "false_accept": 2
+            },
+            "repeat": {
+              "false_timeout": 5,
+              "agree": 6,
+              "indeterminate": 6,
+              "false_accept": 1
+            },
+            "pooled": {
+              "false_timeout": 5,
+              "agree": 6,
+              "indeterminate": 6,
+              "false_accept": 1
+            }
+          },
+          "errors": {
+            "milan/primary/bfs_grid--queue_pair_vecvec/1.5": "false_timeout",
+            "milan/primary/bfs_grid--queue_pair_vecvec/2": "false_timeout",
+            "milan/primary/bfs_grid--queue_pair_vecvec/3": "false_timeout",
+            "milan/primary/bfs_grid--list_queue/2": "false_timeout",
+            "milan/primary/bfs_grid--list_queue/3": "false_timeout",
+            "milan/primary/fenwick--range_bit_template/1.5": "false_accept",
+            "milan/primary/fenwick--range_bit_template/2": "false_accept",
+            "milan/repeat/bfs_grid--queue_pair_vecvec/1.5": "false_timeout",
+            "milan/repeat/bfs_grid--queue_pair_vecvec/2": "false_timeout",
+            "milan/repeat/bfs_grid--queue_pair_vecvec/3": "false_timeout",
+            "milan/repeat/bfs_grid--list_queue/2": "false_timeout",
+            "milan/repeat/bfs_grid--list_queue/3": "false_timeout",
+            "milan/repeat/fenwick--range_bit_template/1.5": "false_accept",
+            "milan/pooled/bfs_grid--queue_pair_vecvec/1.5": "false_timeout",
+            "milan/pooled/bfs_grid--queue_pair_vecvec/2": "false_timeout",
+            "milan/pooled/bfs_grid--queue_pair_vecvec/3": "false_timeout",
+            "milan/pooled/bfs_grid--list_queue/2": "false_timeout",
+            "milan/pooled/bfs_grid--list_queue/3": "false_timeout",
+            "milan/pooled/fenwick--range_bit_template/1.5": "false_accept"
+          }
+        },
+        "holdout": {
+          "outcomes": {
+            "primary": {
+              "agree": 5,
+              "false_accept": 1
+            },
+            "repeat": {
+              "agree": 5,
+              "false_accept": 1
+            },
+            "pooled": {
+              "agree": 5,
+              "false_accept": 1
+            }
+          },
+          "errors": {
+            "aonohako_shortest_paths/primary/block4/65000": "false_accept",
+            "aonohako_shortest_paths/repeat/block4/65000": "false_accept",
+            "aonohako_shortest_paths/pooled/block4/65000": "false_accept"
+          }
+        }
+      }
+    }
+  }
+}
