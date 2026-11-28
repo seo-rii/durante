@@ -52,7 +52,7 @@ def registered():
     return reg, plan, weights
 
 
-def read_branch(evidence, arms):
+def read_branch(evidence, arms, *, include_recurrence=False):
     with tarfile.open(evidence, "r:gz") as archive:
         iters = {n: iter(modes["branch"]) for n,modes in arms.items()}
         for row in map(json.loads, archive.extractfile("output/trials.jsonl")):
@@ -62,6 +62,10 @@ def read_branch(evidence, arms):
             info = json.load(archive.extractfile(f"output/branch-{row['index']:03d}.json"))
             branch = gshare["branch_counts"](info, sample["counters"])
             require(branch["conditional_branches"] == info["cond_branches"], "branch tally mismatch")
+            if include_recurrence:
+                cycles = info.get("loop_recurrence_cycles_x16")
+                require(type(cycles) is int and cycles >= 0, "invalid loop recurrence counter")
+                sample["loop_recurrence_cycles_x16"] = cycles
             sample["branch"] = branch
 
 
