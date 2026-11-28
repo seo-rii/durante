@@ -1,0 +1,1058 @@
+{
+  "multiplier": [
+    "102518568428995454400195914326/110255227579224328858606154125",
+    "3490950693426788001848368285813/1609760159507200349916076639712"
+  ],
+  "steal_ticks": {
+    "primary": 0,
+    "repeat": 0
+  },
+  "boots": {
+    "primary": {
+      "point": {
+        "counts": {
+          "cells": 20,
+          "native_mixed": 1,
+          "issued_native_mixed": 1,
+          "correct": 15,
+          "false_accept": 0,
+          "false_timeout": 4,
+          "abstain": 0
+        },
+        "issued_verdicts": {
+          "accept": 6,
+          "timeout": 14
+        },
+        "issued_on_decisive": [
+          19,
+          19
+        ],
+        "cases": {
+          "random-z": {
+            "native": [
+              "6466/4773",
+              "2279/1539"
+            ],
+            "model": [
+              "1350695570300140236206859/560130236714789823197711",
+              "1350695570300140236206859/560130236714789823197711"
+            ],
+            "adjusted": [
+              "1350695570300140236206859/560130236714789823197711",
+              "1350695570300140236206859/560130236714789823197711"
+            ],
+            "outcomes": [
+              "correct",
+              "correct",
+              "false_timeout",
+              "false_timeout",
+              "correct"
+            ]
+          },
+          "random-naive": {
+            "native": [
+              "3985/4773",
+              "221/243"
+            ],
+            "model": [
+              "1216658439855360091406219/1120260473429579646395422",
+              "1216658439855360091406219/1120260473429579646395422"
+            ],
+            "adjusted": [
+              "1216658439855360091406219/1120260473429579646395422",
+              "1216658439855360091406219/1120260473429579646395422"
+            ],
+            "outcomes": [
+              "false_timeout",
+              "correct",
+              "correct",
+              "correct",
+              "correct"
+            ]
+          },
+          "periodic-z": {
+            "native": [
+              "7407/5240",
+              "650/427"
+            ],
+            "model": [
+              "3334585101281274460919000/1141156727975041881456149",
+              "3334585101281274460919000/1141156727975041881456149"
+            ],
+            "adjusted": [
+              "3334585101281274460919000/1141156727975041881456149",
+              "3334585101281274460919000/1141156727975041881456149"
+            ],
+            "outcomes": [
+              "correct",
+              "correct",
+              "issued_native_mixed",
+              "false_timeout",
+              "correct"
+            ]
+          },
+          "periodic-naive": {
+            "native": [
+              "10333/2620",
+              "1909/427"
+            ],
+            "model": [
+              "18015842111172622070285770/1141156727975041881456149",
+              "18015842111172622070285770/1141156727975041881456149"
+            ],
+            "adjusted": [
+              "18015842111172622070285770/1141156727975041881456149",
+              "18015842111172622070285770/1141156727975041881456149"
+            ],
+            "outcomes": [
+              "correct",
+              "correct",
+              "correct",
+              "correct",
+              "correct"
+            ]
+          }
+        }
+      },
+      "adjusted": {
+        "counts": {
+          "cells": 20,
+          "native_mixed": 1,
+          "issued_native_mixed": 1,
+          "correct": 10,
+          "false_accept": 0,
+          "false_timeout": 4,
+          "abstain": 5
+        },
+        "issued_verdicts": {
+          "accept": 1,
+          "timeout": 14
+        },
+        "issued_on_decisive": [
+          14,
+          19
+        ],
+        "cases": {
+          "random-z": {
+            "native": [
+              "6466/4773",
+              "2279/1539"
+            ],
+            "model": [
+              "1350695570300140236206859/560130236714789823197711",
+              "1350695570300140236206859/560130236714789823197711"
+            ],
+            "adjusted": [
+              "1668329834344047797016257374523895743298934308163398/744063695457758393355299078833030478514257243532625",
+              "4715211637747765439137357224464422581203180887102991367/901675339198805955502645384634348106568432679490099232"
+            ],
+            "outcomes": [
+              "correct",
+              "correct",
+              "false_timeout",
+              "false_timeout",
+              "abstain"
+            ]
+          },
+          "random-naive": {
+            "native": [
+              "3985/4773",
+              "221/243"
+            ],
+            "model": [
+              "1216658439855360091406219/1120260473429579646395422",
+              "1216658439855360091406219/1120260473429579646395422"
+            ],
+            "adjusted": [
+              "751386033259196288860833202897861019883787637274659/744063695457758393355299078833030478514257243532625",
+              "4247294624276623355336905860146215286384364005677671047/1803350678397611911005290769268696213136865358980198464"
+            ],
+            "outcomes": [
+              "false_timeout",
+              "abstain",
+              "abstain",
+              "abstain",
+              "correct"
+            ]
+          },
+          "periodic-z": {
+            "native": [
+              "7407/5240",
+              "650/427"
+            ],
+            "model": [
+              "3334585101281274460919000/1141156727975041881456149",
+              "3334585101281274460919000/1141156727975041881456149"
+            ],
+            "adjusted": [
+              "2734855127104104589669371972461348873728255673804752/1006547957971609862866251380477088598525921981783717",
+              "1455109021451062647454694797380817054660603461330268375/229623579555977282357816986509997954245352027674998636"
+            ],
+            "outcomes": [
+              "correct",
+              "correct",
+              "issued_native_mixed",
+              "false_timeout",
+              "abstain"
+            ]
+          },
+          "periodic-naive": {
+            "native": [
+              "10333/2620",
+              "1909/427"
+            ],
+            "model": [
+              "18015842111172622070285770/1141156727975041881456149",
+              "18015842111172622070285770/1141156727975041881456149"
+            ],
+            "adjusted": [
+              "369391668456045677667115274924721088065288152251388204/25163698949290246571656284511927214963148049544592925",
+              "31446208255332796657567127859088765819075299948973390505/918494318223909129431267946039991816981408110699994544"
+            ],
+            "outcomes": [
+              "correct",
+              "correct",
+              "correct",
+              "correct",
+              "correct"
+            ]
+          }
+        }
+      },
+      "decisions": {
+        "random-z": {
+          "1": {
+            "native": "timeout",
+            "point": "timeout",
+            "interval": "timeout"
+          },
+          "5/4": {
+            "native": "timeout",
+            "point": "timeout",
+            "interval": "timeout"
+          },
+          "3/2": {
+            "native": "accept",
+            "point": "timeout",
+            "interval": "timeout"
+          },
+          "2": {
+            "native": "accept",
+            "point": "timeout",
+            "interval": "timeout"
+          },
+          "3": {
+            "native": "accept",
+            "point": "accept",
+            "interval": "abstain"
+          }
+        },
+        "random-naive": {
+          "1": {
+            "native": "accept",
+            "point": "timeout",
+            "interval": "timeout"
+          },
+          "5/4": {
+            "native": "accept",
+            "point": "accept",
+            "interval": "abstain"
+          },
+          "3/2": {
+            "native": "accept",
+            "point": "accept",
+            "interval": "abstain"
+          },
+          "2": {
+            "native": "accept",
+            "point": "accept",
+            "interval": "abstain"
+          },
+          "3": {
+            "native": "accept",
+            "point": "accept",
+            "interval": "accept"
+          }
+        },
+        "periodic-z": {
+          "1": {
+            "native": "timeout",
+            "point": "timeout",
+            "interval": "timeout"
+          },
+          "5/4": {
+            "native": "timeout",
+            "point": "timeout",
+            "interval": "timeout"
+          },
+          "3/2": {
+            "native": "mixed",
+            "point": "timeout",
+            "interval": "timeout"
+          },
+          "2": {
+            "native": "accept",
+            "point": "timeout",
+            "interval": "timeout"
+          },
+          "3": {
+            "native": "accept",
+            "point": "accept",
+            "interval": "abstain"
+          }
+        },
+        "periodic-naive": {
+          "1": {
+            "native": "timeout",
+            "point": "timeout",
+            "interval": "timeout"
+          },
+          "5/4": {
+            "native": "timeout",
+            "point": "timeout",
+            "interval": "timeout"
+          },
+          "3/2": {
+            "native": "timeout",
+            "point": "timeout",
+            "interval": "timeout"
+          },
+          "2": {
+            "native": "timeout",
+            "point": "timeout",
+            "interval": "timeout"
+          },
+          "3": {
+            "native": "timeout",
+            "point": "timeout",
+            "interval": "timeout"
+          }
+        }
+      },
+      "correct_accept": 1,
+      "correct_timeout": 9,
+      "passes_bidirectional_criterion": false
+    },
+    "repeat": {
+      "point": {
+        "counts": {
+          "cells": 20,
+          "native_mixed": 3,
+          "issued_native_mixed": 3,
+          "correct": 15,
+          "false_accept": 0,
+          "false_timeout": 2,
+          "abstain": 0
+        },
+        "issued_verdicts": {
+          "accept": 6,
+          "timeout": 14
+        },
+        "issued_on_decisive": [
+          17,
+          17
+        ],
+        "cases": {
+          "random-z": {
+            "native": [
+              "6900/5053",
+              "7502/4795"
+            ],
+            "model": [
+              "1350695570300140236206859/560130236714789823197711",
+              "1350695570300140236206859/560130236714789823197711"
+            ],
+            "adjusted": [
+              "1350695570300140236206859/560130236714789823197711",
+              "1350695570300140236206859/560130236714789823197711"
+            ],
+            "outcomes": [
+              "correct",
+              "correct",
+              "issued_native_mixed",
+              "false_timeout",
+              "correct"
+            ]
+          },
+          "random-naive": {
+            "native": [
+              "4196/5053",
+              "4567/4795"
+            ],
+            "model": [
+              "1216658439855360091406219/1120260473429579646395422",
+              "1216658439855360091406219/1120260473429579646395422"
+            ],
+            "adjusted": [
+              "1216658439855360091406219/1120260473429579646395422",
+              "1216658439855360091406219/1120260473429579646395422"
+            ],
+            "outcomes": [
+              "false_timeout",
+              "correct",
+              "correct",
+              "correct",
+              "correct"
+            ]
+          },
+          "periodic-z": {
+            "native": [
+              "3887/2844",
+              "12964/5317"
+            ],
+            "model": [
+              "3334585101281274460919000/1141156727975041881456149",
+              "3334585101281274460919000/1141156727975041881456149"
+            ],
+            "adjusted": [
+              "3334585101281274460919000/1141156727975041881456149",
+              "3334585101281274460919000/1141156727975041881456149"
+            ],
+            "outcomes": [
+              "correct",
+              "correct",
+              "issued_native_mixed",
+              "issued_native_mixed",
+              "correct"
+            ]
+          },
+          "periodic-naive": {
+            "native": [
+              "2641/711",
+              "22345/5317"
+            ],
+            "model": [
+              "18015842111172622070285770/1141156727975041881456149",
+              "18015842111172622070285770/1141156727975041881456149"
+            ],
+            "adjusted": [
+              "18015842111172622070285770/1141156727975041881456149",
+              "18015842111172622070285770/1141156727975041881456149"
+            ],
+            "outcomes": [
+              "correct",
+              "correct",
+              "correct",
+              "correct",
+              "correct"
+            ]
+          }
+        }
+      },
+      "adjusted": {
+        "counts": {
+          "cells": 20,
+          "native_mixed": 3,
+          "issued_native_mixed": 3,
+          "correct": 10,
+          "false_accept": 0,
+          "false_timeout": 2,
+          "abstain": 5
+        },
+        "issued_verdicts": {
+          "accept": 1,
+          "timeout": 14
+        },
+        "issued_on_decisive": [
+          12,
+          17
+        ],
+        "cases": {
+          "random-z": {
+            "native": [
+              "6900/5053",
+              "7502/4795"
+            ],
+            "model": [
+              "1350695570300140236206859/560130236714789823197711",
+              "1350695570300140236206859/560130236714789823197711"
+            ],
+            "adjusted": [
+              "1668329834344047797016257374523895743298934308163398/744063695457758393355299078833030478514257243532625",
+              "4715211637747765439137357224464422581203180887102991367/901675339198805955502645384634348106568432679490099232"
+            ],
+            "outcomes": [
+              "correct",
+              "correct",
+              "issued_native_mixed",
+              "false_timeout",
+              "abstain"
+            ]
+          },
+          "random-naive": {
+            "native": [
+              "4196/5053",
+              "4567/4795"
+            ],
+            "model": [
+              "1216658439855360091406219/1120260473429579646395422",
+              "1216658439855360091406219/1120260473429579646395422"
+            ],
+            "adjusted": [
+              "751386033259196288860833202897861019883787637274659/744063695457758393355299078833030478514257243532625",
+              "4247294624276623355336905860146215286384364005677671047/1803350678397611911005290769268696213136865358980198464"
+            ],
+            "outcomes": [
+              "false_timeout",
+              "abstain",
+              "abstain",
+              "abstain",
+              "correct"
+            ]
+          },
+          "periodic-z": {
+            "native": [
+              "3887/2844",
+              "12964/5317"
+            ],
+            "model": [
+              "3334585101281274460919000/1141156727975041881456149",
+              "3334585101281274460919000/1141156727975041881456149"
+            ],
+            "adjusted": [
+              "2734855127104104589669371972461348873728255673804752/1006547957971609862866251380477088598525921981783717",
+              "1455109021451062647454694797380817054660603461330268375/229623579555977282357816986509997954245352027674998636"
+            ],
+            "outcomes": [
+              "correct",
+              "correct",
+              "issued_native_mixed",
+              "issued_native_mixed",
+              "abstain"
+            ]
+          },
+          "periodic-naive": {
+            "native": [
+              "2641/711",
+              "22345/5317"
+            ],
+            "model": [
+              "18015842111172622070285770/1141156727975041881456149",
+              "18015842111172622070285770/1141156727975041881456149"
+            ],
+            "adjusted": [
+              "369391668456045677667115274924721088065288152251388204/25163698949290246571656284511927214963148049544592925",
+              "31446208255332796657567127859088765819075299948973390505/918494318223909129431267946039991816981408110699994544"
+            ],
+            "outcomes": [
+              "correct",
+              "correct",
+              "correct",
+              "correct",
+              "correct"
+            ]
+          }
+        }
+      },
+      "decisions": {
+        "random-z": {
+          "1": {
+            "native": "timeout",
+            "point": "timeout",
+            "interval": "timeout"
+          },
+          "5/4": {
+            "native": "timeout",
+            "point": "timeout",
+            "interval": "timeout"
+          },
+          "3/2": {
+            "native": "mixed",
+            "point": "timeout",
+            "interval": "timeout"
+          },
+          "2": {
+            "native": "accept",
+            "point": "timeout",
+            "interval": "timeout"
+          },
+          "3": {
+            "native": "accept",
+            "point": "accept",
+            "interval": "abstain"
+          }
+        },
+        "random-naive": {
+          "1": {
+            "native": "accept",
+            "point": "timeout",
+            "interval": "timeout"
+          },
+          "5/4": {
+            "native": "accept",
+            "point": "accept",
+            "interval": "abstain"
+          },
+          "3/2": {
+            "native": "accept",
+            "point": "accept",
+            "interval": "abstain"
+          },
+          "2": {
+            "native": "accept",
+            "point": "accept",
+            "interval": "abstain"
+          },
+          "3": {
+            "native": "accept",
+            "point": "accept",
+            "interval": "accept"
+          }
+        },
+        "periodic-z": {
+          "1": {
+            "native": "timeout",
+            "point": "timeout",
+            "interval": "timeout"
+          },
+          "5/4": {
+            "native": "timeout",
+            "point": "timeout",
+            "interval": "timeout"
+          },
+          "3/2": {
+            "native": "mixed",
+            "point": "timeout",
+            "interval": "timeout"
+          },
+          "2": {
+            "native": "mixed",
+            "point": "timeout",
+            "interval": "timeout"
+          },
+          "3": {
+            "native": "accept",
+            "point": "accept",
+            "interval": "abstain"
+          }
+        },
+        "periodic-naive": {
+          "1": {
+            "native": "timeout",
+            "point": "timeout",
+            "interval": "timeout"
+          },
+          "5/4": {
+            "native": "timeout",
+            "point": "timeout",
+            "interval": "timeout"
+          },
+          "3/2": {
+            "native": "timeout",
+            "point": "timeout",
+            "interval": "timeout"
+          },
+          "2": {
+            "native": "timeout",
+            "point": "timeout",
+            "interval": "timeout"
+          },
+          "3": {
+            "native": "timeout",
+            "point": "timeout",
+            "interval": "timeout"
+          }
+        }
+      },
+      "correct_accept": 1,
+      "correct_timeout": 9,
+      "passes_bidirectional_criterion": false
+    }
+  },
+  "exploratory_score_terms": {
+    "primary": {
+      "random-z": {
+        "score_ratio": "1350695570300140236206859/560130236714789823197711",
+        "excess_by_term": {
+          "latency_x16": "304658437358317168716168/560130236714789823197711",
+          "rep_bytes": "0",
+          "l1d_misses": "2341175683118083429905/560130236714789823197711",
+          "random_2m": "23614439622186206950/560130236714789823197711",
+          "random_32m": "9693908188388856000/560130236714789823197711",
+          "stream_2m": "482023582273116178690000/560130236714789823197711",
+          "l1d_dependent": "456729212517400650125/560130236714789823197711",
+          "dependent_2m": "39087683262606060000/560130236714789823197711",
+          "gshare": "1013013027208400400000/560130236714789823197711"
+        },
+        "removed_term": "stream_2m",
+        "ratio_without_term": "738018509109814800981359/429476757797580566662211"
+      },
+      "periodic-naive": {
+        "score_ratio": "18015842111172622070285770/1141156727975041881456149",
+        "excess_by_term": {
+          "latency_x16": "13245396539621343186518656/1141156727975041881456149",
+          "rep_bytes": "0",
+          "l1d_misses": "-769083518197713285/1141156727975041881456149",
+          "random_2m": "-9082476777763925750/1141156727975041881456149",
+          "random_32m": "-3231302729462952000/1141156727975041881456149",
+          "stream_2m": "-117684150593813738000/1141156727975041881456149",
+          "l1d_dependent": "0",
+          "dependent_2m": "0",
+          "gshare": "3629419610589856240640000/1141156727975041881456149"
+        },
+        "removed_term": "gshare",
+        "ratio_without_term": "14376392805790302487565770/1131127033182578539376149"
+      }
+    },
+    "repeat": {
+      "random-z": {
+        "score_ratio": "1350695570300140236206859/560130236714789823197711",
+        "excess_by_term": {
+          "latency_x16": "304658437358317168716168/560130236714789823197711",
+          "rep_bytes": "0",
+          "l1d_misses": "2341175683118083429905/560130236714789823197711",
+          "random_2m": "23614439622186206950/560130236714789823197711",
+          "random_32m": "9693908188388856000/560130236714789823197711",
+          "stream_2m": "482023582273116178690000/560130236714789823197711",
+          "l1d_dependent": "456729212517400650125/560130236714789823197711",
+          "dependent_2m": "39087683262606060000/560130236714789823197711",
+          "gshare": "1013013027208400400000/560130236714789823197711"
+        },
+        "removed_term": "stream_2m",
+        "ratio_without_term": "738018509109814800981359/429476757797580566662211"
+      },
+      "periodic-naive": {
+        "score_ratio": "18015842111172622070285770/1141156727975041881456149",
+        "excess_by_term": {
+          "latency_x16": "13245396539621343186518656/1141156727975041881456149",
+          "rep_bytes": "0",
+          "l1d_misses": "-769083518197713285/1141156727975041881456149",
+          "random_2m": "-9082476777763925750/1141156727975041881456149",
+          "random_32m": "-3231302729462952000/1141156727975041881456149",
+          "stream_2m": "-117684150593813738000/1141156727975041881456149",
+          "l1d_dependent": "0",
+          "dependent_2m": "0",
+          "gshare": "3629419610589856240640000/1141156727975041881456149"
+        },
+        "removed_term": "gshare",
+        "ratio_without_term": "14376392805790302487565770/1131127033182578539376149"
+      }
+    }
+  },
+  "pooled": {
+    "point": {
+      "counts": {
+        "cells": 20,
+        "native_mixed": 3,
+        "issued_native_mixed": 3,
+        "correct": 15,
+        "false_accept": 0,
+        "false_timeout": 2,
+        "abstain": 0
+      },
+      "issued_verdicts": {
+        "accept": 6,
+        "timeout": 14
+      },
+      "issued_on_decisive": [
+        17,
+        17
+      ],
+      "cases": {
+        "random-z": {
+          "native": [
+            "6466/5053",
+            "7502/4617"
+          ],
+          "model": [
+            "1350695570300140236206859/560130236714789823197711",
+            "1350695570300140236206859/560130236714789823197711"
+          ],
+          "adjusted": [
+            "1350695570300140236206859/560130236714789823197711",
+            "1350695570300140236206859/560130236714789823197711"
+          ],
+          "outcomes": [
+            "correct",
+            "correct",
+            "issued_native_mixed",
+            "false_timeout",
+            "correct"
+          ]
+        },
+        "random-naive": {
+          "native": [
+            "3985/5053",
+            "4567/4617"
+          ],
+          "model": [
+            "1216658439855360091406219/1120260473429579646395422",
+            "1216658439855360091406219/1120260473429579646395422"
+          ],
+          "adjusted": [
+            "1216658439855360091406219/1120260473429579646395422",
+            "1216658439855360091406219/1120260473429579646395422"
+          ],
+          "outcomes": [
+            "false_timeout",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        },
+        "periodic-z": {
+          "native": [
+            "823/632",
+            "463/183"
+          ],
+          "model": [
+            "3334585101281274460919000/1141156727975041881456149",
+            "3334585101281274460919000/1141156727975041881456149"
+          ],
+          "adjusted": [
+            "3334585101281274460919000/1141156727975041881456149",
+            "3334585101281274460919000/1141156727975041881456149"
+          ],
+          "outcomes": [
+            "correct",
+            "correct",
+            "issued_native_mixed",
+            "issued_native_mixed",
+            "correct"
+          ]
+        },
+        "periodic-naive": {
+          "native": [
+            "10333/2844",
+            "1909/427"
+          ],
+          "model": [
+            "18015842111172622070285770/1141156727975041881456149",
+            "18015842111172622070285770/1141156727975041881456149"
+          ],
+          "adjusted": [
+            "18015842111172622070285770/1141156727975041881456149",
+            "18015842111172622070285770/1141156727975041881456149"
+          ],
+          "outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        }
+      }
+    },
+    "adjusted": {
+      "counts": {
+        "cells": 20,
+        "native_mixed": 3,
+        "issued_native_mixed": 3,
+        "correct": 10,
+        "false_accept": 0,
+        "false_timeout": 2,
+        "abstain": 5
+      },
+      "issued_verdicts": {
+        "accept": 1,
+        "timeout": 14
+      },
+      "issued_on_decisive": [
+        12,
+        17
+      ],
+      "cases": {
+        "random-z": {
+          "native": [
+            "6466/5053",
+            "7502/4617"
+          ],
+          "model": [
+            "1350695570300140236206859/560130236714789823197711",
+            "1350695570300140236206859/560130236714789823197711"
+          ],
+          "adjusted": [
+            "1668329834344047797016257374523895743298934308163398/744063695457758393355299078833030478514257243532625",
+            "4715211637747765439137357224464422581203180887102991367/901675339198805955502645384634348106568432679490099232"
+          ],
+          "outcomes": [
+            "correct",
+            "correct",
+            "issued_native_mixed",
+            "false_timeout",
+            "abstain"
+          ]
+        },
+        "random-naive": {
+          "native": [
+            "3985/5053",
+            "4567/4617"
+          ],
+          "model": [
+            "1216658439855360091406219/1120260473429579646395422",
+            "1216658439855360091406219/1120260473429579646395422"
+          ],
+          "adjusted": [
+            "751386033259196288860833202897861019883787637274659/744063695457758393355299078833030478514257243532625",
+            "4247294624276623355336905860146215286384364005677671047/1803350678397611911005290769268696213136865358980198464"
+          ],
+          "outcomes": [
+            "false_timeout",
+            "abstain",
+            "abstain",
+            "abstain",
+            "correct"
+          ]
+        },
+        "periodic-z": {
+          "native": [
+            "823/632",
+            "463/183"
+          ],
+          "model": [
+            "3334585101281274460919000/1141156727975041881456149",
+            "3334585101281274460919000/1141156727975041881456149"
+          ],
+          "adjusted": [
+            "2734855127104104589669371972461348873728255673804752/1006547957971609862866251380477088598525921981783717",
+            "1455109021451062647454694797380817054660603461330268375/229623579555977282357816986509997954245352027674998636"
+          ],
+          "outcomes": [
+            "correct",
+            "correct",
+            "issued_native_mixed",
+            "issued_native_mixed",
+            "abstain"
+          ]
+        },
+        "periodic-naive": {
+          "native": [
+            "10333/2844",
+            "1909/427"
+          ],
+          "model": [
+            "18015842111172622070285770/1141156727975041881456149",
+            "18015842111172622070285770/1141156727975041881456149"
+          ],
+          "adjusted": [
+            "369391668456045677667115274924721088065288152251388204/25163698949290246571656284511927214963148049544592925",
+            "31446208255332796657567127859088765819075299948973390505/918494318223909129431267946039991816981408110699994544"
+          ],
+          "outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        }
+      }
+    },
+    "decisions": {
+      "random-z": {
+        "1": {
+          "native": "timeout",
+          "point": "timeout",
+          "interval": "timeout"
+        },
+        "5/4": {
+          "native": "timeout",
+          "point": "timeout",
+          "interval": "timeout"
+        },
+        "3/2": {
+          "native": "mixed",
+          "point": "timeout",
+          "interval": "timeout"
+        },
+        "2": {
+          "native": "accept",
+          "point": "timeout",
+          "interval": "timeout"
+        },
+        "3": {
+          "native": "accept",
+          "point": "accept",
+          "interval": "abstain"
+        }
+      },
+      "random-naive": {
+        "1": {
+          "native": "accept",
+          "point": "timeout",
+          "interval": "timeout"
+        },
+        "5/4": {
+          "native": "accept",
+          "point": "accept",
+          "interval": "abstain"
+        },
+        "3/2": {
+          "native": "accept",
+          "point": "accept",
+          "interval": "abstain"
+        },
+        "2": {
+          "native": "accept",
+          "point": "accept",
+          "interval": "abstain"
+        },
+        "3": {
+          "native": "accept",
+          "point": "accept",
+          "interval": "accept"
+        }
+      },
+      "periodic-z": {
+        "1": {
+          "native": "timeout",
+          "point": "timeout",
+          "interval": "timeout"
+        },
+        "5/4": {
+          "native": "timeout",
+          "point": "timeout",
+          "interval": "timeout"
+        },
+        "3/2": {
+          "native": "mixed",
+          "point": "timeout",
+          "interval": "timeout"
+        },
+        "2": {
+          "native": "mixed",
+          "point": "timeout",
+          "interval": "timeout"
+        },
+        "3": {
+          "native": "accept",
+          "point": "accept",
+          "interval": "abstain"
+        }
+      },
+      "periodic-naive": {
+        "1": {
+          "native": "timeout",
+          "point": "timeout",
+          "interval": "timeout"
+        },
+        "5/4": {
+          "native": "timeout",
+          "point": "timeout",
+          "interval": "timeout"
+        },
+        "3/2": {
+          "native": "timeout",
+          "point": "timeout",
+          "interval": "timeout"
+        },
+        "2": {
+          "native": "timeout",
+          "point": "timeout",
+          "interval": "timeout"
+        },
+        "3": {
+          "native": "timeout",
+          "point": "timeout",
+          "interval": "timeout"
+        }
+      }
+    },
+    "correct_accept": 1,
+    "correct_timeout": 9,
+    "passes_bidirectional_criterion": false
+  },
+  "passes_on_each_boot": false
+}
