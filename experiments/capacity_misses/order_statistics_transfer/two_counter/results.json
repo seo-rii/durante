@@ -1,0 +1,1472 @@
+{
+  "primary": {
+    "predecessor_development": {
+      "summary": {
+        "ML4": {
+          "correct": 18,
+          "false_accept": 0,
+          "false_timeout": 2,
+          "indeterminate": 0,
+          "within_20_percent": 3,
+          "timing_cases": 4,
+          "median_absolute_percent_error": 15.433947
+        },
+        "two_counter": {
+          "correct": 20,
+          "false_accept": 0,
+          "false_timeout": 0,
+          "indeterminate": 0,
+          "within_20_percent": 3,
+          "timing_cases": 4,
+          "median_absolute_percent_error": 15.227844
+        }
+      },
+      "cases": {
+        "uniform-multiset": {
+          "reference": "uniform-dsu",
+          "native_ratio": 1.550068,
+          "native_bounds": [
+            1.537926,
+            1.710667
+          ],
+          "models": {
+            "ML4": {
+              "score_ratio": 1.802663,
+              "score_bounds": [
+                1.802663,
+                1.802663
+              ],
+              "signed_error_percent": 16.295773,
+              "within_20_percent": true
+            },
+            "two_counter": {
+              "score_ratio": 1.93714,
+              "score_bounds": [
+                1.93714,
+                1.93714
+              ],
+              "signed_error_percent": 24.971293,
+              "within_20_percent": false
+            }
+          },
+          "deadlines": {
+            "1": {
+              "native": "timeout",
+              "ML4": "timeout",
+              "two_counter": "timeout"
+            },
+            "1.25": {
+              "native": "timeout",
+              "ML4": "timeout",
+              "two_counter": "timeout"
+            },
+            "1.5": {
+              "native": "timeout",
+              "ML4": "timeout",
+              "two_counter": "timeout"
+            },
+            "2": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "3": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            }
+          }
+        },
+        "uniform-fenwick": {
+          "reference": "uniform-dsu",
+          "native_ratio": 0.864624,
+          "native_bounds": [
+            0.859711,
+            0.880801
+          ],
+          "models": {
+            "ML4": {
+              "score_ratio": 1.061974,
+              "score_bounds": [
+                1.061974,
+                1.061974
+              ],
+              "signed_error_percent": 22.824997,
+              "within_20_percent": false
+            },
+            "two_counter": {
+              "score_ratio": 0.969632,
+              "score_bounds": [
+                0.969632,
+                0.969632
+              ],
+              "signed_error_percent": 12.144936,
+              "within_20_percent": true
+            }
+          },
+          "deadlines": {
+            "1": {
+              "native": "accept",
+              "ML4": "timeout",
+              "two_counter": "accept"
+            },
+            "1.25": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.5": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "2": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "3": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            }
+          }
+        },
+        "clustered-multiset": {
+          "reference": "clustered-dsu",
+          "native_ratio": 1.672577,
+          "native_bounds": [
+            1.617447,
+            1.727976
+          ],
+          "models": {
+            "ML4": {
+              "score_ratio": 1.82031,
+              "score_bounds": [
+                1.82031,
+                1.82031
+              ],
+              "signed_error_percent": 8.832645,
+              "within_20_percent": true
+            },
+            "two_counter": {
+              "score_ratio": 1.978839,
+              "score_bounds": [
+                1.978839,
+                1.978839
+              ],
+              "signed_error_percent": 18.310753,
+              "within_20_percent": true
+            }
+          },
+          "deadlines": {
+            "1": {
+              "native": "timeout",
+              "ML4": "timeout",
+              "two_counter": "timeout"
+            },
+            "1.25": {
+              "native": "timeout",
+              "ML4": "timeout",
+              "two_counter": "timeout"
+            },
+            "1.5": {
+              "native": "timeout",
+              "ML4": "timeout",
+              "two_counter": "timeout"
+            },
+            "2": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "3": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            }
+          }
+        },
+        "clustered-fenwick": {
+          "reference": "clustered-dsu",
+          "native_ratio": 0.93493,
+          "native_bounds": [
+            0.911142,
+            0.945252
+          ],
+          "models": {
+            "ML4": {
+              "score_ratio": 1.071169,
+              "score_bounds": [
+                1.071169,
+                1.071169
+              ],
+              "signed_error_percent": 14.57212,
+              "within_20_percent": true
+            },
+            "two_counter": {
+              "score_ratio": 0.99178,
+              "score_bounds": [
+                0.99178,
+                0.99178
+              ],
+              "signed_error_percent": 6.080601,
+              "within_20_percent": true
+            }
+          },
+          "deadlines": {
+            "1": {
+              "native": "accept",
+              "ML4": "timeout",
+              "two_counter": "accept"
+            },
+            "1.25": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.5": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "2": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "3": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            }
+          }
+        }
+      }
+    },
+    "inversion_holdout": {
+      "summary": {
+        "ML4": {
+          "correct": 19,
+          "false_accept": 1,
+          "false_timeout": 0,
+          "indeterminate": 0,
+          "within_20_percent": 1,
+          "timing_cases": 4,
+          "median_absolute_percent_error": 26.834775
+        },
+        "two_counter": {
+          "correct": 19,
+          "false_accept": 1,
+          "false_timeout": 0,
+          "indeterminate": 0,
+          "within_20_percent": 1,
+          "timing_cases": 4,
+          "median_absolute_percent_error": 27.860589
+        }
+      },
+      "cases": {
+        "shuffled-fenwick": {
+          "reference": "shuffled-merge",
+          "native_ratio": 0.621109,
+          "native_bounds": [
+            0.607774,
+            0.687421
+          ],
+          "models": {
+            "ML4": {
+              "score_ratio": 0.83829,
+              "score_bounds": [
+                0.83829,
+                0.83829
+              ],
+              "signed_error_percent": 34.966515,
+              "within_20_percent": false
+            },
+            "two_counter": {
+              "score_ratio": 0.840459,
+              "score_bounds": [
+                0.840459,
+                0.840459
+              ],
+              "signed_error_percent": 35.315835,
+              "within_20_percent": false
+            }
+          },
+          "deadlines": {
+            "1": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.25": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.5": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "2": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "3": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            }
+          }
+        },
+        "shuffled-segtree": {
+          "reference": "shuffled-merge",
+          "native_ratio": 0.902053,
+          "native_bounds": [
+            0.891013,
+            0.914368
+          ],
+          "models": {
+            "ML4": {
+              "score_ratio": 0.796568,
+              "score_bounds": [
+                0.796568,
+                0.796568
+              ],
+              "signed_error_percent": -11.693799,
+              "within_20_percent": true
+            },
+            "two_counter": {
+              "score_ratio": 0.778052,
+              "score_bounds": [
+                0.778052,
+                0.778052
+              ],
+              "signed_error_percent": -13.746537,
+              "within_20_percent": true
+            }
+          },
+          "deadlines": {
+            "1": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.25": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.5": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "2": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "3": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            }
+          }
+        },
+        "runs-fenwick": {
+          "reference": "runs-merge",
+          "native_ratio": 0.704063,
+          "native_bounds": [
+            0.689195,
+            0.709853
+          ],
+          "models": {
+            "ML4": {
+              "score_ratio": 0.868906,
+              "score_bounds": [
+                0.868906,
+                0.868906
+              ],
+              "signed_error_percent": 23.413204,
+              "within_20_percent": false
+            },
+            "two_counter": {
+              "score_ratio": 0.873362,
+              "score_bounds": [
+                0.873362,
+                0.873362
+              ],
+              "signed_error_percent": 24.046015,
+              "within_20_percent": false
+            }
+          },
+          "deadlines": {
+            "1": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.25": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.5": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "2": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "3": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            }
+          }
+        },
+        "runs-segtree": {
+          "reference": "runs-merge",
+          "native_ratio": 1.183334,
+          "native_bounds": [
+            1.150335,
+            1.232746
+          ],
+          "models": {
+            "ML4": {
+              "score_ratio": 0.8253,
+              "score_bounds": [
+                0.8253,
+                0.8253
+              ],
+              "signed_error_percent": -30.256345,
+              "within_20_percent": false
+            },
+            "two_counter": {
+              "score_ratio": 0.808511,
+              "score_bounds": [
+                0.808511,
+                0.808511
+              ],
+              "signed_error_percent": -31.675162,
+              "within_20_percent": false
+            }
+          },
+          "deadlines": {
+            "1": {
+              "native": "timeout",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.25": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.5": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "2": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "3": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            }
+          }
+        }
+      }
+    }
+  },
+  "repeat": {
+    "predecessor_development": {
+      "summary": {
+        "ML4": {
+          "correct": 18,
+          "false_accept": 0,
+          "false_timeout": 2,
+          "indeterminate": 0,
+          "within_20_percent": 3,
+          "timing_cases": 4,
+          "median_absolute_percent_error": 12.465069
+        },
+        "two_counter": {
+          "correct": 20,
+          "false_accept": 0,
+          "false_timeout": 0,
+          "indeterminate": 0,
+          "within_20_percent": 4,
+          "timing_cases": 4,
+          "median_absolute_percent_error": 12.047312
+        }
+      },
+      "cases": {
+        "uniform-multiset": {
+          "reference": "uniform-dsu",
+          "native_ratio": 1.645,
+          "native_bounds": [
+            1.53209,
+            1.734161
+          ],
+          "models": {
+            "ML4": {
+              "score_ratio": 1.802663,
+              "score_bounds": [
+                1.802663,
+                1.802663
+              ],
+              "signed_error_percent": 9.584368,
+              "within_20_percent": true
+            },
+            "two_counter": {
+              "score_ratio": 1.93714,
+              "score_bounds": [
+                1.93714,
+                1.93714
+              ],
+              "signed_error_percent": 17.759225,
+              "within_20_percent": true
+            }
+          },
+          "deadlines": {
+            "1": {
+              "native": "timeout",
+              "ML4": "timeout",
+              "two_counter": "timeout"
+            },
+            "1.25": {
+              "native": "timeout",
+              "ML4": "timeout",
+              "two_counter": "timeout"
+            },
+            "1.5": {
+              "native": "timeout",
+              "ML4": "timeout",
+              "two_counter": "timeout"
+            },
+            "2": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "3": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            }
+          }
+        },
+        "uniform-fenwick": {
+          "reference": "uniform-dsu",
+          "native_ratio": 0.874722,
+          "native_bounds": [
+            0.858022,
+            0.889734
+          ],
+          "models": {
+            "ML4": {
+              "score_ratio": 1.061974,
+              "score_bounds": [
+                1.061974,
+                1.061974
+              ],
+              "signed_error_percent": 21.407037,
+              "within_20_percent": false
+            },
+            "two_counter": {
+              "score_ratio": 0.969632,
+              "score_bounds": [
+                0.969632,
+                0.969632
+              ],
+              "signed_error_percent": 10.850272,
+              "within_20_percent": true
+            }
+          },
+          "deadlines": {
+            "1": {
+              "native": "accept",
+              "ML4": "timeout",
+              "two_counter": "accept"
+            },
+            "1.25": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.5": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "2": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "3": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            }
+          }
+        },
+        "clustered-multiset": {
+          "reference": "clustered-dsu",
+          "native_ratio": 1.747406,
+          "native_bounds": [
+            1.668435,
+            1.900717
+          ],
+          "models": {
+            "ML4": {
+              "score_ratio": 1.82031,
+              "score_bounds": [
+                1.82031,
+                1.82031
+              ],
+              "signed_error_percent": 4.172123,
+              "within_20_percent": true
+            },
+            "two_counter": {
+              "score_ratio": 1.978839,
+              "score_bounds": [
+                1.978839,
+                1.978839
+              ],
+              "signed_error_percent": 13.244352,
+              "within_20_percent": true
+            }
+          },
+          "deadlines": {
+            "1": {
+              "native": "timeout",
+              "ML4": "timeout",
+              "two_counter": "timeout"
+            },
+            "1.25": {
+              "native": "timeout",
+              "ML4": "timeout",
+              "two_counter": "timeout"
+            },
+            "1.5": {
+              "native": "timeout",
+              "ML4": "timeout",
+              "two_counter": "timeout"
+            },
+            "2": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "3": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            }
+          }
+        },
+        "clustered-fenwick": {
+          "reference": "clustered-dsu",
+          "native_ratio": 0.928659,
+          "native_bounds": [
+            0.912837,
+            0.946516
+          ],
+          "models": {
+            "ML4": {
+              "score_ratio": 1.071169,
+              "score_bounds": [
+                1.071169,
+                1.071169
+              ],
+              "signed_error_percent": 15.345771,
+              "within_20_percent": true
+            },
+            "two_counter": {
+              "score_ratio": 0.99178,
+              "score_bounds": [
+                0.99178,
+                0.99178
+              ],
+              "signed_error_percent": 6.796912,
+              "within_20_percent": true
+            }
+          },
+          "deadlines": {
+            "1": {
+              "native": "accept",
+              "ML4": "timeout",
+              "two_counter": "accept"
+            },
+            "1.25": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.5": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "2": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "3": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            }
+          }
+        }
+      }
+    },
+    "inversion_holdout": {
+      "summary": {
+        "ML4": {
+          "correct": 19,
+          "false_accept": 1,
+          "false_timeout": 0,
+          "indeterminate": 0,
+          "within_20_percent": 1,
+          "timing_cases": 4,
+          "median_absolute_percent_error": 26.316239
+        },
+        "two_counter": {
+          "correct": 19,
+          "false_accept": 1,
+          "false_timeout": 0,
+          "indeterminate": 0,
+          "within_20_percent": 1,
+          "timing_cases": 4,
+          "median_absolute_percent_error": 27.338743
+        }
+      },
+      "cases": {
+        "shuffled-fenwick": {
+          "reference": "shuffled-merge",
+          "native_ratio": 0.62274,
+          "native_bounds": [
+            0.591721,
+            0.706529
+          ],
+          "models": {
+            "ML4": {
+              "score_ratio": 0.83829,
+              "score_bounds": [
+                0.83829,
+                0.83829
+              ],
+              "signed_error_percent": 34.613166,
+              "within_20_percent": false
+            },
+            "two_counter": {
+              "score_ratio": 0.840459,
+              "score_bounds": [
+                0.840459,
+                0.840459
+              ],
+              "signed_error_percent": 34.961572,
+              "within_20_percent": false
+            }
+          },
+          "deadlines": {
+            "1": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.25": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.5": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "2": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "3": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            }
+          }
+        },
+        "shuffled-segtree": {
+          "reference": "shuffled-merge",
+          "native_ratio": 0.913398,
+          "native_bounds": [
+            0.871026,
+            0.960156
+          ],
+          "models": {
+            "ML4": {
+              "score_ratio": 0.796568,
+              "score_bounds": [
+                0.796568,
+                0.796568
+              ],
+              "signed_error_percent": -12.790646,
+              "within_20_percent": true
+            },
+            "two_counter": {
+              "score_ratio": 0.778052,
+              "score_bounds": [
+                0.778052,
+                0.778052
+              ],
+              "signed_error_percent": -14.817887,
+              "within_20_percent": true
+            }
+          },
+          "deadlines": {
+            "1": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.25": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.5": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "2": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "3": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            }
+          }
+        },
+        "runs-fenwick": {
+          "reference": "runs-merge",
+          "native_ratio": 0.710326,
+          "native_bounds": [
+            0.703567,
+            0.725182
+          ],
+          "models": {
+            "ML4": {
+              "score_ratio": 0.868906,
+              "score_bounds": [
+                0.868906,
+                0.868906
+              ],
+              "signed_error_percent": 22.32503,
+              "within_20_percent": false
+            },
+            "two_counter": {
+              "score_ratio": 0.873362,
+              "score_bounds": [
+                0.873362,
+                0.873362
+              ],
+              "signed_error_percent": 22.952261,
+              "within_20_percent": false
+            }
+          },
+          "deadlines": {
+            "1": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.25": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.5": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "2": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "3": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            }
+          }
+        },
+        "runs-segtree": {
+          "reference": "runs-merge",
+          "native_ratio": 1.184202,
+          "native_bounds": [
+            1.160373,
+            1.211008
+          ],
+          "models": {
+            "ML4": {
+              "score_ratio": 0.8253,
+              "score_bounds": [
+                0.8253,
+                0.8253
+              ],
+              "signed_error_percent": -30.307447,
+              "within_20_percent": false
+            },
+            "two_counter": {
+              "score_ratio": 0.808511,
+              "score_bounds": [
+                0.808511,
+                0.808511
+              ],
+              "signed_error_percent": -31.725225,
+              "within_20_percent": false
+            }
+          },
+          "deadlines": {
+            "1": {
+              "native": "timeout",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.25": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.5": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "2": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "3": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            }
+          }
+        }
+      }
+    }
+  },
+  "pooled": {
+    "predecessor_development": {
+      "summary": {
+        "ML4": {
+          "correct": 18,
+          "false_accept": 0,
+          "false_timeout": 2,
+          "indeterminate": 0,
+          "within_20_percent": 3,
+          "timing_cases": 4,
+          "median_absolute_percent_error": 14.087927
+        },
+        "two_counter": {
+          "correct": 20,
+          "false_accept": 0,
+          "false_timeout": 0,
+          "indeterminate": 0,
+          "within_20_percent": 3,
+          "timing_cases": 4,
+          "median_absolute_percent_error": 13.443596
+        }
+      },
+      "cases": {
+        "uniform-multiset": {
+          "reference": "uniform-dsu",
+          "native_ratio": 1.591688,
+          "native_bounds": [
+            1.531815,
+            1.734161
+          ],
+          "models": {
+            "ML4": {
+              "score_ratio": 1.802663,
+              "score_bounds": [
+                1.802663,
+                1.802663
+              ],
+              "signed_error_percent": 13.254788,
+              "within_20_percent": true
+            },
+            "two_counter": {
+              "score_ratio": 1.93714,
+              "score_bounds": [
+                1.93714,
+                1.93714
+              ],
+              "signed_error_percent": 21.703453,
+              "within_20_percent": false
+            }
+          },
+          "deadlines": {
+            "1": {
+              "native": "timeout",
+              "ML4": "timeout",
+              "two_counter": "timeout"
+            },
+            "1.25": {
+              "native": "timeout",
+              "ML4": "timeout",
+              "two_counter": "timeout"
+            },
+            "1.5": {
+              "native": "timeout",
+              "ML4": "timeout",
+              "two_counter": "timeout"
+            },
+            "2": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "3": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            }
+          }
+        },
+        "uniform-fenwick": {
+          "reference": "uniform-dsu",
+          "native_ratio": 0.871627,
+          "native_bounds": [
+            0.857868,
+            0.889734
+          ],
+          "models": {
+            "ML4": {
+              "score_ratio": 1.061974,
+              "score_bounds": [
+                1.061974,
+                1.061974
+              ],
+              "signed_error_percent": 21.838068,
+              "within_20_percent": false
+            },
+            "two_counter": {
+              "score_ratio": 0.969632,
+              "score_bounds": [
+                0.969632,
+                0.969632
+              ],
+              "signed_error_percent": 11.243824,
+              "within_20_percent": true
+            }
+          },
+          "deadlines": {
+            "1": {
+              "native": "accept",
+              "ML4": "timeout",
+              "two_counter": "accept"
+            },
+            "1.25": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.5": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "2": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "3": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            }
+          }
+        },
+        "clustered-multiset": {
+          "reference": "clustered-dsu",
+          "native_ratio": 1.711156,
+          "native_bounds": [
+            1.617447,
+            1.901309
+          ],
+          "models": {
+            "ML4": {
+              "score_ratio": 1.82031,
+              "score_bounds": [
+                1.82031,
+                1.82031
+              ],
+              "signed_error_percent": 6.37895,
+              "within_20_percent": true
+            },
+            "two_counter": {
+              "score_ratio": 1.978839,
+              "score_bounds": [
+                1.978839,
+                1.978839
+              ],
+              "signed_error_percent": 15.643368,
+              "within_20_percent": true
+            }
+          },
+          "deadlines": {
+            "1": {
+              "native": "timeout",
+              "ML4": "timeout",
+              "two_counter": "timeout"
+            },
+            "1.25": {
+              "native": "timeout",
+              "ML4": "timeout",
+              "two_counter": "timeout"
+            },
+            "1.5": {
+              "native": "timeout",
+              "ML4": "timeout",
+              "two_counter": "timeout"
+            },
+            "2": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "3": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            }
+          }
+        },
+        "clustered-fenwick": {
+          "reference": "clustered-dsu",
+          "native_ratio": 0.932091,
+          "native_bounds": [
+            0.907238,
+            0.946811
+          ],
+          "models": {
+            "ML4": {
+              "score_ratio": 1.071169,
+              "score_bounds": [
+                1.071169,
+                1.071169
+              ],
+              "signed_error_percent": 14.921067,
+              "within_20_percent": true
+            },
+            "two_counter": {
+              "score_ratio": 0.99178,
+              "score_bounds": [
+                0.99178,
+                0.99178
+              ],
+              "signed_error_percent": 6.403685,
+              "within_20_percent": true
+            }
+          },
+          "deadlines": {
+            "1": {
+              "native": "accept",
+              "ML4": "timeout",
+              "two_counter": "accept"
+            },
+            "1.25": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.5": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "2": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "3": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            }
+          }
+        }
+      }
+    },
+    "inversion_holdout": {
+      "summary": {
+        "ML4": {
+          "correct": 19,
+          "false_accept": 1,
+          "false_timeout": 0,
+          "indeterminate": 0,
+          "within_20_percent": 1,
+          "timing_cases": 4,
+          "median_absolute_percent_error": 26.564026
+        },
+        "two_counter": {
+          "correct": 19,
+          "false_accept": 1,
+          "false_timeout": 0,
+          "indeterminate": 0,
+          "within_20_percent": 1,
+          "timing_cases": 4,
+          "median_absolute_percent_error": 27.590006
+        }
+      },
+      "cases": {
+        "shuffled-fenwick": {
+          "reference": "shuffled-merge",
+          "native_ratio": 0.620726,
+          "native_bounds": [
+            0.585884,
+            0.712112
+          ],
+          "models": {
+            "ML4": {
+              "score_ratio": 0.83829,
+              "score_bounds": [
+                0.83829,
+                0.83829
+              ],
+              "signed_error_percent": 35.049915,
+              "within_20_percent": false
+            },
+            "two_counter": {
+              "score_ratio": 0.840459,
+              "score_bounds": [
+                0.840459,
+                0.840459
+              ],
+              "signed_error_percent": 35.399452,
+              "within_20_percent": false
+            }
+          },
+          "deadlines": {
+            "1": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.25": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.5": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "2": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "3": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            }
+          }
+        },
+        "shuffled-segtree": {
+          "reference": "shuffled-merge",
+          "native_ratio": 0.905356,
+          "native_bounds": [
+            0.858922,
+            0.967744
+          ],
+          "models": {
+            "ML4": {
+              "score_ratio": 0.796568,
+              "score_bounds": [
+                0.796568,
+                0.796568
+              ],
+              "signed_error_percent": -12.015987,
+              "within_20_percent": true
+            },
+            "two_counter": {
+              "score_ratio": 0.778052,
+              "score_bounds": [
+                0.778052,
+                0.778052
+              ],
+              "signed_error_percent": -14.061236,
+              "within_20_percent": true
+            }
+          },
+          "deadlines": {
+            "1": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.25": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.5": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "2": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "3": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            }
+          }
+        },
+        "runs-fenwick": {
+          "reference": "runs-merge",
+          "native_ratio": 0.706464,
+          "native_bounds": [
+            0.689195,
+            0.728886
+          ],
+          "models": {
+            "ML4": {
+              "score_ratio": 0.868906,
+              "score_bounds": [
+                0.868906,
+                0.868906
+              ],
+              "signed_error_percent": 22.993776,
+              "within_20_percent": false
+            },
+            "two_counter": {
+              "score_ratio": 0.873362,
+              "score_bounds": [
+                0.873362,
+                0.873362
+              ],
+              "signed_error_percent": 23.624437,
+              "within_20_percent": false
+            }
+          },
+          "deadlines": {
+            "1": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.25": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.5": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "2": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "3": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            }
+          }
+        },
+        "runs-segtree": {
+          "reference": "runs-merge",
+          "native_ratio": 1.181266,
+          "native_bounds": [
+            1.150335,
+            1.232746
+          ],
+          "models": {
+            "ML4": {
+              "score_ratio": 0.8253,
+              "score_bounds": [
+                0.8253,
+                0.8253
+              ],
+              "signed_error_percent": -30.134275,
+              "within_20_percent": false
+            },
+            "two_counter": {
+              "score_ratio": 0.808511,
+              "score_bounds": [
+                0.808511,
+                0.808511
+              ],
+              "signed_error_percent": -31.555576,
+              "within_20_percent": false
+            }
+          },
+          "deadlines": {
+            "1": {
+              "native": "timeout",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.25": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "1.5": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "2": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            },
+            "3": {
+              "native": "accept",
+              "ML4": "accept",
+              "two_counter": "accept"
+            }
+          }
+        }
+      }
+    }
+  }
+}
