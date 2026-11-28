@@ -1802,7 +1802,7 @@ int main(void) {
     instrlist_meta_preinsert(bb, ret, report);
     instrlist_meta_preinsert(bb, ret, XINST_CREATE_move(ctx, opnd_create_reg(DR_REG_RDX),
                                                         opnd_create_reg(DR_REG_R11)));
-    assert(insert_write_checkpoint(ctx, bb, report, ENTRY_PC, ENTRY_PC + 7, 9));
+    assert(insert_write_checkpoint(ctx, bb, report, ENTRY_PC, ENTRY_PC + 7, 9, true));
     byte *write_end = instrlist_encode(ctx, bb, write_code, true);
     assert(write_end && write_end <= entry + page);
     instrlist_clear_and_destroy(ctx, bb);
@@ -1825,9 +1825,30 @@ int main(void) {
     bb = instrlist_create(ctx);
     ret = INSTR_CREATE_ret(ctx);
     instrlist_append(bb, ret);
-    assert(!insert_write_checkpoint(ctx, bb, ret, ENTRY_PC, ENTRY_PC + 16, 9));
-    assert(!insert_write_checkpoint(ctx, bb, ret, ENTRY_PC, ENTRY_PC + 7, 4096));
+    assert(!insert_write_checkpoint(ctx, bb, ret, ENTRY_PC, ENTRY_PC + 16, 9, true));
+    assert(!insert_write_checkpoint(ctx, bb, ret, ENTRY_PC, ENTRY_PC + 7, 4096, true));
+    /* Nor does one in a block whose code is too far apart for packed words. */
+    assert(!insert_write_checkpoint(ctx, bb, ret, ENTRY_PC, ENTRY_PC + 7, 9, false));
     assert(instrlist_first(bb) == ret);
+    instrlist_clear_and_destroy(ctx, bb);
+    /* Packed words fit a block whose application code, from its lowest
+     * address to the end of its highest instruction, spans less than
+     * WRITE_WORD_PACKED_SPAN bytes, on either side of its first instruction
+     * (a jump the runtime elided can lead backward). */
+    bb = instrlist_create(ctx);
+    instr_t *first_nop = INSTR_CREATE_nop(ctx), *other_nop = INSTR_CREATE_nop(ctx);
+    instr_set_translation(first_nop, ENTRY_PC);
+    instrlist_append(bb, first_nop);
+    instrlist_meta_append(bb, INSTR_CREATE_nop(ctx)); /* Meta code has no address. */
+    instrlist_append(bb, other_nop);
+    instr_set_translation(other_nop, ENTRY_PC + WRITE_WORD_PACKED_SPAN - 2);
+    assert(packed_checkpoints_fit(ctx, bb));
+    instr_set_translation(other_nop, ENTRY_PC + WRITE_WORD_PACKED_SPAN - 1);
+    assert(!packed_checkpoints_fit(ctx, bb));
+    instr_set_translation(other_nop, ENTRY_PC - WRITE_WORD_PACKED_SPAN + 2);
+    assert(packed_checkpoints_fit(ctx, bb));
+    instr_set_translation(other_nop, ENTRY_PC - WRITE_WORD_PACKED_SPAN + 1);
+    assert(!packed_checkpoints_fit(ctx, bb));
     instrlist_clear_and_destroy(ctx, bb);
     /* A live entry that only returns, and the boundary routine as the client
      * generates it. The routine names the callback once, as an absolute

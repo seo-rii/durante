@@ -141,6 +141,11 @@ jobs:
         run: python3 tests/runtime_compat.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/runtime-compat --require-runtime cpython --require-runtime pypy --require-runtime node --require-qualified-runtime java --java "$JAVA_HOME_17_X64/bin/java" --javac "$JAVA_HOME_17_X64/bin/javac" --timeout-ms 40000
       - name: Solve contest problems in seven languages under every supervisor mode
         run: PATH="$JAVA_HOME_17_X64/bin:$PATH" python3 tests/contest_corpus.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build/libdurante.so --runner-bin target/release/durante --output-dir .results/contest-corpus --no-aslr --problem bfs_grid --problem deep_dfs --lang cpp-static --lang cpp-dyn --lang rust --lang python --lang pypy --lang node --lang java
+      - name: Check every packed write checkpoint against the full address of its write
+        run: |
+          cmake -S tests/checkpoint_identity -B build-checkpoint-identity -DCMAKE_BUILD_TYPE=Release -DDynamoRIO_DIR="$PWD/toolkit/sdk/DynamoRIO-Linux-11.3.0-1/cmake"
+          cmake --build build-checkpoint-identity -j2
+          PATH="$JAVA_HOME_17_X64/bin:$PATH" python3 tests/checkpoint_identity.py --sdk toolkit/sdk/DynamoRIO-Linux-11.3.0-1 --client build-checkpoint-identity/libcheckpoint_identity.so --runner-bin target/release/durante --output-dir .results/checkpoint-identity --lang java --lang java-cds --lang node --lang pypy --problem bfs_grid --problem sort_bs
       - name: Require PyPy threads, major GC and child-process accounting
         run: |
           pypy3 -I -m unittest discover -s tests -p 'test_python_gc_fixture.py' -v

@@ -31,8 +31,19 @@ register. A block entry stores zero there. Callbacks settle the word into the
 checkpoint state before they read or replace it. Each knows the write it
 expects (the REP instruction it observes, or the write or continuation the
 runtime replays) and takes the full address from it; a word whose low bits do
-not match leaves no checkpoint. A write that does not fit the word (a suffix
-above 1023 instructions) takes the callback instead. It also returns a stored entry charge when a relocated
+not match leaves no checkpoint. The low bits identify the write because the word
+and the expected write are in the block being executed: every entry clears the
+word, and every settling callback names a write of the current block. Traces
+are off, and the runtime does not elide jumps or calls for a client, so a block
+is about `-max_bb_instrs` (256) contiguous instructions, under 4 KiB. A block whose code still spans 128 KiB
+less 16 bytes or more (with `-max_elide_jmp` or `-max_elide_call`) stores no
+packed words. A write that does not fit the word (a suffix above 1023
+instructions) or such a block takes the callback instead.
+`tests/checkpoint_identity.py` runs a build that also stores every write's full
+address and aborts if a settled word is kept or dropped differently from the
+full address; it covers HotSpot, V8, PyPy, PHP's JIT, `tests/jit_stress.py` and
+a fixture that writes its own code. The restore-state handler also returns a
+stored entry charge when a relocated
 thread will enter the same block again. The layout depends only on the block, so
 no translations are stored. A retry's first-block checks move from block entry
 to the replay, REP, signal and snapshot callbacks. The entry sequence for each
