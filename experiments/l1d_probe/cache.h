@@ -28,8 +28,18 @@ typedef struct {
   uint64_t dependent_misses;
 } l1d_cache_t;
 
+/* A five-feature run only consumes dependent L1D misses. The tag updates
+ * still run for every access, including ordinary reads and writes. */
+static inline void l1d_account(l1d_cache_t *cache, uint64_t refs, uint64_t lines) {
+  if (OUTER_LEVELS > 1) {
+    cache->refs += refs;
+    cache->lines += lines;
+  }
+}
+
 static inline void l1d_record_miss(l1d_cache_t *cache, uintptr_t line) {
-  ++cache->misses;
+  if (OUTER_LEVELS > 1)
+    ++cache->misses;
   cache->dependent_misses += cache->dependent;
   if (cache->outer)
     outer_access(cache->outer, line, cache->dependent);
@@ -68,16 +78,14 @@ static inline bool l1d_touch_operand(l1d_cache_t *cache, uintptr_t addr,
 
 static inline void l1d_access(l1d_cache_t *cache, uintptr_t addr,
                               unsigned bytes) {
-  ++cache->refs;
-  cache->lines += 1u + l1d_touch_operand(cache, addr, bytes);
+  l1d_account(cache, 1, 1u + l1d_touch_operand(cache, addr, bytes));
 }
 
 /* A read immediately followed by a write to exactly the same operand
  * establishes the same LRU order on both passes. */
 static inline void l1d_access_twice(l1d_cache_t *cache, uintptr_t addr,
                                     unsigned bytes) {
-  cache->refs += 2;
-  cache->lines += 2u * (1u + l1d_touch_operand(cache, addr, bytes));
+  l1d_account(cache, 2, 2u * (1u + l1d_touch_operand(cache, addr, bytes)));
 }
 
 /* Number of consecutive whole elements contained in the current line.
@@ -129,15 +137,14 @@ static inline bool l1d_contiguous_stos(l1d_cache_t *cache, uintptr_t dst,
     l1d_touch_line(cache, line);
     line += step;
   }
-  cache->refs += count;
-  cache->lines += count;
-  if (dst & (bytes - 1))
-    cache->lines += high_line - low_line; /* Each boundary bisects one element. */
+  /* Each crossed boundary bisects one unaligned element. */
+  l1d_account(cache, count, count + ((dst & (bytes - 1)) ? high_line - low_line : 0));
 
   if (unique <= capacity)
     return true;
   /* The rest are misses. Each set retains precisely its last eight lines. */
-  cache->misses += unique - capacity;
+  if (OUTER_LEVELS > 1)
+    cache->misses += unique - capacity;
   if (cache->outer) {
     for (uintptr_t i = capacity; i < unique; ++i) {
       outer_access(cache->outer, line, false);
@@ -195,7 +202,8 @@ static inline bool l1d_streaming_movs(l1d_cache_t *cache, uintptr_t src,
     read_line += step;
     write_line += step;
   }
-  cache->misses += 2 * (pairs - prefix);
+  if (OUTER_LEVELS > 1)
+    cache->misses += 2 * (pairs - prefix);
   if (cache->outer) {
     /* Every later pair misses: the outer caches see the read, then the write. */
     for (uintptr_t i = prefix; i < pairs; ++i) {
@@ -223,8 +231,7 @@ static inline bool l1d_streaming_movs(l1d_cache_t *cache, uintptr_t src,
     }
   }
   /* Naturally aligned elements cannot cross a line. */
-  cache->refs += 2 * count;
-  cache->lines += 2 * count;
+  l1d_account(cache, 2 * count, 2 * count);
   return true;
 }
 
@@ -271,8 +278,7 @@ static inline void l1d_repeat(l1d_cache_t *cache, bool movs, uintptr_t src,
         l1d_touch_line(cache, src / L1D_LINE_BYTES);
       l1d_touch_line(cache, dst / L1D_LINE_BYTES);
       uint64_t accesses = run * (movs ? 2 : 1);
-      cache->refs += accesses;
-      cache->lines += accesses;
+      l1d_account(cache, accesses, accesses);
     }
     uintptr_t distance = (uintptr_t)run * bytes;
     uintptr_t step = backwards ? -distance : distance;

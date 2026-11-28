@@ -1,0 +1,93 @@
+{
+  "protocol": {
+    "rounds": [
+      "native",
+      "full",
+      "reduced",
+      "native",
+      "native",
+      "reduced",
+      "full",
+      "native",
+      "native"
+    ],
+    "cpu": 1,
+    "cpuid": "x86-64-v2",
+    "features": [
+      "latency_x16",
+      "rep_bytes",
+      "l1d_dependent",
+      "dependent_2m",
+      "stream_2m"
+    ],
+    "accuracy": "On each fresh boot require all original seven ELFs to return the registered output. Compare all retained integer values and skipped-operand counts over both full and both reduced probes per submission. Pool both boots separately. Score the reduced client with exactly those five original Dijkstra ML4 coefficients and compare at 65 ms against all native timings, using the independent priority-queue reference only. Equality passes; a range crossing the limit is indeterminate.",
+    "cost": "For each program report measured process CPU (user plus system), speedup as median full divided by median reduced, and the entire range of observed full/reduced pairwise ratios. Also report overhead relative to the native median. The repeated boot reverses program order and swaps full and reduced rounds. Do not infer adoption from a speedup or fit to these timings."
+  },
+  "cases": {
+    "reference": {
+      "stdin": "inputs/graph",
+      "stdin_sha256": "6e9dbe24b653a8fb261668e8675e6dea82187a510c5c94f4014482e94fb8f708",
+      "expected_sha256": "59c0af841dc79f04e14f03779fece88d8ec15672a36fa1bdbed5388d4b6f465d",
+      "elf_sha256": "3329d2981760ac275e2ffd17ed4ddc22b409fb6046b7bd05703510602597a091"
+    },
+    "fast": {
+      "stdin": "inputs/graph",
+      "stdin_sha256": "6e9dbe24b653a8fb261668e8675e6dea82187a510c5c94f4014482e94fb8f708",
+      "expected_sha256": "59c0af841dc79f04e14f03779fece88d8ec15672a36fa1bdbed5388d4b6f465d",
+      "elf_sha256": "102fd8cf4ba07043d07e644d2c79f8a06ffdd2bcbb191f1bad75c0b13f92a57b"
+    },
+    "block8": {
+      "stdin": "inputs/graph",
+      "stdin_sha256": "6e9dbe24b653a8fb261668e8675e6dea82187a510c5c94f4014482e94fb8f708",
+      "expected_sha256": "59c0af841dc79f04e14f03779fece88d8ec15672a36fa1bdbed5388d4b6f465d",
+      "elf_sha256": "5f0c09a7480bef14d8d157e2617b8cb2bb7d8b640aed781fcdd100fa18106f9c"
+    },
+    "block2048": {
+      "stdin": "inputs/graph",
+      "stdin_sha256": "6e9dbe24b653a8fb261668e8675e6dea82187a510c5c94f4014482e94fb8f708",
+      "expected_sha256": "59c0af841dc79f04e14f03779fece88d8ec15672a36fa1bdbed5388d4b6f465d",
+      "elf_sha256": "222bce6027054a9da318d140cdb4cb26f800723bd64655a7f3108169a363d78e"
+    },
+    "block4": {
+      "stdin": "inputs/graph",
+      "stdin_sha256": "6e9dbe24b653a8fb261668e8675e6dea82187a510c5c94f4014482e94fb8f708",
+      "expected_sha256": "59c0af841dc79f04e14f03779fece88d8ec15672a36fa1bdbed5388d4b6f465d",
+      "elf_sha256": "69f29cf93a472768e5a8d52734ddb7cdcf5f6f08865299ecb443737c4b6afeb1"
+    },
+    "slow": {
+      "stdin": "inputs/graph",
+      "stdin_sha256": "6e9dbe24b653a8fb261668e8675e6dea82187a510c5c94f4014482e94fb8f708",
+      "expected_sha256": "59c0af841dc79f04e14f03779fece88d8ec15672a36fa1bdbed5388d4b6f465d",
+      "elf_sha256": "5a74732188a6ef89c1463f15b6a97dcb07582f5aa4c710573814e0b2c7268fc1"
+    },
+    "ordered_set": {
+      "stdin": "inputs/graph",
+      "stdin_sha256": "6e9dbe24b653a8fb261668e8675e6dea82187a510c5c94f4014482e94fb8f708",
+      "expected_sha256": "59c0af841dc79f04e14f03779fece88d8ec15672a36fa1bdbed5388d4b6f465d",
+      "elf_sha256": "62571551e82f88b9e84d721634e0ff9740303b20018046356daa841b047b8f51"
+    }
+  },
+  "reference": "reference",
+  "deadline_us": 65000,
+  "ml4": {
+    "latency_x16": 1.9610536920428108e-11,
+    "rep_bytes": 2.2231881518169566e-11,
+    "l1d_misses": 5.696914949612691e-11,
+    "random_2m": 3.6329907111055703e-09,
+    "random_32m": 6.462605458925904e-09,
+    "stream_2m": 1.0698559144892158e-08,
+    "l1d_dependent": 4.7700178852992235e-09,
+    "dependent_2m": 7.817536652521212e-08
+  },
+  "clients": {
+    "full": "09898f86e63751526b5870309351dc8fc1a7ee7e16b459cd7849b59d7243355a",
+    "reduced": "a5fdfc6d029cbae6be930239b33bbcb8322c33813e13bc908a753ad1eb69e0b5"
+  },
+  "source_files": {
+    "client/durante.c": "cf3e24f6c52145d44fce23be95398150373a23748c2c254150bcf00caaa669bc",
+    "experiments/l1d_probe/probe.h": "89b544f2e603d344de1fd78a898cc06d232b966bf213c8e102e0e2c577717d1c",
+    "experiments/l1d_probe/cache.h": "d0b903180b2a97e9439d53d11648986adcb0a9803207f0bbb4c759f6c4e8ad60",
+    "experiments/l1d_probe/outer.h": "6ba5b673d35c4b2f466a0e4dc5514aa12c76fbf38e6f1c33d7e40aeab848af98",
+    "experiments/l1d_probe/CMakeLists.txt": "d1c1c2c2f42262f443784eabee2f5c26dc42554793ff9e6dc8814d585b42d974"
+  }
+}

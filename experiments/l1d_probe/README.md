@@ -42,6 +42,10 @@ checks the counts, the full LRU order and every boundary against a literal
 stack-distance reference, also behind the L1D model and its bulk REP paths. See
 [docs/CAPACITY_MISSES.md](../../docs/CAPACITY_MISSES.md).
 
+### Five-feature client
+
+The experiment build also produces `libdurante_ml4_five.so`. It keeps the exact L1D replacement order, simulates one fully associative 2 MiB cache and tracks the last 16 misses at that capacity. Its terminal work report supplies the latency bound and REP byte count. One `PROBE_ML4_FIVE` line gives dependent L1D misses, dependent 2 MiB misses, 2 MiB stream misses and skipped operands. Run this research client with `-rep_bytes -latency_bound -probe_l1d -probe_outer`. The original client and this one use the same dependency and stream definitions. The [paired graph measurements](../capacity_misses/reduced_graph/) compare both diagnostics on the same input and executables.
+
 ## Compare clients
 
 Use commit `3a77fdb` to compare against the preceding probe, or `98bda4890994` for the original scalar reference that simulates every REP element individually.
