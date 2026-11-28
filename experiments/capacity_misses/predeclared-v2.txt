@@ -1,0 +1,61 @@
+Capacity-miss time features, v2: predeclared design (written before timing any v2 held-out case)
+
+Why a second round. In v1 (predeclared.txt, results/v1) every predeclared model
+failed: no calibration kernel varied REP bytes, so the REP weight acted as an
+intercept, and native spreads on this guest reached 15-70% while other jobs ran.
+After looking at the v1 held-out data, a leave-one-out comparison over the 22
+real programs suggested the capacity features help (6-8 -> 12-14 of 22 within
+20%), with the largest remaining misses on pointer chasing (linked-rank) and a
+latency-bound loop (binary-gcd). Those cases are now spent. v2 therefore uses
+them only for calibration and scores on programs no model has seen.
+
+Counters. As in v1, plus the static latency bound (latency_bound_x16, client
+option -latency_bound) and dependent-load misses from the probe: a load is
+dependent when an address register holds a value loaded earlier in the same
+block (through register arithmetic, and around a block that branches to its own
+start); l1d_dependent and dependent_2m count the L1D and 2 MiB misses of such
+loads. The probe now marks block starts from the client (it previously relied on
+drmgr, which the client no longer uses for blocks).
+
+Cases (plan-v2.json). Calibration: the 36 v1 cases (14 kernels, 22 programs,
+including the 7 intended contest solutions). Held-out: 49 contest solution
+variants in experiments/judge_disagreement/variants, 7 per problem (6 within
+about 15x of the intended solution and 1 marked too slow), with the problem's
+full input. They were written and checked for correct output on CPU 0 before
+any v2 timing; their rough ratios from that check are not used by any model.
+
+Timing. CPU 1, ASLR off, unlimited stack, 15 interleaved rounds; native time =
+median. Stable means (max - min) / median <= 20% (v1 showed memory-bound
+kernels spreading by up to about 40% on this guest even with little other load).
+One probe run per case (v1 showed every case repeatable).
+
+Models (nonnegative, zero intercept, least squared relative error on the 36
+calibration medians, exact over active sets):
+  M0   instructions, rep_bytes                       (the ordinary clock)
+  ML   latency_x16, rep_bytes                        (the latency clock)
+  M1   M0 + l1d_misses
+  M2   M1 + random_2m, random_32m, stream_2m
+  M4   M2 + l1d_dependent, dependent_2m
+  ML4  ML + l1d_misses, random_2m, random_32m, stream_2m, l1d_dependent, dependent_2m
+Primary candidates: M4 and ML4.
+
+Accuracy (item 1). On held-out variants that are not marked too slow: count
+within +/-20% (all and stable), median and worst absolute error. Decision: a
+candidate improves only if, on stable in-range variants, it has more cases within
+20% than both M0 and M1 and a worst absolute error no larger than M1's.
+
+Verdict disagreement (item 3). For problem p and k in {1.5, 2, 3}, the native
+time limit is k times the intended solution's native median. A variant's native
+verdict is AC when its native median is within the limit; it is ambiguous, and
+excluded, when the limit lies between its fastest and slowest native runs.
+Weights for problem p are refitted without that problem's intended solution, so
+no program of p is seen by its model.
+  Policy A (absolute): the model verdict is AC when the predicted seconds are
+    within the native limit.
+  Policy R (relative, as a setter would use a work clock): the virtual limit is
+    k times the model's prediction for the intended solution; the model verdict
+    is AC when the variant's prediction is within it.
+Report false TLE (native AC, model TLE) and false AC (native TLE, model AC) over
+unambiguous decisions, per model, policy and k, and per variant class. Headline:
+policy R at k = 2 for M0 and for the better primary candidate. Results on one
+guest qualify no production model.

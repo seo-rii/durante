@@ -1,0 +1,296 @@
+{
+ "schema": 1,
+ "description": "Capacity-miss study cases (see predeclared.txt)",
+ "sources": {
+  "kernels": {
+   "path": "experiments/capacity_misses/kernels.c"
+  },
+  "crossed": {
+   "path": "experiments/crossed_memory_corpus/crossed/main.cpp"
+  },
+  "sparse-rmq": {
+   "path": "experiments/crossed_memory_corpus/sparse-rmq/main.cpp"
+  },
+  "histogram-stack": {
+   "path": "experiments/crossed_memory_corpus/histogram-stack/main.cpp"
+  },
+  "distinct-window": {
+   "path": "experiments/crossed_memory_corpus/distinct-window/main.cpp"
+  },
+  "fenwick-prefix": {
+   "path": "experiments/memory_cost_holdout/fenwick-prefix/main.cpp"
+  },
+  "kmp-match": {
+   "path": "experiments/memory_cost_holdout/kmp-match/main.cpp"
+  },
+  "union-find": {
+   "path": "experiments/memory_cost_holdout/union-find/main.cpp"
+  },
+  "binary-gcd": {
+   "path": "experiments/branch_load_holdout/binary-gcd/main.cpp"
+  },
+  "stream-polynomial": {
+   "path": "experiments/branch_load_holdout/stream-polynomial/main.cpp"
+  },
+  "linked-rank": {
+   "path": "experiments/branch_load_holdout/linked-rank/main.cpp"
+  },
+  "contest-bfs_grid": {
+   "path": "tests/contest/bfs_grid/sol.cpp"
+  },
+  "contest-dijkstra": {
+   "path": "tests/contest/dijkstra/sol.cpp"
+  },
+  "contest-lcs": {
+   "path": "tests/contest/lcs/sol.cpp"
+  },
+  "contest-fenwick": {
+   "path": "tests/contest/fenwick/sol.cpp"
+  },
+  "contest-kmp": {
+   "path": "tests/contest/kmp/sol.cpp"
+  },
+  "contest-sort_bs": {
+   "path": "tests/contest/sort_bs/sol.cpp"
+  },
+  "contest-deep_dfs": {
+   "path": "tests/contest/deep_dfs/sol.cpp"
+  }
+ },
+ "cases": {
+  "k-int": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "int",
+    "200000000"
+   ]
+  },
+  "k-branch": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "branch",
+    "200000000"
+   ]
+  },
+  "k-read-16k": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "read",
+    "16384",
+    "100000000"
+   ]
+  },
+  "k-read-512k": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "read",
+    "524288",
+    "40000000"
+   ]
+  },
+  "k-read-4m": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "read",
+    "4194304",
+    "30000000"
+   ]
+  },
+  "k-read-64m": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "read",
+    "67108864",
+    "20000000"
+   ]
+  },
+  "k-chase-16k": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "chase",
+    "16384",
+    "100000000"
+   ]
+  },
+  "k-chase-512k": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "chase",
+    "524288",
+    "30000000"
+   ]
+  },
+  "k-chase-4m": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "chase",
+    "4194304",
+    "8000000"
+   ]
+  },
+  "k-chase-64m": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "chase",
+    "67108864",
+    "2000000"
+   ]
+  },
+  "k-scan-512k": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "scan",
+    "524288",
+    "200000000"
+   ]
+  },
+  "k-scan-64m": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "scan",
+    "67108864",
+    "150000000"
+   ]
+  },
+  "k-store-512k": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "store",
+    "524288",
+    "40000000"
+   ]
+  },
+  "k-store-64m": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "store",
+    "67108864",
+    "20000000"
+   ]
+  },
+  "cross-rep0-small": {
+   "role": "heldout",
+   "binary": "crossed",
+   "corpus": "experiments/crossed_memory_corpus/cross-rep0-small"
+  },
+  "cross-rep256-small": {
+   "role": "heldout",
+   "binary": "crossed",
+   "corpus": "experiments/crossed_memory_corpus/cross-rep256-small"
+  },
+  "cross-rep0-medium": {
+   "role": "heldout",
+   "binary": "crossed",
+   "corpus": "experiments/crossed_memory_corpus/cross-rep0-medium"
+  },
+  "cross-rep256-medium": {
+   "role": "heldout",
+   "binary": "crossed",
+   "corpus": "experiments/crossed_memory_corpus/cross-rep256-medium"
+  },
+  "cross-rep0-large": {
+   "role": "heldout",
+   "binary": "crossed",
+   "corpus": "experiments/crossed_memory_corpus/cross-rep0-large"
+  },
+  "cross-rep256-large": {
+   "role": "heldout",
+   "binary": "crossed",
+   "corpus": "experiments/crossed_memory_corpus/cross-rep256-large"
+  },
+  "sparse-rmq": {
+   "role": "heldout",
+   "binary": "sparse-rmq",
+   "corpus": "experiments/crossed_memory_corpus/sparse-rmq"
+  },
+  "histogram-stack": {
+   "role": "heldout",
+   "binary": "histogram-stack",
+   "corpus": "experiments/crossed_memory_corpus/histogram-stack"
+  },
+  "distinct-window": {
+   "role": "heldout",
+   "binary": "distinct-window",
+   "corpus": "experiments/crossed_memory_corpus/distinct-window"
+  },
+  "fenwick-prefix": {
+   "role": "heldout",
+   "binary": "fenwick-prefix",
+   "corpus": "experiments/memory_cost_holdout/fenwick-prefix"
+  },
+  "kmp-match": {
+   "role": "heldout",
+   "binary": "kmp-match",
+   "corpus": "experiments/memory_cost_holdout/kmp-match"
+  },
+  "union-find": {
+   "role": "heldout",
+   "binary": "union-find",
+   "corpus": "experiments/memory_cost_holdout/union-find"
+  },
+  "binary-gcd": {
+   "role": "heldout",
+   "binary": "binary-gcd",
+   "corpus": "experiments/branch_load_holdout/binary-gcd"
+  },
+  "stream-polynomial": {
+   "role": "heldout",
+   "binary": "stream-polynomial",
+   "corpus": "experiments/branch_load_holdout/stream-polynomial"
+  },
+  "linked-rank": {
+   "role": "heldout",
+   "binary": "linked-rank",
+   "corpus": "experiments/branch_load_holdout/linked-rank"
+  },
+  "contest-bfs_grid": {
+   "role": "heldout",
+   "binary": "contest-bfs_grid",
+   "problem": "bfs_grid"
+  },
+  "contest-dijkstra": {
+   "role": "heldout",
+   "binary": "contest-dijkstra",
+   "problem": "dijkstra"
+  },
+  "contest-lcs": {
+   "role": "heldout",
+   "binary": "contest-lcs",
+   "problem": "lcs"
+  },
+  "contest-fenwick": {
+   "role": "heldout",
+   "binary": "contest-fenwick",
+   "problem": "fenwick"
+  },
+  "contest-kmp": {
+   "role": "heldout",
+   "binary": "contest-kmp",
+   "problem": "kmp"
+  },
+  "contest-sort_bs": {
+   "role": "heldout",
+   "binary": "contest-sort_bs",
+   "problem": "sort_bs"
+  },
+  "contest-deep_dfs": {
+   "role": "heldout",
+   "binary": "contest-deep_dfs",
+   "problem": "deep_dfs"
+  }
+ }
+}

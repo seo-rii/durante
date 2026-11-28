@@ -7,6 +7,8 @@
 #endif
 #include <stdint.h>
 
+#include "outer.h"
+
 /* Cold, demand-only, write-allocate 32 KiB L1D using virtual addresses.
  * Tags are MRU first. Adding one to the line number reserves zero for empty. */
 enum {
@@ -18,7 +20,20 @@ enum {
 typedef struct {
   uint64_t tags[L1D_SETS][L1D_WAYS];
   uint64_t refs, lines, misses;
+  /* Optional larger capacities, which see every line that misses this cache in
+   * the order of the misses. While dependent is set, the caller's accesses are
+   * dependent loads and their misses are also counted separately. */
+  outer_cache_t *outer;
+  bool dependent;
+  uint64_t dependent_misses;
 } l1d_cache_t;
+
+static inline void l1d_record_miss(l1d_cache_t *cache, uintptr_t line) {
+  ++cache->misses;
+  cache->dependent_misses += cache->dependent;
+  if (cache->outer)
+    outer_access(cache->outer, line, cache->dependent);
+}
 
 /* Update replacement order only. Callers account for references and lines. */
 static inline void l1d_touch_line(l1d_cache_t *cache, uintptr_t line) {
@@ -36,7 +51,7 @@ static inline void l1d_touch_line(l1d_cache_t *cache, uintptr_t line) {
       return;
     displaced = next;
   }
-  ++cache->misses;
+  l1d_record_miss(cache, line);
 }
 
 /* A decoded operand is 1..64 bytes. Return whether a second line was used
@@ -100,7 +115,17 @@ static inline bool l1d_contiguous_stos(l1d_cache_t *cache, uintptr_t dst,
   uintptr_t unique = high_line - low_line + 1;
   const unsigned capacity = L1D_SETS * L1D_WAYS;
   unsigned prefix = unique < capacity ? (unsigned)unique : capacity;
-  for (unsigned i = 0; i < prefix; ++i) {
+  unsigned i = 0;
+  if (backwards && dst / L1D_LINE_BYTES != high_line) {
+    /* The first element straddles its two lines and touches the lower one
+     * first. They are in different sets, so only the outer caches see the
+     * order. */
+    l1d_touch_line(cache, high_line - 1);
+    l1d_touch_line(cache, high_line);
+    line = high_line - 2;
+    i = 2;
+  }
+  for (; i < prefix; ++i) {
     l1d_touch_line(cache, line);
     line += step;
   }
@@ -113,6 +138,12 @@ static inline bool l1d_contiguous_stos(l1d_cache_t *cache, uintptr_t dst,
     return true;
   /* The rest are misses. Each set retains precisely its last eight lines. */
   cache->misses += unique - capacity;
+  if (cache->outer) {
+    for (uintptr_t i = capacity; i < unique; ++i) {
+      outer_access(cache->outer, line, false);
+      line += step;
+    }
+  }
   line = backwards ? low_line : high_line;
   for (unsigned i = 0; i < L1D_SETS; ++i) {
     uint64_t *set = cache->tags[line % L1D_SETS];
@@ -165,6 +196,15 @@ static inline bool l1d_streaming_movs(l1d_cache_t *cache, uintptr_t src,
     write_line += step;
   }
   cache->misses += 2 * (pairs - prefix);
+  if (cache->outer) {
+    /* Every later pair misses: the outer caches see the read, then the write. */
+    for (uintptr_t i = prefix; i < pairs; ++i) {
+      outer_access(cache->outer, read_line, false);
+      outer_access(cache->outer, write_line, false);
+      read_line += step;
+      write_line += step;
+    }
+  }
 
   /* In the last four turns each set is touched once by each stream per
    * turn. Their relative order repeats. On a tie MOVS writes after reading. */

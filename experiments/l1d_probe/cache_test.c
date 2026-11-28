@@ -4,6 +4,89 @@
 #undef NDEBUG /* Always check reference equivalence, including Release builds. */
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+/* A literal LRU stack for the outer capacities: the position of a line is its
+ * stack distance, and the last misses are stored oldest first. */
+enum { REF_OUTER_MAX = 1200 };
+struct ref_outer {
+  uint32_t capacity[OUTER_LEVELS];
+  uintptr_t stack[REF_OUTER_MAX];
+  uint32_t depth;
+  uint64_t accesses, misses[OUTER_LEVELS], stream[OUTER_LEVELS];
+  uintptr_t recent[OUTER_LEVELS][OUTER_STREAMS];
+  unsigned used[OUTER_LEVELS];
+};
+
+static void ref_outer_miss(struct ref_outer *o, unsigned level, uintptr_t line) {
+  ++o->misses[level];
+  uintptr_t *recent = o->recent[level];
+  unsigned used = o->used[level];
+  for (unsigned i = 0; i < used; ++i) {
+    uintptr_t last = recent[i];
+    uintptr_t distance = line > last ? line - last : last - line;
+    if (distance >= 1 && distance <= OUTER_STREAM_RANGE) {
+      ++o->stream[level];
+      break;
+    }
+  }
+  if (used == OUTER_STREAMS) {
+    memmove(recent, recent + 1, (used - 1) * sizeof(*recent));
+    --used;
+  }
+  recent[used] = line;
+  o->used[level] = used + 1;
+}
+
+static void ref_outer_access(struct ref_outer *o, uintptr_t line) {
+  ++o->accesses;
+  /* An absent line has an infinite stack distance. */
+  uint64_t distance = UINT64_MAX;
+  for (uint32_t i = 0; i < o->depth; ++i) {
+    if (o->stack[i] == line) {
+      distance = i;
+      break;
+    }
+  }
+  for (unsigned level = 0; level < OUTER_LEVELS; ++level)
+    if (distance >= o->capacity[level])
+      ref_outer_miss(o, level, line);
+  uint32_t largest = o->capacity[OUTER_LEVELS - 1];
+  bool found = distance != UINT64_MAX;
+  uint32_t moved = found ? (uint32_t)distance : (o->depth < largest ? o->depth : largest - 1);
+  memmove(&o->stack[1], &o->stack[0], moved * sizeof(o->stack[0]));
+  o->stack[0] = line;
+  if (!found && o->depth < largest)
+    ++o->depth;
+}
+
+static void verify_outer(const outer_cache_t *cache, const struct ref_outer *o) {
+  assert(cache->accesses == o->accesses);
+  assert(cache->count == o->depth);
+  for (unsigned level = 0; level < OUTER_LEVELS; ++level) {
+    assert(cache->misses[level] == o->misses[level]);
+    assert(cache->stream_misses[level] == o->stream[level]);
+    assert(cache->boundary[level] ==
+           (o->depth >= cache->capacity[level] ? cache->boundary[level] : OUTER_NIL));
+  }
+  uint32_t node = cache->head, previous = OUTER_NIL;
+  for (uint32_t i = 0; i < o->depth; ++i) {
+    assert(node != OUTER_NIL && cache->line[node] == o->stack[i]);
+    assert(cache->prev[node] == previous);
+    assert(outer_find(cache, o->stack[i]) == node);
+    unsigned zone = 0;
+    while (zone < OUTER_LEVELS && i >= cache->capacity[zone])
+      ++zone;
+    assert(cache->zone[node] == zone);
+    for (unsigned level = 0; level < OUTER_LEVELS; ++level)
+      if (i + 1 == cache->capacity[level])
+        assert(cache->boundary[level] == node);
+    previous = node;
+    node = cache->next[node];
+  }
+  assert(node == OUTER_NIL && cache->tail == previous);
+}
 
 struct slot {
   uintptr_t line;
@@ -12,6 +95,7 @@ struct slot {
 struct reference {
   struct slot sets[L1D_SETS][L1D_WAYS];
   uint64_t refs, lines, misses;
+  struct ref_outer *outer;
 };
 
 static void ref_line(struct reference *ref, uintptr_t line) {
@@ -27,6 +111,8 @@ static void ref_line(struct reference *ref, uintptr_t line) {
       oldest = &set[i];
   }
   ++ref->misses;
+  if (ref->outer)
+    ref_outer_access(ref->outer, line);
   oldest->line = line;
   oldest->last_use = ref->lines;
 }
@@ -41,6 +127,9 @@ static void ref_access(struct reference *ref, uintptr_t addr, unsigned bytes) {
 }
 
 static void verify(const l1d_cache_t *cache, const struct reference *ref) {
+  assert(!cache->outer == !ref->outer);
+  if (cache->outer)
+    verify_outer(cache->outer, ref->outer);
   assert(cache->refs == ref->refs);
   assert(cache->lines == ref->lines);
   assert(cache->misses == ref->misses);
@@ -77,6 +166,34 @@ static void compare_repeat(l1d_cache_t *cache, struct reference *ref, bool movs,
   verify(cache, ref);
 }
 
+/* Every L1 test also feeds outer capacities just above the L1's 512 lines. */
+static const uint32_t test_capacity[OUTER_LEVELS] = {520, 700, 1100};
+
+static outer_cache_t *new_outer(const uint32_t capacity[OUTER_LEVELS]) {
+  outer_cache_t *outer = calloc(1, sizeof(*outer));
+  void *storage = calloc(1, outer_storage_bytes(capacity[OUTER_LEVELS - 1]));
+  assert(outer && storage && outer_init(outer, capacity, storage));
+  return outer;
+}
+
+static struct ref_outer *new_ref_outer(const uint32_t capacity[OUTER_LEVELS]) {
+  struct ref_outer *o = calloc(1, sizeof(*o));
+  assert(o && capacity[OUTER_LEVELS - 1] <= REF_OUTER_MAX);
+  memcpy(o->capacity, capacity, sizeof(o->capacity));
+  return o;
+}
+
+static void attach_outer(l1d_cache_t *cache, struct reference *ref) {
+  cache->outer = new_outer(test_capacity);
+  ref->outer = new_ref_outer(test_capacity);
+}
+
+static void free_outer(l1d_cache_t *cache, struct reference *ref) {
+  free(cache->outer->line); /* the storage block starts with the line array */
+  free(cache->outer);
+  free(ref->outer);
+}
+
 static uint32_t random_u32(uint32_t *state) {
   *state = *state * 1664525u + 1013904223u;
   return *state;
@@ -85,6 +202,7 @@ static uint32_t random_u32(uint32_t *state) {
 static void test_large_stos(void) {
   l1d_cache_t cache = {0};
   struct reference ref = {0};
+  attach_outer(&cache, &ref);
   const unsigned capacity = L1D_SETS * L1D_WAYS * L1D_LINE_BYTES;
   for (unsigned bytes = 1; bytes <= 8; bytes *= 2) {
     for (unsigned mode = 0; mode < 8; ++mode) {
@@ -120,6 +238,7 @@ static void test_large_stos(void) {
     compare_repeat(&cache, &ref, false, 0, (count - 1) * 8, count, 8, true, addr32);
     compare_repeat(&cache, &ref, false, 0, 3, count, 8, true, addr32);
   }
+  free_outer(&cache, &ref);
 }
 
 static void scalar_pair(l1d_cache_t *cache, struct reference *ref,
@@ -136,6 +255,7 @@ static void compare_warm_movs(uintptr_t src, uintptr_t dst, uint64_t count,
                               unsigned bytes, bool backwards, bool addr32) {
   l1d_cache_t cache = {0};
   struct reference ref = {0};
+  attach_outer(&cache, &ref);
   uintptr_t n = addr32 ? (uint32_t)count : count;
   uintptr_t end = (n - 1) * bytes;
   for (unsigned i = 0; i < L1D_SETS; ++i) {
@@ -154,6 +274,7 @@ static void compare_warm_movs(uintptr_t src, uintptr_t dst, uint64_t count,
   scalar_pair(&cache, &ref, dst, addr32);
   scalar_pair(&cache, &ref, src, addr32);
   verify(&cache, &ref);
+  free_outer(&cache, &ref);
 }
 
 static void test_large_movs(void) {
@@ -205,11 +326,90 @@ static void test_large_movs(void) {
   }
 }
 
+/* The outer stack alone, checked after every access, with capacities that
+ * differ by one, a single-line level, and universes smaller and larger than
+ * every capacity. */
+static void test_outer_alone(void) {
+  const uint32_t capacities[][OUTER_LEVELS] = {{1, 2, 3}, {3, 7, 20}, {5, 6, 40}, {64, 200, 900}};
+  const uint32_t universes[] = {2, 5, 30, 80, 5000};
+  uint32_t rng = 99991;
+  for (unsigned c = 0; c < sizeof(capacities) / sizeof(capacities[0]); ++c) {
+    for (unsigned u = 0; u < sizeof(universes) / sizeof(universes[0]); ++u) {
+      outer_cache_t *cache = new_outer(capacities[c]);
+      struct ref_outer *ref = new_ref_outer(capacities[c]);
+      for (unsigned i = 0; i < 6000; ++i) {
+        uint32_t r = random_u32(&rng);
+        /* Mix random lines with short ascending and descending runs. */
+        uintptr_t line = (r >> 8) % universes[u];
+        if ((r & 7) == 0) {
+          for (unsigned k = 0; k < (r >> 4 & 7); ++k) {
+            uintptr_t next = (line + ((r & 8) ? k : -k)) % (universes[u] + 3);
+            outer_access(cache, next, false);
+            ref_outer_access(ref, next);
+          }
+        }
+        outer_access(cache, line, false);
+        ref_outer_access(ref, line);
+        verify_outer(cache, ref);
+      }
+      free(cache->line);
+      free(cache);
+      free(ref);
+    }
+  }
+}
+
+/* Dependent misses are a subset counted with the same capacities. */
+static void test_stream_history(void) {
+  const uint32_t capacity[OUTER_LEVELS] = {1, 2, 3};
+  outer_cache_t *cache = new_outer(capacity);
+  outer_access(cache, 100, false);
+  outer_access(cache, 102, false);
+  outer_access(cache, 98, false); /* Near 100; matching 102 did not evict it. */
+  for (unsigned level = 0; level < OUTER_LEVELS; ++level)
+    assert(cache->stream_misses[level] == 2);
+  for (unsigned i = 0; i < OUTER_STREAMS; ++i)
+    outer_access(cache, 1000 + 10 * i, false);
+  outer_access(cache, 99, false); /* All three old addresses left the window. */
+  for (unsigned level = 0; level < OUTER_LEVELS; ++level)
+    assert(cache->stream_misses[level] == 2);
+  free(cache->line);
+  free(cache);
+}
+
+static void test_dependent(void) {
+  const uint32_t capacity[OUTER_LEVELS] = {2, 4, 8};
+  outer_cache_t *cache = new_outer(capacity);
+  uint64_t expected[OUTER_LEVELS] = {0};
+  struct ref_outer *ref = new_ref_outer(capacity);
+  uint32_t rng = 7;
+  for (unsigned i = 0; i < 5000; ++i) {
+    uintptr_t line = random_u32(&rng) % 12;
+    bool dependent = random_u32(&rng) & 1;
+    uint64_t before[OUTER_LEVELS];
+    memcpy(before, ref->misses, sizeof(before));
+    ref_outer_access(ref, line);
+    for (unsigned level = 0; level < OUTER_LEVELS; ++level)
+      expected[level] += dependent && ref->misses[level] != before[level];
+    outer_access(cache, line, dependent);
+  }
+  verify_outer(cache, ref);
+  for (unsigned level = 0; level < OUTER_LEVELS; ++level)
+    assert(cache->dependent_misses[level] == expected[level]);
+  free(cache->line);
+  free(cache);
+  free(ref);
+}
+
 int main(void) {
+  test_stream_history();
+  test_outer_alone();
+  test_dependent();
   test_large_stos();
   test_large_movs();
   l1d_cache_t cache = {0};
   struct reference ref = {0};
+  attach_outer(&cache, &ref);
   uint32_t rng = 8425613;
   /* More congruent addresses than associativity forces evictions. Repeated
    * cross-line operands must count every line even when both lines hit. */
@@ -260,6 +460,7 @@ int main(void) {
     ref_access(&ref, dst, scalar_size);
   }
   verify(&cache, &ref);
-  puts("L1D reference counts and complete LRU order match");
+  free_outer(&cache, &ref);
+  puts("L1D and outer reference counts and complete LRU order match");
   return 0;
 }

@@ -27,6 +27,21 @@ An ordinary store shares its callback with Durante's write checkpoint. A read fo
 
 With the single-thread cache probe enabled, ordinary basic blocks can also charge instructions inline between live clock publications. REP or a replay returns the following block to the regular clock routine. To keep setup cheap for short programs, most blocks first translated during the first 131,072 instructions use compact callbacks. A block that branches to its own entry uses inline instrumentation immediately. Both layouts share the same cache and live clock state. The `--include-off` benchmark arm uses Durante's ordinary block accounting with the probe disabled. Its timings therefore compare the two complete measurement configurations.
 
+## Larger capacities and dependent loads
+
+`-probe_outer` (with `-probe_l1d`) also feeds every line that misses the L1D model, in
+miss order, to fully associative LRU caches of 256 KiB, 2 MiB and 32 MiB
+(`outer.h`). One LRU stack with a boundary node per capacity gives all three exactly.
+A stderr line beginning with `PROBE_OUTER` reports, per capacity, the misses, the
+stream misses (within two lines of one of the last 16 misses at that capacity) and the
+misses of dependent loads: loads whose address register holds a value loaded earlier
+in the same block, through register arithmetic or around a block that branches to its
+own start. `l1d_dependent` counts the dependent loads' L1D misses. A four-line assembly trace checks that LEA propagates a dependency through a loaded
+base or index and clears it when both are independent. The model test
+checks the counts, the full LRU order and every boundary against a literal
+stack-distance reference, also behind the L1D model and its bulk REP paths. See
+[docs/CAPACITY_MISSES.md](../../docs/CAPACITY_MISSES.md).
+
 ## Compare clients
 
 Use commit `3a77fdb` to compare against the preceding probe, or `98bda4890994` for the original scalar reference that simulates every REP element individually.

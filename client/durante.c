@@ -183,7 +183,7 @@ static size_t file_bytes;
 #endif
 
 #ifdef DURANTE_L1D_PROBE
-static bool probe_l1d;
+static bool probe_l1d, probe_outer_requested;
 #endif
 
 /* Only the original file-backed text of a static main executable is qualified
@@ -2172,7 +2172,7 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
   }
   bool checkpoint = instr_is_app(where) && instr_writes_memory(where);
 #ifdef DURANTE_L1D_PROBE
-  if (probe_l1d && probe_instrument(drcontext, bb, where, checkpoint) &&
+  if (probe_l1d && probe_instrument(drcontext, bb, where, checkpoint, first_in_block) &&
       !memory_operand_bytes_enabled)
     checkpoint = false;
 #endif
@@ -2578,6 +2578,8 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
 #ifdef DURANTE_L1D_PROBE
     } else if (strcmp(argv[i], "-probe_l1d") == 0 && !probe_l1d) {
       probe_l1d = true;
+    } else if (strcmp(argv[i], "-probe_outer") == 0 && !probe_outer_requested) {
+      probe_outer_requested = true;
 #endif
     } else if (strcmp(argv[i], "-live_work_v1") == 0 && !live_path && i + 1 < argc) {
       live_path = argv[++i];
@@ -2606,6 +2608,10 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
   }
   if (memory_operand_bytes_enabled && !latency_bound_enabled)
     fail("memory operand bytes require -latency_bound");
+#ifdef DURANTE_L1D_PROBE
+  if (probe_outer_requested && (!probe_l1d || !probe_outer_init()))
+    fail("-probe_outer requires -probe_l1d and its storage");
+#endif
   if (live_work_require_eligible && !live_path)
     fail("-live_work_require_eligible requires -live_work_v1");
   if (live_path) {

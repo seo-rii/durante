@@ -1,0 +1,6333 @@
+{
+ "schema": 1,
+ "plan": "plan-v2.json",
+ "plan_sha256": "feb9c55ec87955aced39a8c64a51c59a5f41a9c2f5a729911084e0d89e8010ec",
+ "predeclared_sha256": "f08c2c2ccc956181e59fdf0eaae29057268232db26271cfe258415020c8f6f88",
+ "rounds": 15,
+ "latency_bound": true,
+ "client_sha256": "4f6a90779b151d03c7649a7e91f91237b98dc92d65ded4704da6ef04c230ab0d",
+ "drrun_sha256": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+ "host": {
+  "cpu_model": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+  "kernel": "6.18.44-fc-v880",
+  "cpu": 1
+ },
+ "built": {
+  "kernels": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/kernels",
+   "source_sha256": "58d192145dbae87eb9c28a514ee9777850b5b96d34d58a983bb5b8805f887618",
+   "elf_sha256": "8a58cecb778fa339a23e58e5164fbc4551f01b4aab52f87913aefb1d6e1c35c2"
+  },
+  "crossed": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/crossed",
+   "source_sha256": "b820b82e249fbc0773bb4669747608dd745a3474909927df3a267fe2da976db8",
+   "elf_sha256": "3259c91ff719c8c8cf9a076357d4f979594d3d5e3a2c720b3e2ea06632f67f98"
+  },
+  "sparse-rmq": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/sparse-rmq",
+   "source_sha256": "2eb0ac5464bccfc944717fb7dbccc23d1dbad7167bb29a5525c1b14c485a2e0b",
+   "elf_sha256": "37114b073cc5a4afce69bfac4fa8cb3a2eaad5eea374c48d42f214063ab3c12b"
+  },
+  "histogram-stack": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/histogram-stack",
+   "source_sha256": "92dc85b25a5ae9e436b8a2a136628b2896014400a6386d42e06a241ad086dedd",
+   "elf_sha256": "55ac570750b38f38ffcd7d71664461ef57eba24fe96bbb58e6767be271776ffc"
+  },
+  "distinct-window": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/distinct-window",
+   "source_sha256": "cc7693b406eb41616404992f58534fdc0e33f1d61b82d008f125032a47559d61",
+   "elf_sha256": "255efb98f6436ca8c01a62ffbf2f129edc1e01ea6b626ff7ff7654b2b0afba9b"
+  },
+  "fenwick-prefix": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/fenwick-prefix",
+   "source_sha256": "9f599613abda2ba189053a1954522611e9ac1ecf7ef3e45d704bb17bd0fcc8d1",
+   "elf_sha256": "ce8921d047f4151c4b0456af0bc4b392950c4f14e3ad02d040725b237c56b305"
+  },
+  "kmp-match": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/kmp-match",
+   "source_sha256": "631ae6aa648d6ce30fafb0e482362ec378c8f8c27a8778c87c7c9ad1c0a06a75",
+   "elf_sha256": "4143787d128f74721b9a528a97c945f8beada20e3d10fdbb986753340b0dc75a"
+  },
+  "union-find": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/union-find",
+   "source_sha256": "8a18fa26da4b3f7183467d23bce024d087fabb968c0800c6c2105b260a1031cc",
+   "elf_sha256": "7018f7092b6dba957647d662858ec17415eb74f5cfcb38b862fb66423b3afa11"
+  },
+  "binary-gcd": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/binary-gcd",
+   "source_sha256": "1d7050707d23992fee025d93751bc1631d964673b435198efe60f3457ee62a14",
+   "elf_sha256": "bc1396f7ff9254844f0af898b70e0c53a91684afb7c302dc8830925fd1053f8d"
+  },
+  "stream-polynomial": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/stream-polynomial",
+   "source_sha256": "711326c158386cfd721f7e83a49aa637c07c42c202655726edf5ea75f1070547",
+   "elf_sha256": "1c9ad75ec490caf49a86d33f105ffd010b9c5fa212f8208c854d8ec580411dd7"
+  },
+  "linked-rank": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/linked-rank",
+   "source_sha256": "c350e028678c4c468075c23632dd69c0cc2ffb081c0edbfd25edb8ff9178538a",
+   "elf_sha256": "bf54b921d0cae4837978c551c251acc3cd43bd53d53540b9cca184924fd9fcbd"
+  },
+  "contest-bfs_grid": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/contest-bfs_grid",
+   "source_sha256": "7455c182dd4f82865522192c36375e53a5966f5327e8433c4995eea568f9eb0d",
+   "elf_sha256": "c72c0d7fa49a558a19593b7efc9ef1db78efea2c18ae07f15db17ea23fc496d6"
+  },
+  "contest-dijkstra": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/contest-dijkstra",
+   "source_sha256": "87b51d74032df4f822436c96eeddaf8f58df1d7de5f0a14eb7f73eb348e94aa7",
+   "elf_sha256": "336570ab890748d96ca89fd09991bb902c840eb07e259bb0a598c643aeeb955a"
+  },
+  "contest-lcs": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/contest-lcs",
+   "source_sha256": "6cc6b58e2a70bd9396e8fc31d4614cf54e50275dcca65e9e06da3cd63ab0d4a5",
+   "elf_sha256": "8c6f63bbdd1df0a22191fee1708a20562e05e5bd0cc5ed0765b33b775c523190"
+  },
+  "contest-fenwick": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/contest-fenwick",
+   "source_sha256": "443b8ee03689d55a8fb986b372331e5b2ba765adce1431d0edefff32d2584627",
+   "elf_sha256": "0c4f4d6826708d4b264b0d234023c5afb3f8dddb2e53f2be6654df9b8f3cdda6"
+  },
+  "contest-kmp": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/contest-kmp",
+   "source_sha256": "8e07c1b2975812285142207332cb4ab0c5a4527849d6567962264f058e64d005",
+   "elf_sha256": "ea2af292530de264bf215fa093b87840f5d3ae1e3423e69d450eaefa2ba61819"
+  },
+  "contest-sort_bs": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/contest-sort_bs",
+   "source_sha256": "bbc7357c9173be984808ebcdb5c6d994fdd719c55782a2a46bae487a2a01b8fc",
+   "elf_sha256": "1be3ed11bf53225b54d825c80f1ff6b69370421dee633e8c2610bef65bfe79a1"
+  },
+  "contest-deep_dfs": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/contest-deep_dfs",
+   "source_sha256": "58750216b35dc026e38f5bd31415548bf7d271feddcf3f4695cab2d6fcc4b51a",
+   "elf_sha256": "26c44e4026b0757a31bbd1ffd649e03ac72802c507233086f45e4e293bfb8707"
+  },
+  "bfs_grid--queue_pair_vecvec": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/bfs_grid--queue_pair_vecvec",
+   "source_sha256": "e451f964d7584325cf2add153917e9a5ce3971f92a2b5f1c320d7afad5424ab5",
+   "elf_sha256": "a9e302f2d21bd89bb37df0683642a1d02918571f84db09612b2acb1ce091a1a7"
+  },
+  "bfs_grid--list_queue": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/bfs_grid--list_queue",
+   "source_sha256": "5c04d587fe461c765bd2d4ed3ccf024ee35897fae0de4013768e842c8af3a16a",
+   "elf_sha256": "9d9f3505a09bc228d5f50344682e443f1adce35b5c7f9a1c09064193fdde3f89"
+  },
+  "bfs_grid--pq_instead_of_bfs": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/bfs_grid--pq_instead_of_bfs",
+   "source_sha256": "68eff6c8527992323636245ad5f00dbcd2300867e2f3a2e5e01820028e04a21e",
+   "elf_sha256": "5c3b2578a71f822e2daafb3b68e7c16432cf88d94dbe7c52b5bf7dfe5c80b393"
+  },
+  "bfs_grid--bitset_frontier_sweep": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/bfs_grid--bitset_frontier_sweep",
+   "source_sha256": "66f8190c8a53be4ad8f38f589225f9edbe3366a6502416fb0258b925ab08786d",
+   "elf_sha256": "9ed3e3f765c0e288672f8e9617b720029764703e60188fe72333ddf25952af46"
+  },
+  "bfs_grid--unordered_map_dist": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/bfs_grid--unordered_map_dist",
+   "source_sha256": "25d544b0bada454d76e2989f6467eb6220c3b0c8be1d5101a50bff0341a92b40",
+   "elf_sha256": "894ca95a310c8f17454f11285d10891b1f8a0b7d36f83f85e656e9b7d673a6a7"
+  },
+  "bfs_grid--hash_seen_and_dist": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/bfs_grid--hash_seen_and_dist",
+   "source_sha256": "af70de5c61551cd58613e0d0b4702108348933cb6a649829d8f3e8ddf09e9b32",
+   "elf_sha256": "56d849777fced18acfd79745175d3f0f373ff90b8823bb460fbeae5eaa74c6f7"
+  },
+  "bfs_grid--map_pair_dist": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/bfs_grid--map_pair_dist",
+   "source_sha256": "1092bc653c2d05f4a3c2cfe6be68dfaa8f3f41e1eaa6a35afd94c5c53c8932f2",
+   "elf_sha256": "02327910e0df1f43f417f559cb4a4a9f69ab7651f9a873cf2bce689fb1dbc19b"
+  },
+  "dijkstra--bellman_ford_edges": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/dijkstra--bellman_ford_edges",
+   "source_sha256": "bff31d4e7f081a6be9dd408cde2933c5261f407ca211b5ebe2baa048ea948cdd",
+   "elf_sha256": "497505e172aa637470eb9c5d102b14eaaab0d03cb73b8d0ea730239830ba21e5"
+  },
+  "dijkstra--vecvec_getchar_pq": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/dijkstra--vecvec_getchar_pq",
+   "source_sha256": "d388a43870ad75fe992210e0b3fb363e7b6b96ef53ce56875e1d9ed772b6ef46",
+   "elf_sha256": "9352bffcda780aa380be24d9091ca15ee0324a5a1bbf445141b3602264eb928f"
+  },
+  "dijkstra--set_decrease_key": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/dijkstra--set_decrease_key",
+   "source_sha256": "927733d9b9114603c5177f448b2d71399faa6ef719f8f7bbaca56ff2baa4ae11",
+   "elf_sha256": "12890e031822fd67cab1df50717c012f0c482c9ee84812765cd0f6be428e0227"
+  },
+  "dijkstra--scanf_vecvec_pq": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/dijkstra--scanf_vecvec_pq",
+   "source_sha256": "2f7cfb26e271f05ab71eb2edfd71c44dfc99c610c6cae26fb805b632025c601d",
+   "elf_sha256": "d66a16bd39915cb1900686a222526cee4dbe03124a1dbeb32cdfd864e0d700bf"
+  },
+  "dijkstra--cin_synced": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/dijkstra--cin_synced",
+   "source_sha256": "9d0230f078d7fa588315a7c373f2870f3ab4d1a5bd8ab2f9b9bc25f984226e89",
+   "elf_sha256": "1fbe6cfb828ebc0f1c785e1811de8efe4830a1df0935bd445d966e93280c2a4d"
+  },
+  "dijkstra--map_adj_umap_dist": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/dijkstra--map_adj_umap_dist",
+   "source_sha256": "12bb33171572f360fdbc68644d95bedbf9a5d6c5ef83001d85ccf2557ae39399",
+   "elf_sha256": "e7869bdbb9011d591854e63e12eee1a6fac69e8cf4023a6b1ddbed50ac11f415"
+  },
+  "dijkstra--maps_everywhere_synced": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/dijkstra--maps_everywhere_synced",
+   "source_sha256": "726e2750bb862f179aeadc5ad20f9d349c5356269d82efa2cb4d3445443f9d5c",
+   "elf_sha256": "de88805811025fe8d258a055bbc924b5a7173ad6d088b4f0bf9c9d885397d533"
+  },
+  "lcs--one_row_branchless": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/lcs--one_row_branchless",
+   "source_sha256": "668847c460cca7ee9be8f1e17a5df2f256537c185eaf03d2b42da4457dca1d5e",
+   "elf_sha256": "80561289cdcc79a0c967b3cc6fed1bc1f0a30f55802be90c998841f8e6012593"
+  },
+  "lcs--full_table_short": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/lcs--full_table_short",
+   "source_sha256": "46cb9aba77c03b2053dfa9d428efb82f3f7a8653737c8f29bfec987dba7b6de9",
+   "elf_sha256": "7891738be28119fb4ad54949cb3af5ef4b3779037b42e48aed027f13c9f3bc74"
+  },
+  "lcs--column_major_table": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/lcs--column_major_table",
+   "source_sha256": "1ee2e22080fab3b2ff44e2192dc725545b65f6afe4b7e278cea7327d0781137f",
+   "elf_sha256": "44d405910fdfe48f1481c4e72f7ab426628c0d2093b28f2d568bd99b6767de88"
+  },
+  "lcs--memo_recursion": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/lcs--memo_recursion",
+   "source_sha256": "37f3a991d00e676233b4de8cba1f6965ef1d086d569494e30355c2d4dd512014",
+   "elf_sha256": "89da1cab920f149bd5d6e60d14feb137a896de691a320938eed4791d44d460f3"
+  },
+  "lcs--hunt_szymanski": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/lcs--hunt_szymanski",
+   "source_sha256": "6b675f0430707a05d7bf4f4af1adcdd7981edefbf1233cc31e67d8af0f1dd09e",
+   "elf_sha256": "e08dbc5c4ddffce7040acc5743b4df4ba9dcb773d4954ccbe865ea5452df6cc1"
+  },
+  "lcs--lis_of_sorted_pairs": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/lcs--lis_of_sorted_pairs",
+   "source_sha256": "09096237b35411912caa7a920e5b050f54bd5b21a67574f6d140666769b50f26",
+   "elf_sha256": "09955fe9f7b9a0f18b1551082a76bd66e597754ddd0b1f8514e5ebcb386f1e8e"
+  },
+  "lcs--hash_rows_copied": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/lcs--hash_rows_copied",
+   "source_sha256": "6ca8fe037af5869116a22a01026e3b4d3715cad65c45a60cb4c468f28ed9ec7d",
+   "elf_sha256": "667391e612dac8526e22295527a6b8f954938050629927bb329b2a463e02e3ac"
+  },
+  "fenwick--segtree_bottom_up": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/fenwick--segtree_bottom_up",
+   "source_sha256": "73f799376435c4278f82aad3b71167cc888bfacbf46fe1932d4dd52f49902ce2",
+   "elf_sha256": "8ead824088eb9e7fcbaf6c1cf9e4bd44c41d65d479a5952c628e3717cc5764c3"
+  },
+  "fenwick--range_bit_template": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/fenwick--range_bit_template",
+   "source_sha256": "a31818017c98f0b71097f97aa9cded759e8b9831da856f2fc4f3154036cc204f",
+   "elf_sha256": "3e6edbd5356f59279c7e6db039ed169618510cda1ee00b9c3e5a309e1279f73a"
+  },
+  "fenwick--sqrt_decomposition": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/fenwick--sqrt_decomposition",
+   "source_sha256": "df3c8f69c181a105c8852b2f25e594eacc90acc35b9f67b960cf6a7a37556e79",
+   "elf_sha256": "1e2e6ac722ee7ca826cec3585804b0e29340e1929adb0f0faf553fc4616fce5f"
+  },
+  "fenwick--fenwick_cin_endl": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/fenwick--fenwick_cin_endl",
+   "source_sha256": "3646f5de8ec2b8f11e83eca8acf3124dbfc39bb38d6582a99f10d1e866239b8f",
+   "elf_sha256": "e20991a0bd56e402e234c45c1e94ccd56d79a11b59197d41893c84a74a97666e"
+  },
+  "fenwick--segtree_recursive": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/fenwick--segtree_recursive",
+   "source_sha256": "5026ebed6e732fecf4f69817283cc7f8ef8527b6a4507b8805888d8ef1674dbe",
+   "elf_sha256": "9d46b3cc14f2e17aa7daba23bd15a9bccb63ec13c1c20087eea1b5881a37e7d2"
+  },
+  "fenwick--pointer_segtree": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/fenwick--pointer_segtree",
+   "source_sha256": "18be9ebce251cd5c77a14e5efa6717006f5a8a8adafd570c50dd582489c064c9",
+   "elf_sha256": "b9e6f06aeb767ffda800945670369e3781115df95edefbfd93dd5296b9fecd9d"
+  },
+  "fenwick--map_fenwick": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/fenwick--map_fenwick",
+   "source_sha256": "a875030546919649ba035f5f200b7b59e2e6b485ff3497ce0117a97a0bf399ef",
+   "elf_sha256": "491e4100aaba52cdff45d04a5f61d06ce309c017fd3b3658db38f60839979915"
+  },
+  "kmp--shift_and_bitap": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/kmp--shift_and_bitap",
+   "source_sha256": "8db3536a60a4792e524f48ce5da6ad9d4e9ab031032397f55ebcbc3e26141c92",
+   "elf_sha256": "7669ba5482cc5e3745e8adeca3c2ddd2f8a49696673e73939131ac9fea528ad4"
+  },
+  "kmp--kmp_automaton": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/kmp--kmp_automaton",
+   "source_sha256": "20de00691a94ac7f24670d09e237929397f8358b71ebc497c244b2d29b2b70a9",
+   "elf_sha256": "e4d72e892fae7efd9d8faab2de13dcab90a370d9e675eff48e86a31c1273a64a"
+  },
+  "kmp--rolling_hash": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/kmp--rolling_hash",
+   "source_sha256": "15a14822aa4103ecdd598fbe7e907ce326d383c39099b87d8b3686d14e70b3c6",
+   "elf_sha256": "24d8f44b12d445eafa0764ed696977359492c7d0d7a97c967e71ba6ef1c5f470"
+  },
+  "kmp--z_function": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/kmp--z_function",
+   "source_sha256": "fc0821872dca3ad3f57d9c4c20217b9634aaeddc48b5eb247ca2e3156867fa77",
+   "elf_sha256": "600b3bf64fc8449191340183db61b1ce1a13ee339fad2100ded80889253690e4"
+  },
+  "kmp--kmp_cin_synced": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/kmp--kmp_cin_synced",
+   "source_sha256": "b53559f60e918bce639c7e572b39d1aeab2723204fd9caff819379486e5c342c",
+   "elf_sha256": "185d64c91278a4f2ee24a373841ec725a9f55c37b068b20cc2d7ef1d07acc6af"
+  },
+  "kmp--substr_compare": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/kmp--substr_compare",
+   "source_sha256": "30fa7c9bbb4548e8a05cc3c3f47c124e6704441172a7d70741bad2ed9b414851",
+   "elf_sha256": "98e58910dda864ca6b3139ff118077c8b883f706572b2d63c2ef4ed7ead580e8"
+  },
+  "kmp--hash_from_scratch": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/kmp--hash_from_scratch",
+   "source_sha256": "f04bbddd8c9a1f3e88913b293e12eca1d32553d7cc2fa63bc113a20fd1f23d8a",
+   "elf_sha256": "05628426c7eb5d920f8e611d5929e3427ef2e0a6b0dbece7e53aa836709ee35c"
+  },
+  "sort_bs--offline_two_pointer": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/sort_bs--offline_two_pointer",
+   "source_sha256": "78c220862b3a39496a1be8db53b9f85cb70349433cb74f4047fa9ab5ec906592",
+   "elf_sha256": "216a972e58218a96c83c106dda5027a0e857224b35817e06b648a74a4724adfc"
+  },
+  "sort_bs--merge_sort_vectors": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/sort_bs--merge_sort_vectors",
+   "source_sha256": "028eacfa27c483d1d2918834629363c1e28dbc83d4cf34cc25f5ca102274c374",
+   "elf_sha256": "57116693a70ed4287630687ea616994e7e40437265b5fafe20e2a00a5824fb0b"
+  },
+  "sort_bs--list_sort": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/sort_bs--list_sort",
+   "source_sha256": "c53862488e8a5bb941aa1a6b445695ac9bb685722eaba8d955480cb1558c2182",
+   "elf_sha256": "243a0e91a56e0b97b2ae91a1dbfb32ca976b5683e48ae772b0eb56d7c49e1048"
+  },
+  "sort_bs--cin_endl": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/sort_bs--cin_endl",
+   "source_sha256": "b58f99cedd0b03699f09bdee71795dd445d99978849759268fdb25af81b625ef",
+   "elf_sha256": "d0f976488936df91b0768e992302f1f81c4275744e0f12890705625bf472805a"
+  },
+  "sort_bs--cin_synced": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/sort_bs--cin_synced",
+   "source_sha256": "c03a788e3d89209d2284af0ba4d964e1c0e8b393a2f4e0e5553cac4922bc4164",
+   "elf_sha256": "c203bd1d7a7e1097f1fd0f6f9887453c1430cd89e7d61a80a6d95c4da2341dc2"
+  },
+  "sort_bs--pbds_order_tree": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/sort_bs--pbds_order_tree",
+   "source_sha256": "58760c482515fe48938f089651da5a8d408bbff8386384cc87245d490dbfefc7",
+   "elf_sha256": "b5c05c9bc440de0439a9c7d14b4f607c0195925e5eb888d15012fd0e0b63d249"
+  },
+  "sort_bs--sqrt_sorted_blocks": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/sort_bs--sqrt_sorted_blocks",
+   "source_sha256": "6f997c68a226e625b4967cb83e8ae60657fee7a1b5d97f8c2e56e3ab1fabff91",
+   "elf_sha256": "76fb676354fc0208cd523f059d6a5309935b28145adba097cac2d8a1d26f74f8"
+  },
+  "deep_dfs--bfs_order_reverse": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/deep_dfs--bfs_order_reverse",
+   "source_sha256": "f8ff758ffad3ae6f0a29c0dd85e6ae68f6722e334df9d2df69b67b939939486c",
+   "elf_sha256": "7b963b3a6c496c3e2c675d0ba94055151e4295018b9587272fb3156caaa4d9a5"
+  },
+  "deep_dfs--stack_pairs_vecvec": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/deep_dfs--stack_pairs_vecvec",
+   "source_sha256": "cef76aa86a9d416ab0d4be10a1328a2bb666540f5ec3d2627ac8bc7682a9ff64",
+   "elf_sha256": "9584e7953bf8aca825d4e9122facbc9deea776af5e49b7db217cf4bc29c2fe24"
+  },
+  "deep_dfs--vecvec_recursive_scanf": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/deep_dfs--vecvec_recursive_scanf",
+   "source_sha256": "18f1bb60f626f45080a13b5a39905deee72415d6d3274054e76b4e5896921f80",
+   "elf_sha256": "8ff7ee5c29d20ff3f1b0e5ecdc1c5708f6afce15bcae554c5d721bceb1d4ce6c"
+  },
+  "deep_dfs--set_adjacency": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/deep_dfs--set_adjacency",
+   "source_sha256": "5733397313202d93b8df10830065f90fc9024607a93250056bc447a3edbefaae",
+   "elf_sha256": "5543d5b25f007b6ed7f3f3749930a4e321266200eb2d7061f8f57adf51e91b3d"
+  },
+  "deep_dfs--umap_adjacency": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/deep_dfs--umap_adjacency",
+   "source_sha256": "fa22969b9d7e044ca55c35e253671d9ed47544064f6603856b5d34adce5b7bfa",
+   "elf_sha256": "3c97b3112e0cc3c3b1361fbbfd1c60cda0c6a0191fe4f9ee008fa7556d6cd049"
+  },
+  "deep_dfs--multimap_adjacency": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/deep_dfs--multimap_adjacency",
+   "source_sha256": "e5c63a7b170da516bf3288d7e7712c498391a5f6e7f98e6fed1dfe673d26620b",
+   "elf_sha256": "f2c2db3f2448b4a0931b2332fd3b24252195b8392781315674d2f31558c3b798"
+  },
+  "deep_dfs--map_of_sets": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/bin/deep_dfs--map_of_sets",
+   "source_sha256": "b42e56df5a8afbedea01a112e72c36eba4ffe7add445c88f8ed18bc1eb653913",
+   "elf_sha256": "629d8496f09cf4227c14870c01557c8727826dbf1454bee3f9f4c5d095f425b2"
+  }
+ },
+ "cases": {
+  "k-int": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "int",
+    "200000000"
+   ],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/k-int.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "outer_dependent": [
+      12,
+      12,
+      12
+     ],
+     "l1d_dependent": 14,
+     "dependent_sites": 41,
+     "load_sites": 1455,
+     "latency_bound_x16": 12801057948,
+     "instructions": 1000264107,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 54377,
+     "l1d_lines": 54417,
+     "l1d_misses": 1122,
+     "l1d_skipped": 111,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1122,
+     "outer_misses": [
+      1076,
+      1076,
+      1076
+     ],
+     "outer_stream": [
+      944,
+      944,
+      944
+     ],
+     "probe_cpu_s": 9.4174,
+     "probe_wall_s": 9.4623
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.254353,
+    0.254402,
+    0.262358,
+    0.257771,
+    0.250877,
+    0.258667,
+    0.254187,
+    0.254605,
+    0.261439,
+    0.253402,
+    0.258885,
+    0.200149,
+    0.255337,
+    0.255888,
+    0.256285
+   ],
+   "expected_sha256": "439e2e1f22d1fa5d540430f5d19df6cd321daeb289dbbe325848df2ae5c341a3"
+  },
+  "k-branch": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "branch",
+    "200000000"
+   ],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/k-branch.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "outer_dependent": [
+      12,
+      12,
+      12
+     ],
+     "l1d_dependent": 14,
+     "dependent_sites": 41,
+     "load_sites": 1460,
+     "latency_bound_x16": 7601647608,
+     "instructions": 1900321451,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 200058475,
+     "l1d_lines": 200058515,
+     "l1d_misses": 1188,
+     "l1d_skipped": 111,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1188,
+     "outer_misses": [
+      1139,
+      1139,
+      1139
+     ],
+     "outer_stream": [
+      1007,
+      1007,
+      1007
+     ],
+     "probe_cpu_s": 24.852,
+     "probe_wall_s": 25.1332
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.196377,
+    0.199043,
+    0.202201,
+    0.194874,
+    0.206668,
+    0.20308,
+    0.201393,
+    0.224706,
+    0.212415,
+    0.268544,
+    0.206628,
+    0.21401,
+    0.201246,
+    0.199026,
+    0.232892
+   ],
+   "expected_sha256": "5849a1f3e9dfd2390467aa36b825e6ec086e717e6af3445be42118042714715c"
+  },
+  "k-read-16k": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "read",
+    "16384",
+    "100000000"
+   ],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/k-read-16k.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "outer_dependent": [
+      13,
+      13,
+      13
+     ],
+     "l1d_dependent": 15,
+     "dependent_sites": 44,
+     "load_sites": 1531,
+     "latency_bound_x16": 14401102060,
+     "instructions": 1600275124,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 100056651,
+     "l1d_lines": 100056696,
+     "l1d_misses": 1388,
+     "l1d_skipped": 119,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1388,
+     "outer_misses": [
+      1335,
+      1335,
+      1335
+     ],
+     "outer_stream": [
+      1200,
+      1200,
+      1200
+     ],
+     "probe_cpu_s": 9.2987,
+     "probe_wall_s": 9.4421
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.200236,
+    0.2023,
+    0.189121,
+    0.199982,
+    0.200374,
+    0.200687,
+    0.200246,
+    0.200374,
+    0.20338,
+    0.165595,
+    0.212324,
+    0.203598,
+    0.188205,
+    0.206879,
+    0.201165
+   ],
+   "expected_sha256": "7af968b372e9f70f3d29639704e78a3fc299a35720e11c9847d55251ea456d48"
+  },
+  "k-read-512k": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "read",
+    "524288",
+    "40000000"
+   ],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/k-read-512k.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "outer_dependent": [
+      15,
+      13,
+      13
+     ],
+     "l1d_dependent": 16,
+     "dependent_sites": 41,
+     "load_sites": 1511,
+     "latency_bound_x16": 5762371520,
+     "instructions": 640592489,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 40120098,
+     "l1d_lines": 40120143,
+     "l1d_misses": 37511211,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 37511211,
+     "outer_misses": [
+      20010875,
+      9270,
+      9270
+     ],
+     "outer_stream": [
+      165485,
+      9134,
+      9134
+     ],
+     "probe_cpu_s": 5.6195,
+     "probe_wall_s": 5.6368
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.084483,
+    0.086717,
+    0.0816,
+    0.084605,
+    0.083672,
+    0.0847,
+    0.086768,
+    0.075866,
+    0.087372,
+    0.074712,
+    0.08569,
+    0.084986,
+    0.081453,
+    0.094147,
+    0.084679
+   ],
+   "expected_sha256": "41cb37081f53a0de453f21031c554b2250080085a5d8cf3b48b0d127edb89fc8"
+  },
+  "k-read-4m": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "read",
+    "4194304",
+    "30000000"
+   ],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/k-read-4m.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "outer_dependent": [
+      15,
+      15,
+      13
+     ],
+     "l1d_dependent": 16,
+     "dependent_sites": 41,
+     "load_sites": 1516,
+     "latency_bound_x16": 4331546612,
+     "instructions": 482886272,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 30578852,
+     "l1d_lines": 30578896,
+     "l1d_misses": 29832483,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 29832483,
+     "outer_misses": [
+      28190880,
+      15067241,
+      66614
+     ],
+     "outer_stream": [
+      93736,
+      81194,
+      66478
+     ],
+     "probe_cpu_s": 11.185,
+     "probe_wall_s": 11.2831
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.12077,
+    0.110703,
+    0.134364,
+    0.101867,
+    0.095947,
+    0.109002,
+    0.114822,
+    0.121171,
+    0.150796,
+    0.111923,
+    0.135049,
+    0.119565,
+    0.118272,
+    0.124178,
+    0.096092
+   ],
+   "expected_sha256": "38d0f9b8e6a59017c40dc3bc5529435237e7bfe6dc8e92a15c801b0e1e5b5fb9"
+  },
+  "k-read-64m": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "read",
+    "67108864",
+    "20000000"
+   ],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/k-read-64m.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "outer_dependent": [
+      15,
+      15,
+      15
+     ],
+     "l1d_dependent": 16,
+     "dependent_sites": 41,
+     "load_sites": 1516,
+     "latency_bound_x16": 3048833092,
+     "instructions": 362207892,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 28443173,
+     "l1d_lines": 28443217,
+     "l1d_misses": 21039877,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 21039877,
+     "outer_misses": [
+      20972001,
+      20424352,
+      11048752
+     ],
+     "outer_stream": [
+      1050735,
+      1050697,
+      1050191
+     ],
+     "probe_cpu_s": 16.6002,
+     "probe_wall_s": 16.758
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.239078,
+    0.259921,
+    0.194367,
+    0.232001,
+    0.234282,
+    0.224188,
+    0.22759,
+    0.232573,
+    0.268995,
+    0.246037,
+    0.245104,
+    0.248515,
+    0.265689,
+    0.233921,
+    0.251747
+   ],
+   "expected_sha256": "c29481057c3fcb85f537a324ddc121af42a1ef128105b9139ed04b9d0013e9bf"
+  },
+  "k-chase-16k": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "chase",
+    "16384",
+    "100000000"
+   ],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/k-chase-16k.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "outer_dependent": [
+      13,
+      13,
+      13
+     ],
+     "l1d_dependent": 15,
+     "dependent_sites": 45,
+     "load_sites": 1537,
+     "latency_bound_x16": 8001723012,
+     "instructions": 400348642,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 100066865,
+     "l1d_lines": 100066906,
+     "l1d_misses": 1388,
+     "l1d_skipped": 119,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1388,
+     "outer_misses": [
+      1335,
+      1335,
+      1335
+     ],
+     "outer_stream": [
+      1200,
+      1200,
+      1200
+     ],
+     "probe_cpu_s": 7.9477,
+     "probe_wall_s": 7.9981
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.16284,
+    0.159384,
+    0.162284,
+    0.1587,
+    0.161083,
+    0.161631,
+    0.154286,
+    0.168069,
+    0.173469,
+    0.16071,
+    0.166258,
+    0.185895,
+    0.160582,
+    0.163108,
+    0.164547
+   ],
+   "expected_sha256": "184c0cbae9951f5d25831418869203d91363832c410b879e9cda9a07b3ec8efe"
+  },
+  "k-chase-512k": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "chase",
+    "524288",
+    "30000000"
+   ],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/k-chase-512k.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "outer_dependent": [
+      16390983,
+      13,
+      13
+     ],
+     "l1d_dependent": 28382721,
+     "dependent_sites": 42,
+     "load_sites": 1516,
+     "latency_bound_x16": 2422292720,
+     "instructions": 122951559,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 30447748,
+     "l1d_lines": 30447789,
+     "l1d_misses": 28458658,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 28458658,
+     "outer_misses": [
+      16425080,
+      9270,
+      9270
+     ],
+     "outer_stream": [
+      150342,
+      9134,
+      9134
+     ],
+     "probe_cpu_s": 4.3203,
+     "probe_wall_s": 4.3562
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.179586,
+    0.1713,
+    0.20067,
+    0.15555,
+    0.185866,
+    0.136708,
+    0.163324,
+    0.165597,
+    0.168872,
+    0.164401,
+    0.166514,
+    0.169683,
+    0.183195,
+    0.163328,
+    0.154637
+   ],
+   "expected_sha256": "529f19ecbc377dfea8adff8d5225a7fbf5229eb7f91891cbaa54a506fdaa2020"
+  },
+  "k-chase-4m": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "chase",
+    "4194304",
+    "8000000"
+   ],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/k-chase-4m.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "outer_dependent": [
+      7558655,
+      4358555,
+      13
+     ],
+     "l1d_dependent": 7945514,
+     "dependent_sites": 42,
+     "load_sites": 1517,
+     "latency_bound_x16": 810928704,
+     "instructions": 53760445,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 11200272,
+     "l1d_lines": 11200313,
+     "l1d_misses": 8643699,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 8643699,
+     "outer_misses": [
+      8156189,
+      4624592,
+      66614
+     ],
+     "outer_stream": [
+      189232,
+      144306,
+      66478
+     ],
+     "probe_cpu_s": 3.2057,
+     "probe_wall_s": 3.2319
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.330781,
+    0.364043,
+    0.30758,
+    0.331401,
+    0.347773,
+    0.339242,
+    0.378227,
+    0.33496,
+    0.375187,
+    0.314587,
+    0.380218,
+    0.319341,
+    0.292638,
+    0.349591,
+    0.29855
+   ],
+   "expected_sha256": "4cdc6c7ca135e94e778517ecc1087770ad02064df21dba0c168106c5c3a0fe29"
+  },
+  "k-chase-64m": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "chase",
+    "67108864",
+    "2000000"
+   ],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/k-chase-64m.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "outer_dependent": [
+      1993194,
+      1945176,
+      1074279
+     ],
+     "l1d_dependent": 1999162,
+     "dependent_sites": 42,
+     "load_sites": 1517,
+     "latency_bound_x16": 2878968476,
+     "instructions": 352197578,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 52386183,
+     "l1d_lines": 52386224,
+     "l1d_misses": 13499213,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 13499213,
+     "outer_misses": [
+      13314461,
+      12307281,
+      5307518
+     ],
+     "outer_stream": [
+      3115173,
+      2984772,
+      2222095
+     ],
+     "probe_cpu_s": 9.5436,
+     "probe_wall_s": 9.6177
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.515692,
+    0.543233,
+    0.556065,
+    0.479297,
+    0.485429,
+    0.487195,
+    0.553637,
+    0.511171,
+    0.50568,
+    0.529086,
+    0.501737,
+    0.554578,
+    0.504543,
+    0.516188,
+    0.527512
+   ],
+   "expected_sha256": "83bf1dff70f89ca89402558e933b369e47511c6e2af9fd7b9dbdb7aa3e29a799"
+  },
+  "k-scan-512k": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "scan",
+    "524288",
+    "200000000"
+   ],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/k-scan-512k.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "outer_dependent": [
+      15,
+      13,
+      13
+     ],
+     "l1d_dependent": 16,
+     "dependent_sites": 41,
+     "load_sites": 1510,
+     "latency_bound_x16": 6402371780,
+     "instructions": 1200592554,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 200120111,
+     "l1d_lines": 200120157,
+     "l1d_misses": 25009348,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 25009348,
+     "outer_misses": [
+      25009311,
+      9270,
+      9270
+     ],
+     "outer_stream": [
+      25006099,
+      9134,
+      9134
+     ],
+     "probe_cpu_s": 11.002,
+     "probe_wall_s": 11.0591
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.087295,
+    0.08774,
+    0.085496,
+    0.090413,
+    0.095362,
+    0.082971,
+    0.097928,
+    0.086992,
+    0.110432,
+    0.083708,
+    0.088142,
+    0.108313,
+    0.088152,
+    0.089331,
+    0.093987
+   ],
+   "expected_sha256": "41f7034197a4a49ac22789c755055bdd1799b1d9476ebbe175132321d5514b7a"
+  },
+  "k-scan-64m": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "scan",
+    "67108864",
+    "150000000"
+   ],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/k-scan-64m.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "outer_dependent": [
+      15,
+      15,
+      15
+     ],
+     "l1d_dependent": 16,
+     "dependent_sites": 41,
+     "load_sites": 1515,
+     "latency_bound_x16": 4968833352,
+     "instructions": 942207957,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 158443186,
+     "l1d_lines": 158443231,
+     "l1d_misses": 19799731,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 19799731,
+     "outer_misses": [
+      19799694,
+      19799694,
+      19799694
+     ],
+     "outer_stream": [
+      19799516,
+      19799516,
+      19799516
+     ],
+     "probe_cpu_s": 11.929,
+     "probe_wall_s": 12.0696
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.228313,
+    0.227611,
+    0.217365,
+    0.217585,
+    0.203292,
+    0.176789,
+    0.249257,
+    0.268918,
+    0.239042,
+    0.273106,
+    0.225734,
+    0.238467,
+    0.231802,
+    0.258547,
+    0.2242
+   ],
+   "expected_sha256": "ce7e1768649ceae99267e72136d7a57a0af1994169f7b5856ad6154308492833"
+  },
+  "k-store-512k": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "store",
+    "524288",
+    "40000000"
+   ],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/k-store-512k.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "outer_dependent": [
+      15,
+      13,
+      13
+     ],
+     "l1d_dependent": 16,
+     "dependent_sites": 41,
+     "load_sites": 1522,
+     "latency_bound_x16": 5763419828,
+     "instructions": 640854636,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 40185648,
+     "l1d_lines": 40185692,
+     "l1d_misses": 37519384,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 37519384,
+     "outer_misses": [
+      20017801,
+      9270,
+      9270
+     ],
+     "outer_stream": [
+      172131,
+      9134,
+      9134
+     ],
+     "probe_cpu_s": 4.7823,
+     "probe_wall_s": 4.8232
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.076839,
+    0.081618,
+    0.076059,
+    0.081621,
+    0.07767,
+    0.085819,
+    0.088595,
+    0.081469,
+    0.081326,
+    0.081587,
+    0.065837,
+    0.083458,
+    0.075289,
+    0.088764,
+    0.088741
+   ],
+   "expected_sha256": "4c94ec611d204a9fe25bd8a32ca5cd34c0b1ab6a8599a2a05b344c9764e4d8cb"
+  },
+  "k-store-64m": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "store",
+    "67108864",
+    "20000000"
+   ],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/k-store-64m.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "outer_dependent": [
+      15,
+      15,
+      15
+     ],
+     "l1d_dependent": 16,
+     "dependent_sites": 41,
+     "load_sites": 1516,
+     "latency_bound_x16": 3183051004,
+     "instructions": 395762380,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 36831798,
+     "l1d_lines": 36831844,
+     "l1d_misses": 22088454,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 22088454,
+     "outer_misses": [
+      22020575,
+      21472407,
+      11936226
+     ],
+     "outer_stream": [
+      2099308,
+      2098741,
+      1901759
+     ],
+     "probe_cpu_s": 16.4498,
+     "probe_wall_s": 16.5739
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.173758,
+    0.165724,
+    0.198454,
+    0.187917,
+    0.201627,
+    0.161118,
+    0.189165,
+    0.202307,
+    0.187018,
+    0.193872,
+    0.311554,
+    0.189499,
+    0.232266,
+    0.21252,
+    0.178616
+   ],
+   "expected_sha256": "5cf7a05f90a7d76d6e32b105060c409aa4ecd3424514790fff9c765a820cc387"
+  },
+  "cross-rep0-small": {
+   "role": "calibration",
+   "binary": "crossed",
+   "args": [],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/cross-rep0-small.in",
+   "stdin_sha256": "34653efc18f65c08046ae7c453ad636189cb1e6fb3d218db0ad4211031c212d1",
+   "probe": [
+    {
+     "outer_dependent": [
+      20,
+      20,
+      17
+     ],
+     "l1d_dependent": 23,
+     "dependent_sites": 60,
+     "load_sites": 1661,
+     "latency_bound_x16": 1310591968,
+     "instructions": 151486876,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 9527426,
+     "l1d_lines": 9527455,
+     "l1d_misses": 263665,
+     "l1d_skipped": 137,
+     "rep_instructions": 32770,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 263665,
+     "outer_misses": [
+      263641,
+      263641,
+      263525
+     ],
+     "outer_stream": [
+      263450,
+      263450,
+      263381
+     ],
+     "probe_cpu_s": 0.8651,
+     "probe_wall_s": 0.8699
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.030234,
+    0.030992,
+    0.028756,
+    0.031531,
+    0.031369,
+    0.030955,
+    0.031191,
+    0.03055,
+    0.033578,
+    0.033342,
+    0.037284,
+    0.031474,
+    0.035628,
+    0.030489,
+    0.032951
+   ],
+   "expected_sha256": "bcf524fd617cc1344081405999d2f2e72ffbc8bf0438740ee38fc819d443cd82"
+  },
+  "cross-rep256-small": {
+   "role": "calibration",
+   "binary": "crossed",
+   "args": [],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/cross-rep256-small.in",
+   "stdin_sha256": "3ee511bb2cf493256ef048602072a7ab5e9b5ae6e8c3867fd2fa573d85b54758",
+   "probe": [
+    {
+     "outer_dependent": [
+      19,
+      19,
+      16
+     ],
+     "l1d_dependent": 22,
+     "dependent_sites": 58,
+     "load_sites": 1651,
+     "latency_bound_x16": 1310592568,
+     "instructions": 151487026,
+     "movs_bytes": 268435456,
+     "stos_bytes": 1048,
+     "l1d_refs": 546398360,
+     "l1d_lines": 546398389,
+     "l1d_misses": 263664,
+     "l1d_skipped": 137,
+     "rep_instructions": 32770,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 263664,
+     "outer_misses": [
+      263640,
+      263640,
+      263524
+     ],
+     "outer_stream": [
+      263450,
+      263450,
+      263381
+     ],
+     "probe_cpu_s": 0.8907,
+     "probe_wall_s": 0.8966
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.032621,
+    0.032183,
+    0.031883,
+    0.036289,
+    0.033177,
+    0.025839,
+    0.03225,
+    0.031467,
+    0.038552,
+    0.027681,
+    0.036397,
+    0.032021,
+    0.035076,
+    0.032827,
+    0.03251
+   ],
+   "expected_sha256": "0c38f0c24ff640ee67d791a6a519d1bb26887ddfc0ee5299713452e9a3459119"
+  },
+  "cross-rep0-medium": {
+   "role": "calibration",
+   "binary": "crossed",
+   "args": [],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/cross-rep0-medium.in",
+   "stdin_sha256": "64e98b59452d75d7f83c1ba85509b90b0899b395dc61c0bccf441734c3ec7236",
+   "probe": [
+    {
+     "outer_dependent": [
+      20,
+      20,
+      17
+     ],
+     "l1d_dependent": 23,
+     "dependent_sites": 60,
+     "load_sites": 1661,
+     "latency_bound_x16": 1310592376,
+     "instructions": 151486978,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 9527444,
+     "l1d_lines": 9527473,
+     "l1d_misses": 8389411,
+     "l1d_skipped": 137,
+     "rep_instructions": 32770,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 8389411,
+     "outer_misses": [
+      6555264,
+      279961,
+      263525
+     ],
+     "outer_stream": [
+      288211,
+      263469,
+      263381
+     ],
+     "probe_cpu_s": 1.7936,
+     "probe_wall_s": 1.8011
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.031483,
+    0.034555,
+    0.035628,
+    0.029994,
+    0.036372,
+    0.030504,
+    0.03157,
+    0.033537,
+    0.038687,
+    0.035879,
+    0.031712,
+    0.031189,
+    0.033468,
+    0.038311,
+    0.0374
+   ],
+   "expected_sha256": "1e6a4a1c8a9072abc4e25598d5242d4fef77dbe7fbdd188a867b6469183b35a2"
+  },
+  "cross-rep256-medium": {
+   "role": "calibration",
+   "binary": "crossed",
+   "args": [],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/cross-rep256-medium.in",
+   "stdin_sha256": "dcc7adb829cfb8f2091fc7c85bd141b262d812be4f709e06684e2126d4216320",
+   "probe": [
+    {
+     "outer_dependent": [
+      19,
+      19,
+      16
+     ],
+     "l1d_dependent": 22,
+     "dependent_sites": 58,
+     "load_sites": 1651,
+     "latency_bound_x16": 1310592976,
+     "instructions": 151487128,
+     "movs_bytes": 268435456,
+     "stos_bytes": 1048,
+     "l1d_refs": 546398378,
+     "l1d_lines": 546398407,
+     "l1d_misses": 8389665,
+     "l1d_skipped": 137,
+     "rep_instructions": 32770,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 8389665,
+     "outer_misses": [
+      6555518,
+      279960,
+      263524
+     ],
+     "outer_stream": [
+      288465,
+      263469,
+      263381
+     ],
+     "probe_cpu_s": 1.9464,
+     "probe_wall_s": 1.98
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.033064,
+    0.032624,
+    0.032582,
+    0.033443,
+    0.032133,
+    0.02823,
+    0.032948,
+    0.04113,
+    0.038845,
+    0.032672,
+    0.037222,
+    0.034044,
+    0.03548,
+    0.033344,
+    0.033851
+   ],
+   "expected_sha256": "bdced37458a5c5e8071ba7ee63dcd3cfbdaf719619f3e0c567ab353130bcca63"
+  },
+  "cross-rep0-large": {
+   "role": "calibration",
+   "binary": "crossed",
+   "args": [],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/cross-rep0-large.in",
+   "stdin_sha256": "aa8f34376ea2c483f672c445b80e9845dbd2e945bd537c11daf471a3b1084779",
+   "probe": [
+    {
+     "outer_dependent": [
+      20,
+      20,
+      17
+     ],
+     "l1d_dependent": 23,
+     "dependent_sites": 60,
+     "load_sites": 1661,
+     "latency_bound_x16": 1310592588,
+     "instructions": 151487031,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 9527453,
+     "l1d_lines": 9527482,
+     "l1d_misses": 8635719,
+     "l1d_skipped": 137,
+     "rep_instructions": 32770,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 8635719,
+     "outer_misses": [
+      8521074,
+      7604811,
+      263525
+     ],
+     "outer_stream": [
+      265436,
+      265204,
+      263381
+     ],
+     "probe_cpu_s": 5.3052,
+     "probe_wall_s": 5.3545
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.060986,
+    0.061718,
+    0.052736,
+    0.054445,
+    0.051506,
+    0.053474,
+    0.05988,
+    0.057188,
+    0.075581,
+    0.052183,
+    0.062212,
+    0.062863,
+    0.060734,
+    0.056073,
+    0.060314
+   ],
+   "expected_sha256": "43d9349b7331f76eac3fab334c03ad8eca46d7323dd98f1c69fb56cc2c91dbd6"
+  },
+  "cross-rep256-large": {
+   "role": "calibration",
+   "binary": "crossed",
+   "args": [],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/cross-rep256-large.in",
+   "stdin_sha256": "d1d4d4e4a9c3a6701099a2c3d7f74a28b6770692e2a9b12152c116e548753777",
+   "probe": [
+    {
+     "outer_dependent": [
+      19,
+      19,
+      16
+     ],
+     "l1d_dependent": 22,
+     "dependent_sites": 58,
+     "load_sites": 1651,
+     "latency_bound_x16": 1310593188,
+     "instructions": 151487181,
+     "movs_bytes": 268435456,
+     "stos_bytes": 1048,
+     "l1d_refs": 546398387,
+     "l1d_lines": 546398416,
+     "l1d_misses": 8635973,
+     "l1d_skipped": 137,
+     "rep_instructions": 32770,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 8635973,
+     "outer_misses": [
+      8521328,
+      7605065,
+      263524
+     ],
+     "outer_stream": [
+      265690,
+      265458,
+      263381
+     ],
+     "probe_cpu_s": 5.2715,
+     "probe_wall_s": 5.3002
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.060991,
+    0.067437,
+    0.052203,
+    0.061712,
+    0.050893,
+    0.056126,
+    0.063295,
+    0.067723,
+    0.065463,
+    0.081119,
+    0.053934,
+    0.061712,
+    0.064264,
+    0.062809,
+    0.064867
+   ],
+   "expected_sha256": "aeb71d5bf39fe4a15efc29516a78af8a71ee4afbff596c9f6102b4be75edc3cf"
+  },
+  "sparse-rmq": {
+   "role": "calibration",
+   "binary": "sparse-rmq",
+   "args": [],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/sparse-rmq.in",
+   "stdin_sha256": "c9bd9c685d235c6784237eb5378382219e65028c912e0a321991da7dc7443ad3",
+   "probe": [
+    {
+     "outer_dependent": [
+      64,
+      53,
+      14
+     ],
+     "l1d_dependent": 67,
+     "dependent_sites": 59,
+     "load_sites": 1747,
+     "latency_bound_x16": 654749904,
+     "instructions": 163687075,
+     "movs_bytes": 0,
+     "stos_bytes": 17826844,
+     "l1d_refs": 45953953,
+     "l1d_lines": 45953987,
+     "l1d_misses": 4032719,
+     "l1d_skipped": 307,
+     "rep_instructions": 20,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 4032719,
+     "outer_misses": [
+      3716863,
+      1610537,
+      280031
+     ],
+     "outer_stream": [
+      1726435,
+      662465,
+      279870
+     ],
+     "probe_cpu_s": 1.9804,
+     "probe_wall_s": 2.0027
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.057236,
+    0.049081,
+    0.042464,
+    0.049662,
+    0.046374,
+    0.052779,
+    0.047279,
+    0.049626,
+    0.054052,
+    0.054883,
+    0.048254,
+    0.057248,
+    0.045431,
+    0.047515,
+    0.042284
+   ],
+   "expected_sha256": "fbee43565dc5c2cc1d6f41416a900795ace4d877595d28b1d6997d6911d4bed6"
+  },
+  "histogram-stack": {
+   "role": "calibration",
+   "binary": "histogram-stack",
+   "args": [],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/histogram-stack.in",
+   "stdin_sha256": "7a2a3e28431a412953d30d342f740c1d49437734598cb042894e4ec987f5cde0",
+   "probe": [
+    {
+     "outer_dependent": [
+      14,
+      14,
+      14
+     ],
+     "l1d_dependent": 18,
+     "dependent_sites": 57,
+     "load_sites": 1735,
+     "latency_bound_x16": 882235036,
+     "instructions": 220558428,
+     "movs_bytes": 0,
+     "stos_bytes": 1072,
+     "l1d_refs": 48309433,
+     "l1d_lines": 48309468,
+     "l1d_misses": 1665,
+     "l1d_skipped": 155,
+     "rep_instructions": 3,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1665,
+     "outer_misses": [
+      1477,
+      1477,
+      1477
+     ],
+     "outer_stream": [
+      1333,
+      1333,
+      1333
+     ],
+     "probe_cpu_s": 2.4618,
+     "probe_wall_s": 2.4759
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.044893,
+    0.0554,
+    0.043632,
+    0.041927,
+    0.038511,
+    0.047333,
+    0.045012,
+    0.046343,
+    0.045979,
+    0.044527,
+    0.047247,
+    0.037773,
+    0.049202,
+    0.048736,
+    0.044811
+   ],
+   "expected_sha256": "01fd10299dd4be83994a4c5de871d7e3cc4d4d31f0141f770b6399f2e278fb96"
+  },
+  "distinct-window": {
+   "role": "calibration",
+   "binary": "distinct-window",
+   "args": [],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/distinct-window.in",
+   "stdin_sha256": "d7b0f1fa8808fde7b69bb562ac1adb6ce96fc6ed4f6fa67cf946acd9a1db4350",
+   "probe": [
+    {
+     "outer_dependent": [
+      16,
+      13,
+      13
+     ],
+     "l1d_dependent": 19,
+     "dependent_sites": 57,
+     "load_sites": 1717,
+     "latency_bound_x16": 1214378180,
+     "instructions": 186153748,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 17100618,
+     "l1d_lines": 17100687,
+     "l1d_misses": 8144429,
+     "l1d_skipped": 155,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 8144429,
+     "outer_misses": [
+      6309319,
+      17593,
+      17593
+     ],
+     "outer_stream": [
+      42298,
+      17452,
+      17452
+     ],
+     "probe_cpu_s": 1.7587,
+     "probe_wall_s": 1.7677
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.031462,
+    0.027393,
+    0.023512,
+    0.024935,
+    0.041018,
+    0.034402,
+    0.025609,
+    0.034931,
+    0.029859,
+    0.03366,
+    0.036343,
+    0.034684,
+    0.034053,
+    0.025197,
+    0.02657
+   ],
+   "expected_sha256": "f9d7e16d0f69203212abb94f7ed100827a12a44ea51c7133534bd5122839e24d"
+  },
+  "fenwick-prefix": {
+   "role": "calibration",
+   "binary": "fenwick-prefix",
+   "args": [],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/fenwick-prefix.in",
+   "stdin_sha256": "d65b3050f54941e662535979ec9fc43bb53f0dc6fb8c9e2688f76e4f469a0e29",
+   "probe": [
+    {
+     "outer_dependent": [
+      16,
+      16,
+      13
+     ],
+     "l1d_dependent": 19,
+     "dependent_sites": 57,
+     "load_sites": 1709,
+     "latency_bound_x16": 821150896,
+     "instructions": 129793508,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 23129657,
+     "l1d_lines": 23129725,
+     "l1d_misses": 11517850,
+     "l1d_skipped": 159,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 11517850,
+     "outer_misses": [
+      4064333,
+      34100,
+      33977
+     ],
+     "outer_stream": [
+      1754021,
+      33863,
+      33836
+     ],
+     "probe_cpu_s": 2.6115,
+     "probe_wall_s": 2.6303
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.036498,
+    0.048371,
+    0.038438,
+    0.034384,
+    0.038437,
+    0.044338,
+    0.037522,
+    0.046303,
+    0.036076,
+    0.042767,
+    0.038665,
+    0.045259,
+    0.040122,
+    0.039291,
+    0.038584
+   ],
+   "expected_sha256": "8c0bd1b82196cef44359654cc8978dc7cec09a8f92a272024d3fa84f6030cd7a"
+  },
+  "kmp-match": {
+   "role": "calibration",
+   "binary": "kmp-match",
+   "args": [],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/kmp-match.in",
+   "stdin_sha256": "5749469a7fa56bd40384a1f07fd322759082f203114e0bfc09036cb0c324fa47",
+   "probe": [
+    {
+     "outer_dependent": [
+      18,
+      18,
+      14
+     ],
+     "l1d_dependent": 21,
+     "dependent_sites": 58,
+     "load_sites": 1712,
+     "latency_bound_x16": 1280375916,
+     "instructions": 282344882,
+     "movs_bytes": 0,
+     "stos_bytes": 18875487,
+     "l1d_refs": 77123684,
+     "l1d_lines": 77353118,
+     "l1d_misses": 886175,
+     "l1d_skipped": 151,
+     "rep_instructions": 4,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 886175,
+     "outer_misses": [
+      886003,
+      886003,
+      296124
+     ],
+     "outer_stream": [
+      885831,
+      885831,
+      295981
+     ],
+     "probe_cpu_s": 4.8779,
+     "probe_wall_s": 4.8903
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.061333,
+    0.060394,
+    0.0592,
+    0.059883,
+    0.057453,
+    0.049315,
+    0.06326,
+    0.047892,
+    0.06149,
+    0.06078,
+    0.073313,
+    0.059398,
+    0.056797,
+    0.061592,
+    0.068282
+   ],
+   "expected_sha256": "c3d73c4fea99450326ea305f658a18c5528552847e2774f33454350e620ab50c"
+  },
+  "union-find": {
+   "role": "calibration",
+   "binary": "union-find",
+   "args": [],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/union-find.in",
+   "stdin_sha256": "c60da46cbd8f6e51461de55e1fda4baf9a71a6bd273d7c26f3d8c794a0faf5f5",
+   "probe": [
+    {
+     "outer_dependent": [
+      468,
+      14,
+      14
+     ],
+     "l1d_dependent": 12375,
+     "dependent_sites": 64,
+     "load_sites": 1816,
+     "latency_bound_x16": 499572520,
+     "instructions": 123765888,
+     "movs_bytes": 0,
+     "stos_bytes": 6292408,
+     "l1d_refs": 24930811,
+     "l1d_lines": 24930868,
+     "l1d_misses": 7749015,
+     "l1d_skipped": 631,
+     "rep_instructions": 26,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 7749015,
+     "outer_misses": [
+      1950404,
+      17595,
+      17595
+     ],
+     "outer_stream": [
+      221029,
+      17450,
+      17450
+     ],
+     "probe_cpu_s": 1.797,
+     "probe_wall_s": 1.8018
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.052806,
+    0.042286,
+    0.04147,
+    0.04442,
+    0.042031,
+    0.044098,
+    0.043097,
+    0.053196,
+    0.042593,
+    0.043367,
+    0.043332,
+    0.039795,
+    0.043562,
+    0.033967,
+    0.042671
+   ],
+   "expected_sha256": "33c67e18e7b08b8bd19c4640555765a15f8c8526a0eb648143a44c1f9a971896"
+  },
+  "binary-gcd": {
+   "role": "calibration",
+   "binary": "binary-gcd",
+   "args": [],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/binary-gcd.in",
+   "stdin_sha256": "651350bacd0996fee097b60b61ce03e578986474fe2cbf3e2193370c5c70424d",
+   "probe": [
+    {
+     "outer_dependent": [
+      14,
+      14,
+      14
+     ],
+     "l1d_dependent": 19,
+     "dependent_sites": 57,
+     "load_sites": 1631,
+     "latency_bound_x16": 607486436,
+     "instructions": 151871350,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 56393,
+     "l1d_lines": 56422,
+     "l1d_misses": 1167,
+     "l1d_skipped": 137,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1167,
+     "outer_misses": [
+      1120,
+      1120,
+      1120
+     ],
+     "outer_stream": [
+      980,
+      980,
+      980
+     ],
+     "probe_cpu_s": 1.5341,
+     "probe_wall_s": 1.5388
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.082107,
+    0.080417,
+    0.075347,
+    0.078176,
+    0.073699,
+    0.080623,
+    0.062946,
+    0.080164,
+    0.087217,
+    0.081983,
+    0.077555,
+    0.08046,
+    0.08088,
+    0.075692,
+    0.078975
+   ],
+   "expected_sha256": "825ed91dda9f353a7ee44919fb50c4974221372edd1dbaaf7aafae94e2c9c798"
+  },
+  "stream-polynomial": {
+   "role": "calibration",
+   "binary": "stream-polynomial",
+   "args": [],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/stream-polynomial.in",
+   "stdin_sha256": "f2fafba2407ea9bcf70268aa4aa04e69a9276dc7c42eb3bce84e99698c976cc7",
+   "probe": [
+    {
+     "outer_dependent": [
+      17,
+      14,
+      14
+     ],
+     "l1d_dependent": 20,
+     "dependent_sites": 57,
+     "load_sites": 1710,
+     "latency_bound_x16": 5642231556,
+     "instructions": 303266956,
+     "movs_bytes": 0,
+     "stos_bytes": 787476,
+     "l1d_refs": 26209884,
+     "l1d_lines": 26209955,
+     "l1d_misses": 1599003,
+     "l1d_skipped": 151,
+     "rep_instructions": 3,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1599003,
+     "outer_misses": [
+      1598829,
+      13495,
+      13495
+     ],
+     "outer_stream": [
+      1598523,
+      13350,
+      13350
+     ],
+     "probe_cpu_s": 1.474,
+     "probe_wall_s": 1.4802
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.107546,
+    0.109869,
+    0.116099,
+    0.10152,
+    0.108345,
+    0.101968,
+    0.108264,
+    0.112747,
+    0.11093,
+    0.08988,
+    0.108573,
+    0.109118,
+    0.111432,
+    0.108812,
+    0.112242
+   ],
+   "expected_sha256": "78098c244dbc042ca888c262a76f3b6621cc9c41ac68243d67eb16d63b2e2e6c"
+  },
+  "linked-rank": {
+   "role": "calibration",
+   "binary": "linked-rank",
+   "args": [],
+   "meta": null,
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/linked-rank.in",
+   "stdin_sha256": "7871ac13a3a60a7f89bcbf472662b4c105812cbd33c48cc69af6db6f2b6c645e",
+   "probe": [
+    {
+     "outer_dependent": [
+      10915451,
+      13,
+      13
+     ],
+     "l1d_dependent": 14073586,
+     "dependent_sites": 58,
+     "load_sites": 1704,
+     "latency_bound_x16": 1423237220,
+     "instructions": 81133207,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 15600401,
+     "l1d_lines": 15600463,
+     "l1d_misses": 14369253,
+     "l1d_skipped": 155,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 14369253,
+     "outer_misses": [
+      11141856,
+      17594,
+      17594
+     ],
+     "outer_stream": [
+      58507,
+      17453,
+      17453
+     ],
+     "probe_cpu_s": 2.4597,
+     "probe_wall_s": 2.4649
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.09677,
+    0.100966,
+    0.106007,
+    0.107811,
+    0.100999,
+    0.098565,
+    0.09771,
+    0.098614,
+    0.097741,
+    0.153822,
+    0.142847,
+    0.111974,
+    0.161825,
+    0.100327,
+    0.095207
+   ],
+   "expected_sha256": "6424dfb42062ce6a14644e433952f1403eab2b8a6e0d19f2855da7732e77e392"
+  },
+  "contest-bfs_grid": {
+   "role": "calibration",
+   "binary": "contest-bfs_grid",
+   "args": [],
+   "meta": {
+    "problem": "bfs_grid",
+    "variant": "intended"
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/contest-bfs_grid.in",
+   "stdin_sha256": "24c87270746fa92698cc25c415efc1c6c339b8d801c74eabeaf8e5d33661710d",
+   "probe": [
+    {
+     "outer_dependent": [
+      799315,
+      64058,
+      63174
+     ],
+     "l1d_dependent": 3347655,
+     "dependent_sites": 192,
+     "load_sites": 2881,
+     "latency_bound_x16": 1458272228,
+     "instructions": 364567184,
+     "movs_bytes": 0,
+     "stos_bytes": 32002396,
+     "l1d_refs": 111618756,
+     "l1d_lines": 111704842,
+     "l1d_misses": 9228672,
+     "l1d_skipped": 34919,
+     "rep_instructions": 9,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 9228672,
+     "outer_misses": [
+      2911797,
+      1060008,
+      737427
+     ],
+     "outer_stream": [
+      1110645,
+      740640,
+      588215
+     ],
+     "probe_cpu_s": 6.1363,
+     "probe_wall_s": 6.2146
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.135381,
+    0.165071,
+    0.13307,
+    0.126842,
+    0.128083,
+    0.103951,
+    0.126569,
+    0.157231,
+    0.127766,
+    0.127708,
+    0.129038,
+    0.129698,
+    0.127792,
+    0.13099,
+    0.127584
+   ],
+   "expected_sha256": "3ea24540da9d7ed9e8861b044f644cdd90c032a930a0d3200c5f8b1f4ff62ab3"
+  },
+  "contest-dijkstra": {
+   "role": "calibration",
+   "binary": "contest-dijkstra",
+   "args": [],
+   "meta": {
+    "problem": "dijkstra",
+    "variant": "intended"
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/contest-dijkstra.in",
+   "stdin_sha256": "c7525331bcb46e0cce61b172840dc6dc4ce1ed6071ff30e13a92b3a3c2ea5d0c",
+   "probe": [
+    {
+     "outer_dependent": [
+      658056,
+      137783,
+      24
+     ],
+     "l1d_dependent": 772170,
+     "dependent_sites": 124,
+     "load_sites": 2620,
+     "latency_bound_x16": 1275589928,
+     "instructions": 318896523,
+     "movs_bytes": 799960,
+     "stos_bytes": 12802388,
+     "l1d_refs": 107272139,
+     "l1d_lines": 107272272,
+     "l1d_misses": 6086561,
+     "l1d_skipped": 1525,
+     "rep_instructions": 14,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 6086561,
+     "outer_misses": [
+      5091434,
+      2685193,
+      292894
+     ],
+     "outer_stream": [
+      630907,
+      468312,
+      292656
+     ],
+     "probe_cpu_s": 6.5843,
+     "probe_wall_s": 6.6355
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.097936,
+    0.109749,
+    0.130254,
+    0.10352,
+    0.091165,
+    0.093972,
+    0.095802,
+    0.103544,
+    0.107779,
+    0.139088,
+    0.107789,
+    0.100511,
+    0.108272,
+    0.090214,
+    0.096785
+   ],
+   "expected_sha256": "8f41760d1d6db81f0e9ab1d5282fd44331a1736507fc7ad3280a29926f856953"
+  },
+  "contest-lcs": {
+   "role": "calibration",
+   "binary": "contest-lcs",
+   "args": [],
+   "meta": {
+    "problem": "lcs",
+    "variant": "intended"
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/contest-lcs.in",
+   "stdin_sha256": "09b97a4941c309e6fb10376d9aa4f5c69cbb739184aee9666264d4cca222841c",
+   "probe": [
+    {
+     "outer_dependent": [
+      29,
+      29,
+      29
+     ],
+     "l1d_dependent": 50,
+     "dependent_sites": 163,
+     "load_sites": 2578,
+     "latency_bound_x16": 2692160152,
+     "instructions": 673039267,
+     "movs_bytes": 15744,
+     "stos_bytes": 2400,
+     "l1d_refs": 240265607,
+     "l1d_lines": 240266046,
+     "l1d_misses": 9020904,
+     "l1d_skipped": 1208,
+     "rep_instructions": 9,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 9020904,
+     "outer_misses": [
+      4613,
+      4594,
+      4594
+     ],
+     "outer_stream": [
+      4385,
+      4383,
+      4383
+     ],
+     "probe_cpu_s": 9.9751,
+     "probe_wall_s": 10.0208
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.146021,
+    0.148893,
+    0.149223,
+    0.147929,
+    0.147796,
+    0.116422,
+    0.148701,
+    0.145301,
+    0.189684,
+    0.150796,
+    0.149285,
+    0.14995,
+    0.164044,
+    0.14785,
+    0.14631
+   ],
+   "expected_sha256": "8af641ba1610036a2f6bd47d694065b620077aaa0585b0e7892ed62dc81e0ce9"
+  },
+  "contest-fenwick": {
+   "role": "calibration",
+   "binary": "contest-fenwick",
+   "args": [],
+   "meta": {
+    "problem": "fenwick",
+    "variant": "intended"
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/contest-fenwick.in",
+   "stdin_sha256": "1da8fc5c9ac150bf53354cb21acc97d230eefb4d1d193ebde4da050598726bff",
+   "probe": [
+    {
+     "outer_dependent": [
+      101,
+      20,
+      12
+     ],
+     "l1d_dependent": 2428,
+     "dependent_sites": 71,
+     "load_sites": 1682,
+     "latency_bound_x16": 2742571900,
+     "instructions": 594805917,
+     "movs_bytes": 4194255,
+     "stos_bytes": 5601056,
+     "l1d_refs": 187135977,
+     "l1d_lines": 187968183,
+     "l1d_misses": 9376933,
+     "l1d_skipped": 2447510,
+     "rep_instructions": 4,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 9376933,
+     "outer_misses": [
+      4024824,
+      1839147,
+      239441
+     ],
+     "outer_stream": [
+      1598102,
+      934066,
+      239304
+     ],
+     "probe_cpu_s": 10.9794,
+     "probe_wall_s": 11.073
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.100456,
+    0.107776,
+    0.093206,
+    0.101676,
+    0.113725,
+    0.091545,
+    0.094829,
+    0.106549,
+    0.127382,
+    0.101571,
+    0.096492,
+    0.129984,
+    0.106141,
+    0.109533,
+    0.109101
+   ],
+   "expected_sha256": "0b31843d393526b5711f6ddad3ba7627bd9146625874b4ed48bf322cc9f2b356"
+  },
+  "contest-kmp": {
+   "role": "calibration",
+   "binary": "contest-kmp",
+   "args": [],
+   "meta": {
+    "problem": "kmp",
+    "variant": "intended"
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/contest-kmp.in",
+   "stdin_sha256": "81eac9545c28cb11e110f8dd3db72d70b3e585e92f84dddf467c6ee998bf1421",
+   "probe": [
+    {
+     "outer_dependent": [
+      90,
+      75,
+      49
+     ],
+     "l1d_dependent": 114,
+     "dependent_sites": 168,
+     "load_sites": 2687,
+     "latency_bound_x16": 1647142804,
+     "instructions": 411784770,
+     "movs_bytes": 53464932,
+     "stos_bytes": 2400,
+     "l1d_refs": 196031240,
+     "l1d_lines": 196036529,
+     "l1d_misses": 1678689,
+     "l1d_skipped": 6198,
+     "rep_instructions": 2461,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1678689,
+     "outer_misses": [
+      1674048,
+      1644855,
+      890687
+     ],
+     "outer_stream": [
+      1673582,
+      1644464,
+      890398
+     ],
+     "probe_cpu_s": 6.387,
+     "probe_wall_s": 6.4057
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.084498,
+    0.074713,
+    0.075676,
+    0.073604,
+    0.073009,
+    0.075923,
+    0.078548,
+    0.095835,
+    0.078476,
+    0.091159,
+    0.080049,
+    0.076227,
+    0.090472,
+    0.074688,
+    0.074094
+   ],
+   "expected_sha256": "790acf49733f250187bd1f38420c65a32a9dfd100f2f348af50ad40ef3a9bf0d"
+  },
+  "contest-sort_bs": {
+   "role": "calibration",
+   "binary": "contest-sort_bs",
+   "args": [],
+   "meta": {
+    "problem": "sort_bs",
+    "variant": "intended"
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/contest-sort_bs.in",
+   "stdin_sha256": "e1267e665a216b899c472030be33fc2c7490952fc2bad750974f62be83a1d4eb",
+   "probe": [
+    {
+     "outer_dependent": [
+      63,
+      44,
+      26
+     ],
+     "l1d_dependent": 1334,
+     "dependent_sites": 121,
+     "load_sites": 2565,
+     "latency_bound_x16": 5322549428,
+     "instructions": 1324674175,
+     "movs_bytes": 2347,
+     "stos_bytes": 2002396,
+     "l1d_refs": 401169828,
+     "l1d_lines": 403223800,
+     "l1d_misses": 4580937,
+     "l1d_skipped": 16001152,
+     "rep_instructions": 9,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 4580937,
+     "outer_misses": [
+      2417638,
+      203591,
+      87532
+     ],
+     "outer_stream": [
+      1125395,
+      148009,
+      87337
+     ],
+     "probe_cpu_s": 27.075,
+     "probe_wall_s": 27.2759
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.202918,
+    0.19667,
+    0.1988,
+    0.198454,
+    0.196067,
+    0.201717,
+    0.195555,
+    0.19786,
+    0.195468,
+    0.198983,
+    0.207386,
+    0.280406,
+    0.289281,
+    0.220566,
+    0.189592
+   ],
+   "expected_sha256": "dae39362cace3417f200a170351a28de4fc36133a35c4197f29ad7e9da849827"
+  },
+  "contest-deep_dfs": {
+   "role": "calibration",
+   "binary": "contest-deep_dfs",
+   "args": [],
+   "meta": {
+    "problem": "deep_dfs",
+    "variant": "intended"
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/contest-deep_dfs.in",
+   "stdin_sha256": "d5f4f32543e85a3a74f6741100a6e9033ad6370e0c3874a426b7a2bb964f60b5",
+   "probe": [
+    {
+     "outer_dependent": [
+      3371509,
+      2473620,
+      81000
+     ],
+     "l1d_dependent": 3491129,
+     "dependent_sites": 164,
+     "load_sites": 2649,
+     "latency_bound_x16": 6127928100,
+     "instructions": 1531981156,
+     "movs_bytes": 0,
+     "stos_bytes": 20002380,
+     "l1d_refs": 747825465,
+     "l1d_lines": 747825848,
+     "l1d_misses": 9284136,
+     "l1d_skipped": 8004544,
+     "rep_instructions": 10,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 9284136,
+     "outer_misses": [
+      8914739,
+      7860603,
+      3091462
+     ],
+     "outer_stream": [
+      2871709,
+      3056456,
+      2561703
+     ],
+     "probe_cpu_s": 33.5873,
+     "probe_wall_s": 33.8419
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.484444,
+    0.530046,
+    0.458958,
+    0.485112,
+    0.498179,
+    0.515477,
+    0.478126,
+    0.730249,
+    0.549154,
+    0.432451,
+    0.583591,
+    0.442629,
+    0.519204,
+    0.546178,
+    0.571761
+   ],
+   "expected_sha256": "f7bc7303cc953f442f2b291a0dc26436b2d0facfa388d0b9b394dccba2f7e919"
+  },
+  "bfs_grid--queue_pair_vecvec": {
+   "role": "heldout",
+   "binary": "bfs_grid--queue_pair_vecvec",
+   "args": [],
+   "meta": {
+    "problem": "bfs_grid",
+    "variant": "queue_pair_vecvec",
+    "too_slow": false,
+    "bound": "same as intended",
+    "description": "Textbook BFS with std::queue<pair<int,int>> (deque) and vector<vector<int>> dist; no div/mod per pop."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/bfs_grid--queue_pair_vecvec.in",
+   "stdin_sha256": "24c87270746fa92698cc25c415efc1c6c339b8d801c74eabeaf8e5d33661710d",
+   "probe": [
+    {
+     "outer_dependent": [
+      2014843,
+      64811,
+      31
+     ],
+     "l1d_dependent": 5210440,
+     "dependent_sites": 205,
+     "load_sites": 2977,
+     "latency_bound_x16": 1839806508,
+     "instructions": 459950752,
+     "movs_bytes": 15952000,
+     "stos_bytes": 10400,
+     "l1d_refs": 230080645,
+     "l1d_lines": 230221048,
+     "l1d_misses": 10383941,
+     "l1d_skipped": 269906,
+     "rep_instructions": 2008,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 10383941,
+     "outer_misses": [
+      4332633,
+      641697,
+      319741
+     ],
+     "outer_stream": [
+      1428210,
+      318682,
+      314218
+     ],
+     "probe_cpu_s": 9.7758,
+     "probe_wall_s": 9.8227
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.126305,
+    0.127223,
+    0.125567,
+    0.121123,
+    0.11885,
+    0.123335,
+    0.116642,
+    0.15123,
+    0.143471,
+    0.126747,
+    0.124922,
+    0.157651,
+    0.127709,
+    0.128159,
+    0.124079
+   ],
+   "expected_sha256": "3ea24540da9d7ed9e8861b044f644cdd90c032a930a0d3200c5f8b1f4ff62ab3"
+  },
+  "bfs_grid--list_queue": {
+   "role": "heldout",
+   "binary": "bfs_grid--list_queue",
+   "args": [],
+   "meta": {
+    "problem": "bfs_grid",
+    "variant": "list_queue",
+    "too_slow": false,
+    "bound": "allocation",
+    "description": "Queue is a std::list<pair<int,int>> (one heap node per cell) plus a bit-packed vector<vector<bool>> visited array."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/bfs_grid--list_queue.in",
+   "stdin_sha256": "24c87270746fa92698cc25c415efc1c6c339b8d801c74eabeaf8e5d33661710d",
+   "probe": [
+    {
+     "outer_dependent": [
+      5695279,
+      65809,
+      32
+     ],
+     "l1d_dependent": 8003356,
+     "dependent_sites": 213,
+     "load_sites": 3038,
+     "latency_bound_x16": 4279787424,
+     "instructions": 1069945981,
+     "movs_bytes": 15952000,
+     "stos_bytes": 10400,
+     "l1d_refs": 501448778,
+     "l1d_lines": 501553092,
+     "l1d_misses": 17507418,
+     "l1d_skipped": 13911699,
+     "rep_instructions": 2008,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 17507418,
+     "outer_misses": [
+      10752030,
+      665485,
+      329972
+     ],
+     "outer_stream": [
+      3208733,
+      327980,
+      322494
+     ],
+     "probe_cpu_s": 23.319,
+     "probe_wall_s": 23.4131
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.241739,
+    0.183519,
+    0.185502,
+    0.17841,
+    0.179976,
+    0.199132,
+    0.191436,
+    0.234825,
+    0.236321,
+    0.186058,
+    0.182372,
+    0.18268,
+    0.220575,
+    0.237867,
+    0.19725
+   ],
+   "expected_sha256": "3ea24540da9d7ed9e8861b044f644cdd90c032a930a0d3200c5f8b1f4ff62ab3"
+  },
+  "bfs_grid--pq_instead_of_bfs": {
+   "role": "heldout",
+   "binary": "bfs_grid--pq_instead_of_bfs",
+   "args": [],
+   "meta": {
+    "problem": "bfs_grid",
+    "variant": "pq_instead_of_bfs",
+    "too_slow": false,
+    "bound": "branchy / heap",
+    "description": "Dijkstra with a binary heap of (dist,r,c) tuples on the unit-weight grid instead of a FIFO queue."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/bfs_grid--pq_instead_of_bfs.in",
+   "stdin_sha256": "24c87270746fa92698cc25c415efc1c6c339b8d801c74eabeaf8e5d33661710d",
+   "probe": [
+    {
+     "outer_dependent": [
+      3034096,
+      65808,
+      31
+     ],
+     "l1d_dependent": 7478235,
+     "dependent_sites": 215,
+     "load_sites": 3002,
+     "latency_bound_x16": 5651765544,
+     "instructions": 1412940511,
+     "movs_bytes": 15952000,
+     "stos_bytes": 2400,
+     "l1d_refs": 538535141,
+     "l1d_lines": 538966907,
+     "l1d_misses": 11236517,
+     "l1d_skipped": 55011,
+     "rep_instructions": 2007,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 11236517,
+     "outer_misses": [
+      4453886,
+      642142,
+      320336
+     ],
+     "outer_stream": [
+      1723956,
+      319113,
+      314807
+     ],
+     "probe_cpu_s": 25.2628,
+     "probe_wall_s": 25.3991
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.281717,
+    0.224355,
+    0.282403,
+    0.268757,
+    0.279283,
+    0.224728,
+    0.285695,
+    0.282642,
+    0.347216,
+    0.263224,
+    0.338349,
+    0.273098,
+    0.305199,
+    0.335728,
+    0.319005
+   ],
+   "expected_sha256": "3ea24540da9d7ed9e8861b044f644cdd90c032a930a0d3200c5f8b1f4ff62ab3"
+  },
+  "bfs_grid--bitset_frontier_sweep": {
+   "role": "heldout",
+   "binary": "bfs_grid--bitset_frontier_sweep",
+   "args": [],
+   "meta": {
+    "problem": "bfs_grid",
+    "variant": "bitset_frontier_sweep",
+    "too_slow": false,
+    "bound": "compute / sequential",
+    "description": "Bit-parallel BFS: every level recomputes the frontier for the whole grid with 64-bit word ops (~4000 full sweeps, no queue)."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/bfs_grid--bitset_frontier_sweep.in",
+   "stdin_sha256": "24c87270746fa92698cc25c415efc1c6c339b8d801c74eabeaf8e5d33661710d",
+   "probe": [
+    {
+     "outer_dependent": [
+      61,
+      32,
+      32
+     ],
+     "l1d_dependent": 65,
+     "dependent_sites": 177,
+     "load_sites": 2850,
+     "latency_bound_x16": 31224788768,
+     "instructions": 7806196361,
+     "movs_bytes": 0,
+     "stos_bytes": 2400,
+     "l1d_refs": 2186591309,
+     "l1d_lines": 2186662940,
+     "l1d_misses": 128228304,
+     "l1d_skipped": 6182,
+     "rep_instructions": 7,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 128228304,
+     "outer_misses": [
+      128227836,
+      35436,
+      35416
+     ],
+     "outer_stream": [
+      128199351,
+      35203,
+      35203
+     ],
+     "probe_cpu_s": 141.7188,
+     "probe_wall_s": 142.4741
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.45689,
+    0.619082,
+    0.55548,
+    0.56052,
+    0.561767,
+    0.514828,
+    0.569038,
+    0.799941,
+    0.736665,
+    0.62922,
+    0.570668,
+    0.731283,
+    0.459517,
+    0.612391,
+    0.540941
+   ],
+   "expected_sha256": "3ea24540da9d7ed9e8861b044f644cdd90c032a930a0d3200c5f8b1f4ff62ab3"
+  },
+  "bfs_grid--unordered_map_dist": {
+   "role": "heldout",
+   "binary": "bfs_grid--unordered_map_dist",
+   "args": [],
+   "meta": {
+    "problem": "bfs_grid",
+    "variant": "unordered_map_dist",
+    "too_slow": false,
+    "bound": "memory latency / hashing",
+    "description": "Distances in an unordered_map<int,int> keyed by cell id (count + operator[] per neighbour) instead of a flat array."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/bfs_grid--unordered_map_dist.in",
+   "stdin_sha256": "24c87270746fa92698cc25c415efc1c6c339b8d801c74eabeaf8e5d33661710d",
+   "probe": [
+    {
+     "outer_dependent": [
+      8709060,
+      1049213,
+      520555
+     ],
+     "l1d_dependent": 10977025,
+     "dependent_sites": 204,
+     "load_sites": 3112,
+     "latency_bound_x16": 8299742352,
+     "instructions": 2074934711,
+     "movs_bytes": 0,
+     "stos_bytes": 69833208,
+     "l1d_refs": 852486063,
+     "l1d_lines": 852596852,
+     "l1d_misses": 31904453,
+     "l1d_skipped": 27642337,
+     "rep_instructions": 22,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 31904453,
+     "outer_misses": [
+      26034744,
+      12166393,
+      7412447
+     ],
+     "outer_stream": [
+      10922590,
+      6379615,
+      4908157
+     ],
+     "probe_cpu_s": 54.3548,
+     "probe_wall_s": 54.7053
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.908512,
+    0.72018,
+    0.658575,
+    0.748967,
+    0.770851,
+    0.676429,
+    0.75828,
+    0.805516,
+    0.994613,
+    0.741054,
+    0.905917,
+    0.781144,
+    0.710367,
+    0.809537,
+    0.724464
+   ],
+   "expected_sha256": "3ea24540da9d7ed9e8861b044f644cdd90c032a930a0d3200c5f8b1f4ff62ab3"
+  },
+  "bfs_grid--hash_seen_and_dist": {
+   "role": "heldout",
+   "binary": "bfs_grid--hash_seen_and_dist",
+   "args": [],
+   "meta": {
+    "problem": "bfs_grid",
+    "variant": "hash_seen_and_dist",
+    "too_slow": false,
+    "bound": "memory latency / hashing",
+    "description": "Two hash tables: unordered_set<long long> visited plus unordered_map<long long,int> dist, 64-bit keys."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/bfs_grid--hash_seen_and_dist.in",
+   "stdin_sha256": "24c87270746fa92698cc25c415efc1c6c339b8d801c74eabeaf8e5d33661710d",
+   "probe": [
+    {
+     "outer_dependent": [
+      14735628,
+      2258614,
+      1374737
+     ],
+     "l1d_dependent": 15948677,
+     "dependent_sites": 206,
+     "load_sites": 3158,
+     "latency_bound_x16": 14690925804,
+     "instructions": 3672730578,
+     "movs_bytes": 0,
+     "stos_bytes": 139664016,
+     "l1d_refs": 1560492723,
+     "l1d_lines": 1560630884,
+     "l1d_misses": 59404904,
+     "l1d_skipped": 70821075,
+     "rep_instructions": 37,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 59404904,
+     "outer_misses": [
+      53734261,
+      31716684,
+      24187459
+     ],
+     "outer_stream": [
+      25822448,
+      17894296,
+      15064884
+     ],
+     "probe_cpu_s": 105.9037,
+     "probe_wall_s": 106.5014
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    1.679165,
+    1.685796,
+    1.659626,
+    1.776293,
+    1.823444,
+    1.640995,
+    1.874996,
+    2.107864,
+    1.898139,
+    1.826053,
+    1.954364,
+    1.610283,
+    2.09575,
+    1.706317,
+    1.643694
+   ],
+   "expected_sha256": "3ea24540da9d7ed9e8861b044f644cdd90c032a930a0d3200c5f8b1f4ff62ab3"
+  },
+  "bfs_grid--map_pair_dist": {
+   "role": "heldout",
+   "binary": "bfs_grid--map_pair_dist",
+   "args": [],
+   "meta": {
+    "problem": "bfs_grid",
+    "variant": "map_pair_dist",
+    "too_slow": true,
+    "bound": "pointer chasing",
+    "description": "TOO SLOW: std::map<pair<int,int>,int> distances, a red-black-tree walk over millions of nodes per lookup."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/bfs_grid--map_pair_dist.in",
+   "stdin_sha256": "24c87270746fa92698cc25c415efc1c6c339b8d801c74eabeaf8e5d33661710d",
+   "probe": [
+    {
+     "outer_dependent": [
+      6367744,
+      1908820,
+      391208
+     ],
+     "l1d_dependent": 6965481,
+     "dependent_sites": 215,
+     "load_sites": 3119,
+     "latency_bound_x16": 20898603396,
+     "instructions": 5166589752,
+     "movs_bytes": 0,
+     "stos_bytes": 2400,
+     "l1d_refs": 1937312873,
+     "l1d_lines": 1937405916,
+     "l1d_misses": 87402689,
+     "l1d_skipped": 27749674,
+     "rep_instructions": 7,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 87402689,
+     "outer_misses": [
+      81903656,
+      26628383,
+      7650884
+     ],
+     "outer_stream": [
+      17163511,
+      6869607,
+      4110865
+     ],
+     "probe_cpu_s": 174.3749,
+     "probe_wall_s": 175.427
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    4.36421,
+    4.505211,
+    4.639817,
+    4.476135,
+    4.641455,
+    4.562538,
+    4.494279,
+    5.104391,
+    4.649435,
+    4.513753,
+    5.010356,
+    4.711994,
+    4.994633,
+    4.726814,
+    4.579851
+   ],
+   "expected_sha256": "3ea24540da9d7ed9e8861b044f644cdd90c032a930a0d3200c5f8b1f4ff62ab3"
+  },
+  "dijkstra--bellman_ford_edges": {
+   "role": "heldout",
+   "binary": "dijkstra--bellman_ford_edges",
+   "args": [],
+   "meta": {
+    "problem": "dijkstra",
+    "variant": "bellman_ford_edges",
+    "too_slow": false,
+    "bound": "sequential sweeps",
+    "description": "Bellman-Ford over the raw edge list with early exit: a few sequential passes over all edges with random dist reads/writes, no heap."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/dijkstra--bellman_ford_edges.in",
+   "stdin_sha256": "c7525331bcb46e0cce61b172840dc6dc4ce1ed6071ff30e13a92b3a3c2ea5d0c",
+   "probe": [
+    {
+     "outer_dependent": [
+      9224346,
+      509817,
+      25
+     ],
+     "l1d_dependent": 10603385,
+     "dependent_sites": 111,
+     "load_sites": 2422,
+     "latency_bound_x16": 1081054364,
+     "instructions": 270262632,
+     "movs_bytes": 0,
+     "stos_bytes": 2400,
+     "l1d_refs": 78011256,
+     "l1d_lines": 78048907,
+     "l1d_misses": 20661605,
+     "l1d_skipped": 1321,
+     "rep_instructions": 7,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 20661605,
+     "outer_misses": [
+      18091948,
+      3030548,
+      141721
+     ],
+     "outer_stream": [
+      2341978,
+      2280772,
+      141518
+     ],
+     "probe_cpu_s": 6.5982,
+     "probe_wall_s": 6.6258
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.090648,
+    0.074428,
+    0.071459,
+    0.064663,
+    0.07024,
+    0.070683,
+    0.07162,
+    0.070138,
+    0.084805,
+    0.071289,
+    0.059992,
+    0.090194,
+    0.07655,
+    0.067336,
+    0.064184
+   ],
+   "expected_sha256": "8f41760d1d6db81f0e9ab1d5282fd44331a1736507fc7ad3280a29926f856953"
+  },
+  "dijkstra--vecvec_getchar_pq": {
+   "role": "heldout",
+   "binary": "dijkstra--vecvec_getchar_pq",
+   "args": [],
+   "meta": {
+    "problem": "dijkstra",
+    "variant": "vecvec_getchar_pq",
+    "too_slow": false,
+    "bound": "allocation / indirection",
+    "description": "Same lazy binary-heap Dijkstra, but vector<vector<pair>> adjacency grown by push_back, vector<bool> done, getchar_unlocked reader."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/dijkstra--vecvec_getchar_pq.in",
+   "stdin_sha256": "c7525331bcb46e0cce61b172840dc6dc4ce1ed6071ff30e13a92b3a3c2ea5d0c",
+   "probe": [
+    {
+     "outer_dependent": [
+      13448,
+      2235,
+      26
+     ],
+     "l1d_dependent": 54503,
+     "dependent_sites": 144,
+     "load_sites": 2689,
+     "latency_bound_x16": 1640013752,
+     "instructions": 410002479,
+     "movs_bytes": 0,
+     "stos_bytes": 27408,
+     "l1d_refs": 114766189,
+     "l1d_lines": 114794508,
+     "l1d_misses": 5058281,
+     "l1d_skipped": 3220186,
+     "rep_instructions": 8,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 5058281,
+     "outer_misses": [
+      3913900,
+      2571474,
+      311717
+     ],
+     "outer_stream": [
+      873279,
+      719933,
+      310228
+     ],
+     "probe_cpu_s": 8.2102,
+     "probe_wall_s": 8.2712
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.173651,
+    0.154307,
+    0.157238,
+    0.168207,
+    0.141381,
+    0.158197,
+    0.150784,
+    0.232605,
+    0.157378,
+    0.146727,
+    0.186495,
+    0.177682,
+    0.159595,
+    0.142486,
+    0.155889
+   ],
+   "expected_sha256": "8f41760d1d6db81f0e9ab1d5282fd44331a1736507fc7ad3280a29926f856953"
+  },
+  "dijkstra--set_decrease_key": {
+   "role": "heldout",
+   "binary": "dijkstra--set_decrease_key",
+   "args": [],
+   "meta": {
+    "problem": "dijkstra",
+    "variant": "set_decrease_key",
+    "too_slow": false,
+    "bound": "pointer chasing",
+    "description": "std::set<pair<ll,int>> as an indexed priority queue (erase + reinsert on improvement), vector<vector<pair>> adjacency."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/dijkstra--set_decrease_key.in",
+   "stdin_sha256": "c7525331bcb46e0cce61b172840dc6dc4ce1ed6071ff30e13a92b3a3c2ea5d0c",
+   "probe": [
+    {
+     "outer_dependent": [
+      330393,
+      142005,
+      26
+     ],
+     "l1d_dependent": 431592,
+     "dependent_sites": 170,
+     "load_sites": 2897,
+     "latency_bound_x16": 1748236376,
+     "instructions": 435486103,
+     "movs_bytes": 0,
+     "stos_bytes": 2400,
+     "l1d_refs": 136494822,
+     "l1d_lines": 136523113,
+     "l1d_misses": 7287141,
+     "l1d_skipped": 4518332,
+     "rep_instructions": 7,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 7287141,
+     "outer_misses": [
+      5834778,
+      3637268,
+      319412
+     ],
+     "outer_stream": [
+      1539369,
+      981957,
+      317951
+     ],
+     "probe_cpu_s": 10.2429,
+     "probe_wall_s": 10.4039
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.219875,
+    0.280646,
+    0.203481,
+    0.224915,
+    0.213315,
+    0.203595,
+    0.236386,
+    0.212459,
+    0.22682,
+    0.215213,
+    0.276929,
+    0.229986,
+    0.212669,
+    0.20976,
+    0.216541
+   ],
+   "expected_sha256": "8f41760d1d6db81f0e9ab1d5282fd44331a1736507fc7ad3280a29926f856953"
+  },
+  "dijkstra--scanf_vecvec_pq": {
+   "role": "heldout",
+   "binary": "dijkstra--scanf_vecvec_pq",
+   "args": [],
+   "meta": {
+    "problem": "dijkstra",
+    "variant": "scanf_vecvec_pq",
+    "too_slow": false,
+    "bound": "I/O (libc parsing)",
+    "description": "Standard lazy binary-heap Dijkstra with scanf input for all 1.8M numbers and vector<vector<pair>> adjacency."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/dijkstra--scanf_vecvec_pq.in",
+   "stdin_sha256": "c7525331bcb46e0cce61b172840dc6dc4ce1ed6071ff30e13a92b3a3c2ea5d0c",
+   "probe": [
+    {
+     "outer_dependent": [
+      224618,
+      203705,
+      30
+     ],
+     "l1d_dependent": 266347,
+     "dependent_sites": 141,
+     "load_sites": 2805,
+     "latency_bound_x16": 6498771284,
+     "instructions": 1624691862,
+     "movs_bytes": 0,
+     "stos_bytes": 27408,
+     "l1d_refs": 494884558,
+     "l1d_lines": 494912877,
+     "l1d_misses": 5067797,
+     "l1d_skipped": 17020205,
+     "rep_instructions": 8,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 5067797,
+     "outer_misses": [
+      3914486,
+      2571628,
+      311736
+     ],
+     "outer_stream": [
+      873533,
+      719976,
+      310236
+     ],
+     "probe_cpu_s": 29.2632,
+     "probe_wall_s": 29.446
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.262648,
+    0.342655,
+    0.254655,
+    0.240003,
+    0.275342,
+    0.246119,
+    0.254643,
+    0.361965,
+    0.279861,
+    0.327797,
+    0.324526,
+    0.354526,
+    0.359659,
+    0.259529,
+    0.236037
+   ],
+   "expected_sha256": "8f41760d1d6db81f0e9ab1d5282fd44331a1736507fc7ad3280a29926f856953"
+  },
+  "dijkstra--cin_synced": {
+   "role": "heldout",
+   "binary": "dijkstra--cin_synced",
+   "args": [],
+   "meta": {
+    "problem": "dijkstra",
+    "variant": "cin_synced",
+    "too_slow": false,
+    "bound": "I/O (iostream synced with stdio)",
+    "description": "The intended CSR + heap algorithm, but cin left synchronised with stdio (no sync_with_stdio(false))."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/dijkstra--cin_synced.in",
+   "stdin_sha256": "c7525331bcb46e0cce61b172840dc6dc4ce1ed6071ff30e13a92b3a3c2ea5d0c",
+   "probe": [
+    {
+     "outer_dependent": [
+      624612,
+      137774,
+      31
+     ],
+     "l1d_dependent": 772771,
+     "dependent_sites": 168,
+     "load_sites": 2842,
+     "latency_bound_x16": 17337383932,
+     "instructions": 4334345022,
+     "movs_bytes": 799960,
+     "stos_bytes": 12802388,
+     "l1d_refs": 2288526325,
+     "l1d_lines": 2288529906,
+     "l1d_misses": 5922003,
+     "l1d_skipped": 12601376,
+     "rep_instructions": 14,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 5922003,
+     "outer_misses": [
+      4873541,
+      2684231,
+      291928
+     ],
+     "outer_stream": [
+      488025,
+      467347,
+      291693
+     ],
+     "probe_cpu_s": 82.5388,
+     "probe_wall_s": 83.2194
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.349924,
+    0.361126,
+    0.387863,
+    0.366305,
+    0.351218,
+    0.366516,
+    0.365201,
+    0.426373,
+    0.353342,
+    0.360258,
+    0.383255,
+    0.45764,
+    0.346442,
+    0.35501,
+    0.360132
+   ],
+   "expected_sha256": "8f41760d1d6db81f0e9ab1d5282fd44331a1736507fc7ad3280a29926f856953"
+  },
+  "dijkstra--map_adj_umap_dist": {
+   "role": "heldout",
+   "binary": "dijkstra--map_adj_umap_dist",
+   "args": [],
+   "meta": {
+    "problem": "dijkstra",
+    "variant": "map_adj_umap_dist",
+    "too_slow": false,
+    "bound": "pointer chasing / hashing",
+    "description": "std::map<int,vector<pair>> adjacency plus unordered_map dist and unordered_set done (tree + hash lookups instead of arrays)."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/dijkstra--map_adj_umap_dist.in",
+   "stdin_sha256": "c7525331bcb46e0cce61b172840dc6dc4ce1ed6071ff30e13a92b3a3c2ea5d0c",
+   "probe": [
+    {
+     "outer_dependent": [
+      1323381,
+      1106980,
+      816
+     ],
+     "l1d_dependent": 1396370,
+     "dependent_sites": 187,
+     "load_sites": 3147,
+     "latency_bound_x16": 7537288832,
+     "instructions": 1882025517,
+     "movs_bytes": 0,
+     "stos_bytes": 16685664,
+     "l1d_refs": 823616804,
+     "l1d_lines": 823664619,
+     "l1d_misses": 20374334,
+     "l1d_skipped": 15228581,
+     "rep_instructions": 31,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 20374334,
+     "outer_misses": [
+      15689866,
+      10195963,
+      1249123
+     ],
+     "outer_stream": [
+      3864576,
+      2962919,
+      847120
+     ],
+     "probe_cpu_s": 42.697,
+     "probe_wall_s": 43.2644
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    1.053267,
+    1.115732,
+    0.970845,
+    0.949723,
+    1.000652,
+    0.989241,
+    1.079113,
+    1.020472,
+    1.025471,
+    1.132223,
+    0.978767,
+    1.182473,
+    0.867508,
+    1.000462,
+    0.963814
+   ],
+   "expected_sha256": "8f41760d1d6db81f0e9ab1d5282fd44331a1736507fc7ad3280a29926f856953"
+  },
+  "dijkstra--maps_everywhere_synced": {
+   "role": "heldout",
+   "binary": "dijkstra--maps_everywhere_synced",
+   "args": [],
+   "meta": {
+    "problem": "dijkstra",
+    "variant": "maps_everywhere_synced",
+    "too_slow": true,
+    "bound": "pointer chasing + synced I/O",
+    "description": "TOO SLOW: std::map adjacency, std::map dist, std::set done, std::set as the PQ, and cin synced with stdio."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/dijkstra--maps_everywhere_synced.in",
+   "stdin_sha256": "c7525331bcb46e0cce61b172840dc6dc4ce1ed6071ff30e13a92b3a3c2ea5d0c",
+   "probe": [
+    {
+     "outer_dependent": [
+      2312734,
+      1286856,
+      12222
+     ],
+     "l1d_dependent": 3351292,
+     "dependent_sites": 207,
+     "load_sites": 3240,
+     "latency_bound_x16": 20335988192,
+     "instructions": 5007268647,
+     "movs_bytes": 0,
+     "stos_bytes": 2400,
+     "l1d_refs": 2524184953,
+     "l1d_lines": 2524238040,
+     "l1d_misses": 36955245,
+     "l1d_skipped": 21622966,
+     "rep_instructions": 7,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 36955245,
+     "outer_misses": [
+      26236465,
+      15532983,
+      1512825
+     ],
+     "outer_stream": [
+      6390912,
+      3974638,
+      911079
+     ],
+     "probe_cpu_s": 108.7459,
+     "probe_wall_s": 109.4815
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    2.027515,
+    2.055877,
+    1.949618,
+    2.098882,
+    1.970779,
+    2.050912,
+    2.401194,
+    2.001035,
+    2.289108,
+    2.058467,
+    2.725229,
+    2.208745,
+    1.935087,
+    1.920485,
+    1.935268
+   ],
+   "expected_sha256": "8f41760d1d6db81f0e9ab1d5282fd44331a1736507fc7ad3280a29926f856953"
+  },
+  "lcs--one_row_branchless": {
+   "role": "heldout",
+   "binary": "lcs--one_row_branchless",
+   "args": [],
+   "meta": {
+    "problem": "lcs",
+    "variant": "one_row_branchless",
+    "too_slow": false,
+    "bound": "compute",
+    "description": "Single DP row updated in place with a saved diagonal and branch-free max, scanf into char buffers."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/lcs--one_row_branchless.in",
+   "stdin_sha256": "09b97a4941c309e6fb10376d9aa4f5c69cbb739184aee9666264d4cca222841c",
+   "probe": [
+    {
+     "outer_dependent": [
+      28,
+      28,
+      28
+     ],
+     "l1d_dependent": 49,
+     "dependent_sites": 131,
+     "load_sites": 2480,
+     "latency_bound_x16": 2628259476,
+     "instructions": 657063728,
+     "movs_bytes": 0,
+     "stos_bytes": 34404,
+     "l1d_refs": 192338430,
+     "l1d_lines": 192338521,
+     "l1d_misses": 4956637,
+     "l1d_skipped": 1150,
+     "rep_instructions": 8,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 4956637,
+     "outer_misses": [
+      4022,
+      4022,
+      4022
+     ],
+     "outer_stream": [
+      3815,
+      3815,
+      3815
+     ],
+     "probe_cpu_s": 9.6443,
+     "probe_wall_s": 9.6988
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.164436,
+    0.17488,
+    0.173637,
+    0.172749,
+    0.184063,
+    0.169285,
+    0.174216,
+    0.178791,
+    0.17141,
+    0.17353,
+    0.193488,
+    0.174203,
+    0.209726,
+    0.185217,
+    0.174867
+   ],
+   "expected_sha256": "8af641ba1610036a2f6bd47d694065b620077aaa0585b0e7892ed62dc81e0ce9"
+  },
+  "lcs--full_table_short": {
+   "role": "heldout",
+   "binary": "lcs--full_table_short",
+   "args": [],
+   "meta": {
+    "problem": "lcs",
+    "variant": "full_table_short",
+    "too_slow": false,
+    "bound": "memory bandwidth",
+    "description": "Full (n+1)x(m+1) uint16_t table in one flat 128 MB array instead of two rolling rows (streaming writes)."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/lcs--full_table_short.in",
+   "stdin_sha256": "09b97a4941c309e6fb10376d9aa4f5c69cbb739184aee9666264d4cca222841c",
+   "probe": [
+    {
+     "outer_dependent": [
+      47,
+      47,
+      47
+     ],
+     "l1d_dependent": 51,
+     "dependent_sites": 161,
+     "load_sites": 2616,
+     "latency_bound_x16": 2947742724,
+     "instructions": 736934910,
+     "movs_bytes": 15744,
+     "stos_bytes": 128034402,
+     "l1d_refs": 432265454,
+     "l1d_lines": 432265897,
+     "l1d_misses": 6933031,
+     "l1d_skipped": 1196,
+     "rep_instructions": 10,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 6933031,
+     "outer_misses": [
+      4004939,
+      4004939,
+      4004939
+     ],
+     "outer_stream": [
+      4004673,
+      4004673,
+      4004673
+     ],
+     "probe_cpu_s": 9.8298,
+     "probe_wall_s": 9.8702
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.201128,
+    0.204127,
+    0.199707,
+    0.196627,
+    0.195551,
+    0.200424,
+    0.200798,
+    0.247424,
+    0.19532,
+    0.203904,
+    0.244501,
+    0.202693,
+    0.247075,
+    0.206634,
+    0.191047
+   ],
+   "expected_sha256": "8af641ba1610036a2f6bd47d694065b620077aaa0585b0e7892ed62dc81e0ce9"
+  },
+  "lcs--column_major_table": {
+   "role": "heldout",
+   "binary": "lcs--column_major_table",
+   "args": [],
+   "meta": {
+    "problem": "lcs",
+    "variant": "column_major_table",
+    "too_slow": false,
+    "bound": "TLB / cache-hostile stride",
+    "description": "Full vector<vector<uint16_t>> table filled column by column: the inner loop strides across 8000 rows (a new page per access)."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/lcs--column_major_table.in",
+   "stdin_sha256": "09b97a4941c309e6fb10376d9aa4f5c69cbb739184aee9666264d4cca222841c",
+   "probe": [
+    {
+     "outer_dependent": [
+      52,
+      47,
+      47
+     ],
+     "l1d_dependent": 56,
+     "dependent_sites": 166,
+     "load_sites": 2669,
+     "latency_bound_x16": 3539254308,
+     "instructions": 884812806,
+     "movs_bytes": 127855730,
+     "stos_bytes": 18402,
+     "l1d_refs": 689240022,
+     "l1d_lines": 689255468,
+     "l1d_misses": 93229279,
+     "l1d_skipped": 81216,
+     "rep_instructions": 8011,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 93229279,
+     "outer_misses": [
+      92693926,
+      4020565,
+      3945692
+     ],
+     "outer_stream": [
+      27634339,
+      2003894,
+      2003186
+     ],
+     "probe_cpu_s": 29.6679,
+     "probe_wall_s": 29.9749
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.539917,
+    0.537421,
+    0.553458,
+    0.537926,
+    0.543543,
+    0.467277,
+    0.443394,
+    0.538634,
+    0.590132,
+    0.534259,
+    0.541527,
+    0.538858,
+    0.521789,
+    0.557076,
+    0.53831
+   ],
+   "expected_sha256": "8af641ba1610036a2f6bd47d694065b620077aaa0585b0e7892ed62dc81e0ce9"
+  },
+  "lcs--memo_recursion": {
+   "role": "heldout",
+   "binary": "lcs--memo_recursion",
+   "args": [],
+   "meta": {
+    "problem": "lcs",
+    "variant": "memo_recursion",
+    "too_slow": false,
+    "bound": "recursion / call overhead",
+    "description": "Top-down memoised recursion lcs(i,j) over a vector<vector<short>> memo (recursion depth up to n+m)."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/lcs--memo_recursion.in",
+   "stdin_sha256": "09b97a4941c309e6fb10376d9aa4f5c69cbb739184aee9666264d4cca222841c",
+   "probe": [
+    {
+     "outer_dependent": [
+      57653,
+      531,
+      387
+     ],
+     "l1d_dependent": 190592,
+     "dependent_sites": 168,
+     "load_sites": 2684,
+     "latency_bound_x16": 11483284120,
+     "instructions": 2870820259,
+     "movs_bytes": 127823744,
+     "stos_bytes": 18400,
+     "l1d_refs": 1696302724,
+     "l1d_lines": 1696318177,
+     "l1d_misses": 25119991,
+     "l1d_skipped": 81212,
+     "rep_instructions": 8010,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 25119991,
+     "outer_misses": [
+      9954614,
+      3574464,
+      3507231
+     ],
+     "outer_stream": [
+      5453411,
+      2024344,
+      2016366
+     ],
+     "probe_cpu_s": 54.1738,
+     "probe_wall_s": 54.6471
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.65338,
+    0.586719,
+    0.627704,
+    0.612294,
+    0.614445,
+    0.639658,
+    0.594544,
+    0.882516,
+    0.660286,
+    0.644233,
+    0.664304,
+    0.648473,
+    0.595858,
+    0.635366,
+    0.639869
+   ],
+   "expected_sha256": "8af641ba1610036a2f6bd47d694065b620077aaa0585b0e7892ed62dc81e0ce9"
+  },
+  "lcs--hunt_szymanski": {
+   "role": "heldout",
+   "binary": "lcs--hunt_szymanski",
+   "args": [],
+   "meta": {
+    "problem": "lcs",
+    "variant": "hunt_szymanski",
+    "too_slow": false,
+    "bound": "branchy binary search",
+    "description": "Hunt-Szymanski: LIS over all ~16M matching (i,j) pairs, one lower_bound on the threshold vector per pair."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/lcs--hunt_szymanski.in",
+   "stdin_sha256": "09b97a4941c309e6fb10376d9aa4f5c69cbb739184aee9666264d4cca222841c",
+   "probe": [
+    {
+     "outer_dependent": [
+      30,
+      30,
+      30
+     ],
+     "l1d_dependent": 452447,
+     "dependent_sites": 175,
+     "load_sites": 2708,
+     "latency_bound_x16": 7784299548,
+     "instructions": 1946074116,
+     "movs_bytes": 60640,
+     "stos_bytes": 8544,
+     "l1d_refs": 229763253,
+     "l1d_lines": 229764037,
+     "l1d_misses": 468771,
+     "l1d_skipped": 1661,
+     "rep_instructions": 17,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 468771,
+     "outer_misses": [
+      5247,
+      5229,
+      5229
+     ],
+     "outer_stream": [
+      4956,
+      4952,
+      4952
+     ],
+     "probe_cpu_s": 21.3009,
+     "probe_wall_s": 21.6055
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.544677,
+    0.660929,
+    0.648847,
+    0.625427,
+    0.656298,
+    0.617758,
+    0.597862,
+    0.659499,
+    0.714187,
+    0.593665,
+    0.590288,
+    0.620946,
+    0.685024,
+    0.63285,
+    0.673853
+   ],
+   "expected_sha256": "8af641ba1610036a2f6bd47d694065b620077aaa0585b0e7892ed62dc81e0ce9"
+  },
+  "lcs--lis_of_sorted_pairs": {
+   "role": "heldout",
+   "binary": "lcs--lis_of_sorted_pairs",
+   "args": [],
+   "meta": {
+    "problem": "lcs",
+    "variant": "lis_of_sorted_pairs",
+    "too_slow": false,
+    "bound": "sort / memory (128-190 MB)",
+    "description": "Materialises all ~16M matching pairs in a vector, std::sorts them by (i asc, j desc), then patience-sorting LIS."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/lcs--lis_of_sorted_pairs.in",
+   "stdin_sha256": "09b97a4941c309e6fb10376d9aa4f5c69cbb739184aee9666264d4cca222841c",
+   "probe": [
+    {
+     "outer_dependent": [
+      1453,
+      1068,
+      539
+     ],
+     "l1d_dependent": 1909,
+     "dependent_sites": 168,
+     "load_sites": 2806,
+     "latency_bound_x16": 31884694184,
+     "instructions": 7971172775,
+     "movs_bytes": 44336,
+     "stos_bytes": 2400,
+     "l1d_refs": 1915944252,
+     "l1d_lines": 1915983286,
+     "l1d_misses": 38469104,
+     "l1d_skipped": 1497,
+     "rep_instructions": 12,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 38469104,
+     "outer_misses": [
+      30405094,
+      23352130,
+      14152317
+     ],
+     "outer_stream": [
+      30400635,
+      23351201,
+      14151892
+     ],
+     "probe_cpu_s": 112.6463,
+     "probe_wall_s": 113.4164
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    1.427394,
+    1.376442,
+    1.401408,
+    1.376408,
+    1.360414,
+    1.297627,
+    1.432298,
+    1.560654,
+    1.400525,
+    1.349948,
+    1.430131,
+    1.421411,
+    1.498297,
+    1.403903,
+    1.333914
+   ],
+   "expected_sha256": "8af641ba1610036a2f6bd47d694065b620077aaa0585b0e7892ed62dc81e0ce9"
+  },
+  "lcs--hash_rows_copied": {
+   "role": "heldout",
+   "binary": "lcs--hash_rows_copied",
+   "args": [],
+   "meta": {
+    "problem": "lcs",
+    "variant": "hash_rows_copied",
+    "too_slow": true,
+    "bound": "hashing + allocation",
+    "description": "TOO SLOW: each DP row is a fresh unordered_map<int,int> 'sparse array', copied into prev (prev = cur) every row."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/lcs--hash_rows_copied.in",
+   "stdin_sha256": "09b97a4941c309e6fb10376d9aa4f5c69cbb739184aee9666264d4cca222841c",
+   "probe": [
+    {
+     "outer_dependent": [
+      23717133,
+      30,
+      30
+     ],
+     "l1d_dependent": 27885852,
+     "dependent_sites": 177,
+     "load_sites": 2827,
+     "latency_bound_x16": 158407501056,
+     "instructions": 39601874491,
+     "movs_bytes": 15744,
+     "stos_bytes": 2571121576,
+     "l1d_refs": 18745026022,
+     "l1d_lines": 18745162214,
+     "l1d_misses": 301575784,
+     "l1d_skipped": 640665312,
+     "rep_instructions": 64016,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 301575784,
+     "outer_misses": [
+      203404357,
+      14224,
+      14224
+     ],
+     "outer_stream": [
+      202124104,
+      13989,
+      13989
+     ],
+     "probe_cpu_s": 816.3928,
+     "probe_wall_s": 822.7702
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    3.010953,
+    2.722923,
+    2.811512,
+    2.91535,
+    2.88676,
+    2.855646,
+    3.056457,
+    3.76246,
+    2.968157,
+    2.968223,
+    2.678478,
+    2.801644,
+    2.516181,
+    2.754821,
+    2.957257
+   ],
+   "expected_sha256": "8af641ba1610036a2f6bd47d694065b620077aaa0585b0e7892ed62dc81e0ce9"
+  },
+  "fenwick--segtree_bottom_up": {
+   "role": "heldout",
+   "binary": "fenwick--segtree_bottom_up",
+   "args": [],
+   "meta": {
+    "problem": "fenwick",
+    "variant": "segtree_bottom_up",
+    "too_slow": false,
+    "bound": "same as intended",
+    "description": "Iterative bottom-up segment tree (2n array) with an fread reader and a hand-rolled integer writer."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/fenwick--segtree_bottom_up.in",
+   "stdin_sha256": "1da8fc5c9ac150bf53354cb21acc97d230eefb4d1d193ebde4da050598726bff",
+   "probe": [
+    {
+     "outer_dependent": [
+      224,
+      39,
+      22
+     ],
+     "l1d_dependent": 331,
+     "dependent_sites": 105,
+     "load_sites": 2375,
+     "latency_bound_x16": 2340399652,
+     "instructions": 547229382,
+     "movs_bytes": 0,
+     "stos_bytes": 11202392,
+     "l1d_refs": 163633252,
+     "l1d_lines": 163633688,
+     "l1d_misses": 8448120,
+     "l1d_skipped": 1423,
+     "rep_instructions": 8,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 8448120,
+     "outer_misses": [
+      5901526,
+      3049693,
+      264117
+     ],
+     "outer_stream": [
+      533935,
+      495064,
+      263924
+     ],
+     "probe_cpu_s": 10.0542,
+     "probe_wall_s": 10.1158
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.125157,
+    0.118546,
+    0.131562,
+    0.12234,
+    0.126161,
+    0.144753,
+    0.145883,
+    0.129176,
+    0.197951,
+    0.130081,
+    0.126673,
+    0.130002,
+    0.132896,
+    0.117842,
+    0.122022
+   ],
+   "expected_sha256": "0b31843d393526b5711f6ddad3ba7627bd9146625874b4ed48bf322cc9f2b356"
+  },
+  "fenwick--range_bit_template": {
+   "role": "heldout",
+   "binary": "fenwick--range_bit_template",
+   "args": [],
+   "meta": {
+    "problem": "fenwick",
+    "variant": "range_bit_template",
+    "too_slow": false,
+    "bound": "extra work (constant factor)",
+    "description": "Generic range-add/range-sum two-BIT template used for point updates: O(n log n) build, both trees touched per operation."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/fenwick--range_bit_template.in",
+   "stdin_sha256": "1da8fc5c9ac150bf53354cb21acc97d230eefb4d1d193ebde4da050598726bff",
+   "probe": [
+    {
+     "outer_dependent": [
+      1026586,
+      856471,
+      23
+     ],
+     "l1d_dependent": 1069462,
+     "dependent_sites": 139,
+     "load_sites": 2428,
+     "latency_bound_x16": 4735421208,
+     "instructions": 816746241,
+     "movs_bytes": 0,
+     "stos_bytes": 11202432,
+     "l1d_refs": 218246234,
+     "l1d_lines": 219027407,
+     "l1d_misses": 26677262,
+     "l1d_skipped": 1141,
+     "rep_instructions": 9,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 26677262,
+     "outer_misses": [
+      9130194,
+      5033915,
+      263163
+     ],
+     "outer_stream": [
+      3226825,
+      2328601,
+      262973
+     ],
+     "probe_cpu_s": 14.4285,
+     "probe_wall_s": 14.5674
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.195758,
+    0.180517,
+    0.175304,
+    0.191418,
+    0.167622,
+    0.164693,
+    0.177045,
+    0.235827,
+    0.22128,
+    0.194713,
+    0.206073,
+    0.181538,
+    0.205627,
+    0.185542,
+    0.196985
+   ],
+   "expected_sha256": "0b31843d393526b5711f6ddad3ba7627bd9146625874b4ed48bf322cc9f2b356"
+  },
+  "fenwick--sqrt_decomposition": {
+   "role": "heldout",
+   "binary": "fenwick--sqrt_decomposition",
+   "args": [],
+   "meta": {
+    "problem": "fenwick",
+    "variant": "sqrt_decomposition",
+    "too_slow": false,
+    "bound": "worse complexity, sequential",
+    "description": "Square-root decomposition: O(sqrt n) per query summing partial blocks element-wise and whole blocks via block sums."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/fenwick--sqrt_decomposition.in",
+   "stdin_sha256": "1da8fc5c9ac150bf53354cb21acc97d230eefb4d1d193ebde4da050598726bff",
+   "probe": [
+    {
+     "outer_dependent": [
+      1003416,
+      577564,
+      23
+     ],
+     "l1d_dependent": 1240017,
+     "dependent_sites": 142,
+     "load_sites": 2451,
+     "latency_bound_x16": 7918925988,
+     "instructions": 1956166670,
+     "movs_bytes": 0,
+     "stos_bytes": 5609096,
+     "l1d_refs": 506957117,
+     "l1d_lines": 507738292,
+     "l1d_misses": 40463474,
+     "l1d_skipped": 1143,
+     "rep_instructions": 9,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 40463474,
+     "outer_misses": [
+      36378896,
+      22720281,
+      175771
+     ],
+     "outer_stream": [
+      35285639,
+      21990605,
+      175579
+     ],
+     "probe_cpu_s": 33.4491,
+     "probe_wall_s": 33.8048
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.284975,
+    0.267225,
+    0.230738,
+    0.265411,
+    0.27509,
+    0.274291,
+    0.236543,
+    0.263039,
+    0.287488,
+    0.26026,
+    0.231715,
+    0.252059,
+    0.257517,
+    0.230784,
+    0.228953
+   ],
+   "expected_sha256": "0b31843d393526b5711f6ddad3ba7627bd9146625874b4ed48bf322cc9f2b356"
+  },
+  "fenwick--fenwick_cin_endl": {
+   "role": "heldout",
+   "binary": "fenwick--fenwick_cin_endl",
+   "args": [],
+   "meta": {
+    "problem": "fenwick",
+    "variant": "fenwick_cin_endl",
+    "too_slow": false,
+    "bound": "syscalls (flush per line)",
+    "description": "The intended Fenwick tree, but cin/cout (sync off) with endl after each answer: one write(2) per query."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/fenwick--fenwick_cin_endl.in",
+   "stdin_sha256": "1da8fc5c9ac150bf53354cb21acc97d230eefb4d1d193ebde4da050598726bff",
+   "probe": [
+    {
+     "outer_dependent": [
+      82,
+      75,
+      33
+     ],
+     "l1d_dependent": 1557,
+     "dependent_sites": 158,
+     "load_sites": 2647,
+     "latency_bound_x16": 9743456204,
+     "instructions": 2345026513,
+     "movs_bytes": 0,
+     "stos_bytes": 5602408,
+     "l1d_refs": 1080625893,
+     "l1d_lines": 1080626328,
+     "l1d_misses": 8825385,
+     "l1d_skipped": 15401272,
+     "rep_instructions": 8,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 8825385,
+     "outer_misses": [
+      3799313,
+      1570166,
+      90840
+     ],
+     "outer_stream": [
+      1465872,
+      699697,
+      90632
+     ],
+     "probe_cpu_s": 49.6224,
+     "probe_wall_s": 50.0317
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.463951,
+    0.552636,
+    0.443676,
+    0.499193,
+    0.440257,
+    0.438441,
+    0.507309,
+    0.465679,
+    0.523962,
+    0.548299,
+    0.641066,
+    0.505333,
+    0.521614,
+    0.64628,
+    0.504242
+   ],
+   "expected_sha256": "0b31843d393526b5711f6ddad3ba7627bd9146625874b4ed48bf322cc9f2b356"
+  },
+  "fenwick--segtree_recursive": {
+   "role": "heldout",
+   "binary": "fenwick--segtree_recursive",
+   "args": [],
+   "meta": {
+    "problem": "fenwick",
+    "variant": "segtree_recursive",
+    "too_slow": false,
+    "bound": "recursion + scanf/printf",
+    "description": "Classic recursive top-down segment tree (4n array) with scanf input and a printf per answer."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/fenwick--segtree_recursive.in",
+   "stdin_sha256": "1da8fc5c9ac150bf53354cb21acc97d230eefb4d1d193ebde4da050598726bff",
+   "probe": [
+    {
+     "outer_dependent": [
+      2662117,
+      1340446,
+      31
+     ],
+     "l1d_dependent": 3954168,
+     "dependent_sites": 135,
+     "load_sites": 2672,
+     "latency_bound_x16": 13782046092,
+     "instructions": 3398173544,
+     "movs_bytes": 0,
+     "stos_bytes": 5602400,
+     "l1d_refs": 1133930266,
+     "l1d_lines": 1134711712,
+     "l1d_misses": 8946919,
+     "l1d_skipped": 29048521,
+     "rep_instructions": 8,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 8946919,
+     "outer_misses": [
+      6127316,
+      3388367,
+      440850
+     ],
+     "outer_stream": [
+      885870,
+      878897,
+      440642
+     ],
+     "probe_cpu_s": 69.3484,
+     "probe_wall_s": 70.1215
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.47303,
+    0.506958,
+    0.445106,
+    0.478461,
+    0.4903,
+    0.433856,
+    0.507409,
+    0.645239,
+    0.450869,
+    0.461718,
+    0.530853,
+    0.631144,
+    0.467244,
+    0.501829,
+    0.47009
+   ],
+   "expected_sha256": "0b31843d393526b5711f6ddad3ba7627bd9146625874b4ed48bf322cc9f2b356"
+  },
+  "fenwick--pointer_segtree": {
+   "role": "heldout",
+   "binary": "fenwick--pointer_segtree",
+   "args": [],
+   "meta": {
+    "problem": "fenwick",
+    "variant": "pointer_segtree",
+    "too_slow": false,
+    "bound": "pointer chasing / allocation",
+    "description": "Segment tree of heap-allocated nodes linked by pointers (new per node), cin input."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/fenwick--pointer_segtree.in",
+   "stdin_sha256": "1da8fc5c9ac150bf53354cb21acc97d230eefb4d1d193ebde4da050598726bff",
+   "probe": [
+    {
+     "outer_dependent": [
+      92667,
+      87714,
+      32972
+     ],
+     "l1d_dependent": 92828,
+     "dependent_sites": 150,
+     "load_sites": 2724,
+     "latency_bound_x16": 12616657652,
+     "instructions": 3130726916,
+     "movs_bytes": 7860011,
+     "stos_bytes": 5602400,
+     "l1d_refs": 1356657056,
+     "l1d_lines": 1357434181,
+     "l1d_misses": 16881097,
+     "l1d_skipped": 16805948,
+     "rep_instructions": 19,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 16881097,
+     "outer_misses": [
+      12423619,
+      7850034,
+      1955776
+     ],
+     "outer_stream": [
+      6295061,
+      4377518,
+      1441855
+     ],
+     "probe_cpu_s": 65.2079,
+     "probe_wall_s": 65.6563
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.84644,
+    0.869797,
+    0.857054,
+    0.947952,
+    0.94557,
+    0.915507,
+    0.817918,
+    0.912183,
+    0.910564,
+    0.913102,
+    0.88843,
+    1.019223,
+    0.833356,
+    0.926179,
+    0.843403
+   ],
+   "expected_sha256": "0b31843d393526b5711f6ddad3ba7627bd9146625874b4ed48bf322cc9f2b356"
+  },
+  "fenwick--map_fenwick": {
+   "role": "heldout",
+   "binary": "fenwick--map_fenwick",
+   "args": [],
+   "meta": {
+    "problem": "fenwick",
+    "variant": "map_fenwick",
+    "too_slow": true,
+    "bound": "pointer chasing",
+    "description": "TOO SLOW: the intended Fenwick tree stored in a std::map<int,long long> used as a sparse array."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/fenwick--map_fenwick.in",
+   "stdin_sha256": "1da8fc5c9ac150bf53354cb21acc97d230eefb4d1d193ebde4da050598726bff",
+   "probe": [
+    {
+     "outer_dependent": [
+      94754,
+      85159,
+      35779
+     ],
+     "l1d_dependent": 1699167,
+     "dependent_sites": 162,
+     "load_sites": 2834,
+     "latency_bound_x16": 18740011116,
+     "instructions": 4653947330,
+     "movs_bytes": 7859979,
+     "stos_bytes": 2400,
+     "l1d_refs": 2007430228,
+     "l1d_lines": 2007507343,
+     "l1d_misses": 91803057,
+     "l1d_skipped": 16805942,
+     "rep_instructions": 18,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 91803057,
+     "outer_misses": [
+      50070746,
+      25787516,
+      2965825
+     ],
+     "outer_stream": [
+      12862336,
+      9603202,
+      1878104
+     ],
+     "probe_cpu_s": 109.5854,
+     "probe_wall_s": 110.4877
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    4.432866,
+    4.663337,
+    4.309885,
+    4.29095,
+    4.393624,
+    4.361409,
+    4.753574,
+    4.712457,
+    4.655853,
+    4.392137,
+    4.646524,
+    4.610495,
+    4.328492,
+    4.553157,
+    4.980687
+   ],
+   "expected_sha256": "0b31843d393526b5711f6ddad3ba7627bd9146625874b4ed48bf322cc9f2b356"
+  },
+  "kmp--shift_and_bitap": {
+   "role": "heldout",
+   "binary": "kmp--shift_and_bitap",
+   "args": [],
+   "meta": {
+    "problem": "kmp",
+    "variant": "shift_and_bitap",
+    "too_slow": false,
+    "bound": "compute / branch-free",
+    "description": "Shift-And (bitap): one shift/OR/AND per text character on a 64-bit state, KMP fallback for patterns longer than 64."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/kmp--shift_and_bitap.in",
+   "stdin_sha256": "81eac9545c28cb11e110f8dd3db72d70b3e585e92f84dddf467c6ee998bf1421",
+   "probe": [
+    {
+     "outer_dependent": [
+      91,
+      76,
+      50
+     ],
+     "l1d_dependent": 116,
+     "dependent_sites": 173,
+     "load_sites": 2659,
+     "latency_bound_x16": 1204302936,
+     "instructions": 301074803,
+     "movs_bytes": 53464932,
+     "stos_bytes": 4448,
+     "l1d_refs": 187320803,
+     "l1d_lines": 187325828,
+     "l1d_misses": 1678716,
+     "l1d_skipped": 6190,
+     "rep_instructions": 2462,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1678716,
+     "outer_misses": [
+      1674084,
+      1644894,
+      890750
+     ],
+     "outer_stream": [
+      1673613,
+      1644498,
+      890459
+     ],
+     "probe_cpu_s": 4.3841,
+     "probe_wall_s": 4.4232
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.063657,
+    0.060799,
+    0.061873,
+    0.065182,
+    0.065871,
+    0.063993,
+    0.060267,
+    0.059098,
+    0.062693,
+    0.068633,
+    0.063396,
+    0.075629,
+    0.065877,
+    0.063619,
+    0.074167
+   ],
+   "expected_sha256": "790acf49733f250187bd1f38420c65a32a9dfd100f2f348af50ad40ef3a9bf0d"
+  },
+  "kmp--kmp_automaton": {
+   "role": "heldout",
+   "binary": "kmp--kmp_automaton",
+   "args": [],
+   "meta": {
+    "problem": "kmp",
+    "variant": "kmp_automaton",
+    "too_slow": false,
+    "bound": "load-latency chain",
+    "description": "KMP compiled into a 256-column DFA: one dependent table load per character (no fallback loop); fread input."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/kmp--kmp_automaton.in",
+   "stdin_sha256": "81eac9545c28cb11e110f8dd3db72d70b3e585e92f84dddf467c6ee998bf1421",
+   "probe": [
+    {
+     "outer_dependent": [
+      55,
+      54,
+      44
+     ],
+     "l1d_dependent": 56,
+     "dependent_sites": 115,
+     "load_sites": 2472,
+     "latency_bound_x16": 1922169924,
+     "instructions": 480541552,
+     "movs_bytes": 32554384,
+     "stos_bytes": 33583442,
+     "l1d_refs": 218775290,
+     "l1d_lines": 218775958,
+     "l1d_misses": 2169176,
+     "l1d_skipped": 20001225,
+     "rep_instructions": 68,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 2169176,
+     "outer_misses": [
+      2168989,
+      2168963,
+      1348401
+     ],
+     "outer_stream": [
+      2168608,
+      2168595,
+      1348118
+     ],
+     "probe_cpu_s": 8.5512,
+     "probe_wall_s": 8.6031
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.111055,
+    0.110234,
+    0.108655,
+    0.114319,
+    0.120427,
+    0.114733,
+    0.094233,
+    0.133179,
+    0.132989,
+    0.118015,
+    0.108034,
+    0.120478,
+    0.113871,
+    0.129367,
+    0.110664
+   ],
+   "expected_sha256": "790acf49733f250187bd1f38420c65a32a9dfd100f2f348af50ad40ef3a9bf0d"
+  },
+  "kmp--rolling_hash": {
+   "role": "heldout",
+   "binary": "kmp--rolling_hash",
+   "args": [],
+   "meta": {
+    "problem": "kmp",
+    "variant": "rolling_hash",
+    "too_slow": false,
+    "bound": "compute (128-bit multiply)",
+    "description": "Rabin-Karp with a hash modulo 2^61-1 (128-bit multiplies), every hash hit confirmed with memcmp."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/kmp--rolling_hash.in",
+   "stdin_sha256": "81eac9545c28cb11e110f8dd3db72d70b3e585e92f84dddf467c6ee998bf1421",
+   "probe": [
+    {
+     "outer_dependent": [
+      90,
+      75,
+      50
+     ],
+     "l1d_dependent": 115,
+     "dependent_sites": 167,
+     "load_sites": 2670,
+     "latency_bound_x16": 4278305300,
+     "instructions": 1069574704,
+     "movs_bytes": 53464932,
+     "stos_bytes": 2400,
+     "l1d_refs": 261454854,
+     "l1d_lines": 268795250,
+     "l1d_misses": 1678667,
+     "l1d_skipped": 6190,
+     "rep_instructions": 2461,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1678667,
+     "outer_misses": [
+      1674030,
+      1644841,
+      890680
+     ],
+     "outer_stream": [
+      1673570,
+      1644452,
+      890391
+     ],
+     "probe_cpu_s": 7.3242,
+     "probe_wall_s": 7.3827
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.157644,
+    0.149373,
+    0.140575,
+    0.122451,
+    0.151608,
+    0.119505,
+    0.159382,
+    0.154836,
+    0.120848,
+    0.160887,
+    0.149625,
+    0.153553,
+    0.161161,
+    0.149543,
+    0.152443
+   ],
+   "expected_sha256": "790acf49733f250187bd1f38420c65a32a9dfd100f2f348af50ad40ef3a9bf0d"
+  },
+  "kmp--z_function": {
+   "role": "heldout",
+   "binary": "kmp--z_function",
+   "args": [],
+   "meta": {
+    "problem": "kmp",
+    "variant": "z_function",
+    "too_slow": false,
+    "bound": "memory bandwidth (80 MB array)",
+    "description": "Z-function over pattern + '#' + text: a 20M-entry int array and a second pass to collect matches."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/kmp--z_function.in",
+   "stdin_sha256": "81eac9545c28cb11e110f8dd3db72d70b3e585e92f84dddf467c6ee998bf1421",
+   "probe": [
+    {
+     "outer_dependent": [
+      90,
+      75,
+      55
+     ],
+     "l1d_dependent": 115,
+     "dependent_sites": 167,
+     "load_sites": 2710,
+     "latency_bound_x16": 4260050592,
+     "instructions": 1065011717,
+     "movs_bytes": 73464909,
+     "stos_bytes": 80002500,
+     "l1d_refs": 445776071,
+     "l1d_lines": 445781366,
+     "l1d_misses": 6053734,
+     "l1d_skipped": 6214,
+     "rep_instructions": 2463,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 6053734,
+     "outer_misses": [
+      6049091,
+      6019897,
+      5306836
+     ],
+     "outer_stream": [
+      6048612,
+      6019490,
+      5306520
+     ],
+     "probe_cpu_s": 18.0448,
+     "probe_wall_s": 18.2161
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.195702,
+    0.186988,
+    0.189529,
+    0.190786,
+    0.189578,
+    0.188694,
+    0.190634,
+    0.196915,
+    0.213754,
+    0.208657,
+    0.182597,
+    0.17837,
+    0.187501,
+    0.23555,
+    0.194314
+   ],
+   "expected_sha256": "790acf49733f250187bd1f38420c65a32a9dfd100f2f348af50ad40ef3a9bf0d"
+  },
+  "kmp--kmp_cin_synced": {
+   "role": "heldout",
+   "binary": "kmp--kmp_cin_synced",
+   "args": [],
+   "meta": {
+    "problem": "kmp",
+    "variant": "kmp_cin_synced",
+    "too_slow": false,
+    "bound": "I/O (iostream synced with stdio)",
+    "description": "The intended KMP, but cin left synchronised with stdio, so the 20 MB text is read through stdio char by char."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/kmp--kmp_cin_synced.in",
+   "stdin_sha256": "81eac9545c28cb11e110f8dd3db72d70b3e585e92f84dddf467c6ee998bf1421",
+   "probe": [
+    {
+     "outer_dependent": [
+      83,
+      72,
+      47
+     ],
+     "l1d_dependent": 108,
+     "dependent_sites": 167,
+     "load_sites": 2766,
+     "latency_bound_x16": 14127999416,
+     "instructions": 3531998923,
+     "movs_bytes": 31452912,
+     "stos_bytes": 2400,
+     "l1d_refs": 1872154180,
+     "l1d_lines": 1872159599,
+     "l1d_misses": 1612331,
+     "l1d_skipped": 1381,
+     "rep_instructions": 20,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1612331,
+     "outer_misses": [
+      1608306,
+      1581116,
+      841463
+     ],
+     "outer_stream": [
+      1607858,
+      1580738,
+      841191
+     ],
+     "probe_cpu_s": 59.8483,
+     "probe_wall_s": 60.228
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.286932,
+    0.264693,
+    0.254512,
+    0.212798,
+    0.254422,
+    0.268781,
+    0.247436,
+    0.294516,
+    0.270228,
+    0.258623,
+    0.266743,
+    0.252668,
+    0.249544,
+    0.267012,
+    0.255512
+   ],
+   "expected_sha256": "790acf49733f250187bd1f38420c65a32a9dfd100f2f348af50ad40ef3a9bf0d"
+  },
+  "kmp--substr_compare": {
+   "role": "heldout",
+   "binary": "kmp--substr_compare",
+   "args": [],
+   "meta": {
+    "problem": "kmp",
+    "variant": "substr_compare",
+    "too_slow": false,
+    "bound": "allocation",
+    "description": "Brute force with t.substr(i, m) == p at every position: one heap-allocated 24-char temporary per text position."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/kmp--substr_compare.in",
+   "stdin_sha256": "81eac9545c28cb11e110f8dd3db72d70b3e585e92f84dddf467c6ee998bf1421",
+   "probe": [
+    {
+     "outer_dependent": [
+      90,
+      75,
+      50
+     ],
+     "l1d_dependent": 115,
+     "dependent_sites": 167,
+     "load_sites": 2672,
+     "latency_bound_x16": 18945435552,
+     "instructions": 4736357957,
+     "movs_bytes": 53464932,
+     "stos_bytes": 2400,
+     "l1d_refs": 1837203166,
+     "l1d_lines": 1866583163,
+     "l1d_misses": 1678668,
+     "l1d_skipped": 100006078,
+     "rep_instructions": 2461,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1678668,
+     "outer_misses": [
+      1674031,
+      1644840,
+      890684
+     ],
+     "outer_stream": [
+      1673566,
+      1644450,
+      890394
+     ],
+     "probe_cpu_s": 90.9824,
+     "probe_wall_s": 91.6215
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.413551,
+    0.420247,
+    0.393989,
+    0.415318,
+    0.405307,
+    0.40523,
+    0.423205,
+    0.411455,
+    0.421376,
+    0.495726,
+    0.46398,
+    0.412481,
+    0.419268,
+    0.417773,
+    0.460565
+   ],
+   "expected_sha256": "790acf49733f250187bd1f38420c65a32a9dfd100f2f348af50ad40ef3a9bf0d"
+  },
+  "kmp--hash_from_scratch": {
+   "role": "heldout",
+   "binary": "kmp--hash_from_scratch",
+   "args": [],
+   "meta": {
+    "problem": "kmp",
+    "variant": "hash_from_scratch",
+    "too_slow": true,
+    "bound": "compute (O(n*m) modmul)",
+    "description": "TOO SLOW: 'Rabin-Karp' recomputing each window's hash mod 1e9+7 from scratch (O(n*m)), hits verified exactly."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/kmp--hash_from_scratch.in",
+   "stdin_sha256": "81eac9545c28cb11e110f8dd3db72d70b3e585e92f84dddf467c6ee998bf1421",
+   "probe": [
+    {
+     "outer_dependent": [
+      90,
+      75,
+      50
+     ],
+     "l1d_dependent": 115,
+     "dependent_sites": 167,
+     "load_sites": 2671,
+     "latency_bound_x16": 129273081492,
+     "instructions": 9778294259,
+     "movs_bytes": 53464932,
+     "stos_bytes": 2400,
+     "l1d_refs": 736050364,
+     "l1d_lines": 743390770,
+     "l1d_misses": 1678676,
+     "l1d_skipped": 6190,
+     "rep_instructions": 2461,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1678676,
+     "outer_misses": [
+      1674037,
+      1644846,
+      890682
+     ],
+     "outer_stream": [
+      1673568,
+      1644452,
+      890390
+     ],
+     "probe_cpu_s": 32.8629,
+     "probe_wall_s": 33.1008
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    1.808771,
+    1.715288,
+    1.848926,
+    1.810977,
+    1.750703,
+    1.818303,
+    1.894162,
+    1.820385,
+    1.871046,
+    1.854422,
+    1.8429,
+    1.695266,
+    1.44979,
+    1.62016,
+    1.861248
+   ],
+   "expected_sha256": "790acf49733f250187bd1f38420c65a32a9dfd100f2f348af50ad40ef3a9bf0d"
+  },
+  "sort_bs--offline_two_pointer": {
+   "role": "heldout",
+   "binary": "sort_bs--offline_two_pointer",
+   "args": [],
+   "meta": {
+    "problem": "sort_bs",
+    "variant": "offline_two_pointer",
+    "too_slow": false,
+    "bound": "same as intended (sort-heavy)",
+    "description": "Offline: sort values and (query, index) pairs, two-pointer sweep, answers printed in input order with printf."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/sort_bs--offline_two_pointer.in",
+   "stdin_sha256": "e1267e665a216b899c472030be33fc2c7490952fc2bad750974f62be83a1d4eb",
+   "probe": [
+    {
+     "outer_dependent": [
+      31087,
+      11472,
+      27
+     ],
+     "l1d_dependent": 31315,
+     "dependent_sites": 132,
+     "load_sites": 2729,
+     "latency_bound_x16": 6323473356,
+     "instructions": 1556969890,
+     "movs_bytes": 0,
+     "stos_bytes": 4002392,
+     "l1d_refs": 500763537,
+     "l1d_lines": 502819945,
+     "l1d_misses": 1766855,
+     "l1d_skipped": 18501159,
+     "rep_instructions": 9,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1766855,
+     "outer_misses": [
+      1370407,
+      591566,
+      128347
+     ],
+     "outer_stream": [
+      908245,
+      472660,
+      128142
+     ],
+     "probe_cpu_s": 28.7896,
+     "probe_wall_s": 29.0084
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.179094,
+    0.145545,
+    0.18219,
+    0.180952,
+    0.181265,
+    0.180794,
+    0.180241,
+    0.186859,
+    0.180483,
+    0.199888,
+    0.252475,
+    0.18915,
+    0.182373,
+    0.259645,
+    0.179771
+   ],
+   "expected_sha256": "dae39362cace3417f200a170351a28de4fc36133a35c4197f29ad7e9da849827"
+  },
+  "sort_bs--merge_sort_vectors": {
+   "role": "heldout",
+   "binary": "sort_bs--merge_sort_vectors",
+   "args": [],
+   "meta": {
+    "problem": "sort_bs",
+    "variant": "merge_sort_vectors",
+    "too_slow": false,
+    "bound": "allocation",
+    "description": "Hand-written recursive merge sort copying both halves into fresh vectors at every level, hand-written binary search, printf."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/sort_bs--merge_sort_vectors.in",
+   "stdin_sha256": "e1267e665a216b899c472030be33fc2c7490952fc2bad750974f62be83a1d4eb",
+   "probe": [
+    {
+     "outer_dependent": [
+      94,
+      54,
+      27
+     ],
+     "l1d_dependent": 1604,
+     "dependent_sites": 143,
+     "load_sites": 2859,
+     "latency_bound_x16": 7318928528,
+     "instructions": 1805833683,
+     "movs_bytes": 17978288,
+     "stos_bytes": 2002396,
+     "l1d_refs": 608434996,
+     "l1d_lines": 609909553,
+     "l1d_misses": 5296182,
+     "l1d_skipped": 25511418,
+     "rep_instructions": 1030,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 5296182,
+     "outer_misses": [
+      2787558,
+      343896,
+      109514
+     ],
+     "outer_stream": [
+      1546326,
+      329925,
+      109266
+     ],
+     "probe_cpu_s": 34.9044,
+     "probe_wall_s": 35.1675
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.342369,
+    0.238839,
+    0.23185,
+    0.247408,
+    0.245717,
+    0.238078,
+    0.232825,
+    0.253185,
+    0.237562,
+    0.244265,
+    0.237673,
+    0.240187,
+    0.260001,
+    0.238078,
+    0.230464
+   ],
+   "expected_sha256": "dae39362cace3417f200a170351a28de4fc36133a35c4197f29ad7e9da849827"
+  },
+  "sort_bs--list_sort": {
+   "role": "heldout",
+   "binary": "sort_bs--list_sort",
+   "args": [],
+   "meta": {
+    "problem": "sort_bs",
+    "variant": "list_sort",
+    "too_slow": false,
+    "bound": "pointer chasing",
+    "description": "Values in a std::list sorted with list::sort (merge sort over scattered nodes), copied to a vector for upper_bound."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/sort_bs--list_sort.in",
+   "stdin_sha256": "e1267e665a216b899c472030be33fc2c7490952fc2bad750974f62be83a1d4eb",
+   "probe": [
+    {
+     "outer_dependent": [
+      496291,
+      468175,
+      27
+     ],
+     "l1d_dependent": 501319,
+     "dependent_sites": 134,
+     "load_sites": 2642,
+     "latency_bound_x16": 7404948992,
+     "instructions": 1820338813,
+     "movs_bytes": 0,
+     "stos_bytes": 2400,
+     "l1d_refs": 608338523,
+     "l1d_lines": 610387989,
+     "l1d_misses": 10186424,
+     "l1d_skipped": 22501145,
+     "rep_instructions": 7,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 10186424,
+     "outer_misses": [
+      6585214,
+      2953122,
+      284588
+     ],
+     "outer_stream": [
+      1594741,
+      743745,
+      284385
+     ],
+     "probe_cpu_s": 38.3508,
+     "probe_wall_s": 38.5927
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.406142,
+    0.404104,
+    0.436302,
+    0.495525,
+    0.397118,
+    0.355723,
+    0.485074,
+    0.395487,
+    0.440587,
+    0.487048,
+    0.504807,
+    0.426594,
+    0.497103,
+    0.520072,
+    0.432366
+   ],
+   "expected_sha256": "dae39362cace3417f200a170351a28de4fc36133a35c4197f29ad7e9da849827"
+  },
+  "sort_bs--cin_endl": {
+   "role": "heldout",
+   "binary": "sort_bs--cin_endl",
+   "args": [],
+   "meta": {
+    "problem": "sort_bs",
+    "variant": "cin_endl",
+    "too_slow": false,
+    "bound": "syscalls (flush per line)",
+    "description": "Same sort + upper_bound with cin/cout (sync off) and endl after every answer: one write(2) per query."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/sort_bs--cin_endl.in",
+   "stdin_sha256": "e1267e665a216b899c472030be33fc2c7490952fc2bad750974f62be83a1d4eb",
+   "probe": [
+    {
+     "outer_dependent": [
+      702,
+      32,
+      32
+     ],
+     "l1d_dependent": 706,
+     "dependent_sites": 152,
+     "load_sites": 2633,
+     "latency_bound_x16": 5932363136,
+     "instructions": 1459192333,
+     "movs_bytes": 0,
+     "stos_bytes": 2002396,
+     "l1d_refs": 636794909,
+     "l1d_lines": 636799652,
+     "l1d_misses": 4464576,
+     "l1d_skipped": 10003690,
+     "rep_instructions": 8,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 4464576,
+     "outer_misses": [
+      2392551,
+      34621,
+      34605
+     ],
+     "outer_stream": [
+      1116029,
+      34402,
+      34397
+     ],
+     "probe_cpu_s": 32.1498,
+     "probe_wall_s": 32.4435
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.430486,
+    0.47347,
+    0.434314,
+    0.418666,
+    0.43813,
+    0.416067,
+    0.424822,
+    0.452316,
+    0.390819,
+    0.473235,
+    0.457785,
+    0.464542,
+    0.409974,
+    0.427959,
+    0.452591
+   ],
+   "expected_sha256": "dae39362cace3417f200a170351a28de4fc36133a35c4197f29ad7e9da849827"
+  },
+  "sort_bs--cin_synced": {
+   "role": "heldout",
+   "binary": "sort_bs--cin_synced",
+   "args": [],
+   "meta": {
+    "problem": "sort_bs",
+    "variant": "cin_synced",
+    "too_slow": false,
+    "bound": "I/O (iostream synced with stdio)",
+    "description": "Same sort + upper_bound with cin/cout left synchronised with stdio ('\\n', no endl)."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/sort_bs--cin_synced.in",
+   "stdin_sha256": "e1267e665a216b899c472030be33fc2c7490952fc2bad750974f62be83a1d4eb",
+   "probe": [
+    {
+     "outer_dependent": [
+      71,
+      41,
+      31
+     ],
+     "l1d_dependent": 1344,
+     "dependent_sites": 152,
+     "load_sites": 2669,
+     "latency_bound_x16": 15476571004,
+     "instructions": 3845244300,
+     "movs_bytes": 0,
+     "stos_bytes": 2002396,
+     "l1d_refs": 1955787788,
+     "l1d_lines": 1955794805,
+     "l1d_misses": 4472596,
+     "l1d_skipped": 10501140,
+     "rep_instructions": 8,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 4472596,
+     "outer_misses": [
+      2293696,
+      34547,
+      34515
+     ],
+     "outer_stream": [
+      1067927,
+      34330,
+      34318
+     ],
+     "probe_cpu_s": 75.5085,
+     "probe_wall_s": 76.1
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.714324,
+    0.729156,
+    0.681253,
+    0.685402,
+    0.676617,
+    0.65045,
+    0.670298,
+    0.925639,
+    0.601707,
+    0.735686,
+    0.756586,
+    0.5827,
+    0.686821,
+    0.614475,
+    0.832699
+   ],
+   "expected_sha256": "dae39362cace3417f200a170351a28de4fc36133a35c4197f29ad7e9da849827"
+  },
+  "sort_bs--pbds_order_tree": {
+   "role": "heldout",
+   "binary": "sort_bs--pbds_order_tree",
+   "args": [],
+   "meta": {
+    "problem": "sort_bs",
+    "variant": "pbds_order_tree",
+    "too_slow": false,
+    "bound": "pointer chasing",
+    "description": "__gnu_pbds order-statistics red-black tree over (value, index) pairs; order_of_key per query."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/sort_bs--pbds_order_tree.in",
+   "stdin_sha256": "e1267e665a216b899c472030be33fc2c7490952fc2bad750974f62be83a1d4eb",
+   "probe": [
+    {
+     "outer_dependent": [
+      3925,
+      133,
+      43
+     ],
+     "l1d_dependent": 4115,
+     "dependent_sites": 155,
+     "load_sites": 2885,
+     "latency_bound_x16": 6839499216,
+     "instructions": 1699966279,
+     "movs_bytes": 3927934,
+     "stos_bytes": 2400,
+     "l1d_refs": 718420058,
+     "l1d_lines": 718467235,
+     "l1d_misses": 36408751,
+     "l1d_skipped": 8003852,
+     "rep_instructions": 17,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 36408751,
+     "outer_misses": [
+      26385591,
+      15582288,
+      776525
+     ],
+     "outer_stream": [
+      9268211,
+      5658808,
+      635926
+     ],
+     "probe_cpu_s": 45.9838,
+     "probe_wall_s": 46.4168
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    1.205162,
+    1.027786,
+    1.151887,
+    0.994536,
+    1.120155,
+    1.003049,
+    1.087113,
+    1.158537,
+    0.970347,
+    1.002542,
+    0.99324,
+    1.232228,
+    0.959531,
+    1.197634,
+    1.033103
+   ],
+   "expected_sha256": "dae39362cace3417f200a170351a28de4fc36133a35c4197f29ad7e9da849827"
+  },
+  "sort_bs--sqrt_sorted_blocks": {
+   "role": "heldout",
+   "binary": "sort_bs--sqrt_sorted_blocks",
+   "args": [],
+   "meta": {
+    "problem": "sort_bs",
+    "variant": "sqrt_sorted_blocks",
+    "too_slow": true,
+    "bound": "worse complexity, branchy",
+    "description": "TOO SLOW: sqrt-decomposition template with sorted blocks of size sqrt(n log n); each query binary-searches all ~160 blocks."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/sort_bs--sqrt_sorted_blocks.in",
+   "stdin_sha256": "e1267e665a216b899c472030be33fc2c7490952fc2bad750974f62be83a1d4eb",
+   "probe": [
+    {
+     "outer_dependent": [
+      2060,
+      66,
+      26
+     ],
+     "l1d_dependent": 3279456,
+     "dependent_sites": 134,
+     "load_sites": 2812,
+     "latency_bound_x16": 43866024884,
+     "instructions": 10960543039,
+     "movs_bytes": 5926441,
+     "stos_bytes": 2002420,
+     "l1d_refs": 1509835577,
+     "l1d_lines": 1509890158,
+     "l1d_misses": 654938976,
+     "l1d_skipped": 16003010,
+     "rep_instructions": 183,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 654938976,
+     "outer_misses": [
+      330387357,
+      453209,
+      180335
+     ],
+     "outer_stream": [
+      110838244,
+      362880,
+      179944
+     ],
+     "probe_cpu_s": 197.5821,
+     "probe_wall_s": 198.884
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    4.978852,
+    4.685211,
+    5.207115,
+    5.100723,
+    5.037417,
+    4.882839,
+    5.036358,
+    5.192798,
+    5.333859,
+    5.240546,
+    5.235522,
+    5.219169,
+    5.273023,
+    4.998157,
+    5.125104
+   ],
+   "expected_sha256": "dae39362cace3417f200a170351a28de4fc36133a35c4197f29ad7e9da849827"
+  },
+  "deep_dfs--bfs_order_reverse": {
+   "role": "heldout",
+   "binary": "deep_dfs--bfs_order_reverse",
+   "args": [],
+   "meta": {
+    "problem": "deep_dfs",
+    "variant": "bfs_order_reverse",
+    "too_slow": false,
+    "bound": "memory latency, no recursion",
+    "description": "No DFS: BFS from the root records order/parents/depths, subtree sizes accumulated over the reversed order."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/deep_dfs--bfs_order_reverse.in",
+   "stdin_sha256": "d5f4f32543e85a3a74f6741100a6e9033ad6370e0c3874a426b7a2bb964f60b5",
+   "probe": [
+    {
+     "outer_dependent": [
+      5833824,
+      4673826,
+      4099
+     ],
+     "l1d_dependent": 5986820,
+     "dependent_sites": 174,
+     "load_sites": 2683,
+     "latency_bound_x16": 6207935884,
+     "instructions": 1551983100,
+     "movs_bytes": 0,
+     "stos_bytes": 16002376,
+     "l1d_refs": 753825954,
+     "l1d_lines": 753826098,
+     "l1d_misses": 11151480,
+     "l1d_skipped": 8004570,
+     "rep_instructions": 9,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 11151480,
+     "outer_misses": [
+      10735888,
+      9296705,
+      682817
+     ],
+     "outer_stream": [
+      623495,
+      816817,
+      678504
+     ],
+     "probe_cpu_s": 32.6916,
+     "probe_wall_s": 32.8564
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.421278,
+    0.365611,
+    0.352746,
+    0.384142,
+    0.39303,
+    0.431785,
+    0.417218,
+    0.407188,
+    0.477533,
+    0.378187,
+    0.432223,
+    0.369883,
+    0.383205,
+    0.419933,
+    0.512687
+   ],
+   "expected_sha256": "f7bc7303cc953f442f2b291a0dc26436b2d0facfa388d0b9b394dccba2f7e919"
+  },
+  "deep_dfs--stack_pairs_vecvec": {
+   "role": "heldout",
+   "binary": "deep_dfs--stack_pairs_vecvec",
+   "args": [],
+   "meta": {
+    "problem": "deep_dfs",
+    "variant": "stack_pairs_vecvec",
+    "too_slow": false,
+    "bound": "explicit stack + allocation",
+    "description": "Iterative preorder with std::stack<pair<int,int>> over vector<vector<int>> adjacency, sizes summed in reverse preorder."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/deep_dfs--stack_pairs_vecvec.in",
+   "stdin_sha256": "d5f4f32543e85a3a74f6741100a6e9033ad6370e0c3874a426b7a2bb964f60b5",
+   "probe": [
+    {
+     "outer_dependent": [
+      1960226,
+      1683819,
+      10068
+     ],
+     "l1d_dependent": 2000608,
+     "dependent_sites": 166,
+     "load_sites": 2741,
+     "latency_bound_x16": 8596055292,
+     "instructions": 2149012952,
+     "movs_bytes": 0,
+     "stos_bytes": 2400,
+     "l1d_refs": 927337794,
+     "l1d_lines": 927463217,
+     "l1d_misses": 13940106,
+     "l1d_skipped": 21004563,
+     "rep_instructions": 7,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 13940106,
+     "outer_misses": [
+      13613046,
+      12864302,
+      4808138
+     ],
+     "outer_stream": [
+      2619613,
+      2549171,
+      1767823
+     ],
+     "probe_cpu_s": 47.2463,
+     "probe_wall_s": 47.4963
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.853217,
+    0.842446,
+    0.737274,
+    0.858691,
+    0.804179,
+    0.744566,
+    0.846031,
+    0.872076,
+    0.867661,
+    0.85346,
+    0.898302,
+    0.859489,
+    0.884342,
+    0.870281,
+    0.817006
+   ],
+   "expected_sha256": "f7bc7303cc953f442f2b291a0dc26436b2d0facfa388d0b9b394dccba2f7e919"
+  },
+  "deep_dfs--vecvec_recursive_scanf": {
+   "role": "heldout",
+   "binary": "deep_dfs--vecvec_recursive_scanf",
+   "args": [],
+   "meta": {
+    "problem": "deep_dfs",
+    "variant": "vecvec_recursive_scanf",
+    "too_slow": false,
+    "bound": "recursion + scanf",
+    "description": "Recursive DFS (depth 1e6) over vector<vector<int>> adjacency with scanf input."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/deep_dfs--vecvec_recursive_scanf.in",
+   "stdin_sha256": "d5f4f32543e85a3a74f6741100a6e9033ad6370e0c3874a426b7a2bb964f60b5",
+   "probe": [
+    {
+     "outer_dependent": [
+      55,
+      54,
+      46
+     ],
+     "l1d_dependent": 3536,
+     "dependent_sites": 127,
+     "load_sites": 2582,
+     "latency_bound_x16": 9019951648,
+     "instructions": 2254987043,
+     "movs_bytes": 0,
+     "stos_bytes": 2400,
+     "l1d_refs": 716937036,
+     "l1d_lines": 717065522,
+     "l1d_misses": 12068188,
+     "l1d_skipped": 32001122,
+     "rep_instructions": 7,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 12068188,
+     "outer_misses": [
+      11809680,
+      11573596,
+      7342648
+     ],
+     "outer_stream": [
+      5366127,
+      5261797,
+      3883359
+     ],
+     "probe_cpu_s": 48.7074,
+     "probe_wall_s": 49.1217
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.912431,
+    0.846013,
+    0.79756,
+    0.888432,
+    0.985021,
+    0.851167,
+    0.917318,
+    0.94846,
+    0.989508,
+    0.926547,
+    0.886498,
+    0.849351,
+    0.883788,
+    0.948317,
+    0.8646
+   ],
+   "expected_sha256": "f7bc7303cc953f442f2b291a0dc26436b2d0facfa388d0b9b394dccba2f7e919"
+  },
+  "deep_dfs--set_adjacency": {
+   "role": "heldout",
+   "binary": "deep_dfs--set_adjacency",
+   "args": [],
+   "meta": {
+    "problem": "deep_dfs",
+    "variant": "set_adjacency",
+    "too_slow": false,
+    "bound": "pointer chasing / allocation",
+    "description": "Recursive DFS over vector<set<int>> adjacency: every neighbour is a separately allocated tree node."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/deep_dfs--set_adjacency.in",
+   "stdin_sha256": "d5f4f32543e85a3a74f6741100a6e9033ad6370e0c3874a426b7a2bb964f60b5",
+   "probe": [
+    {
+     "outer_dependent": [
+      3497184,
+      3472842,
+      3049623
+     ],
+     "l1d_dependent": 3504637,
+     "dependent_sites": 165,
+     "load_sites": 2676,
+     "latency_bound_x16": 9516285680,
+     "instructions": 2379070551,
+     "movs_bytes": 0,
+     "stos_bytes": 2400,
+     "l1d_refs": 1010860143,
+     "l1d_lines": 1010860785,
+     "l1d_misses": 18921749,
+     "l1d_skipped": 24004508,
+     "rep_instructions": 7,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 18921749,
+     "outer_misses": [
+      18700459,
+      18541282,
+      16151188
+     ],
+     "outer_stream": [
+      9681678,
+      9606109,
+      8369719
+     ],
+     "probe_cpu_s": 54.012,
+     "probe_wall_s": 54.3896
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    1.358709,
+    1.28746,
+    1.339595,
+    1.389945,
+    1.487918,
+    1.353943,
+    1.396859,
+    1.427026,
+    1.532496,
+    1.524375,
+    1.374333,
+    1.352581,
+    1.350348,
+    1.445603,
+    1.419428
+   ],
+   "expected_sha256": "f7bc7303cc953f442f2b291a0dc26436b2d0facfa388d0b9b394dccba2f7e919"
+  },
+  "deep_dfs--umap_adjacency": {
+   "role": "heldout",
+   "binary": "deep_dfs--umap_adjacency",
+   "args": [],
+   "meta": {
+    "problem": "deep_dfs",
+    "variant": "umap_adjacency",
+    "too_slow": false,
+    "bound": "hashing / allocation",
+    "description": "Recursive DFS over unordered_map<int, vector<int>> adjacency: a hash lookup plus a heap vector per vertex."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/deep_dfs--umap_adjacency.in",
+   "stdin_sha256": "d5f4f32543e85a3a74f6741100a6e9033ad6370e0c3874a426b7a2bb964f60b5",
+   "probe": [
+    {
+     "outer_dependent": [
+      5003929,
+      4662847,
+      1881234
+     ],
+     "l1d_dependent": 5060740,
+     "dependent_sites": 171,
+     "load_sites": 2834,
+     "latency_bound_x16": 10466130672,
+     "instructions": 2616531797,
+     "movs_bytes": 0,
+     "stos_bytes": 34391568,
+     "l1d_refs": 1126144139,
+     "l1d_lines": 1126144329,
+     "l1d_misses": 20449172,
+     "l1d_skipped": 35004655,
+     "rep_instructions": 21,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 20449172,
+     "outer_misses": [
+      20230671,
+      19177718,
+      12020843
+     ],
+     "outer_stream": [
+      8642521,
+      8495979,
+      6616799
+     ],
+     "probe_cpu_s": 59.2733,
+     "probe_wall_s": 59.8488
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    1.593058,
+    1.564582,
+    1.693065,
+    1.500298,
+    1.62586,
+    1.507968,
+    1.538912,
+    1.63794,
+    1.580941,
+    1.694632,
+    1.795575,
+    1.688162,
+    1.819573,
+    1.623796,
+    1.475094
+   ],
+   "expected_sha256": "f7bc7303cc953f442f2b291a0dc26436b2d0facfa388d0b9b394dccba2f7e919"
+  },
+  "deep_dfs--multimap_adjacency": {
+   "role": "heldout",
+   "binary": "deep_dfs--multimap_adjacency",
+   "args": [],
+   "meta": {
+    "problem": "deep_dfs",
+    "variant": "multimap_adjacency",
+    "too_slow": false,
+    "bound": "pointer chasing",
+    "description": "Both edge directions in one std::multimap<int,int>; recursive DFS enumerates neighbours with equal_range (tree search per vertex)."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/deep_dfs--multimap_adjacency.in",
+   "stdin_sha256": "d5f4f32543e85a3a74f6741100a6e9033ad6370e0c3874a426b7a2bb964f60b5",
+   "probe": [
+    {
+     "outer_dependent": [
+      28495215,
+      19180963,
+      4656985
+     ],
+     "l1d_dependent": 37508092,
+     "dependent_sites": 174,
+     "load_sites": 2690,
+     "latency_bound_x16": 15165779604,
+     "instructions": 2821785243,
+     "movs_bytes": 0,
+     "stos_bytes": 2400,
+     "l1d_refs": 1173051309,
+     "l1d_lines": 1173051694,
+     "l1d_misses": 68516376,
+     "l1d_skipped": 24004500,
+     "rep_instructions": 7,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 68516376,
+     "outer_misses": [
+      55254419,
+      41154216,
+      17375741
+     ],
+     "outer_stream": [
+      14632573,
+      12392532,
+      6658806
+     ],
+     "probe_cpu_s": 87.5592,
+     "probe_wall_s": 88.1876
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    4.224877,
+    3.964044,
+    3.932197,
+    3.935767,
+    4.292121,
+    3.959749,
+    3.77673,
+    3.984527,
+    4.464675,
+    4.103674,
+    4.264276,
+    4.109549,
+    4.290432,
+    4.301523,
+    4.181356
+   ],
+   "expected_sha256": "f7bc7303cc953f442f2b291a0dc26436b2d0facfa388d0b9b394dccba2f7e919"
+  },
+  "deep_dfs--map_of_sets": {
+   "role": "heldout",
+   "binary": "deep_dfs--map_of_sets",
+   "args": [],
+   "meta": {
+    "problem": "deep_dfs",
+    "variant": "map_of_sets",
+    "too_slow": true,
+    "bound": "pointer chasing + synced I/O",
+    "description": "TOO SLOW: 'graph as a map of sets' (map<int,set<int>>), std::map of subtree sizes, recursive DFS, cin synced with stdio."
+   },
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run2/inputs/deep_dfs--map_of_sets.in",
+   "stdin_sha256": "d5f4f32543e85a3a74f6741100a6e9033ad6370e0c3874a426b7a2bb964f60b5",
+   "probe": [
+    {
+     "outer_dependent": [
+      2374560,
+      2336207,
+      1957770
+     ],
+     "l1d_dependent": 2380232,
+     "dependent_sites": 182,
+     "load_sites": 2855,
+     "latency_bound_x16": 31256348860,
+     "instructions": 7790072106,
+     "movs_bytes": 0,
+     "stos_bytes": 2400,
+     "l1d_refs": 3653164606,
+     "l1d_lines": 3653168608,
+     "l1d_misses": 105399704,
+     "l1d_skipped": 48001116,
+     "rep_instructions": 7,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 105399704,
+     "outer_misses": [
+      85326155,
+      64789700,
+      34633265
+     ],
+     "outer_stream": [
+      23076069,
+      21192347,
+      17142389
+     ],
+     "probe_cpu_s": 209.897,
+     "probe_wall_s": 211.5789
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    9.746589,
+    9.098529,
+    8.731563,
+    9.05825,
+    8.936419,
+    8.84579,
+    8.686787,
+    10.028786,
+    9.374649,
+    8.702538,
+    8.989309,
+    8.796079,
+    8.152126,
+    9.316499,
+    8.935554
+   ],
+   "expected_sha256": "f7bc7303cc953f442f2b291a0dc26436b2d0facfa388d0b9b394dccba2f7e919"
+  }
+ }
+}

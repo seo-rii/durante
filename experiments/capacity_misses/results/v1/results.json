@@ -1,0 +1,2968 @@
+{
+ "schema": 1,
+ "plan_sha256": "62ef88652a06949fea6344630ffea787bd0e51b4aac82ede3a2e69611e0927f5",
+ "predeclared_sha256": "48dd46af1a32cd3d9ded270632b1ba0486195c02406dbc0896c13eac9b7d4c48",
+ "client_sha256": "0d8da0e982ca26fa60ef740a0b99188cb1829c9acb2500d267d1b5e469ad8196",
+ "drrun_sha256": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b",
+ "host": {
+  "cpu_model": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+  "kernel": "6.18.44-fc-v880",
+  "cpu": 1
+ },
+ "built": {
+  "kernels": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/bin/kernels",
+   "source_sha256": "58d192145dbae87eb9c28a514ee9777850b5b96d34d58a983bb5b8805f887618",
+   "elf_sha256": "8a58cecb778fa339a23e58e5164fbc4551f01b4aab52f87913aefb1d6e1c35c2"
+  },
+  "crossed": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/bin/crossed",
+   "source_sha256": "b820b82e249fbc0773bb4669747608dd745a3474909927df3a267fe2da976db8",
+   "elf_sha256": "3259c91ff719c8c8cf9a076357d4f979594d3d5e3a2c720b3e2ea06632f67f98"
+  },
+  "sparse-rmq": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/bin/sparse-rmq",
+   "source_sha256": "2eb0ac5464bccfc944717fb7dbccc23d1dbad7167bb29a5525c1b14c485a2e0b",
+   "elf_sha256": "37114b073cc5a4afce69bfac4fa8cb3a2eaad5eea374c48d42f214063ab3c12b"
+  },
+  "histogram-stack": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/bin/histogram-stack",
+   "source_sha256": "92dc85b25a5ae9e436b8a2a136628b2896014400a6386d42e06a241ad086dedd",
+   "elf_sha256": "55ac570750b38f38ffcd7d71664461ef57eba24fe96bbb58e6767be271776ffc"
+  },
+  "distinct-window": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/bin/distinct-window",
+   "source_sha256": "cc7693b406eb41616404992f58534fdc0e33f1d61b82d008f125032a47559d61",
+   "elf_sha256": "255efb98f6436ca8c01a62ffbf2f129edc1e01ea6b626ff7ff7654b2b0afba9b"
+  },
+  "fenwick-prefix": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/bin/fenwick-prefix",
+   "source_sha256": "9f599613abda2ba189053a1954522611e9ac1ecf7ef3e45d704bb17bd0fcc8d1",
+   "elf_sha256": "ce8921d047f4151c4b0456af0bc4b392950c4f14e3ad02d040725b237c56b305"
+  },
+  "kmp-match": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/bin/kmp-match",
+   "source_sha256": "631ae6aa648d6ce30fafb0e482362ec378c8f8c27a8778c87c7c9ad1c0a06a75",
+   "elf_sha256": "4143787d128f74721b9a528a97c945f8beada20e3d10fdbb986753340b0dc75a"
+  },
+  "union-find": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/bin/union-find",
+   "source_sha256": "8a18fa26da4b3f7183467d23bce024d087fabb968c0800c6c2105b260a1031cc",
+   "elf_sha256": "7018f7092b6dba957647d662858ec17415eb74f5cfcb38b862fb66423b3afa11"
+  },
+  "binary-gcd": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/bin/binary-gcd",
+   "source_sha256": "1d7050707d23992fee025d93751bc1631d964673b435198efe60f3457ee62a14",
+   "elf_sha256": "bc1396f7ff9254844f0af898b70e0c53a91684afb7c302dc8830925fd1053f8d"
+  },
+  "stream-polynomial": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/bin/stream-polynomial",
+   "source_sha256": "711326c158386cfd721f7e83a49aa637c07c42c202655726edf5ea75f1070547",
+   "elf_sha256": "1c9ad75ec490caf49a86d33f105ffd010b9c5fa212f8208c854d8ec580411dd7"
+  },
+  "linked-rank": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/bin/linked-rank",
+   "source_sha256": "c350e028678c4c468075c23632dd69c0cc2ffb081c0edbfd25edb8ff9178538a",
+   "elf_sha256": "bf54b921d0cae4837978c551c251acc3cd43bd53d53540b9cca184924fd9fcbd"
+  },
+  "contest-bfs_grid": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/bin/contest-bfs_grid",
+   "source_sha256": "7455c182dd4f82865522192c36375e53a5966f5327e8433c4995eea568f9eb0d",
+   "elf_sha256": "c72c0d7fa49a558a19593b7efc9ef1db78efea2c18ae07f15db17ea23fc496d6"
+  },
+  "contest-dijkstra": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/bin/contest-dijkstra",
+   "source_sha256": "87b51d74032df4f822436c96eeddaf8f58df1d7de5f0a14eb7f73eb348e94aa7",
+   "elf_sha256": "336570ab890748d96ca89fd09991bb902c840eb07e259bb0a598c643aeeb955a"
+  },
+  "contest-lcs": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/bin/contest-lcs",
+   "source_sha256": "6cc6b58e2a70bd9396e8fc31d4614cf54e50275dcca65e9e06da3cd63ab0d4a5",
+   "elf_sha256": "8c6f63bbdd1df0a22191fee1708a20562e05e5bd0cc5ed0765b33b775c523190"
+  },
+  "contest-fenwick": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/bin/contest-fenwick",
+   "source_sha256": "443b8ee03689d55a8fb986b372331e5b2ba765adce1431d0edefff32d2584627",
+   "elf_sha256": "0c4f4d6826708d4b264b0d234023c5afb3f8dddb2e53f2be6654df9b8f3cdda6"
+  },
+  "contest-kmp": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/bin/contest-kmp",
+   "source_sha256": "8e07c1b2975812285142207332cb4ab0c5a4527849d6567962264f058e64d005",
+   "elf_sha256": "ea2af292530de264bf215fa093b87840f5d3ae1e3423e69d450eaefa2ba61819"
+  },
+  "contest-sort_bs": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/bin/contest-sort_bs",
+   "source_sha256": "bbc7357c9173be984808ebcdb5c6d994fdd719c55782a2a46bae487a2a01b8fc",
+   "elf_sha256": "1be3ed11bf53225b54d825c80f1ff6b69370421dee633e8c2610bef65bfe79a1"
+  },
+  "contest-deep_dfs": {
+   "path": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/bin/contest-deep_dfs",
+   "source_sha256": "58750216b35dc026e38f5bd31415548bf7d271feddcf3f4695cab2d6fcc4b51a",
+   "elf_sha256": "26c44e4026b0757a31bbd1ffd649e03ac72802c507233086f45e4e293bfb8707"
+  }
+ },
+ "cases": {
+  "k-int": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "int",
+    "200000000"
+   ],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/k-int.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "instructions": 1000264107,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 34514,
+     "l1d_lines": 34555,
+     "l1d_misses": 1124,
+     "l1d_skipped": 111,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1124,
+     "outer_misses": [
+      1075,
+      1075,
+      1075
+     ],
+     "outer_stream": [
+      940,
+      940,
+      940
+     ],
+     "probe_cpu_s": 0.4785,
+     "probe_wall_s": 0.4827
+    },
+    {
+     "instructions": 1000264107,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 34514,
+     "l1d_lines": 34555,
+     "l1d_misses": 1124,
+     "l1d_skipped": 111,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1124,
+     "outer_misses": [
+      1075,
+      1075,
+      1075
+     ],
+     "outer_stream": [
+      940,
+      940,
+      940
+     ],
+     "probe_cpu_s": 0.4626,
+     "probe_wall_s": 0.4681
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.251368,
+    0.25394,
+    0.253937,
+    0.253172,
+    0.200271,
+    0.256879,
+    0.252201,
+    0.255487,
+    0.206918
+   ],
+   "expected_sha256": "439e2e1f22d1fa5d540430f5d19df6cd321daeb289dbbe325848df2ae5c341a3"
+  },
+  "k-branch": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "branch",
+    "200000000"
+   ],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/k-branch.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "instructions": 1900321451,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 38606,
+     "l1d_lines": 38648,
+     "l1d_misses": 1190,
+     "l1d_skipped": 111,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1190,
+     "outer_misses": [
+      1138,
+      1138,
+      1138
+     ],
+     "outer_stream": [
+      1003,
+      1003,
+      1003
+     ],
+     "probe_cpu_s": 1.4008,
+     "probe_wall_s": 1.4415
+    },
+    {
+     "instructions": 1900321451,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 38606,
+     "l1d_lines": 38648,
+     "l1d_misses": 1190,
+     "l1d_skipped": 111,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1190,
+     "outer_misses": [
+      1138,
+      1138,
+      1138
+     ],
+     "outer_stream": [
+      1003,
+      1003,
+      1003
+     ],
+     "probe_cpu_s": 1.5211,
+     "probe_wall_s": 1.5414
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.205053,
+    0.202404,
+    0.243894,
+    0.201518,
+    0.202892,
+    0.204518,
+    0.200803,
+    0.203619,
+    0.206236
+   ],
+   "expected_sha256": "5849a1f3e9dfd2390467aa36b825e6ec086e717e6af3445be42118042714715c"
+  },
+  "k-read-16k": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "read",
+    "16384",
+    "100000000"
+   ],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/k-read-16k.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "instructions": 1600275124,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 36662,
+     "l1d_lines": 36705,
+     "l1d_misses": 1387,
+     "l1d_skipped": 119,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1387,
+     "outer_misses": [
+      1334,
+      1334,
+      1334
+     ],
+     "outer_stream": [
+      1197,
+      1197,
+      1197
+     ],
+     "probe_cpu_s": 4.4199,
+     "probe_wall_s": 4.4433
+    },
+    {
+     "instructions": 1600275124,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 36662,
+     "l1d_lines": 36705,
+     "l1d_misses": 1387,
+     "l1d_skipped": 119,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1387,
+     "outer_misses": [
+      1334,
+      1334,
+      1334
+     ],
+     "outer_stream": [
+      1197,
+      1197,
+      1197
+     ],
+     "probe_cpu_s": 4.4741,
+     "probe_wall_s": 4.4972
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.196931,
+    0.198715,
+    0.201895,
+    0.197422,
+    0.200591,
+    0.201964,
+    0.199767,
+    0.201565,
+    0.206237
+   ],
+   "expected_sha256": "7af968b372e9f70f3d29639704e78a3fc299a35720e11c9847d55251ea456d48"
+  },
+  "k-read-512k": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "read",
+    "524288",
+    "40000000"
+   ],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/k-read-512k.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "instructions": 640592489,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 100138,
+     "l1d_lines": 100181,
+     "l1d_misses": 37511212,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 37511212,
+     "outer_misses": [
+      20010876,
+      9269,
+      9269
+     ],
+     "outer_stream": [
+      165484,
+      9132,
+      9132
+     ],
+     "probe_cpu_s": 3.7921,
+     "probe_wall_s": 3.8377
+    },
+    {
+     "instructions": 640592489,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 100138,
+     "l1d_lines": 100181,
+     "l1d_misses": 37511212,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 37511212,
+     "outer_misses": [
+      20010876,
+      9269,
+      9269
+     ],
+     "outer_stream": [
+      165484,
+      9132,
+      9132
+     ],
+     "probe_cpu_s": 2.9779,
+     "probe_wall_s": 3.0102
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.081381,
+    0.083732,
+    0.083767,
+    0.081878,
+    0.084375,
+    0.081181,
+    0.083528,
+    0.083517,
+    0.086114
+   ],
+   "expected_sha256": "41cb37081f53a0de453f21031c554b2250080085a5d8cf3b48b0d127edb89fc8"
+  },
+  "k-read-4m": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "read",
+    "4194304",
+    "30000000"
+   ],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/k-read-4m.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "instructions": 482886272,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 558888,
+     "l1d_lines": 558931,
+     "l1d_misses": 29832484,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 29832484,
+     "outer_misses": [
+      28190881,
+      15067242,
+      66613
+     ],
+     "outer_stream": [
+      93735,
+      81193,
+      66476
+     ],
+     "probe_cpu_s": 7.6432,
+     "probe_wall_s": 7.7444
+    },
+    {
+     "instructions": 482886272,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 558888,
+     "l1d_lines": 558931,
+     "l1d_misses": 29832484,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 29832484,
+     "outer_misses": [
+      28190881,
+      15067242,
+      66613
+     ],
+     "outer_stream": [
+      93735,
+      81193,
+      66476
+     ],
+     "probe_cpu_s": 7.5347,
+     "probe_wall_s": 7.5993
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.100214,
+    0.093062,
+    0.095057,
+    0.120715,
+    0.162134,
+    0.100093,
+    0.096812,
+    0.09693,
+    0.117386
+   ],
+   "expected_sha256": "38d0f9b8e6a59017c40dc3bc5529435237e7bfe6dc8e92a15c801b0e1e5b5fb9"
+  },
+  "k-read-64m": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "read",
+    "67108864",
+    "20000000"
+   ],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/k-read-64m.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "instructions": 362207892,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 8423208,
+     "l1d_lines": 8423249,
+     "l1d_misses": 21039878,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 21039878,
+     "outer_misses": [
+      20972002,
+      20424353,
+      11048753
+     ],
+     "outer_stream": [
+      1050736,
+      1050698,
+      1050192
+     ],
+     "probe_cpu_s": 12.1026,
+     "probe_wall_s": 12.2053
+    },
+    {
+     "instructions": 362207892,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 8423208,
+     "l1d_lines": 8423249,
+     "l1d_misses": 21039878,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 21039878,
+     "outer_misses": [
+      20972002,
+      20424353,
+      11048753
+     ],
+     "outer_stream": [
+      1050736,
+      1050698,
+      1050192
+     ],
+     "probe_cpu_s": 12.7889,
+     "probe_wall_s": 12.8793
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.209416,
+    0.214239,
+    0.240419,
+    0.187532,
+    0.283585,
+    0.241514,
+    0.267359,
+    0.269095,
+    0.250564
+   ],
+   "expected_sha256": "c29481057c3fcb85f537a324ddc121af42a1ef128105b9139ed04b9d0013e9bf"
+  },
+  "k-chase-16k": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "chase",
+    "16384",
+    "100000000"
+   ],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/k-chase-16k.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "instructions": 400348642,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 42785,
+     "l1d_lines": 42829,
+     "l1d_misses": 1387,
+     "l1d_skipped": 119,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1387,
+     "outer_misses": [
+      1334,
+      1334,
+      1334
+     ],
+     "outer_stream": [
+      1197,
+      1197,
+      1197
+     ],
+     "probe_cpu_s": 3.8948,
+     "probe_wall_s": 3.9164
+    },
+    {
+     "instructions": 400348642,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 42785,
+     "l1d_lines": 42829,
+     "l1d_misses": 1387,
+     "l1d_skipped": 119,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1387,
+     "outer_misses": [
+      1334,
+      1334,
+      1334
+     ],
+     "outer_stream": [
+      1197,
+      1197,
+      1197
+     ],
+     "probe_cpu_s": 3.873,
+     "probe_wall_s": 3.9075
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.158185,
+    0.15769,
+    0.126997,
+    0.161548,
+    0.161941,
+    0.164596,
+    0.16155,
+    0.164679,
+    0.161846
+   ],
+   "expected_sha256": "184c0cbae9951f5d25831418869203d91363832c410b879e9cda9a07b3ec8efe"
+  },
+  "k-chase-512k": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "chase",
+    "524288",
+    "30000000"
+   ],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/k-chase-512k.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "instructions": 122951559,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 296723,
+     "l1d_lines": 296767,
+     "l1d_misses": 28458659,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 28458659,
+     "outer_misses": [
+      16425081,
+      9269,
+      9269
+     ],
+     "outer_stream": [
+      150342,
+      9132,
+      9132
+     ],
+     "probe_cpu_s": 2.6565,
+     "probe_wall_s": 2.6738
+    },
+    {
+     "instructions": 122951559,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 296723,
+     "l1d_lines": 296767,
+     "l1d_misses": 28458659,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 28458659,
+     "outer_misses": [
+      16425081,
+      9269,
+      9269
+     ],
+     "outer_stream": [
+      150342,
+      9132,
+      9132
+     ],
+     "probe_cpu_s": 2.9462,
+     "probe_wall_s": 2.9549
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.15766,
+    0.163152,
+    0.166491,
+    0.174454,
+    0.170906,
+    0.16664,
+    0.162415,
+    0.164217,
+    0.191435
+   ],
+   "expected_sha256": "529f19ecbc377dfea8adff8d5225a7fbf5229eb7f91891cbaa54a506fdaa2020"
+  },
+  "k-chase-4m": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "chase",
+    "4194304",
+    "8000000"
+   ],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/k-chase-4m.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "instructions": 53760445,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 2131737,
+     "l1d_lines": 2131781,
+     "l1d_misses": 8643700,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 8643700,
+     "outer_misses": [
+      8156190,
+      4624593,
+      66613
+     ],
+     "outer_stream": [
+      189232,
+      144306,
+      66476
+     ],
+     "probe_cpu_s": 2.9503,
+     "probe_wall_s": 2.9763
+    },
+    {
+     "instructions": 53760445,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 2131737,
+     "l1d_lines": 2131781,
+     "l1d_misses": 8643700,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 8643700,
+     "outer_misses": [
+      8156190,
+      4624593,
+      66613
+     ],
+     "outer_stream": [
+      189232,
+      144306,
+      66476
+     ],
+     "probe_cpu_s": 2.6836,
+     "probe_wall_s": 2.7087
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.349681,
+    0.339729,
+    0.329794,
+    0.312555,
+    0.37276,
+    0.355182,
+    0.295478,
+    0.340864,
+    0.34501
+   ],
+   "expected_sha256": "4cdc6c7ca135e94e778517ecc1087770ad02064df21dba0c168106c5c3a0fe29"
+  },
+  "k-chase-64m": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "chase",
+    "67108864",
+    "2000000"
+   ],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/k-chase-64m.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "instructions": 352197578,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 33589012,
+     "l1d_lines": 33589054,
+     "l1d_misses": 13499214,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 13499214,
+     "outer_misses": [
+      13314462,
+      12307282,
+      5307519
+     ],
+     "outer_stream": [
+      3115175,
+      2984774,
+      2222097
+     ],
+     "probe_cpu_s": 9.6333,
+     "probe_wall_s": 9.6932
+    },
+    {
+     "instructions": 352197578,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 33589012,
+     "l1d_lines": 33589054,
+     "l1d_misses": 13499214,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 13499214,
+     "outer_misses": [
+      13314462,
+      12307282,
+      5307519
+     ],
+     "outer_stream": [
+      3115175,
+      2984774,
+      2222097
+     ],
+     "probe_cpu_s": 9.1723,
+     "probe_wall_s": 9.2821
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.468271,
+    0.51385,
+    0.48132,
+    0.483281,
+    0.501157,
+    0.477698,
+    0.474921,
+    0.583411,
+    0.524615
+   ],
+   "expected_sha256": "83bf1dff70f89ca89402558e933b369e47511c6e2af9fd7b9dbdb7aa3e29a799"
+  },
+  "k-scan-512k": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "scan",
+    "524288",
+    "200000000"
+   ],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/k-scan-512k.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "instructions": 1200592554,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 100139,
+     "l1d_lines": 100185,
+     "l1d_misses": 25009349,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 25009349,
+     "outer_misses": [
+      25009312,
+      9269,
+      9269
+     ],
+     "outer_stream": [
+      25006098,
+      9132,
+      9132
+     ],
+     "probe_cpu_s": 2.2299,
+     "probe_wall_s": 2.2537
+    },
+    {
+     "instructions": 1200592554,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 100139,
+     "l1d_lines": 100185,
+     "l1d_misses": 25009349,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 25009349,
+     "outer_misses": [
+      25009312,
+      9269,
+      9269
+     ],
+     "outer_stream": [
+      25006098,
+      9132,
+      9132
+     ],
+     "probe_cpu_s": 2.4563,
+     "probe_wall_s": 2.4743
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.0863,
+    0.086724,
+    0.072907,
+    0.084384,
+    0.084939,
+    0.085964,
+    0.096919,
+    0.084708,
+    0.088517
+   ],
+   "expected_sha256": "41f7034197a4a49ac22789c755055bdd1799b1d9476ebbe175132321d5514b7a"
+  },
+  "k-scan-64m": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "scan",
+    "67108864",
+    "150000000"
+   ],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/k-scan-64m.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "instructions": 942207957,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 8423209,
+     "l1d_lines": 8423253,
+     "l1d_misses": 19799732,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 19799732,
+     "outer_misses": [
+      19799695,
+      19799695,
+      19799695
+     ],
+     "outer_stream": [
+      19799517,
+      19799517,
+      19799517
+     ],
+     "probe_cpu_s": 4.4504,
+     "probe_wall_s": 4.5215
+    },
+    {
+     "instructions": 942207957,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 8423209,
+     "l1d_lines": 8423253,
+     "l1d_misses": 19799732,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 19799732,
+     "outer_misses": [
+      19799695,
+      19799695,
+      19799695
+     ],
+     "outer_stream": [
+      19799517,
+      19799517,
+      19799517
+     ],
+     "probe_cpu_s": 4.1517,
+     "probe_wall_s": 4.1925
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.209639,
+    0.225479,
+    0.201865,
+    0.189207,
+    0.253068,
+    0.207292,
+    0.216529,
+    0.223308,
+    0.221084
+   ],
+   "expected_sha256": "ce7e1768649ceae99267e72136d7a57a0af1994169f7b5856ad6154308492833"
+  },
+  "k-store-512k": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "store",
+    "524288",
+    "40000000"
+   ],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/k-store-512k.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "instructions": 640854636,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 40100132,
+     "l1d_lines": 40100180,
+     "l1d_misses": 37519385,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 37519385,
+     "outer_misses": [
+      20017802,
+      9269,
+      9269
+     ],
+     "outer_stream": [
+      172131,
+      9132,
+      9132
+     ],
+     "probe_cpu_s": 3.3741,
+     "probe_wall_s": 3.4197
+    },
+    {
+     "instructions": 640854636,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 40100132,
+     "l1d_lines": 40100180,
+     "l1d_misses": 37519385,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 37519385,
+     "outer_misses": [
+      20017802,
+      9269,
+      9269
+     ],
+     "outer_stream": [
+      172131,
+      9132,
+      9132
+     ],
+     "probe_cpu_s": 3.3988,
+     "probe_wall_s": 3.4292
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.077984,
+    0.078392,
+    0.081459,
+    0.082195,
+    0.084015,
+    0.08338,
+    0.079299,
+    0.080994,
+    0.08734
+   ],
+   "expected_sha256": "4c94ec611d204a9fe25bd8a32ca5cd34c0b1ab6a8599a2a05b344c9764e4d8cb"
+  },
+  "k-store-64m": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "store",
+    "67108864",
+    "20000000"
+   ],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/k-store-64m.in",
+   "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "probe": [
+    {
+     "instructions": 395762380,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 28423209,
+     "l1d_lines": 28423255,
+     "l1d_misses": 22088455,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 22088455,
+     "outer_misses": [
+      22020576,
+      21472408,
+      11936228
+     ],
+     "outer_stream": [
+      2099309,
+      2098742,
+      1901760
+     ],
+     "probe_cpu_s": 12.7074,
+     "probe_wall_s": 12.7646
+    },
+    {
+     "instructions": 395762380,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 28423209,
+     "l1d_lines": 28423255,
+     "l1d_misses": 22088455,
+     "l1d_skipped": 117,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 22088455,
+     "outer_misses": [
+      22020576,
+      21472408,
+      11936228
+     ],
+     "outer_stream": [
+      2099309,
+      2098742,
+      1901760
+     ],
+     "probe_cpu_s": 13.4537,
+     "probe_wall_s": 13.5022
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.162378,
+    0.154378,
+    0.212779,
+    0.168375,
+    0.18056,
+    0.210254,
+    0.231657,
+    0.216933,
+    0.177673
+   ],
+   "expected_sha256": "5cf7a05f90a7d76d6e32b105060c409aa4ecd3424514790fff9c765a820cc387"
+  },
+  "cross-rep0-small": {
+   "role": "heldout",
+   "binary": "crossed",
+   "args": [],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/cross-rep0-small.in",
+   "stdin_sha256": "34653efc18f65c08046ae7c453ad636189cb1e6fb3d218db0ad4211031c212d1",
+   "probe": [
+    {
+     "instructions": 151486876,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 1084928,
+     "l1d_lines": 1084959,
+     "l1d_misses": 263665,
+     "l1d_skipped": 137,
+     "rep_instructions": 32770,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 263665,
+     "outer_misses": [
+      263640,
+      263640,
+      263524
+     ],
+     "outer_stream": [
+      263445,
+      263445,
+      263377
+     ],
+     "probe_cpu_s": 0.462,
+     "probe_wall_s": 0.4654
+    },
+    {
+     "instructions": 151486876,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 1084928,
+     "l1d_lines": 1084959,
+     "l1d_misses": 263665,
+     "l1d_skipped": 137,
+     "rep_instructions": 32770,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 263665,
+     "outer_misses": [
+      263640,
+      263640,
+      263524
+     ],
+     "outer_stream": [
+      263445,
+      263445,
+      263377
+     ],
+     "probe_cpu_s": 0.4567,
+     "probe_wall_s": 0.4687
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.029914,
+    0.029834,
+    0.028026,
+    0.030508,
+    0.026036,
+    0.032238,
+    0.030784,
+    0.030446,
+    0.030602
+   ],
+   "expected_sha256": "bcf524fd617cc1344081405999d2f2e72ffbc8bf0438740ee38fc819d443cd82"
+  },
+  "cross-rep256-small": {
+   "role": "heldout",
+   "binary": "crossed",
+   "args": [],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/cross-rep256-small.in",
+   "stdin_sha256": "3ee511bb2cf493256ef048602072a7ab5e9b5ae6e8c3867fd2fa573d85b54758",
+   "probe": [
+    {
+     "instructions": 151487026,
+     "movs_bytes": 268435456,
+     "stos_bytes": 1048,
+     "l1d_refs": 537955849,
+     "l1d_lines": 537955880,
+     "l1d_misses": 263664,
+     "l1d_skipped": 137,
+     "rep_instructions": 32770,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 263664,
+     "outer_misses": [
+      263639,
+      263639,
+      263523
+     ],
+     "outer_stream": [
+      263445,
+      263445,
+      263377
+     ],
+     "probe_cpu_s": 0.5303,
+     "probe_wall_s": 0.5336
+    },
+    {
+     "instructions": 151487026,
+     "movs_bytes": 268435456,
+     "stos_bytes": 1048,
+     "l1d_refs": 537955849,
+     "l1d_lines": 537955880,
+     "l1d_misses": 263664,
+     "l1d_skipped": 137,
+     "rep_instructions": 32770,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 263664,
+     "outer_misses": [
+      263639,
+      263639,
+      263523
+     ],
+     "outer_stream": [
+      263445,
+      263445,
+      263377
+     ],
+     "probe_cpu_s": 0.476,
+     "probe_wall_s": 0.4801
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.031902,
+    0.030794,
+    0.032336,
+    0.024916,
+    0.026866,
+    0.031718,
+    0.031334,
+    0.031113,
+    0.034482
+   ],
+   "expected_sha256": "0c38f0c24ff640ee67d791a6a519d1bb26887ddfc0ee5299713452e9a3459119"
+  },
+  "cross-rep0-medium": {
+   "role": "heldout",
+   "binary": "crossed",
+   "args": [],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/cross-rep0-medium.in",
+   "stdin_sha256": "64e98b59452d75d7f83c1ba85509b90b0899b395dc61c0bccf441734c3ec7236",
+   "probe": [
+    {
+     "instructions": 151486978,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 1084934,
+     "l1d_lines": 1084965,
+     "l1d_misses": 8389411,
+     "l1d_skipped": 137,
+     "rep_instructions": 32770,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 8389411,
+     "outer_misses": [
+      6555263,
+      279960,
+      263524
+     ],
+     "outer_stream": [
+      288205,
+      263464,
+      263377
+     ],
+     "probe_cpu_s": 1.4533,
+     "probe_wall_s": 1.4595
+    },
+    {
+     "instructions": 151486978,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 1084934,
+     "l1d_lines": 1084965,
+     "l1d_misses": 8389411,
+     "l1d_skipped": 137,
+     "rep_instructions": 32770,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 8389411,
+     "outer_misses": [
+      6555263,
+      279960,
+      263524
+     ],
+     "outer_stream": [
+      288205,
+      263464,
+      263377
+     ],
+     "probe_cpu_s": 1.3045,
+     "probe_wall_s": 1.3088
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.031718,
+    0.030719,
+    0.032348,
+    0.032612,
+    0.032972,
+    0.029211,
+    0.031064,
+    0.03148,
+    0.035428
+   ],
+   "expected_sha256": "1e6a4a1c8a9072abc4e25598d5242d4fef77dbe7fbdd188a867b6469183b35a2"
+  },
+  "cross-rep256-medium": {
+   "role": "heldout",
+   "binary": "crossed",
+   "args": [],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/cross-rep256-medium.in",
+   "stdin_sha256": "dcc7adb829cfb8f2091fc7c85bd141b262d812be4f709e06684e2126d4216320",
+   "probe": [
+    {
+     "instructions": 151487128,
+     "movs_bytes": 268435456,
+     "stos_bytes": 1048,
+     "l1d_refs": 537955855,
+     "l1d_lines": 537955886,
+     "l1d_misses": 8389665,
+     "l1d_skipped": 137,
+     "rep_instructions": 32770,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 8389665,
+     "outer_misses": [
+      6555517,
+      279959,
+      263523
+     ],
+     "outer_stream": [
+      288459,
+      263464,
+      263377
+     ],
+     "probe_cpu_s": 1.6841,
+     "probe_wall_s": 1.6893
+    },
+    {
+     "instructions": 151487128,
+     "movs_bytes": 268435456,
+     "stos_bytes": 1048,
+     "l1d_refs": 537955855,
+     "l1d_lines": 537955886,
+     "l1d_misses": 8389665,
+     "l1d_skipped": 137,
+     "rep_instructions": 32770,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 8389665,
+     "outer_misses": [
+      6555517,
+      279959,
+      263523
+     ],
+     "outer_stream": [
+      288459,
+      263464,
+      263377
+     ],
+     "probe_cpu_s": 1.6809,
+     "probe_wall_s": 1.692
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.037381,
+    0.030512,
+    0.032555,
+    0.031805,
+    0.031176,
+    0.033824,
+    0.031674,
+    0.034257,
+    0.032392
+   ],
+   "expected_sha256": "bdced37458a5c5e8071ba7ee63dcd3cfbdaf719619f3e0c567ab353130bcca63"
+  },
+  "cross-rep0-large": {
+   "role": "heldout",
+   "binary": "crossed",
+   "args": [],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/cross-rep0-large.in",
+   "stdin_sha256": "aa8f34376ea2c483f672c445b80e9845dbd2e945bd537c11daf471a3b1084779",
+   "probe": [
+    {
+     "instructions": 151487031,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 1084937,
+     "l1d_lines": 1084968,
+     "l1d_misses": 8635719,
+     "l1d_skipped": 137,
+     "rep_instructions": 32770,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 8635719,
+     "outer_misses": [
+      8521073,
+      7604810,
+      263524
+     ],
+     "outer_stream": [
+      265430,
+      265198,
+      263377
+     ],
+     "probe_cpu_s": 4.71,
+     "probe_wall_s": 4.7416
+    },
+    {
+     "instructions": 151487031,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 1084937,
+     "l1d_lines": 1084968,
+     "l1d_misses": 8635719,
+     "l1d_skipped": 137,
+     "rep_instructions": 32770,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 8635719,
+     "outer_misses": [
+      8521073,
+      7604810,
+      263524
+     ],
+     "outer_stream": [
+      265430,
+      265198,
+      263377
+     ],
+     "probe_cpu_s": 4.6484,
+     "probe_wall_s": 4.6566
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.050825,
+    0.051809,
+    0.057653,
+    0.049245,
+    0.069824,
+    0.059879,
+    0.049336,
+    0.051804,
+    0.065979
+   ],
+   "expected_sha256": "43d9349b7331f76eac3fab334c03ad8eca46d7323dd98f1c69fb56cc2c91dbd6"
+  },
+  "cross-rep256-large": {
+   "role": "heldout",
+   "binary": "crossed",
+   "args": [],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/cross-rep256-large.in",
+   "stdin_sha256": "d1d4d4e4a9c3a6701099a2c3d7f74a28b6770692e2a9b12152c116e548753777",
+   "probe": [
+    {
+     "instructions": 151487181,
+     "movs_bytes": 268435456,
+     "stos_bytes": 1048,
+     "l1d_refs": 537955858,
+     "l1d_lines": 537955889,
+     "l1d_misses": 8635973,
+     "l1d_skipped": 137,
+     "rep_instructions": 32770,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 8635973,
+     "outer_misses": [
+      8521327,
+      7605064,
+      263523
+     ],
+     "outer_stream": [
+      265684,
+      265452,
+      263377
+     ],
+     "probe_cpu_s": 4.6661,
+     "probe_wall_s": 4.6962
+    },
+    {
+     "instructions": 151487181,
+     "movs_bytes": 268435456,
+     "stos_bytes": 1048,
+     "l1d_refs": 537955858,
+     "l1d_lines": 537955889,
+     "l1d_misses": 8635973,
+     "l1d_skipped": 137,
+     "rep_instructions": 32770,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 8635973,
+     "outer_misses": [
+      8521327,
+      7605064,
+      263523
+     ],
+     "outer_stream": [
+      265684,
+      265452,
+      263377
+     ],
+     "probe_cpu_s": 4.3066,
+     "probe_wall_s": 4.3139
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.061024,
+    0.051548,
+    0.051695,
+    0.076372,
+    0.050852,
+    0.059608,
+    0.051007,
+    0.058465,
+    0.068829
+   ],
+   "expected_sha256": "aeb71d5bf39fe4a15efc29516a78af8a71ee4afbff596c9f6102b4be75edc3cf"
+  },
+  "sparse-rmq": {
+   "role": "heldout",
+   "binary": "sparse-rmq",
+   "args": [],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/sparse-rmq.in",
+   "stdin_sha256": "c9bd9c685d235c6784237eb5378382219e65028c912e0a321991da7dc7443ad3",
+   "probe": [
+    {
+     "instructions": 163687097,
+     "movs_bytes": 0,
+     "stos_bytes": 17826844,
+     "l1d_refs": 24685319,
+     "l1d_lines": 24685355,
+     "l1d_misses": 4032701,
+     "l1d_skipped": 307,
+     "rep_instructions": 20,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 4032701,
+     "outer_misses": [
+      3716864,
+      1610540,
+      280033
+     ],
+     "outer_stream": [
+      1726434,
+      662465,
+      279869
+     ],
+     "probe_cpu_s": 1.7003,
+     "probe_wall_s": 1.7031
+    },
+    {
+     "instructions": 163687097,
+     "movs_bytes": 0,
+     "stos_bytes": 17826844,
+     "l1d_refs": 24685319,
+     "l1d_lines": 24685355,
+     "l1d_misses": 4032701,
+     "l1d_skipped": 307,
+     "rep_instructions": 20,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 4032701,
+     "outer_misses": [
+      3716864,
+      1610540,
+      280033
+     ],
+     "outer_stream": [
+      1726434,
+      662465,
+      279869
+     ],
+     "probe_cpu_s": 1.9045,
+     "probe_wall_s": 1.9103
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.038825,
+    0.040765,
+    0.044567,
+    0.043732,
+    0.042385,
+    0.051899,
+    0.041655,
+    0.047497,
+    0.046002
+   ],
+   "expected_sha256": "fbee43565dc5c2cc1d6f41416a900795ace4d877595d28b1d6997d6911d4bed6"
+  },
+  "histogram-stack": {
+   "role": "heldout",
+   "binary": "histogram-stack",
+   "args": [],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/histogram-stack.in",
+   "stdin_sha256": "7a2a3e28431a412953d30d342f740c1d49437734598cb042894e4ec987f5cde0",
+   "probe": [
+    {
+     "instructions": 220558379,
+     "movs_bytes": 0,
+     "stos_bytes": 1072,
+     "l1d_refs": 18916902,
+     "l1d_lines": 18916937,
+     "l1d_misses": 1664,
+     "l1d_skipped": 155,
+     "rep_instructions": 3,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1664,
+     "outer_misses": [
+      1478,
+      1478,
+      1478
+     ],
+     "outer_stream": [
+      1334,
+      1334,
+      1334
+     ],
+     "probe_cpu_s": 1.1096,
+     "probe_wall_s": 1.1227
+    },
+    {
+     "instructions": 220558379,
+     "movs_bytes": 0,
+     "stos_bytes": 1072,
+     "l1d_refs": 18916902,
+     "l1d_lines": 18916937,
+     "l1d_misses": 1664,
+     "l1d_skipped": 155,
+     "rep_instructions": 3,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1664,
+     "outer_misses": [
+      1478,
+      1478,
+      1478
+     ],
+     "outer_stream": [
+      1334,
+      1334,
+      1334
+     ],
+     "probe_cpu_s": 1.3047,
+     "probe_wall_s": 1.3109
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.044186,
+    0.042504,
+    0.034482,
+    0.043323,
+    0.045334,
+    0.046373,
+    0.0436,
+    0.043597,
+    0.048894
+   ],
+   "expected_sha256": "01fd10299dd4be83994a4c5de871d7e3cc4d4d31f0141f770b6399f2e278fb96"
+  },
+  "distinct-window": {
+   "role": "heldout",
+   "binary": "distinct-window",
+   "args": [],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/distinct-window.in",
+   "stdin_sha256": "d7b0f1fa8808fde7b69bb562ac1adb6ce96fc6ed4f6fa67cf946acd9a1db4350",
+   "probe": [
+    {
+     "instructions": 186153690,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 8687708,
+     "l1d_lines": 8687780,
+     "l1d_misses": 8144437,
+     "l1d_skipped": 155,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 8144437,
+     "outer_misses": [
+      6309321,
+      17595,
+      17595
+     ],
+     "outer_stream": [
+      42295,
+      17452,
+      17452
+     ],
+     "probe_cpu_s": 1.4739,
+     "probe_wall_s": 1.4884
+    },
+    {
+     "instructions": 186153690,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 8687708,
+     "l1d_lines": 8687780,
+     "l1d_misses": 8144437,
+     "l1d_skipped": 155,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 8144437,
+     "outer_misses": [
+      6309321,
+      17595,
+      17595
+     ],
+     "outer_stream": [
+      42295,
+      17452,
+      17452
+     ],
+     "probe_cpu_s": 1.464,
+     "probe_wall_s": 1.4815
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.026145,
+    0.020517,
+    0.027161,
+    0.037013,
+    0.026373,
+    0.025942,
+    0.024846,
+    0.026063,
+    0.031992
+   ],
+   "expected_sha256": "f9d7e16d0f69203212abb94f7ed100827a12a44ea51c7133534bd5122839e24d"
+  },
+  "fenwick-prefix": {
+   "role": "heldout",
+   "binary": "fenwick-prefix",
+   "args": [],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/fenwick-prefix.in",
+   "stdin_sha256": "d65b3050f54941e662535979ec9fc43bb53f0dc6fb8c9e2688f76e4f469a0e29",
+   "probe": [
+    {
+     "instructions": 129793517,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 16025486,
+     "l1d_lines": 16025557,
+     "l1d_misses": 11517859,
+     "l1d_skipped": 159,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 11517859,
+     "outer_misses": [
+      4064335,
+      34096,
+      33979
+     ],
+     "outer_stream": [
+      1754019,
+      33859,
+      33836
+     ],
+     "probe_cpu_s": 1.5467,
+     "probe_wall_s": 1.5505
+    },
+    {
+     "instructions": 129793517,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 16025486,
+     "l1d_lines": 16025557,
+     "l1d_misses": 11517859,
+     "l1d_skipped": 159,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 11517859,
+     "outer_misses": [
+      4064335,
+      34096,
+      33979
+     ],
+     "outer_stream": [
+      1754019,
+      33859,
+      33836
+     ],
+     "probe_cpu_s": 1.4797,
+     "probe_wall_s": 1.4868
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.039459,
+    0.036287,
+    0.036448,
+    0.036641,
+    0.056678,
+    0.036614,
+    0.034317,
+    0.039151,
+    0.039224
+   ],
+   "expected_sha256": "8c0bd1b82196cef44359654cc8978dc7cec09a8f92a272024d3fa84f6030cd7a"
+  },
+  "kmp-match": {
+   "role": "heldout",
+   "binary": "kmp-match",
+   "args": [],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/kmp-match.in",
+   "stdin_sha256": "5749469a7fa56bd40384a1f07fd322759082f203114e0bfc09036cb0c324fa47",
+   "probe": [
+    {
+     "instructions": 282344895,
+     "movs_bytes": 0,
+     "stos_bytes": 18875487,
+     "l1d_refs": 25202794,
+     "l1d_lines": 25432229,
+     "l1d_misses": 886178,
+     "l1d_skipped": 151,
+     "rep_instructions": 4,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 886178,
+     "outer_misses": [
+      886003,
+      886003,
+      296124
+     ],
+     "outer_stream": [
+      885827,
+      885827,
+      295979
+     ],
+     "probe_cpu_s": 1.4483,
+     "probe_wall_s": 1.4669
+    },
+    {
+     "instructions": 282344895,
+     "movs_bytes": 0,
+     "stos_bytes": 18875487,
+     "l1d_refs": 25202794,
+     "l1d_lines": 25432229,
+     "l1d_misses": 886178,
+     "l1d_skipped": 151,
+     "rep_instructions": 4,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 886178,
+     "outer_misses": [
+      886003,
+      886003,
+      296124
+     ],
+     "outer_stream": [
+      885827,
+      885827,
+      295979
+     ],
+     "probe_cpu_s": 1.4963,
+     "probe_wall_s": 1.5058
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.057757,
+    0.059735,
+    0.059088,
+    0.058536,
+    0.069231,
+    0.062657,
+    0.060252,
+    0.058768,
+    0.060077
+   ],
+   "expected_sha256": "c3d73c4fea99450326ea305f658a18c5528552847e2774f33454350e620ab50c"
+  },
+  "union-find": {
+   "role": "heldout",
+   "binary": "union-find",
+   "args": [],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/union-find.in",
+   "stdin_sha256": "c60da46cbd8f6e51461de55e1fda4baf9a71a6bd273d7c26f3d8c794a0faf5f5",
+   "probe": [
+    {
+     "instructions": 123765901,
+     "movs_bytes": 0,
+     "stos_bytes": 6292408,
+     "l1d_refs": 13833593,
+     "l1d_lines": 13833652,
+     "l1d_misses": 7749073,
+     "l1d_skipped": 631,
+     "rep_instructions": 26,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 7749073,
+     "outer_misses": [
+      1950524,
+      17597,
+      17597
+     ],
+     "outer_stream": [
+      221097,
+      17449,
+      17449
+     ],
+     "probe_cpu_s": 1.3479,
+     "probe_wall_s": 1.3566
+    },
+    {
+     "instructions": 123765901,
+     "movs_bytes": 0,
+     "stos_bytes": 6292408,
+     "l1d_refs": 13833593,
+     "l1d_lines": 13833652,
+     "l1d_misses": 7749073,
+     "l1d_skipped": 631,
+     "rep_instructions": 26,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 7749073,
+     "outer_misses": [
+      1950524,
+      17597,
+      17597
+     ],
+     "outer_stream": [
+      221097,
+      17449,
+      17449
+     ],
+     "probe_cpu_s": 1.0986,
+     "probe_wall_s": 1.1189
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.049815,
+    0.042118,
+    0.0438,
+    0.049753,
+    0.033621,
+    0.041643,
+    0.043442,
+    0.041841,
+    0.04191
+   ],
+   "expected_sha256": "33c67e18e7b08b8bd19c4640555765a15f8c8526a0eb648143a44c1f9a971896"
+  },
+  "binary-gcd": {
+   "role": "heldout",
+   "binary": "binary-gcd",
+   "args": [],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/binary-gcd.in",
+   "stdin_sha256": "651350bacd0996fee097b60b61ce03e578986474fe2cbf3e2193370c5c70424d",
+   "probe": [
+    {
+     "instructions": 151871354,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 35287,
+     "l1d_lines": 35316,
+     "l1d_misses": 1169,
+     "l1d_skipped": 137,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1169,
+     "outer_misses": [
+      1121,
+      1121,
+      1121
+     ],
+     "outer_stream": [
+      977,
+      977,
+      977
+     ],
+     "probe_cpu_s": 0.2971,
+     "probe_wall_s": 0.2996
+    },
+    {
+     "instructions": 151871354,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 35287,
+     "l1d_lines": 35316,
+     "l1d_misses": 1169,
+     "l1d_skipped": 137,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1169,
+     "outer_misses": [
+      1121,
+      1121,
+      1121
+     ],
+     "outer_stream": [
+      977,
+      977,
+      977
+     ],
+     "probe_cpu_s": 0.1913,
+     "probe_wall_s": 0.1937
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.061486,
+    0.064983,
+    0.087589,
+    0.075378,
+    0.07809,
+    0.080785,
+    0.078245,
+    0.076924,
+    0.078927
+   ],
+   "expected_sha256": "825ed91dda9f353a7ee44919fb50c4974221372edd1dbaaf7aafae94e2c9c798"
+  },
+  "stream-polynomial": {
+   "role": "heldout",
+   "binary": "stream-polynomial",
+   "args": [],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/stream-polynomial.in",
+   "stdin_sha256": "f2fafba2407ea9bcf70268aa4aa04e69a9276dc7c42eb3bce84e99698c976cc7",
+   "probe": [
+    {
+     "instructions": 303266936,
+     "movs_bytes": 0,
+     "stos_bytes": 787476,
+     "l1d_refs": 1019908,
+     "l1d_lines": 1019979,
+     "l1d_misses": 1599012,
+     "l1d_skipped": 151,
+     "rep_instructions": 3,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1599012,
+     "outer_misses": [
+      1598832,
+      13497,
+      13497
+     ],
+     "outer_stream": [
+      1598528,
+      13353,
+      13353
+     ],
+     "probe_cpu_s": 0.532,
+     "probe_wall_s": 0.5412
+    },
+    {
+     "instructions": 303266936,
+     "movs_bytes": 0,
+     "stos_bytes": 787476,
+     "l1d_refs": 1019908,
+     "l1d_lines": 1019979,
+     "l1d_misses": 1599012,
+     "l1d_skipped": 151,
+     "rep_instructions": 3,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1599012,
+     "outer_misses": [
+      1598832,
+      13497,
+      13497
+     ],
+     "outer_stream": [
+      1598528,
+      13353,
+      13353
+     ],
+     "probe_cpu_s": 0.411,
+     "probe_wall_s": 0.4207
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.109335,
+    0.109212,
+    0.108853,
+    0.106388,
+    0.090016,
+    0.10783,
+    0.107087,
+    0.107339,
+    0.10789
+   ],
+   "expected_sha256": "78098c244dbc042ca888c262a76f3b6621cc9c41ac68243d67eb16d63b2e2e6c"
+  },
+  "linked-rank": {
+   "role": "heldout",
+   "binary": "linked-rank",
+   "args": [],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/linked-rank.in",
+   "stdin_sha256": "7871ac13a3a60a7f89bcbf472662b4c105812cbd33c48cc69af6db6f2b6c645e",
+   "probe": [
+    {
+     "instructions": 81133239,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 834709,
+     "l1d_lines": 834777,
+     "l1d_misses": 14369278,
+     "l1d_skipped": 155,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 14369278,
+     "outer_misses": [
+      11141857,
+      17595,
+      17595
+     ],
+     "outer_stream": [
+      58503,
+      17450,
+      17450
+     ],
+     "probe_cpu_s": 2.091,
+     "probe_wall_s": 2.105
+    },
+    {
+     "instructions": 81133239,
+     "movs_bytes": 0,
+     "stos_bytes": 1048,
+     "l1d_refs": 834709,
+     "l1d_lines": 834777,
+     "l1d_misses": 14369278,
+     "l1d_skipped": 155,
+     "rep_instructions": 2,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 14369278,
+     "outer_misses": [
+      11141857,
+      17595,
+      17595
+     ],
+     "outer_stream": [
+      58503,
+      17450,
+      17450
+     ],
+     "probe_cpu_s": 2.1193,
+     "probe_wall_s": 2.1503
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.09916,
+    0.098803,
+    0.113126,
+    0.123711,
+    0.106635,
+    0.097138,
+    0.103384,
+    0.109701,
+    0.102899
+   ],
+   "expected_sha256": "6424dfb42062ce6a14644e433952f1403eab2b8a6e0d19f2855da7732e77e392"
+  },
+  "contest-bfs_grid": {
+   "role": "heldout",
+   "binary": "contest-bfs_grid",
+   "args": [],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/contest-bfs_grid.in",
+   "stdin_sha256": "24c87270746fa92698cc25c415efc1c6c339b8d801c74eabeaf8e5d33661710d",
+   "probe": [
+    {
+     "instructions": 364567155,
+     "movs_bytes": 0,
+     "stos_bytes": 32002396,
+     "l1d_refs": 37932521,
+     "l1d_lines": 38018611,
+     "l1d_misses": 9229161,
+     "l1d_skipped": 34919,
+     "rep_instructions": 9,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 9229161,
+     "outer_misses": [
+      2911780,
+      1060012,
+      737432
+     ],
+     "outer_stream": [
+      1110640,
+      740644,
+      588217
+     ],
+     "probe_cpu_s": 2.4066,
+     "probe_wall_s": 2.4234
+    },
+    {
+     "instructions": 364567155,
+     "movs_bytes": 0,
+     "stos_bytes": 32002396,
+     "l1d_refs": 37932521,
+     "l1d_lines": 38018611,
+     "l1d_misses": 9229161,
+     "l1d_skipped": 34919,
+     "rep_instructions": 9,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 9229161,
+     "outer_misses": [
+      2911780,
+      1060012,
+      737432
+     ],
+     "outer_stream": [
+      1110640,
+      740644,
+      588217
+     ],
+     "probe_cpu_s": 2.5239,
+     "probe_wall_s": 2.5376
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.118909,
+    0.123999,
+    0.106821,
+    0.100657,
+    0.158572,
+    0.127512,
+    0.1266,
+    0.12448,
+    0.132078
+   ],
+   "expected_sha256": "3ea24540da9d7ed9e8861b044f644cdd90c032a930a0d3200c5f8b1f4ff62ab3"
+  },
+  "contest-dijkstra": {
+   "role": "heldout",
+   "binary": "contest-dijkstra",
+   "args": [],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/contest-dijkstra.in",
+   "stdin_sha256": "c7525331bcb46e0cce61b172840dc6dc4ce1ed6071ff30e13a92b3a3c2ea5d0c",
+   "probe": [
+    {
+     "instructions": 318896512,
+     "movs_bytes": 799960,
+     "stos_bytes": 12802388,
+     "l1d_refs": 51342931,
+     "l1d_lines": 51343065,
+     "l1d_misses": 6088635,
+     "l1d_skipped": 1525,
+     "rep_instructions": 14,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 6088635,
+     "outer_misses": [
+      5091955,
+      2685256,
+      292897
+     ],
+     "outer_stream": [
+      631071,
+      468313,
+      292658
+     ],
+     "probe_cpu_s": 4.3268,
+     "probe_wall_s": 4.3664
+    },
+    {
+     "instructions": 318896512,
+     "movs_bytes": 799960,
+     "stos_bytes": 12802388,
+     "l1d_refs": 51342931,
+     "l1d_lines": 51343065,
+     "l1d_misses": 6088635,
+     "l1d_skipped": 1525,
+     "rep_instructions": 14,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 6088635,
+     "outer_misses": [
+      5091955,
+      2685256,
+      292897
+     ],
+     "outer_stream": [
+      631071,
+      468313,
+      292658
+     ],
+     "probe_cpu_s": 4.3821,
+     "probe_wall_s": 4.4018
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.093304,
+    0.100321,
+    0.108601,
+    0.095068,
+    0.10382,
+    0.108851,
+    0.095468,
+    0.096043,
+    0.097977
+   ],
+   "expected_sha256": "8f41760d1d6db81f0e9ab1d5282fd44331a1736507fc7ad3280a29926f856953"
+  },
+  "contest-lcs": {
+   "role": "heldout",
+   "binary": "contest-lcs",
+   "args": [],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/contest-lcs.in",
+   "stdin_sha256": "09b97a4941c309e6fb10376d9aa4f5c69cbb739184aee9666264d4cca222841c",
+   "probe": [
+    {
+     "instructions": 673039299,
+     "movs_bytes": 15744,
+     "stos_bytes": 2400,
+     "l1d_refs": 64132764,
+     "l1d_lines": 64133209,
+     "l1d_misses": 9020913,
+     "l1d_skipped": 1208,
+     "rep_instructions": 9,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 9020913,
+     "outer_misses": [
+      4615,
+      4596,
+      4596
+     ],
+     "outer_stream": [
+      4386,
+      4384,
+      4384
+     ],
+     "probe_cpu_s": 4.6609,
+     "probe_wall_s": 4.6984
+    },
+    {
+     "instructions": 673039299,
+     "movs_bytes": 15744,
+     "stos_bytes": 2400,
+     "l1d_refs": 64132764,
+     "l1d_lines": 64133209,
+     "l1d_misses": 9020913,
+     "l1d_skipped": 1208,
+     "rep_instructions": 9,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 9020913,
+     "outer_misses": [
+      4615,
+      4596,
+      4596
+     ],
+     "outer_stream": [
+      4386,
+      4384,
+      4384
+     ],
+     "probe_cpu_s": 4.5946,
+     "probe_wall_s": 4.6543
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.144574,
+    0.145354,
+    0.138331,
+    0.160972,
+    0.123555,
+    0.163466,
+    0.147208,
+    0.148861,
+    0.192498
+   ],
+   "expected_sha256": "8af641ba1610036a2f6bd47d694065b620077aaa0585b0e7892ed62dc81e0ce9"
+  },
+  "contest-fenwick": {
+   "role": "heldout",
+   "binary": "contest-fenwick",
+   "args": [],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/contest-fenwick.in",
+   "stdin_sha256": "1da8fc5c9ac150bf53354cb21acc97d230eefb4d1d193ebde4da050598726bff",
+   "probe": [
+    {
+     "instructions": 594805859,
+     "movs_bytes": 4194255,
+     "stos_bytes": 5601056,
+     "l1d_refs": 82660337,
+     "l1d_lines": 83492544,
+     "l1d_misses": 9749962,
+     "l1d_skipped": 2447510,
+     "rep_instructions": 4,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 9749962,
+     "outer_misses": [
+      4025010,
+      1839184,
+      239442
+     ],
+     "outer_stream": [
+      1598142,
+      934084,
+      239305
+     ],
+     "probe_cpu_s": 6.1805,
+     "probe_wall_s": 6.2408
+    },
+    {
+     "instructions": 594805859,
+     "movs_bytes": 4194255,
+     "stos_bytes": 5601056,
+     "l1d_refs": 82660337,
+     "l1d_lines": 83492544,
+     "l1d_misses": 9749962,
+     "l1d_skipped": 2447510,
+     "rep_instructions": 4,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 9749962,
+     "outer_misses": [
+      4025010,
+      1839184,
+      239442
+     ],
+     "outer_stream": [
+      1598142,
+      934084,
+      239305
+     ],
+     "probe_cpu_s": 6.2137,
+     "probe_wall_s": 6.2927
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.09908,
+    0.10527,
+    0.106723,
+    0.101721,
+    0.103552,
+    0.092748,
+    0.092851,
+    0.104243,
+    0.111409
+   ],
+   "expected_sha256": "0b31843d393526b5711f6ddad3ba7627bd9146625874b4ed48bf322cc9f2b356"
+  },
+  "contest-kmp": {
+   "role": "heldout",
+   "binary": "contest-kmp",
+   "args": [],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/contest-kmp.in",
+   "stdin_sha256": "81eac9545c28cb11e110f8dd3db72d70b3e585e92f84dddf467c6ee998bf1421",
+   "probe": [
+    {
+     "instructions": 411784802,
+     "movs_bytes": 53464932,
+     "stos_bytes": 2400,
+     "l1d_refs": 107088651,
+     "l1d_lines": 107093947,
+     "l1d_misses": 1678690,
+     "l1d_skipped": 6198,
+     "rep_instructions": 2461,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1678690,
+     "outer_misses": [
+      1674044,
+      1644854,
+      890690
+     ],
+     "outer_stream": [
+      1673582,
+      1644463,
+      890400
+     ],
+     "probe_cpu_s": 0.8319,
+     "probe_wall_s": 0.8361
+    },
+    {
+     "instructions": 411784802,
+     "movs_bytes": 53464932,
+     "stos_bytes": 2400,
+     "l1d_refs": 107088651,
+     "l1d_lines": 107093947,
+     "l1d_misses": 1678690,
+     "l1d_skipped": 6198,
+     "rep_instructions": 2461,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 1678690,
+     "outer_misses": [
+      1674044,
+      1644854,
+      890690
+     ],
+     "outer_stream": [
+      1673582,
+      1644463,
+      890400
+     ],
+     "probe_cpu_s": 0.8212,
+     "probe_wall_s": 0.8342
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.071462,
+    0.071086,
+    0.070326,
+    0.071061,
+    0.069454,
+    0.074581,
+    0.072226,
+    0.073131,
+    0.074169
+   ],
+   "expected_sha256": "790acf49733f250187bd1f38420c65a32a9dfd100f2f348af50ad40ef3a9bf0d"
+  },
+  "contest-sort_bs": {
+   "role": "heldout",
+   "binary": "contest-sort_bs",
+   "args": [],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/contest-sort_bs.in",
+   "stdin_sha256": "e1267e665a216b899c472030be33fc2c7490952fc2bad750974f62be83a1d4eb",
+   "probe": [
+    {
+     "instructions": 1324674126,
+     "movs_bytes": 2347,
+     "stos_bytes": 2002396,
+     "l1d_refs": 166502570,
+     "l1d_lines": 166556555,
+     "l1d_misses": 4576559,
+     "l1d_skipped": 16001152,
+     "rep_instructions": 9,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 4576559,
+     "outer_misses": [
+      2418054,
+      203609,
+      87533
+     ],
+     "outer_stream": [
+      1125436,
+      148010,
+      87338
+     ],
+     "probe_cpu_s": 14.1899,
+     "probe_wall_s": 14.2745
+    },
+    {
+     "instructions": 1324674126,
+     "movs_bytes": 2347,
+     "stos_bytes": 2002396,
+     "l1d_refs": 166502570,
+     "l1d_lines": 166556555,
+     "l1d_misses": 4576559,
+     "l1d_skipped": 16001152,
+     "rep_instructions": 9,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 4576559,
+     "outer_misses": [
+      2418054,
+      203609,
+      87533
+     ],
+     "outer_stream": [
+      1125436,
+      148010,
+      87338
+     ],
+     "probe_cpu_s": 13.9096,
+     "probe_wall_s": 13.9819
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.201719,
+    0.192353,
+    0.206205,
+    0.224959,
+    0.20695,
+    0.203486,
+    0.193436,
+    0.213892,
+    0.205588
+   ],
+   "expected_sha256": "dae39362cace3417f200a170351a28de4fc36133a35c4197f29ad7e9da849827"
+  },
+  "contest-deep_dfs": {
+   "role": "heldout",
+   "binary": "contest-deep_dfs",
+   "args": [],
+   "stdin": "/tmp/claude-0/-home-user/6fafe1c8-d49c-5391-97f9-abc9921df5d5/scratchpad/capm/run1/inputs/contest-deep_dfs.in",
+   "stdin_sha256": "d5f4f32543e85a3a74f6741100a6e9033ad6370e0c3874a426b7a2bb964f60b5",
+   "probe": [
+    {
+     "instructions": 1531981145,
+     "movs_bytes": 0,
+     "stos_bytes": 20002380,
+     "l1d_refs": 284893461,
+     "l1d_lines": 284893847,
+     "l1d_misses": 9282728,
+     "l1d_skipped": 8004544,
+     "rep_instructions": 10,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 9282728,
+     "outer_misses": [
+      8914706,
+      7860576,
+      3091464
+     ],
+     "outer_stream": [
+      2871720,
+      3056459,
+      2561706
+     ],
+     "probe_cpu_s": 17.1118,
+     "probe_wall_s": 17.1898
+    },
+    {
+     "instructions": 1531981145,
+     "movs_bytes": 0,
+     "stos_bytes": 20002380,
+     "l1d_refs": 284893461,
+     "l1d_lines": 284893847,
+     "l1d_misses": 9282728,
+     "l1d_skipped": 8004544,
+     "rep_instructions": 10,
+     "outer_capacities": [
+      4096,
+      32768,
+      524288
+     ],
+     "outer_accesses": 9282728,
+     "outer_misses": [
+      8914706,
+      7860576,
+      3091464
+     ],
+     "outer_stream": [
+      2871720,
+      3056459,
+      2561706
+     ],
+     "probe_cpu_s": 17.5256,
+     "probe_wall_s": 17.6283
+    }
+   ],
+   "probe_repeatable": true,
+   "native_cpu_s": [
+    0.487851,
+    0.480697,
+    0.484057,
+    0.488499,
+    0.474692,
+    0.493412,
+    0.514919,
+    0.563617,
+    0.473416
+   ],
+   "expected_sha256": "f7bc7303cc953f442f2b291a0dc26436b2d0facfa388d0b9b394dccba2f7e919"
+  }
+ }
+}

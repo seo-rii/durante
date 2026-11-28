@@ -1,0 +1,1059 @@
+{
+ "schema": 1,
+ "description": "Capacity-miss study v2: v1 cases as calibration, contest variants held out (see predeclared-v2.txt)",
+ "sources": {
+  "kernels": {
+   "path": "experiments/capacity_misses/kernels.c"
+  },
+  "crossed": {
+   "path": "experiments/crossed_memory_corpus/crossed/main.cpp"
+  },
+  "sparse-rmq": {
+   "path": "experiments/crossed_memory_corpus/sparse-rmq/main.cpp"
+  },
+  "histogram-stack": {
+   "path": "experiments/crossed_memory_corpus/histogram-stack/main.cpp"
+  },
+  "distinct-window": {
+   "path": "experiments/crossed_memory_corpus/distinct-window/main.cpp"
+  },
+  "fenwick-prefix": {
+   "path": "experiments/memory_cost_holdout/fenwick-prefix/main.cpp"
+  },
+  "kmp-match": {
+   "path": "experiments/memory_cost_holdout/kmp-match/main.cpp"
+  },
+  "union-find": {
+   "path": "experiments/memory_cost_holdout/union-find/main.cpp"
+  },
+  "binary-gcd": {
+   "path": "experiments/branch_load_holdout/binary-gcd/main.cpp"
+  },
+  "stream-polynomial": {
+   "path": "experiments/branch_load_holdout/stream-polynomial/main.cpp"
+  },
+  "linked-rank": {
+   "path": "experiments/branch_load_holdout/linked-rank/main.cpp"
+  },
+  "contest-bfs_grid": {
+   "path": "tests/contest/bfs_grid/sol.cpp"
+  },
+  "contest-dijkstra": {
+   "path": "tests/contest/dijkstra/sol.cpp"
+  },
+  "contest-lcs": {
+   "path": "tests/contest/lcs/sol.cpp"
+  },
+  "contest-fenwick": {
+   "path": "tests/contest/fenwick/sol.cpp"
+  },
+  "contest-kmp": {
+   "path": "tests/contest/kmp/sol.cpp"
+  },
+  "contest-sort_bs": {
+   "path": "tests/contest/sort_bs/sol.cpp"
+  },
+  "contest-deep_dfs": {
+   "path": "tests/contest/deep_dfs/sol.cpp"
+  },
+  "bfs_grid--queue_pair_vecvec": {
+   "path": "experiments/judge_disagreement/variants/bfs_grid/queue_pair_vecvec.cpp"
+  },
+  "bfs_grid--list_queue": {
+   "path": "experiments/judge_disagreement/variants/bfs_grid/list_queue.cpp"
+  },
+  "bfs_grid--pq_instead_of_bfs": {
+   "path": "experiments/judge_disagreement/variants/bfs_grid/pq_instead_of_bfs.cpp"
+  },
+  "bfs_grid--bitset_frontier_sweep": {
+   "path": "experiments/judge_disagreement/variants/bfs_grid/bitset_frontier_sweep.cpp"
+  },
+  "bfs_grid--unordered_map_dist": {
+   "path": "experiments/judge_disagreement/variants/bfs_grid/unordered_map_dist.cpp"
+  },
+  "bfs_grid--hash_seen_and_dist": {
+   "path": "experiments/judge_disagreement/variants/bfs_grid/hash_seen_and_dist.cpp"
+  },
+  "bfs_grid--map_pair_dist": {
+   "path": "experiments/judge_disagreement/variants/bfs_grid/map_pair_dist.cpp"
+  },
+  "dijkstra--bellman_ford_edges": {
+   "path": "experiments/judge_disagreement/variants/dijkstra/bellman_ford_edges.cpp"
+  },
+  "dijkstra--vecvec_getchar_pq": {
+   "path": "experiments/judge_disagreement/variants/dijkstra/vecvec_getchar_pq.cpp"
+  },
+  "dijkstra--set_decrease_key": {
+   "path": "experiments/judge_disagreement/variants/dijkstra/set_decrease_key.cpp"
+  },
+  "dijkstra--scanf_vecvec_pq": {
+   "path": "experiments/judge_disagreement/variants/dijkstra/scanf_vecvec_pq.cpp"
+  },
+  "dijkstra--cin_synced": {
+   "path": "experiments/judge_disagreement/variants/dijkstra/cin_synced.cpp"
+  },
+  "dijkstra--map_adj_umap_dist": {
+   "path": "experiments/judge_disagreement/variants/dijkstra/map_adj_umap_dist.cpp"
+  },
+  "dijkstra--maps_everywhere_synced": {
+   "path": "experiments/judge_disagreement/variants/dijkstra/maps_everywhere_synced.cpp"
+  },
+  "lcs--one_row_branchless": {
+   "path": "experiments/judge_disagreement/variants/lcs/one_row_branchless.cpp"
+  },
+  "lcs--full_table_short": {
+   "path": "experiments/judge_disagreement/variants/lcs/full_table_short.cpp"
+  },
+  "lcs--column_major_table": {
+   "path": "experiments/judge_disagreement/variants/lcs/column_major_table.cpp"
+  },
+  "lcs--memo_recursion": {
+   "path": "experiments/judge_disagreement/variants/lcs/memo_recursion.cpp"
+  },
+  "lcs--hunt_szymanski": {
+   "path": "experiments/judge_disagreement/variants/lcs/hunt_szymanski.cpp"
+  },
+  "lcs--lis_of_sorted_pairs": {
+   "path": "experiments/judge_disagreement/variants/lcs/lis_of_sorted_pairs.cpp"
+  },
+  "lcs--hash_rows_copied": {
+   "path": "experiments/judge_disagreement/variants/lcs/hash_rows_copied.cpp"
+  },
+  "fenwick--segtree_bottom_up": {
+   "path": "experiments/judge_disagreement/variants/fenwick/segtree_bottom_up.cpp"
+  },
+  "fenwick--range_bit_template": {
+   "path": "experiments/judge_disagreement/variants/fenwick/range_bit_template.cpp"
+  },
+  "fenwick--sqrt_decomposition": {
+   "path": "experiments/judge_disagreement/variants/fenwick/sqrt_decomposition.cpp"
+  },
+  "fenwick--fenwick_cin_endl": {
+   "path": "experiments/judge_disagreement/variants/fenwick/fenwick_cin_endl.cpp"
+  },
+  "fenwick--segtree_recursive": {
+   "path": "experiments/judge_disagreement/variants/fenwick/segtree_recursive.cpp"
+  },
+  "fenwick--pointer_segtree": {
+   "path": "experiments/judge_disagreement/variants/fenwick/pointer_segtree.cpp"
+  },
+  "fenwick--map_fenwick": {
+   "path": "experiments/judge_disagreement/variants/fenwick/map_fenwick.cpp"
+  },
+  "kmp--shift_and_bitap": {
+   "path": "experiments/judge_disagreement/variants/kmp/shift_and_bitap.cpp"
+  },
+  "kmp--kmp_automaton": {
+   "path": "experiments/judge_disagreement/variants/kmp/kmp_automaton.cpp"
+  },
+  "kmp--rolling_hash": {
+   "path": "experiments/judge_disagreement/variants/kmp/rolling_hash.cpp"
+  },
+  "kmp--z_function": {
+   "path": "experiments/judge_disagreement/variants/kmp/z_function.cpp"
+  },
+  "kmp--kmp_cin_synced": {
+   "path": "experiments/judge_disagreement/variants/kmp/kmp_cin_synced.cpp"
+  },
+  "kmp--substr_compare": {
+   "path": "experiments/judge_disagreement/variants/kmp/substr_compare.cpp"
+  },
+  "kmp--hash_from_scratch": {
+   "path": "experiments/judge_disagreement/variants/kmp/hash_from_scratch.cpp"
+  },
+  "sort_bs--offline_two_pointer": {
+   "path": "experiments/judge_disagreement/variants/sort_bs/offline_two_pointer.cpp"
+  },
+  "sort_bs--merge_sort_vectors": {
+   "path": "experiments/judge_disagreement/variants/sort_bs/merge_sort_vectors.cpp"
+  },
+  "sort_bs--list_sort": {
+   "path": "experiments/judge_disagreement/variants/sort_bs/list_sort.cpp"
+  },
+  "sort_bs--cin_endl": {
+   "path": "experiments/judge_disagreement/variants/sort_bs/cin_endl.cpp"
+  },
+  "sort_bs--cin_synced": {
+   "path": "experiments/judge_disagreement/variants/sort_bs/cin_synced.cpp"
+  },
+  "sort_bs--pbds_order_tree": {
+   "path": "experiments/judge_disagreement/variants/sort_bs/pbds_order_tree.cpp"
+  },
+  "sort_bs--sqrt_sorted_blocks": {
+   "path": "experiments/judge_disagreement/variants/sort_bs/sqrt_sorted_blocks.cpp"
+  },
+  "deep_dfs--bfs_order_reverse": {
+   "path": "experiments/judge_disagreement/variants/deep_dfs/bfs_order_reverse.cpp"
+  },
+  "deep_dfs--stack_pairs_vecvec": {
+   "path": "experiments/judge_disagreement/variants/deep_dfs/stack_pairs_vecvec.cpp"
+  },
+  "deep_dfs--vecvec_recursive_scanf": {
+   "path": "experiments/judge_disagreement/variants/deep_dfs/vecvec_recursive_scanf.cpp"
+  },
+  "deep_dfs--set_adjacency": {
+   "path": "experiments/judge_disagreement/variants/deep_dfs/set_adjacency.cpp"
+  },
+  "deep_dfs--umap_adjacency": {
+   "path": "experiments/judge_disagreement/variants/deep_dfs/umap_adjacency.cpp"
+  },
+  "deep_dfs--multimap_adjacency": {
+   "path": "experiments/judge_disagreement/variants/deep_dfs/multimap_adjacency.cpp"
+  },
+  "deep_dfs--map_of_sets": {
+   "path": "experiments/judge_disagreement/variants/deep_dfs/map_of_sets.cpp"
+  }
+ },
+ "cases": {
+  "k-int": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "int",
+    "200000000"
+   ]
+  },
+  "k-branch": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "branch",
+    "200000000"
+   ]
+  },
+  "k-read-16k": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "read",
+    "16384",
+    "100000000"
+   ]
+  },
+  "k-read-512k": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "read",
+    "524288",
+    "40000000"
+   ]
+  },
+  "k-read-4m": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "read",
+    "4194304",
+    "30000000"
+   ]
+  },
+  "k-read-64m": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "read",
+    "67108864",
+    "20000000"
+   ]
+  },
+  "k-chase-16k": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "chase",
+    "16384",
+    "100000000"
+   ]
+  },
+  "k-chase-512k": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "chase",
+    "524288",
+    "30000000"
+   ]
+  },
+  "k-chase-4m": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "chase",
+    "4194304",
+    "8000000"
+   ]
+  },
+  "k-chase-64m": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "chase",
+    "67108864",
+    "2000000"
+   ]
+  },
+  "k-scan-512k": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "scan",
+    "524288",
+    "200000000"
+   ]
+  },
+  "k-scan-64m": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "scan",
+    "67108864",
+    "150000000"
+   ]
+  },
+  "k-store-512k": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "store",
+    "524288",
+    "40000000"
+   ]
+  },
+  "k-store-64m": {
+   "role": "calibration",
+   "binary": "kernels",
+   "args": [
+    "store",
+    "67108864",
+    "20000000"
+   ]
+  },
+  "cross-rep0-small": {
+   "role": "calibration",
+   "binary": "crossed",
+   "corpus": "experiments/crossed_memory_corpus/cross-rep0-small"
+  },
+  "cross-rep256-small": {
+   "role": "calibration",
+   "binary": "crossed",
+   "corpus": "experiments/crossed_memory_corpus/cross-rep256-small"
+  },
+  "cross-rep0-medium": {
+   "role": "calibration",
+   "binary": "crossed",
+   "corpus": "experiments/crossed_memory_corpus/cross-rep0-medium"
+  },
+  "cross-rep256-medium": {
+   "role": "calibration",
+   "binary": "crossed",
+   "corpus": "experiments/crossed_memory_corpus/cross-rep256-medium"
+  },
+  "cross-rep0-large": {
+   "role": "calibration",
+   "binary": "crossed",
+   "corpus": "experiments/crossed_memory_corpus/cross-rep0-large"
+  },
+  "cross-rep256-large": {
+   "role": "calibration",
+   "binary": "crossed",
+   "corpus": "experiments/crossed_memory_corpus/cross-rep256-large"
+  },
+  "sparse-rmq": {
+   "role": "calibration",
+   "binary": "sparse-rmq",
+   "corpus": "experiments/crossed_memory_corpus/sparse-rmq"
+  },
+  "histogram-stack": {
+   "role": "calibration",
+   "binary": "histogram-stack",
+   "corpus": "experiments/crossed_memory_corpus/histogram-stack"
+  },
+  "distinct-window": {
+   "role": "calibration",
+   "binary": "distinct-window",
+   "corpus": "experiments/crossed_memory_corpus/distinct-window"
+  },
+  "fenwick-prefix": {
+   "role": "calibration",
+   "binary": "fenwick-prefix",
+   "corpus": "experiments/memory_cost_holdout/fenwick-prefix"
+  },
+  "kmp-match": {
+   "role": "calibration",
+   "binary": "kmp-match",
+   "corpus": "experiments/memory_cost_holdout/kmp-match"
+  },
+  "union-find": {
+   "role": "calibration",
+   "binary": "union-find",
+   "corpus": "experiments/memory_cost_holdout/union-find"
+  },
+  "binary-gcd": {
+   "role": "calibration",
+   "binary": "binary-gcd",
+   "corpus": "experiments/branch_load_holdout/binary-gcd"
+  },
+  "stream-polynomial": {
+   "role": "calibration",
+   "binary": "stream-polynomial",
+   "corpus": "experiments/branch_load_holdout/stream-polynomial"
+  },
+  "linked-rank": {
+   "role": "calibration",
+   "binary": "linked-rank",
+   "corpus": "experiments/branch_load_holdout/linked-rank"
+  },
+  "contest-bfs_grid": {
+   "role": "calibration",
+   "binary": "contest-bfs_grid",
+   "problem": "bfs_grid",
+   "meta": {
+    "problem": "bfs_grid",
+    "variant": "intended"
+   }
+  },
+  "contest-dijkstra": {
+   "role": "calibration",
+   "binary": "contest-dijkstra",
+   "problem": "dijkstra",
+   "meta": {
+    "problem": "dijkstra",
+    "variant": "intended"
+   }
+  },
+  "contest-lcs": {
+   "role": "calibration",
+   "binary": "contest-lcs",
+   "problem": "lcs",
+   "meta": {
+    "problem": "lcs",
+    "variant": "intended"
+   }
+  },
+  "contest-fenwick": {
+   "role": "calibration",
+   "binary": "contest-fenwick",
+   "problem": "fenwick",
+   "meta": {
+    "problem": "fenwick",
+    "variant": "intended"
+   }
+  },
+  "contest-kmp": {
+   "role": "calibration",
+   "binary": "contest-kmp",
+   "problem": "kmp",
+   "meta": {
+    "problem": "kmp",
+    "variant": "intended"
+   }
+  },
+  "contest-sort_bs": {
+   "role": "calibration",
+   "binary": "contest-sort_bs",
+   "problem": "sort_bs",
+   "meta": {
+    "problem": "sort_bs",
+    "variant": "intended"
+   }
+  },
+  "contest-deep_dfs": {
+   "role": "calibration",
+   "binary": "contest-deep_dfs",
+   "problem": "deep_dfs",
+   "meta": {
+    "problem": "deep_dfs",
+    "variant": "intended"
+   }
+  },
+  "bfs_grid--queue_pair_vecvec": {
+   "role": "heldout",
+   "binary": "bfs_grid--queue_pair_vecvec",
+   "problem": "bfs_grid",
+   "meta": {
+    "problem": "bfs_grid",
+    "variant": "queue_pair_vecvec",
+    "too_slow": false,
+    "bound": "same as intended",
+    "description": "Textbook BFS with std::queue<pair<int,int>> (deque) and vector<vector<int>> dist; no div/mod per pop."
+   }
+  },
+  "bfs_grid--list_queue": {
+   "role": "heldout",
+   "binary": "bfs_grid--list_queue",
+   "problem": "bfs_grid",
+   "meta": {
+    "problem": "bfs_grid",
+    "variant": "list_queue",
+    "too_slow": false,
+    "bound": "allocation",
+    "description": "Queue is a std::list<pair<int,int>> (one heap node per cell) plus a bit-packed vector<vector<bool>> visited array."
+   }
+  },
+  "bfs_grid--pq_instead_of_bfs": {
+   "role": "heldout",
+   "binary": "bfs_grid--pq_instead_of_bfs",
+   "problem": "bfs_grid",
+   "meta": {
+    "problem": "bfs_grid",
+    "variant": "pq_instead_of_bfs",
+    "too_slow": false,
+    "bound": "branchy / heap",
+    "description": "Dijkstra with a binary heap of (dist,r,c) tuples on the unit-weight grid instead of a FIFO queue."
+   }
+  },
+  "bfs_grid--bitset_frontier_sweep": {
+   "role": "heldout",
+   "binary": "bfs_grid--bitset_frontier_sweep",
+   "problem": "bfs_grid",
+   "meta": {
+    "problem": "bfs_grid",
+    "variant": "bitset_frontier_sweep",
+    "too_slow": false,
+    "bound": "compute / sequential",
+    "description": "Bit-parallel BFS: every level recomputes the frontier for the whole grid with 64-bit word ops (~4000 full sweeps, no queue)."
+   }
+  },
+  "bfs_grid--unordered_map_dist": {
+   "role": "heldout",
+   "binary": "bfs_grid--unordered_map_dist",
+   "problem": "bfs_grid",
+   "meta": {
+    "problem": "bfs_grid",
+    "variant": "unordered_map_dist",
+    "too_slow": false,
+    "bound": "memory latency / hashing",
+    "description": "Distances in an unordered_map<int,int> keyed by cell id (count + operator[] per neighbour) instead of a flat array."
+   }
+  },
+  "bfs_grid--hash_seen_and_dist": {
+   "role": "heldout",
+   "binary": "bfs_grid--hash_seen_and_dist",
+   "problem": "bfs_grid",
+   "meta": {
+    "problem": "bfs_grid",
+    "variant": "hash_seen_and_dist",
+    "too_slow": false,
+    "bound": "memory latency / hashing",
+    "description": "Two hash tables: unordered_set<long long> visited plus unordered_map<long long,int> dist, 64-bit keys."
+   }
+  },
+  "bfs_grid--map_pair_dist": {
+   "role": "heldout",
+   "binary": "bfs_grid--map_pair_dist",
+   "problem": "bfs_grid",
+   "meta": {
+    "problem": "bfs_grid",
+    "variant": "map_pair_dist",
+    "too_slow": true,
+    "bound": "pointer chasing",
+    "description": "TOO SLOW: std::map<pair<int,int>,int> distances, a red-black-tree walk over millions of nodes per lookup."
+   }
+  },
+  "dijkstra--bellman_ford_edges": {
+   "role": "heldout",
+   "binary": "dijkstra--bellman_ford_edges",
+   "problem": "dijkstra",
+   "meta": {
+    "problem": "dijkstra",
+    "variant": "bellman_ford_edges",
+    "too_slow": false,
+    "bound": "sequential sweeps",
+    "description": "Bellman-Ford over the raw edge list with early exit: a few sequential passes over all edges with random dist reads/writes, no heap."
+   }
+  },
+  "dijkstra--vecvec_getchar_pq": {
+   "role": "heldout",
+   "binary": "dijkstra--vecvec_getchar_pq",
+   "problem": "dijkstra",
+   "meta": {
+    "problem": "dijkstra",
+    "variant": "vecvec_getchar_pq",
+    "too_slow": false,
+    "bound": "allocation / indirection",
+    "description": "Same lazy binary-heap Dijkstra, but vector<vector<pair>> adjacency grown by push_back, vector<bool> done, getchar_unlocked reader."
+   }
+  },
+  "dijkstra--set_decrease_key": {
+   "role": "heldout",
+   "binary": "dijkstra--set_decrease_key",
+   "problem": "dijkstra",
+   "meta": {
+    "problem": "dijkstra",
+    "variant": "set_decrease_key",
+    "too_slow": false,
+    "bound": "pointer chasing",
+    "description": "std::set<pair<ll,int>> as an indexed priority queue (erase + reinsert on improvement), vector<vector<pair>> adjacency."
+   }
+  },
+  "dijkstra--scanf_vecvec_pq": {
+   "role": "heldout",
+   "binary": "dijkstra--scanf_vecvec_pq",
+   "problem": "dijkstra",
+   "meta": {
+    "problem": "dijkstra",
+    "variant": "scanf_vecvec_pq",
+    "too_slow": false,
+    "bound": "I/O (libc parsing)",
+    "description": "Standard lazy binary-heap Dijkstra with scanf input for all 1.8M numbers and vector<vector<pair>> adjacency."
+   }
+  },
+  "dijkstra--cin_synced": {
+   "role": "heldout",
+   "binary": "dijkstra--cin_synced",
+   "problem": "dijkstra",
+   "meta": {
+    "problem": "dijkstra",
+    "variant": "cin_synced",
+    "too_slow": false,
+    "bound": "I/O (iostream synced with stdio)",
+    "description": "The intended CSR + heap algorithm, but cin left synchronised with stdio (no sync_with_stdio(false))."
+   }
+  },
+  "dijkstra--map_adj_umap_dist": {
+   "role": "heldout",
+   "binary": "dijkstra--map_adj_umap_dist",
+   "problem": "dijkstra",
+   "meta": {
+    "problem": "dijkstra",
+    "variant": "map_adj_umap_dist",
+    "too_slow": false,
+    "bound": "pointer chasing / hashing",
+    "description": "std::map<int,vector<pair>> adjacency plus unordered_map dist and unordered_set done (tree + hash lookups instead of arrays)."
+   }
+  },
+  "dijkstra--maps_everywhere_synced": {
+   "role": "heldout",
+   "binary": "dijkstra--maps_everywhere_synced",
+   "problem": "dijkstra",
+   "meta": {
+    "problem": "dijkstra",
+    "variant": "maps_everywhere_synced",
+    "too_slow": true,
+    "bound": "pointer chasing + synced I/O",
+    "description": "TOO SLOW: std::map adjacency, std::map dist, std::set done, std::set as the PQ, and cin synced with stdio."
+   }
+  },
+  "lcs--one_row_branchless": {
+   "role": "heldout",
+   "binary": "lcs--one_row_branchless",
+   "problem": "lcs",
+   "meta": {
+    "problem": "lcs",
+    "variant": "one_row_branchless",
+    "too_slow": false,
+    "bound": "compute",
+    "description": "Single DP row updated in place with a saved diagonal and branch-free max, scanf into char buffers."
+   }
+  },
+  "lcs--full_table_short": {
+   "role": "heldout",
+   "binary": "lcs--full_table_short",
+   "problem": "lcs",
+   "meta": {
+    "problem": "lcs",
+    "variant": "full_table_short",
+    "too_slow": false,
+    "bound": "memory bandwidth",
+    "description": "Full (n+1)x(m+1) uint16_t table in one flat 128 MB array instead of two rolling rows (streaming writes)."
+   }
+  },
+  "lcs--column_major_table": {
+   "role": "heldout",
+   "binary": "lcs--column_major_table",
+   "problem": "lcs",
+   "meta": {
+    "problem": "lcs",
+    "variant": "column_major_table",
+    "too_slow": false,
+    "bound": "TLB / cache-hostile stride",
+    "description": "Full vector<vector<uint16_t>> table filled column by column: the inner loop strides across 8000 rows (a new page per access)."
+   }
+  },
+  "lcs--memo_recursion": {
+   "role": "heldout",
+   "binary": "lcs--memo_recursion",
+   "problem": "lcs",
+   "meta": {
+    "problem": "lcs",
+    "variant": "memo_recursion",
+    "too_slow": false,
+    "bound": "recursion / call overhead",
+    "description": "Top-down memoised recursion lcs(i,j) over a vector<vector<short>> memo (recursion depth up to n+m)."
+   }
+  },
+  "lcs--hunt_szymanski": {
+   "role": "heldout",
+   "binary": "lcs--hunt_szymanski",
+   "problem": "lcs",
+   "meta": {
+    "problem": "lcs",
+    "variant": "hunt_szymanski",
+    "too_slow": false,
+    "bound": "branchy binary search",
+    "description": "Hunt-Szymanski: LIS over all ~16M matching (i,j) pairs, one lower_bound on the threshold vector per pair."
+   }
+  },
+  "lcs--lis_of_sorted_pairs": {
+   "role": "heldout",
+   "binary": "lcs--lis_of_sorted_pairs",
+   "problem": "lcs",
+   "meta": {
+    "problem": "lcs",
+    "variant": "lis_of_sorted_pairs",
+    "too_slow": false,
+    "bound": "sort / memory (128-190 MB)",
+    "description": "Materialises all ~16M matching pairs in a vector, std::sorts them by (i asc, j desc), then patience-sorting LIS."
+   }
+  },
+  "lcs--hash_rows_copied": {
+   "role": "heldout",
+   "binary": "lcs--hash_rows_copied",
+   "problem": "lcs",
+   "meta": {
+    "problem": "lcs",
+    "variant": "hash_rows_copied",
+    "too_slow": true,
+    "bound": "hashing + allocation",
+    "description": "TOO SLOW: each DP row is a fresh unordered_map<int,int> 'sparse array', copied into prev (prev = cur) every row."
+   }
+  },
+  "fenwick--segtree_bottom_up": {
+   "role": "heldout",
+   "binary": "fenwick--segtree_bottom_up",
+   "problem": "fenwick",
+   "meta": {
+    "problem": "fenwick",
+    "variant": "segtree_bottom_up",
+    "too_slow": false,
+    "bound": "same as intended",
+    "description": "Iterative bottom-up segment tree (2n array) with an fread reader and a hand-rolled integer writer."
+   }
+  },
+  "fenwick--range_bit_template": {
+   "role": "heldout",
+   "binary": "fenwick--range_bit_template",
+   "problem": "fenwick",
+   "meta": {
+    "problem": "fenwick",
+    "variant": "range_bit_template",
+    "too_slow": false,
+    "bound": "extra work (constant factor)",
+    "description": "Generic range-add/range-sum two-BIT template used for point updates: O(n log n) build, both trees touched per operation."
+   }
+  },
+  "fenwick--sqrt_decomposition": {
+   "role": "heldout",
+   "binary": "fenwick--sqrt_decomposition",
+   "problem": "fenwick",
+   "meta": {
+    "problem": "fenwick",
+    "variant": "sqrt_decomposition",
+    "too_slow": false,
+    "bound": "worse complexity, sequential",
+    "description": "Square-root decomposition: O(sqrt n) per query summing partial blocks element-wise and whole blocks via block sums."
+   }
+  },
+  "fenwick--fenwick_cin_endl": {
+   "role": "heldout",
+   "binary": "fenwick--fenwick_cin_endl",
+   "problem": "fenwick",
+   "meta": {
+    "problem": "fenwick",
+    "variant": "fenwick_cin_endl",
+    "too_slow": false,
+    "bound": "syscalls (flush per line)",
+    "description": "The intended Fenwick tree, but cin/cout (sync off) with endl after each answer: one write(2) per query."
+   }
+  },
+  "fenwick--segtree_recursive": {
+   "role": "heldout",
+   "binary": "fenwick--segtree_recursive",
+   "problem": "fenwick",
+   "meta": {
+    "problem": "fenwick",
+    "variant": "segtree_recursive",
+    "too_slow": false,
+    "bound": "recursion + scanf/printf",
+    "description": "Classic recursive top-down segment tree (4n array) with scanf input and a printf per answer."
+   }
+  },
+  "fenwick--pointer_segtree": {
+   "role": "heldout",
+   "binary": "fenwick--pointer_segtree",
+   "problem": "fenwick",
+   "meta": {
+    "problem": "fenwick",
+    "variant": "pointer_segtree",
+    "too_slow": false,
+    "bound": "pointer chasing / allocation",
+    "description": "Segment tree of heap-allocated nodes linked by pointers (new per node), cin input."
+   }
+  },
+  "fenwick--map_fenwick": {
+   "role": "heldout",
+   "binary": "fenwick--map_fenwick",
+   "problem": "fenwick",
+   "meta": {
+    "problem": "fenwick",
+    "variant": "map_fenwick",
+    "too_slow": true,
+    "bound": "pointer chasing",
+    "description": "TOO SLOW: the intended Fenwick tree stored in a std::map<int,long long> used as a sparse array."
+   }
+  },
+  "kmp--shift_and_bitap": {
+   "role": "heldout",
+   "binary": "kmp--shift_and_bitap",
+   "problem": "kmp",
+   "meta": {
+    "problem": "kmp",
+    "variant": "shift_and_bitap",
+    "too_slow": false,
+    "bound": "compute / branch-free",
+    "description": "Shift-And (bitap): one shift/OR/AND per text character on a 64-bit state, KMP fallback for patterns longer than 64."
+   }
+  },
+  "kmp--kmp_automaton": {
+   "role": "heldout",
+   "binary": "kmp--kmp_automaton",
+   "problem": "kmp",
+   "meta": {
+    "problem": "kmp",
+    "variant": "kmp_automaton",
+    "too_slow": false,
+    "bound": "load-latency chain",
+    "description": "KMP compiled into a 256-column DFA: one dependent table load per character (no fallback loop); fread input."
+   }
+  },
+  "kmp--rolling_hash": {
+   "role": "heldout",
+   "binary": "kmp--rolling_hash",
+   "problem": "kmp",
+   "meta": {
+    "problem": "kmp",
+    "variant": "rolling_hash",
+    "too_slow": false,
+    "bound": "compute (128-bit multiply)",
+    "description": "Rabin-Karp with a hash modulo 2^61-1 (128-bit multiplies), every hash hit confirmed with memcmp."
+   }
+  },
+  "kmp--z_function": {
+   "role": "heldout",
+   "binary": "kmp--z_function",
+   "problem": "kmp",
+   "meta": {
+    "problem": "kmp",
+    "variant": "z_function",
+    "too_slow": false,
+    "bound": "memory bandwidth (80 MB array)",
+    "description": "Z-function over pattern + '#' + text: a 20M-entry int array and a second pass to collect matches."
+   }
+  },
+  "kmp--kmp_cin_synced": {
+   "role": "heldout",
+   "binary": "kmp--kmp_cin_synced",
+   "problem": "kmp",
+   "meta": {
+    "problem": "kmp",
+    "variant": "kmp_cin_synced",
+    "too_slow": false,
+    "bound": "I/O (iostream synced with stdio)",
+    "description": "The intended KMP, but cin left synchronised with stdio, so the 20 MB text is read through stdio char by char."
+   }
+  },
+  "kmp--substr_compare": {
+   "role": "heldout",
+   "binary": "kmp--substr_compare",
+   "problem": "kmp",
+   "meta": {
+    "problem": "kmp",
+    "variant": "substr_compare",
+    "too_slow": false,
+    "bound": "allocation",
+    "description": "Brute force with t.substr(i, m) == p at every position: one heap-allocated 24-char temporary per text position."
+   }
+  },
+  "kmp--hash_from_scratch": {
+   "role": "heldout",
+   "binary": "kmp--hash_from_scratch",
+   "problem": "kmp",
+   "meta": {
+    "problem": "kmp",
+    "variant": "hash_from_scratch",
+    "too_slow": true,
+    "bound": "compute (O(n*m) modmul)",
+    "description": "TOO SLOW: 'Rabin-Karp' recomputing each window's hash mod 1e9+7 from scratch (O(n*m)), hits verified exactly."
+   }
+  },
+  "sort_bs--offline_two_pointer": {
+   "role": "heldout",
+   "binary": "sort_bs--offline_two_pointer",
+   "problem": "sort_bs",
+   "meta": {
+    "problem": "sort_bs",
+    "variant": "offline_two_pointer",
+    "too_slow": false,
+    "bound": "same as intended (sort-heavy)",
+    "description": "Offline: sort values and (query, index) pairs, two-pointer sweep, answers printed in input order with printf."
+   }
+  },
+  "sort_bs--merge_sort_vectors": {
+   "role": "heldout",
+   "binary": "sort_bs--merge_sort_vectors",
+   "problem": "sort_bs",
+   "meta": {
+    "problem": "sort_bs",
+    "variant": "merge_sort_vectors",
+    "too_slow": false,
+    "bound": "allocation",
+    "description": "Hand-written recursive merge sort copying both halves into fresh vectors at every level, hand-written binary search, printf."
+   }
+  },
+  "sort_bs--list_sort": {
+   "role": "heldout",
+   "binary": "sort_bs--list_sort",
+   "problem": "sort_bs",
+   "meta": {
+    "problem": "sort_bs",
+    "variant": "list_sort",
+    "too_slow": false,
+    "bound": "pointer chasing",
+    "description": "Values in a std::list sorted with list::sort (merge sort over scattered nodes), copied to a vector for upper_bound."
+   }
+  },
+  "sort_bs--cin_endl": {
+   "role": "heldout",
+   "binary": "sort_bs--cin_endl",
+   "problem": "sort_bs",
+   "meta": {
+    "problem": "sort_bs",
+    "variant": "cin_endl",
+    "too_slow": false,
+    "bound": "syscalls (flush per line)",
+    "description": "Same sort + upper_bound with cin/cout (sync off) and endl after every answer: one write(2) per query."
+   }
+  },
+  "sort_bs--cin_synced": {
+   "role": "heldout",
+   "binary": "sort_bs--cin_synced",
+   "problem": "sort_bs",
+   "meta": {
+    "problem": "sort_bs",
+    "variant": "cin_synced",
+    "too_slow": false,
+    "bound": "I/O (iostream synced with stdio)",
+    "description": "Same sort + upper_bound with cin/cout left synchronised with stdio ('\\n', no endl)."
+   }
+  },
+  "sort_bs--pbds_order_tree": {
+   "role": "heldout",
+   "binary": "sort_bs--pbds_order_tree",
+   "problem": "sort_bs",
+   "meta": {
+    "problem": "sort_bs",
+    "variant": "pbds_order_tree",
+    "too_slow": false,
+    "bound": "pointer chasing",
+    "description": "__gnu_pbds order-statistics red-black tree over (value, index) pairs; order_of_key per query."
+   }
+  },
+  "sort_bs--sqrt_sorted_blocks": {
+   "role": "heldout",
+   "binary": "sort_bs--sqrt_sorted_blocks",
+   "problem": "sort_bs",
+   "meta": {
+    "problem": "sort_bs",
+    "variant": "sqrt_sorted_blocks",
+    "too_slow": true,
+    "bound": "worse complexity, branchy",
+    "description": "TOO SLOW: sqrt-decomposition template with sorted blocks of size sqrt(n log n); each query binary-searches all ~160 blocks."
+   }
+  },
+  "deep_dfs--bfs_order_reverse": {
+   "role": "heldout",
+   "binary": "deep_dfs--bfs_order_reverse",
+   "problem": "deep_dfs",
+   "meta": {
+    "problem": "deep_dfs",
+    "variant": "bfs_order_reverse",
+    "too_slow": false,
+    "bound": "memory latency, no recursion",
+    "description": "No DFS: BFS from the root records order/parents/depths, subtree sizes accumulated over the reversed order."
+   }
+  },
+  "deep_dfs--stack_pairs_vecvec": {
+   "role": "heldout",
+   "binary": "deep_dfs--stack_pairs_vecvec",
+   "problem": "deep_dfs",
+   "meta": {
+    "problem": "deep_dfs",
+    "variant": "stack_pairs_vecvec",
+    "too_slow": false,
+    "bound": "explicit stack + allocation",
+    "description": "Iterative preorder with std::stack<pair<int,int>> over vector<vector<int>> adjacency, sizes summed in reverse preorder."
+   }
+  },
+  "deep_dfs--vecvec_recursive_scanf": {
+   "role": "heldout",
+   "binary": "deep_dfs--vecvec_recursive_scanf",
+   "problem": "deep_dfs",
+   "meta": {
+    "problem": "deep_dfs",
+    "variant": "vecvec_recursive_scanf",
+    "too_slow": false,
+    "bound": "recursion + scanf",
+    "description": "Recursive DFS (depth 1e6) over vector<vector<int>> adjacency with scanf input."
+   }
+  },
+  "deep_dfs--set_adjacency": {
+   "role": "heldout",
+   "binary": "deep_dfs--set_adjacency",
+   "problem": "deep_dfs",
+   "meta": {
+    "problem": "deep_dfs",
+    "variant": "set_adjacency",
+    "too_slow": false,
+    "bound": "pointer chasing / allocation",
+    "description": "Recursive DFS over vector<set<int>> adjacency: every neighbour is a separately allocated tree node."
+   }
+  },
+  "deep_dfs--umap_adjacency": {
+   "role": "heldout",
+   "binary": "deep_dfs--umap_adjacency",
+   "problem": "deep_dfs",
+   "meta": {
+    "problem": "deep_dfs",
+    "variant": "umap_adjacency",
+    "too_slow": false,
+    "bound": "hashing / allocation",
+    "description": "Recursive DFS over unordered_map<int, vector<int>> adjacency: a hash lookup plus a heap vector per vertex."
+   }
+  },
+  "deep_dfs--multimap_adjacency": {
+   "role": "heldout",
+   "binary": "deep_dfs--multimap_adjacency",
+   "problem": "deep_dfs",
+   "meta": {
+    "problem": "deep_dfs",
+    "variant": "multimap_adjacency",
+    "too_slow": false,
+    "bound": "pointer chasing",
+    "description": "Both edge directions in one std::multimap<int,int>; recursive DFS enumerates neighbours with equal_range (tree search per vertex)."
+   }
+  },
+  "deep_dfs--map_of_sets": {
+   "role": "heldout",
+   "binary": "deep_dfs--map_of_sets",
+   "problem": "deep_dfs",
+   "meta": {
+    "problem": "deep_dfs",
+    "variant": "map_of_sets",
+    "too_slow": true,
+    "bound": "pointer chasing + synced I/O",
+    "description": "TOO SLOW: 'graph as a map of sets' (map<int,set<int>>), std::map of subtree sizes, recursive DFS, cin synced with stdio."
+   }
+  }
+ }
+}

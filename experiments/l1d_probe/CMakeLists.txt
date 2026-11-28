@@ -27,6 +27,13 @@ if(DURANTE_TEST_DRRUN)
       --drrun ${DURANTE_TEST_DRRUN} --client $<TARGET_FILE:durante_l1d>
       --program $<TARGET_FILE:l1d_probe_control>)
 
+  add_executable(l1d_dependency_control dependency_control.S)
+  target_link_options(l1d_dependency_control PRIVATE -nostdlib -static -no-pie -Wl,--build-id=none)
+  add_test(NAME l1d_dependency_control
+    COMMAND ${Python3_EXECUTABLE} -B ${CMAKE_CURRENT_SOURCE_DIR}/check_control.py
+      --drrun ${DURANTE_TEST_DRRUN} --client $<TARGET_FILE:durante_l1d>
+      --program $<TARGET_FILE:l1d_dependency_control> --dependency)
+
   add_executable(l1d_clock_control clock_control.S)
   target_link_options(l1d_clock_control PRIVATE -nostdlib -static -no-pie -Wl,--build-id=none)
   add_test(NAME l1d_clock_control
