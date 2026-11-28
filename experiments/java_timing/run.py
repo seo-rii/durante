@@ -52,6 +52,7 @@ def provenance(args, configs):
             "sdk": str(sdk),
             "libdynamorio_release_sha256": sha256(sdk / "lib64/release/libdynamorio.so"),
             "runtime_manifest_sha256": sha256(manifest) if manifest.is_file() else None,
+            "runtime_inputs": (json.loads(manifest.read_text()).get("inputs") if manifest.is_file() else None),
             "client": str(client), "client_sha256": sha256(client)}
     git = subprocess.run(["git", "-C", str(ROOT), "rev-parse", "HEAD"], capture_output=True, text=True)
     return {"command": sys.argv, "git_head": git.stdout.strip(), "configs": files,
