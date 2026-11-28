@@ -1,0 +1,8 @@
+{
+  "rounds": ["native", "full", "reduced", "native", "native", "reduced", "full", "native", "native"],
+  "cpu": 1,
+  "cpuid": "x86-64-v2",
+  "features": ["latency_x16", "rep_bytes", "l1d_dependent", "dependent_2m", "stream_2m"],
+  "accuracy": "On each fresh boot require all original seven ELFs to return the registered output. Compare all retained integer values and skipped-operand counts over both full and both reduced probes per submission. Pool both boots separately. Score the reduced client with exactly those five original Dijkstra ML4 coefficients and compare at 65 ms against all native timings, using the independent priority-queue reference only. Equality passes; a range crossing the limit is indeterminate.",
+  "cost": "For each program report measured process CPU (user plus system), speedup as median full divided by median reduced, and the entire range of observed full/reduced pairwise ratios. Also report overhead relative to the native median. The repeated boot reverses program order and swaps full and reduced rounds. Do not infer adoption from a speedup or fit to these timings."
+}
