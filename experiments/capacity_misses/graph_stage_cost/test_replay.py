@@ -2,6 +2,7 @@ import json
 import tarfile
 import unittest
 
+import graph_evidence
 import replay
 
 
@@ -21,13 +22,13 @@ class StageStudyTests(unittest.TestCase):
             process = archive.extractfile(f"output/records-{i:03d}/process-{pid}.jsonl").read()
             full = archive.extractfile(f"output/probe-{i:03d}.txt").read()
         l1 = full.splitlines(keepends=True)[0]
-        baseline = replay.decode(pid, "outer", process, full)
-        shared = replay.decode(pid, "l1d", process, l1)
+        baseline = graph_evidence.decode(pid, "outer", process, full)
+        shared = graph_evidence.decode(pid, "l1d", process, l1)
         self.assertEqual(shared, {k:v for k,v in baseline.items() if k != "outer"})
         with self.assertRaisesRegex(ValueError, "different cache mode"):
-            replay.decode(pid, "outer", process, l1)
+            graph_evidence.decode(pid, "outer", process, l1)
         with self.assertRaisesRegex(ValueError, "incorrect latency capability"):
-            replay.decode(pid, "rep", process, b"")
+            graph_evidence.decode(pid, "rep", process, b"")
 
     def test_signed_differences_and_full_cross_sample_range(self):
         cpus = {"native": [10, 12], "rep": [30, 32], "latency": [25, 29],
