@@ -51,7 +51,9 @@ static uint32_t DURANTE_TEST_BLOCK_LATENCY_BOUND(void *drcontext, void *tag, ins
 #include <linux/mman.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
+#include <signal.h>
 #include <sys/syscall.h>
+#include <sys/uio.h>
 #include <unistd.h>
 #ifndef X86_64
 #error "durante supports Linux x86-64 only"
@@ -128,6 +130,15 @@ typedef struct {
    * the two registers it keeps here while that stack is in use. */
   byte *boundary_stack, *boundary_stack_top;
   reg_t boundary_rsp;
+  /* -protect_meter syscall state (meter_protect.h): a parameter replaced by a
+   * validated copy for the current syscall, and the copies themselves. */
+  int protect_param;
+  reg_t protect_param_value, protect_param_saved;
+  bool protect_open, protect_map;
+  int protect_open_flags;
+  struct iovec protect_iov[64];
+  stack_t protect_stack;
+  uint64_t protect_clone_args[16];
 } thread_data_t;
 /* Flat and live entries address these fields with 8-bit displacements. */
 _Static_assert(offsetof(thread_data_t, entry_base) + 8 <= 128 &&
@@ -144,6 +155,8 @@ static uint raw_tls_offset;
  * exactly this client's sequences; the runtime's shared spill slots are also
  * used by its mangling. */
 enum { RAW_TLS_STATE, RAW_TLS_SPILL_RCX, RAW_TLS_SPILL_R11, RAW_TLS_WRITE, RAW_TLS_SLOTS };
+/* -protect_meter adds one slot: set by a failed inline store check. */
+enum { RAW_TLS_VIOLATION = RAW_TLS_SLOTS, RAW_TLS_PROTECT_SLOTS };
 /* Without a live clock nothing is published between syscalls. Every block and
  * store then uses flag-free inline accounting, including shared libraries and
  * generated code. Restart validation moves from block entry to the callbacks
@@ -160,6 +173,9 @@ static uint64_t total_rep_movs_bytes, total_rep_stos_bytes,
     total_rep_movs_entries, total_rep_stos_entries;
 static bool rep_bytes_enabled, accounting_error, app_exit_seen, report_written;
 static bool deny_avx, deny_simd;
+/* -protect_meter: isolate the meter from the application (meter_protect.h). */
+static bool protect_meter;
+static uint64_t live_dev, live_ino;
 static bool latency_bound_enabled, memory_operand_bytes_enabled;
 static uint64_t total_latency_bound_x16, total_memory_operand_bytes;
 static app_pc cpu_policy_exit_pc;
@@ -307,6 +323,8 @@ static void open_live_work(const char *path) {
   if (fd < 0 || fstat(fd, &st) != 0 || !S_ISREG(st.st_mode) ||
       st.st_nlink != 1 || st.st_size != (off_t)sizeof(*live_work))
     fail("invalid live work file");
+  live_dev = st.st_dev;
+  live_ino = st.st_ino;
   size_t size = sizeof(*live_work);
   void *mapping = dr_map_file(fd, &size, 0, NULL, DR_MEMPROT_READ | DR_MEMPROT_WRITE, 0);
   close(fd);
@@ -548,10 +566,11 @@ static void start_record(thread_data_t *d, const char *origin,
               ",\"origin\":\"%s\",\"parent_pid\":%d,"
               "\"parent_segment\":\"%s\",\"rep_bytes_enabled\":%s,"
               "\"rep_breakdown_version\":1,\"sdk_"
-              "version\":\"11.3.0\"%s%s%s%s",
+              "version\":\"11.3.0\"%s%s%s%s%s",
               origin, (int)parent, parent_segment,
               rep_bytes_enabled ? "true" : "false", policy_fields, cpuid_fields,
-              latency_fields, memory_operand_bytes_enabled ? ",\"memory_operand_bytes_version\":1" : "");
+              latency_fields, memory_operand_bytes_enabled ? ",\"memory_operand_bytes_version\":1" : "",
+              protect_meter ? ",\"meter_protection_version\":1" : "");
   route_event(d, "start", fields);
 }
 static void open_stream(const char *origin, process_id_t parent,
@@ -778,6 +797,8 @@ SCALAR static void clear_write_checkpoint(thread_data_t *d) {
 
 enum { BOUNDARY_STACK_BYTES = 16 * 1024 };
 static void set_boundary_state(void *ctx, thread_data_t *d);
+static void protect_check_thread(thread_data_t *d);
+static void integrity_violation(void *ctx, const char *vector);
 
 static void free_thread_state(void *ctx, thread_data_t *d) {
   /* The runtime must stop reading boundary_pc before it is freed. */
@@ -800,8 +821,10 @@ static void thread_init(void *ctx) {
   d->child_file = -1;
   if (!drmgr_set_tls_field(ctx, tls_index, d))
     fail("TLS init failed");
+  d->protect_param = -1;
   set_raw_accounting_state(d);
   set_boundary_state(ctx, d);
+  protect_check_thread(d);
   set_fast_until(d, 0);
   process_id_t process = dr_get_process_id();
   if (process != owner_pid) {
@@ -1056,6 +1079,8 @@ static void cpu_policy_exit(void) {
  * the child's client running. Measurement-only mode preserves the instruction
  * but invalidates the partial tree. CPU policy mode stops before execution. */
 static void unsupported_syscall_abi(void) {
+  if (protect_meter)
+    integrity_violation(dr_get_current_drcontext(), "syscall_abi");
   __atomic_store_n(&static_text_revoked, true, __ATOMIC_RELEASE);
   invalidate_live_work();
   if (deny_avx || deny_simd) {
@@ -1155,6 +1180,8 @@ static opnd_t raw_slot(uint slot) {
 static opnd_t state_field(size_t offset) {
   return opnd_create_base_disp(DR_REG_R11, DR_REG_NULL, 0, (int)offset, OPSZ_8);
 }
+
+#include "meter_protect.h"
 
 /* MOV, MOVZX, LEA and these branches preserve all arithmetic flags. The
  * scratch registers are restored before the first application instruction.
@@ -2103,7 +2130,7 @@ static bool select_inline_block(void *ctx, instrlist_t *bb, bool translating,
 static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
                                         instrlist_t *bb, instr_t *where,
                                         bool first_in_block, bool translating,
-                                        void *user_data) {
+                                        void *user_data, protect_block_t *protect) {
   (void)tag;
   dr_emit_flags_t flags = DR_EMIT_DEFAULT;
 #ifdef DURANTE_TEST_COUNT_LOCATIONS
@@ -2237,6 +2264,13 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
                               OPND_CREATE_INT32(DR_REG_NULL));
     }
   }
+  /* Last, so the store check is the final instrumentation before the store. */
+  if (protect_meter) {
+    if (instr_is_app(where))
+      protect_instrument(drcontext, bb, where, translating, protect);
+    else if (!instr_is_label(where))
+      protect_forget_all(protect);
+  }
   return flags;
 }
 
@@ -2262,12 +2296,14 @@ static dr_emit_flags_t durante_bb_event(void *drcontext, void *tag, instrlist_t 
     flags |= durante_cpuid_app2app(drcontext, tag, bb, for_trace, translating);
   void *user_data = NULL;
   flags |= analyze_block(drcontext, tag, bb, for_trace, translating, &user_data);
+  protect_block_t protect;
+  protect_forget_all(&protect);
   instr_t *first = instrlist_first(bb), *next;
   for (instr_t *where = first; where != NULL; where = next) {
     next = instr_get_next(where);
     instrlist_set_auto_predicate(bb, instr_get_predicate(where));
     flags |= instrument_block(drcontext, tag, bb, where, where == first, translating,
-                              user_data);
+                              user_data, &protect);
     instrlist_set_auto_predicate(bb, DR_PRED_NONE);
   }
   return flags;
@@ -2287,13 +2323,13 @@ static bool lifecycle_syscall(int number) {
 }
 static bool filter_syscall(void *ctx, int number) {
   (void)ctx;
-  return live_work || lifecycle_syscall(number);
+  return protect_meter || live_work || lifecycle_syscall(number);
 }
 /* Only the ordinary static-image live clock initializes static_text_end. */
 static bool static_input_syscall(int number) {
   return static_text_end && (number == SYS_read || number == SYS_readv);
 }
-static bool pre_syscall(void *ctx, int number) {
+static bool pre_syscall_body(void *ctx, int number) {
   if (static_text_end && !__atomic_load_n(&static_text_revoked, __ATOMIC_ACQUIRE) &&
       (x32_syscall(number) || changes_static_text(ctx, number)))
     __atomic_store_n(&static_text_revoked, true, __ATOMIC_RELEASE);
@@ -2363,7 +2399,7 @@ static bool pre_syscall(void *ctx, int number) {
 #endif
   if (spawn && (flags & CLONE_FILES_FLAG))
     unsupported = true;
-  if ((deny_avx || deny_simd) && unsupported) {
+  if ((deny_avx || deny_simd || protect_meter) && unsupported) {
     dr_syscall_set_result(ctx, (reg_t)-EPERM);
     return false;
   }
@@ -2404,7 +2440,33 @@ static bool pre_syscall(void *ctx, int number) {
   dr_mutex_unlock(state_lock);
   return true;
 }
+/* Meter protection validates (and may refuse) the call before the lifecycle
+ * bookkeeping, and replaces a parameter with its validated copy only once the
+ * call will run. */
+static bool pre_syscall(void *ctx, int number) {
+  thread_data_t *d = protect_meter ? thread_state(ctx) : NULL;
+  if (protect_meter) {
+    if (!d)
+      fail("syscall without TLS");
+    if (!protect_pre_syscall(ctx, number, d))
+      return false;
+  }
+  bool run = pre_syscall_body(ctx, number);
+  if (d) {
+    if (run)
+      protect_apply_rewrite(ctx, d);
+    else
+      d->protect_param = -1;
+  }
+  return run;
+}
 static void post_syscall(void *ctx, int number) {
+  if (protect_meter) {
+    thread_data_t *protected_state = thread_state(ctx);
+    if (!protected_state)
+      fail("post syscall without TLS");
+    protect_post_syscall(ctx, protected_state);
+  }
   bool ordinary = live_work && !lifecycle_syscall(number);
   if (ordinary && !static_input_syscall(number))
     return;
@@ -2439,10 +2501,11 @@ static void post_syscall(void *ctx, int number) {
   dr_mutex_unlock(state_lock);
 }
 static dr_signal_action_t signal_event(void *ctx, dr_siginfo_t *info) {
-  (void)info;
   if (live_work_require_eligible)
     invalidate_live_work();
   thread_data_t *d = thread_state(ctx);
+  if (protect_meter && d)
+    protect_signal(ctx, d, info);
   if (!d || d->signals == UINT64_MAX)
     fail("signal accounting overflow");
   ++d->signals;
@@ -2478,6 +2541,8 @@ static void fork_init(void *ctx) {
   byte *stack = d->boundary_stack; /* The child inherits the thread's allocations. */
   memset(d, 0, sizeof(*d));
   d->boundary_stack = stack;
+  d->protect_param = -1;
+  d->child_file = -1;
   set_raw_accounting_state(d);
   clear_write_checkpoint(d); /* The slot still holds the parent's word. */
   set_boundary_state(ctx, d);
@@ -2517,7 +2582,7 @@ static void process_exit(void) {
   dr_unregister_durante_code_replay_event(code_replay);
   if (raw_tls_enabled) {
     drmgr_unregister_restore_state_ex_event(restore_state);
-    dr_raw_tls_cfree(raw_tls_offset, RAW_TLS_SLOTS);
+    dr_raw_tls_cfree(raw_tls_offset, protect_meter ? RAW_TLS_PROTECT_SLOTS : RAW_TLS_SLOTS);
   }
   drmgr_unregister_tls_field(tls_index);
 #ifdef DURANTE_L1D_PROBE
@@ -2566,7 +2631,7 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
     fail("usage: -c libdurante.so -outdir NEW_PRIVATE_DIRECTORY [-rep_bytes] "
          "[-disallow_cpu_feature avx|simd] [-cpuid_profile x86-64-v1|x86-64-v2] "
          "[-latency_bound [-memory_operand_bytes]] "
-         "[-live_work_v1 OWNER_FILE [-live_work_require_eligible]] -- program");
+         "[-live_work_v1 OWNER_FILE [-live_work_require_eligible]] [-protect_meter] -- program");
   if (strlen(argv[2]) >= sizeof(outdir) || argv[2][0] != '/')
     fail("report directory must be absolute");
   memcpy(outdir, argv[2], strlen(argv[2]) + 1);
@@ -2589,6 +2654,8 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
       latency_bound_enabled = true;
     } else if (strcmp(argv[i], "-memory_operand_bytes") == 0 && !memory_operand_bytes_enabled) {
       memory_operand_bytes_enabled = true;
+    } else if (strcmp(argv[i], "-protect_meter") == 0 && !protect_meter) {
+      protect_meter = true;
     } else if (strcmp(argv[i], "-disallow_cpu_feature") == 0 && i + 1 < argc) {
       const char *feature = argv[++i];
       if (strcmp(feature, "avx") == 0 && !deny_avx)
@@ -2614,6 +2681,11 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
 #endif
   if (live_work_require_eligible && !live_path)
     fail("-live_work_require_eligible requires -live_work_v1");
+  if (protect_meter) {
+    if (memory_operand_bytes_enabled)
+      fail("-protect_meter is incompatible with -memory_operand_bytes");
+    protect_init();
+  }
   if (live_path) {
     if (!rep_bytes_enabled)
       fail("live work requires -rep_bytes");
@@ -2659,8 +2731,11 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
   const bool flat_candidate = !memory_operand_bytes_enabled && !cache_probe_enabled();
 #endif
   raw_tls_enabled = (static_text_end != 0 || flat_candidate) &&
-                    dr_raw_tls_calloc(&raw_tls_register, &raw_tls_offset, RAW_TLS_SLOTS, 0);
+                    dr_raw_tls_calloc(&raw_tls_register, &raw_tls_offset,
+                                      protect_meter ? RAW_TLS_PROTECT_SLOTS : RAW_TLS_SLOTS, 0);
   flat_inline = flat_candidate && raw_tls_enabled;
+  if (protect_meter && !flat_inline)
+    fail("-protect_meter requires the flat inline client");
   tls_index = drmgr_register_tls_field();
   cpuid_rewrite = cpuid_profile != DURANTE_CPUID_NONE;
   if (!state_lock || tls_index < 0 ||
@@ -2679,6 +2754,8 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
   dr_register_fork_init_event(fork_init);
   dr_register_pre_detach_event(pre_detach);
   dr_register_exit_event(process_exit);
+  if (protect_meter)
+    protect_audit_layout();
   if (live_work)
     __atomic_store_n(&live_work->ready, 1, __ATOMIC_RELEASE);
 }

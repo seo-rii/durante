@@ -22,10 +22,55 @@ descriptors prevent ordinary descriptor cleanup from breaking the client; they
 do not make its memory or files inaccessible to an adversarial application.
 
 This cannot be fixed by schema validation, a private temporary directory,
-checksums, or a signing key stored in the same address space. Trusted charging
-needs a measurement backend outside the submission's mutable trust domain.
-Until that exists, do not use these counts, a weighted conversion, or a normal
-CLI exit status to authorize AC/TLE, billing, or security decisions.
+checksums, or a signing key stored in the same address space. A fully trusted
+charge still needs a measurement backend outside the submission's mutable trust
+domain. Until that exists, do not use these counts, a weighted conversion, or a
+normal CLI exit status to authorize AC/TLE, billing, or security decisions
+unless the optional in-process isolation below is enabled and its receipt is
+validated.
+
+## Optional in-process meter isolation
+
+`durante run --protect-meter` (client `-protect_meter`) enables software fault
+isolation of the meter against the measured application, without a hardware PMU
+or an out-of-process backend. A report then carries
+`security.counter_integrity: protected_in_process_v1` and a
+`meter_protection: {version: 1}` receipt; the runner rejects a tree whose images
+do not all carry the receipt. A detected attempt to change the counts is a
+sticky, fail-closed `integrity_violation`: the live page is invalidated, a
+record names the vector, the process exits before the attempt takes effect, and
+the measurement is invalid with no usable totals. This is still not a
+hardware-attested count, and it depends on the prepared runtime (below); treat
+it as the strongest available in-process guarantee, not a trusted enclave.
+
+**Protected ranges.** The prepared runtime (`-durante_window`, set by the runner
+to one 4 GiB-aligned window) reserves the whole window `PROT_NONE` before the
+application image is mapped and places every writable runtime and client
+allocation inside it: the relocated `libdynamorio.so` image and its writable
+segments, the code cache, all DR heap (so per-thread `thread_data_t`, the raw
+TLS slots, the client globals and the boundary stacks), and the `-live_work_v1`
+page. Nothing of the application is ever inside the window, and no runtime
+allocation falls back outside it; the client audits the whole address space
+against this invariant before the first application instruction. The first and
+last 16 MiB of the window stay `PROT_NONE` as guard regions. The per-process
+record files and the live page are additionally protected by inode, device and
+path checks.
+
+**What it stops.** Every application store is range-checked before it executes
+with a flag- and register-preserving inline sequence (`lea; bswap; mov ecx,ecx;
+lea; jrcxz`); stores whose address cannot be formed inline (segment-relative
+with a clashing register, register bit offsets, AVX-512 scatter) take a checked
+callback, and stores that cannot be decoded or that change FS/GS, plus exotic
+forms such as `movdir64b`/`enqcmd`, are denied. System calls are allow-listed:
+output buffers, kernel-written user pointers (`set_tid_address`, clone
+TID/pidfd, `rseq`, `set_robust_list`), mapping changes (`mmap MAP_FIXED`,
+`munmap`, `mremap`, `mprotect`, `madvise`, `brk`) and signal stacks are checked
+against the window; `ptrace`, `process_vm_writev`, `io_uring`, `userfaultfd`,
+`perf_event_open`, `bpf`, `seccomp` and opens of the record files or
+`/proc/*/mem` are refused; syscalls that cannot be checked fail with `EPERM`.
+Default mode (without the flag) is unchanged and emits byte-identical
+instrumentation. See `tests/meter_integrity.py` for the attack suite and
+`client/meter_protect.h` for the full design.
 
 Native CPU-feature restrictions use the same in-process DynamoRIO client.
 They stop an observed forbidden instruction before it executes, including code

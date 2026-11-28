@@ -86,6 +86,9 @@ ssize_t dr_fprintf(file_t file, const char *format, ...) {
     return -1;
 }
 void dr_abort(void) { abort(); }
+void dr_abort_with_code(int code) { (void)code; abort(); }
+bool dr_set_mcontext(void *ctx, dr_mcontext_t *mc) { assert(ctx == CTX); (void)mc; return true; }
+void reg_set_value(reg_id_t reg, dr_mcontext_t *mc, reg_t value) { (void)reg; (void)mc; (void)value; }
 int dr_snprintf(char *buffer, size_t size, const char *format, ...) {
     va_list args;
     va_start(args, format);

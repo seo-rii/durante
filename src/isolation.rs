@@ -18,7 +18,7 @@ use std::time::{Duration, Instant};
 const SOURCE_SHA: &str = "9760d007363e3abba7c747489910f9f82d9fca53ba3bd3282e396fa3c97a3314";
 const PATCH_SHA: &str = "617e143716b533c36535fea64be9192bc46b3c2d52d140c3dbbded90487b1b54";
 const SDK_REPLAY_PATCH_SHA: &str =
-    "aad0137aadca8a0932ca22f67ea95260880eb6bb93a229fd540c01241dc80d9d";
+    "fa846eb860f966d395b2ad2b40a5728f127576cbe0fbe6e77d48e66c67af63b2";
 const SOURCE_URL: &str =
     "https://github.com/containers/bubblewrap/releases/download/v0.12.0/bubblewrap-0.12.0.tar.xz";
 const MAX_FILES: usize = 256;

@@ -387,6 +387,20 @@ fn validate_field_types(event: &Event) -> Result<(), Error> {
         )?;
         text(event, "feature")?;
     }
+    if event.contains_key("meter_protection_version") {
+        require(
+            text(event, "event")? == "start",
+            "meter protection outside start",
+        )?;
+        meter_protection(event)?;
+    }
+    if event.contains_key("vector") {
+        require(
+            text(event, "event")? == "integrity_violation",
+            "integrity vector outside violation",
+        )?;
+        text(event, "vector")?;
+    }
     if event.contains_key("rep_breakdown_version") {
         require(
             uint(event, "rep_breakdown_version")? == 1,
@@ -503,6 +517,49 @@ fn cpu_policy(event: &Event) -> Result<&str, Error> {
         "invalid CPU policy",
     )?;
     Ok(policy)
+}
+
+/// Meter-protection receipt (-protect_meter). Absent means an unprotected meter.
+fn meter_protection(event: &Event) -> Result<bool, Error> {
+    if !event.contains_key("meter_protection_version") {
+        return Ok(false);
+    }
+    require(
+        uint(event, "meter_protection_version")? == 1,
+        "unsupported meter protection version",
+    )?;
+    Ok(true)
+}
+
+/// A protected meter stopped the process at an attempt to change its counts.
+/// The vector names the route; unknown names still invalidate the run.
+fn integrity_violation(event: &Event) -> Error {
+    match text(event, "vector") {
+        Ok("memory_store") => "integrity violation: memory_store",
+        Ok("segment_store") => "integrity violation: segment_store",
+        Ok("bit_store") => "integrity violation: bit_store",
+        Ok("scatter_store") => "integrity violation: scatter_store",
+        Ok("unsupported_store") => "integrity violation: unsupported_store",
+        Ok("unsupported_instruction") => "integrity violation: unsupported_instruction",
+        Ok("segment_register") => "integrity violation: segment_register",
+        Ok("syscall_abi") => "integrity violation: syscall_abi",
+        Ok("syscall_output") => "integrity violation: syscall_output",
+        Ok("memory_map") => "integrity violation: memory_map",
+        Ok("kernel_pointer") => "integrity violation: kernel_pointer",
+        Ok("signal_stack") => "integrity violation: signal_stack",
+        Ok("protected_fd") => "integrity violation: protected_fd",
+        Ok("protected_file") => "integrity violation: protected_file",
+        Ok("proc_write") => "integrity violation: proc_write",
+        Ok("device") => "integrity violation: device",
+        Ok("ptrace") => "integrity violation: ptrace",
+        Ok("process_vm_writev") => "integrity violation: process_vm_writev",
+        Ok("io_uring") => "integrity violation: io_uring",
+        Ok("userfaultfd") => "integrity violation: userfaultfd",
+        Ok("perf_event_open") => "integrity violation: perf_event_open",
+        Ok("bpf") => "integrity violation: bpf",
+        Ok("seccomp") => "integrity violation: seccomp",
+        _ => "integrity violation: unknown vector",
+    }
 }
 
 /// Fixed virtual-CPU identity receipt. Absent means host CPUID was visible.
@@ -669,10 +726,21 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
     // policy first so an early violation cannot hide a mixed-policy tree.
     let mut policy = None;
     let mut cpuid = None;
+    let mut protection = None;
     for (_, records) in &streams {
         for record in records {
             validate_field_types(record)?;
+            // A violation outranks any other failure of the stopped tree.
+            if text(record, "event")? == "integrity_violation" {
+                return Err(integrity_violation(record));
+            }
             if text(record, "event")? == "start" {
+                let current = meter_protection(record)?;
+                require(
+                    protection.is_none_or(|previous| previous == current),
+                    "mixed meter protection",
+                )?;
+                protection = Some(current);
                 let current = cpu_policy(record)?;
                 require(
                     policy.is_none_or(|previous| previous == current),
@@ -869,6 +937,7 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
                     ));
                     ended = true;
                 }
+                "integrity_violation" => return Err(integrity_violation(&record)),
                 _ => return Err("unsupported or interrupted lifecycle event"),
             }
         }
@@ -986,6 +1055,9 @@ fn aggregate(streams: Streams, root_pid: u32) -> Result<Value, Error> {
     }
     if !cpuid.is_empty() {
         result["cpuid_profile"] = json!(cpuid);
+    }
+    if protection == Some(true) {
+        result["meter_protection"] = json!({"version": 1});
     }
     Ok(result)
 }

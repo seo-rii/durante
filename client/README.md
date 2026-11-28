@@ -2,7 +2,12 @@
 
 Build `libdurante.so` using the [repository instructions](../README.md).
 Launch it with `-outdir ABSOLUTE_PRIVATE_DIRECTORY`, optionally followed by
-`-rep_bytes`. Add `-disallow_cpu_feature avx` and/or
+`-rep_bytes`. Add `-protect_meter` to isolate the counters, code cache and
+records from the measured application; this requires the prepared runtime
+launched with `-durante_window BASE` (the `durante run --protect-meter` flag
+sets both) and reports `meter_protection` in each image's start record. See
+`client/meter_protect.h` and `SECURITY.md` for the protected ranges, the
+per-store range check and the allow-listed system calls. Add `-disallow_cpu_feature avx` and/or
 `-disallow_cpu_feature simd` to stop before selected instructions execute.
 Add `-cpuid_profile x86-64-v1` or `x86-64-v2` to report one fixed virtual
 processor to application CPUID/XGETBV ([CPUID profiles](../docs/CPUID_PROFILE.md)).
