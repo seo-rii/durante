@@ -1,0 +1,15 @@
+{
+  "groups": {
+    "bfs_grid": ["contest-bfs_grid", "bfs_grid--queue_pair_vecvec", "bfs_grid--list_queue"],
+    "dijkstra": ["contest-dijkstra", "dijkstra--vecvec_getchar_pq", "dijkstra--set_decrease_key"],
+    "fenwick": ["contest-fenwick", "fenwick--segtree_bottom_up", "fenwick--range_bit_template"]
+  },
+  "models": ["M0", "M2", "M4", "ML4"],
+  "factors": [1.5, 2, 3],
+  "rounds": ["native", "probe", "native", "native", "native", "probe", "native", "native", "native"],
+  "cpu": 1,
+  "cpuid": "x86-64-v2",
+  "platform": "AMD Milan, n2d-standard-4, SMT disabled, two independent boots",
+  "question": "Do the four frozen Intel v2 models rank these known submissions against their intended solutions at 1.5x, 2x and 3x on Milan with corrected counters?",
+  "comparison": "No refitting on this panel. Leave the intended solution out of the 35 original calibration rows for its problem. Relative policies only. Test the complete observed range of variant/anchor pairs separately on each boot for both native and probe predictions. Equality is accepted; a mixed result is indeterminate. Report both error directions and exact repeatability, CPU overhead and sample counts. These results are diagnostic."
+}

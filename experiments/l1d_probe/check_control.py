@@ -2,6 +2,7 @@
 """Check the diagnostic client against the fixed memory-access trace in control.S."""
 import argparse
 import os
+import re
 from pathlib import Path
 import subprocess
 import tempfile
@@ -60,13 +61,36 @@ def check(args, warm):
             raise SystemExit(f"expected {expected}, got {actual}")
 
 
+def check_dependency(args):
+    with tempfile.TemporaryDirectory() as temporary:
+        output = Path(temporary).resolve()
+        command = [args.drrun.resolve(strict=True), "-quiet", "-disable_traces",
+                   "-c", args.client.resolve(strict=True), "-outdir", output,
+                   "-probe_l1d", "-probe_outer", "--", args.program.resolve(strict=True)]
+        result = subprocess.run(command, cwd=output, stdin=subprocess.DEVNULL, capture_output=True,
+                                env={"LC_ALL": "C", "PATH": os.defpath, "DYNAMORIO_CONFIGDIR": str(output)},
+                                timeout=20)
+        if result.returncode != 0:
+            raise SystemExit(f"control exited {result.returncode}\n{result.stderr.decode(errors='replace')}")
+        lines = result.stderr.splitlines()
+        if b"PROBE_L1D refs=4 lines=4 misses=4 skipped=0 rep=0 threads=1" not in lines:
+            raise SystemExit(f"unexpected cold-line counts: {lines!r}")
+        outer = [line for line in lines if line.startswith(b"PROBE_OUTER ")]
+        if len(outer) != 1 or not re.search(rb" dependent=2,2,2 l1d_dependent=2(?: |$)", outer[0]):
+            raise SystemExit(f"expected two dependent misses at each capacity: {outer!r}")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("drrun", "client", "program"):
         parser.add_argument("--" + name, type=Path, required=True)
+    parser.add_argument("--dependency", action="store_true")
     args = parser.parse_args()
-    for warm in (False, True):
-        check(args, warm)
+    if args.dependency:
+        check_dependency(args)
+    else:
+        for warm in (False, True):
+            check(args, warm)
 
 
 if __name__ == "__main__":

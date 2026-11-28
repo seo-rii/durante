@@ -1,0 +1,112 @@
+{
+  "archive_sha256": "368dd160291ba6e4d471f81a6485ea8c93d42fd1fd77a0d2219facf35984dfb5",
+  "expected_rows": {
+    ".": 54
+  },
+  "files": [
+    {
+      "path": "bin/clustered-dsu",
+      "sha256": "f2c45a69228bde4e479bcaab81b038e60663c0250849dd7d4343ce94e768f2a5"
+    },
+    {
+      "path": "bin/clustered-fenwick",
+      "sha256": "b3217f393095e261058a54283c577244c9b85ee9ac359cc928324df586bdeedf"
+    },
+    {
+      "path": "bin/clustered-multiset",
+      "sha256": "ef16735d2aa46d6d66b78c1a869692dee5d05df32c1f15a19954a89cd0100b33"
+    },
+    {
+      "path": "bin/uniform-dsu",
+      "sha256": "f2c45a69228bde4e479bcaab81b038e60663c0250849dd7d4343ce94e768f2a5"
+    },
+    {
+      "path": "bin/uniform-fenwick",
+      "sha256": "b3217f393095e261058a54283c577244c9b85ee9ac359cc928324df586bdeedf"
+    },
+    {
+      "path": "bin/uniform-multiset",
+      "sha256": "ef16735d2aa46d6d66b78c1a869692dee5d05df32c1f15a19954a89cd0100b33"
+    },
+    {
+      "path": "collect.py",
+      "sha256": "c6819e11e3c2e7fb73f0c90564d36fec96b9d23b2a0b5e147e6bb8815682fe0a"
+    },
+    {
+      "path": "dynamorio/.durante-runtime.json",
+      "sha256": "da8ed212cbc485d30886397d4710f29c6f639eef2e5592f8b297a7b61c19a025"
+    },
+    {
+      "path": "dynamorio/bin64/drrun",
+      "sha256": "0d059cb874edc7cfea3036c65dc975c1b0504464182980036a062df7d9bc206b"
+    },
+    {
+      "path": "dynamorio/ext/lib64/debug/libdrmgr.so",
+      "sha256": "0011d0732cebbefcded9afdbe2094e799d6aae80017eca5aab3401bd31f79500"
+    },
+    {
+      "path": "dynamorio/ext/lib64/release/libdrmgr.so",
+      "sha256": "372cc1f1f95ffa29a1f11de4be14f99de5938bbcae11294a38d0a7932069429a"
+    },
+    {
+      "path": "dynamorio/lib32/debug/libdynamorio.so",
+      "sha256": "f12fb2006a9c3c5ae74ce2a6edf58f3b2404835b24fc41fbb46a2475d6639bb8"
+    },
+    {
+      "path": "dynamorio/lib32/release/libdynamorio.so",
+      "sha256": "08c166e09ea8c97d579e8f6a1bc5ebf5bf39cbd937eb357fe0797066ec1afa63"
+    },
+    {
+      "path": "dynamorio/lib64/debug/libdrpreload.so",
+      "sha256": "0cf77ae7149ed7bcfc7d2105fccf34ff9077c06566dde2475f31532a5b41b98f"
+    },
+    {
+      "path": "dynamorio/lib64/debug/libdynamorio.so",
+      "sha256": "4fdf28cffef6e08151002cedd037e5022a7936c42da293ee6976ca042a5f9d7a"
+    },
+    {
+      "path": "dynamorio/lib64/release/libdrpreload.so",
+      "sha256": "fd220281583ecc7de1395d63a82338f265b46fda1af8acfbeeabdf33c88e6113"
+    },
+    {
+      "path": "dynamorio/lib64/release/libdynamorio.so",
+      "sha256": "621b4ac63d0b2641574e42dba1cbd0bf71f4ec102d22fe1a2cc5305405ff6b0f"
+    },
+    {
+      "path": "experiments/capacity_misses/collect.py",
+      "sha256": "e4489fa7e2f1804ac0bffb70c6a6a6bc6a4fdf57f5883ed0780ec2c32ee8d492"
+    },
+    {
+      "path": "experiments/capacity_misses/repeatability.py",
+      "sha256": "b60b2c8fe27c906cfdef9489b145133398a5deacc32b8a34f9ef9762e69b215e"
+    },
+    {
+      "path": "guest.py",
+      "sha256": "03d53a11fd8d5892c122fdb9964efdbf0325dd08097dcd557ec170a2a19d77b0"
+    },
+    {
+      "path": "guest.sh",
+      "sha256": "120cc0a719380bf1e433dc0249727930cfd0230b156f9269f1a9881bb708cbee"
+    },
+    {
+      "path": "inputs/clustered",
+      "sha256": "7d8d0d63fd681ee70b2226687eff696ed49f8b5ac7bb38a244ac3382984226d6"
+    },
+    {
+      "path": "inputs/uniform",
+      "sha256": "534a5461d0dcc1cf3f8361b52a63f616c50c060e78c3c2cb9222eac727661d08"
+    },
+    {
+      "path": "plan.json",
+      "sha256": "0359414b8d53a70f26faf38bfc50aa0b7218be7e4061a02cfe7f41401e6f2e5b"
+    },
+    {
+      "path": "probe.so",
+      "sha256": "09898f86e63751526b5870309351dc8fc1a7ee7e16b459cd7849b59d7243355a"
+    },
+    {
+      "path": "tests/contest/problems.py",
+      "sha256": "67c11cbb5ecd5e6d88e771c38b2f0db9187698c5b43a640a575a106e43ae8e48"
+    }
+  ]
+}

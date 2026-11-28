@@ -14,6 +14,8 @@ import statistics
 
 from analyze import fit, predict
 
+from repeatability import probe_repeatable
+
 MODELS = {
     "M0": ["instructions", "rep_bytes"],
     "ML": ["latency_x16", "rep_bytes"],
@@ -59,6 +61,7 @@ def main():
                        "native_min_s": min(times), "native_max_s": max(times),
                        "native_spread": (max(times) - min(times)) / median,
                        "stable": (max(times) - min(times)) / median <= STABLE_SPREAD,
+                       "probe_repeatable": probe_repeatable(case["probe"]),
                        "features": features(case["probe"][0])}
     calibration = {n: c for n, c in cases.items() if c["role"] == "calibration"}
     heldout = {n: c for n, c in cases.items() if c["role"] == "heldout"}
@@ -103,13 +106,22 @@ def main():
 
         verdicts = {f"{policy}@{k}": rates([d for d in decisions if d["policy"] == policy and d["k"] == k])
                     for policy in ("A", "R") for k in FACTORS}
+        # Use the manifest's original bound labels so class totals reconcile
+        # with the headline and preserve the same ambiguous decisions.
+        class_verdicts = {}
+        for d in decisions:
+            setting = f"{d['policy']}@{d['k']}"
+            classes = class_verdicts.setdefault(setting, {})
+            classes.setdefault(d["bound"], []).append(d)
+        by_class = {setting: {bound: rates(group) for bound, group in classes.items()}
+                    for setting, classes in class_verdicts.items()}
         report["models"][model] = {
             "features": names, "weights_s_per_unit": weights, "calibration_loss": loss,
             "calibration_worst_abs_error": max(abs(predict(weights, c["features"]) - c["native_median_s"]) /
                                                c["native_median_s"] for c in calibration.values()),
             "in_range_all": summary(in_range), "in_range_stable": summary([r for r in in_range if r["stable"]]),
             "too_slow": summary([r for r in rows if r["too_slow"]]),
-            "verdicts": verdicts, "rows": rows, "decisions": decisions}
+            "verdicts": verdicts, "verdicts_by_class": by_class, "rows": rows, "decisions": decisions}
     m = report["models"]
     stable = {k: v["in_range_stable"] for k, v in m.items()}
     base = max(stable["M0"]["within_20pct"], stable["M1"]["within_20pct"])

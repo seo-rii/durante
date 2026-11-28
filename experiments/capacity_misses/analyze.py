@@ -16,6 +16,8 @@ import statistics
 
 import numpy as np
 
+from repeatability import probe_repeatable
+
 MODELS = {
     "M0": ["instructions", "rep_bytes"],
     "M1": ["instructions", "rep_bytes", "l1d_misses"],
@@ -79,7 +81,7 @@ def main():
         cases[name] = {"role": case["role"], "native_median_s": median,
                        "native_spread": (max(times) - min(times)) / median,
                        "stable": (max(times) - min(times)) / median <= STABLE_SPREAD,
-                       "probe_repeatable": case["probe_repeatable"],
+                       "probe_repeatable": probe_repeatable(case["probe"]),
                        "features": features(case["probe"][0])}
     calibration = [(c["features"], c["native_median_s"]) for c in cases.values() if c["role"] == "calibration"]
     report = {"models": {}, "cases": cases}

@@ -8,44 +8,35 @@
 #include <string.h>
 
 /* A literal LRU stack for the outer capacities: the position of a line is its
- * stack distance, and stream membership uses timestamps instead of an ordered
- * list. */
+ * stack distance, and the last misses are stored oldest first. */
 enum { REF_OUTER_MAX = 1200 };
 struct ref_outer {
   uint32_t capacity[OUTER_LEVELS];
   uintptr_t stack[REF_OUTER_MAX];
   uint32_t depth;
-  uint64_t accesses, misses[OUTER_LEVELS], stream[OUTER_LEVELS], clock;
-  struct {
-    uintptr_t line;
-    uint64_t time;
-  } recent[OUTER_LEVELS][OUTER_STREAMS];
+  uint64_t accesses, misses[OUTER_LEVELS], stream[OUTER_LEVELS];
+  uintptr_t recent[OUTER_LEVELS][OUTER_STREAMS];
   unsigned used[OUTER_LEVELS];
 };
 
 static void ref_outer_miss(struct ref_outer *o, unsigned level, uintptr_t line) {
   ++o->misses[level];
-  ++o->clock;
-  int best = -1;
-  for (unsigned s = 0; s < o->used[level]; ++s) {
-    uintptr_t last = o->recent[level][s].line;
+  uintptr_t *recent = o->recent[level];
+  unsigned used = o->used[level];
+  for (unsigned i = 0; i < used; ++i) {
+    uintptr_t last = recent[i];
     uintptr_t distance = line > last ? line - last : last - line;
-    if (distance >= 1 && distance <= OUTER_STREAM_RANGE &&
-        (best < 0 || o->recent[level][s].time > o->recent[level][best].time))
-      best = (int)s;
+    if (distance >= 1 && distance <= OUTER_STREAM_RANGE) {
+      ++o->stream[level];
+      break;
+    }
   }
-  if (best >= 0) {
-    ++o->stream[level];
-  } else if (o->used[level] < OUTER_STREAMS) {
-    best = (int)o->used[level]++;
-  } else {
-    best = 0;
-    for (unsigned s = 1; s < OUTER_STREAMS; ++s)
-      if (o->recent[level][s].time < o->recent[level][best].time)
-        best = (int)s;
+  if (used == OUTER_STREAMS) {
+    memmove(recent, recent + 1, (used - 1) * sizeof(*recent));
+    --used;
   }
-  o->recent[level][best].line = line;
-  o->recent[level][best].time = o->clock;
+  recent[used] = line;
+  o->used[level] = used + 1;
 }
 
 static void ref_outer_access(struct ref_outer *o, uintptr_t line) {
@@ -369,6 +360,23 @@ static void test_outer_alone(void) {
 }
 
 /* Dependent misses are a subset counted with the same capacities. */
+static void test_stream_history(void) {
+  const uint32_t capacity[OUTER_LEVELS] = {1, 2, 3};
+  outer_cache_t *cache = new_outer(capacity);
+  outer_access(cache, 100, false);
+  outer_access(cache, 102, false);
+  outer_access(cache, 98, false); /* Near 100; matching 102 did not evict it. */
+  for (unsigned level = 0; level < OUTER_LEVELS; ++level)
+    assert(cache->stream_misses[level] == 2);
+  for (unsigned i = 0; i < OUTER_STREAMS; ++i)
+    outer_access(cache, 1000 + 10 * i, false);
+  outer_access(cache, 99, false); /* All three old addresses left the window. */
+  for (unsigned level = 0; level < OUTER_LEVELS; ++level)
+    assert(cache->stream_misses[level] == 2);
+  free(cache->line);
+  free(cache);
+}
+
 static void test_dependent(void) {
   const uint32_t capacity[OUTER_LEVELS] = {2, 4, 8};
   outer_cache_t *cache = new_outer(capacity);
@@ -394,6 +402,7 @@ static void test_dependent(void) {
 }
 
 int main(void) {
+  test_stream_history();
   test_outer_alone();
   test_dependent();
   test_large_stos();

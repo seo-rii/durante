@@ -2704,6 +2704,10 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
   if (memory_operand_bytes_enabled && !latency_bound_enabled)
     fail("memory operand bytes require -latency_bound");
 #ifdef DURANTE_L1D_PROBE
+#ifdef DURANTE_ML4_FIVE
+  if (!probe_l1d || !probe_outer_requested || !rep_bytes_enabled || !latency_bound_enabled)
+    fail("the five-feature probe requires -probe_l1d -probe_outer -rep_bytes -latency_bound");
+#endif
   if (probe_outer_requested && (!probe_l1d || !probe_outer_init()))
     fail("-probe_outer requires -probe_l1d and its storage");
 #endif

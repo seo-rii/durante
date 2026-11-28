@@ -1,0 +1,689 @@
+{
+  "primary": {
+    "timing": {
+      "uniform-multiset": {
+        "native_median_ratio": 1.626324,
+        "native_range": [
+          1.509482,
+          1.682502
+        ],
+        "models": {
+          "M0": {
+            "ratio": 1.19482,
+            "relative_error_percent": -26.53
+          },
+          "ML4": {
+            "ratio": 1.802663,
+            "relative_error_percent": 10.84
+          }
+        }
+      },
+      "uniform-fenwick": {
+        "native_median_ratio": 0.867925,
+        "native_range": [
+          0.858927,
+          0.885112
+        ],
+        "models": {
+          "M0": {
+            "ratio": 1.051038,
+            "relative_error_percent": 21.1
+          },
+          "ML4": {
+            "ratio": 1.061974,
+            "relative_error_percent": 22.36
+          }
+        }
+      },
+      "clustered-multiset": {
+        "native_median_ratio": 1.74646,
+        "native_range": [
+          1.624884,
+          1.815789
+        ],
+        "models": {
+          "M0": {
+            "ratio": 1.194921,
+            "relative_error_percent": -31.58
+          },
+          "ML4": {
+            "ratio": 1.82031,
+            "relative_error_percent": 4.23
+          }
+        }
+      },
+      "clustered-fenwick": {
+        "native_median_ratio": 0.927797,
+        "native_range": [
+          0.913601,
+          0.939917
+        ],
+        "models": {
+          "M0": {
+            "ratio": 1.051065,
+            "relative_error_percent": 13.29
+          },
+          "ML4": {
+            "ratio": 1.071169,
+            "relative_error_percent": 15.45
+          }
+        }
+      }
+    },
+    "decisions": [
+      {
+        "case": "uniform-multiset",
+        "factor": 1.25,
+        "native": "timeout",
+        "clock": {
+          "M0": "accept",
+          "ML4": "timeout"
+        }
+      },
+      {
+        "case": "uniform-multiset",
+        "factor": 1.5,
+        "native": "timeout",
+        "clock": {
+          "M0": "accept",
+          "ML4": "timeout"
+        }
+      },
+      {
+        "case": "uniform-multiset",
+        "factor": 2,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "uniform-multiset",
+        "factor": 3,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "uniform-fenwick",
+        "factor": 1.25,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "uniform-fenwick",
+        "factor": 1.5,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "uniform-fenwick",
+        "factor": 2,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "uniform-fenwick",
+        "factor": 3,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "clustered-multiset",
+        "factor": 1.25,
+        "native": "timeout",
+        "clock": {
+          "M0": "accept",
+          "ML4": "timeout"
+        }
+      },
+      {
+        "case": "clustered-multiset",
+        "factor": 1.5,
+        "native": "timeout",
+        "clock": {
+          "M0": "accept",
+          "ML4": "timeout"
+        }
+      },
+      {
+        "case": "clustered-multiset",
+        "factor": 2,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "clustered-multiset",
+        "factor": 3,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "clustered-fenwick",
+        "factor": 1.25,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "clustered-fenwick",
+        "factor": 1.5,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "clustered-fenwick",
+        "factor": 2,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "clustered-fenwick",
+        "factor": 3,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      }
+    ],
+    "outcomes": {
+      "M0": {
+        "false_accept": 4,
+        "agree": 12
+      },
+      "ML4": {
+        "agree": 16
+      }
+    },
+    "full_probe_over_native": {
+      "uniform-dsu": 90.85,
+      "uniform-multiset": 71.77,
+      "uniform-fenwick": 105.86,
+      "clustered-dsu": 103.92,
+      "clustered-multiset": 76.24,
+      "clustered-fenwick": 114.37
+    },
+    "steal_ticks": 0
+  },
+  "repeat": {
+    "timing": {
+      "uniform-multiset": {
+        "native_median_ratio": 1.596863,
+        "native_range": [
+          1.560993,
+          1.691125
+        ],
+        "models": {
+          "M0": {
+            "ratio": 1.19482,
+            "relative_error_percent": -25.18
+          },
+          "ML4": {
+            "ratio": 1.802663,
+            "relative_error_percent": 12.89
+          }
+        }
+      },
+      "uniform-fenwick": {
+        "native_median_ratio": 0.874562,
+        "native_range": [
+          0.862302,
+          0.88817
+        ],
+        "models": {
+          "M0": {
+            "ratio": 1.051038,
+            "relative_error_percent": 20.18
+          },
+          "ML4": {
+            "ratio": 1.061974,
+            "relative_error_percent": 21.43
+          }
+        }
+      },
+      "clustered-multiset": {
+        "native_median_ratio": 1.657349,
+        "native_range": [
+          1.620146,
+          1.88413
+        ],
+        "models": {
+          "M0": {
+            "ratio": 1.194921,
+            "relative_error_percent": -27.9
+          },
+          "ML4": {
+            "ratio": 1.82031,
+            "relative_error_percent": 9.83
+          }
+        }
+      },
+      "clustered-fenwick": {
+        "native_median_ratio": 0.924703,
+        "native_range": [
+          0.906516,
+          0.955559
+        ],
+        "models": {
+          "M0": {
+            "ratio": 1.051065,
+            "relative_error_percent": 13.67
+          },
+          "ML4": {
+            "ratio": 1.071169,
+            "relative_error_percent": 15.84
+          }
+        }
+      }
+    },
+    "decisions": [
+      {
+        "case": "uniform-multiset",
+        "factor": 1.25,
+        "native": "timeout",
+        "clock": {
+          "M0": "accept",
+          "ML4": "timeout"
+        }
+      },
+      {
+        "case": "uniform-multiset",
+        "factor": 1.5,
+        "native": "timeout",
+        "clock": {
+          "M0": "accept",
+          "ML4": "timeout"
+        }
+      },
+      {
+        "case": "uniform-multiset",
+        "factor": 2,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "uniform-multiset",
+        "factor": 3,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "uniform-fenwick",
+        "factor": 1.25,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "uniform-fenwick",
+        "factor": 1.5,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "uniform-fenwick",
+        "factor": 2,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "uniform-fenwick",
+        "factor": 3,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "clustered-multiset",
+        "factor": 1.25,
+        "native": "timeout",
+        "clock": {
+          "M0": "accept",
+          "ML4": "timeout"
+        }
+      },
+      {
+        "case": "clustered-multiset",
+        "factor": 1.5,
+        "native": "timeout",
+        "clock": {
+          "M0": "accept",
+          "ML4": "timeout"
+        }
+      },
+      {
+        "case": "clustered-multiset",
+        "factor": 2,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "clustered-multiset",
+        "factor": 3,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "clustered-fenwick",
+        "factor": 1.25,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "clustered-fenwick",
+        "factor": 1.5,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "clustered-fenwick",
+        "factor": 2,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "clustered-fenwick",
+        "factor": 3,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      }
+    ],
+    "outcomes": {
+      "M0": {
+        "false_accept": 4,
+        "agree": 12
+      },
+      "ML4": {
+        "agree": 16
+      }
+    },
+    "full_probe_over_native": {
+      "clustered-fenwick": 113.05,
+      "clustered-multiset": 80.2,
+      "clustered-dsu": 103.01,
+      "uniform-fenwick": 105.26,
+      "uniform-multiset": 72.85,
+      "uniform-dsu": 90.97
+    },
+    "steal_ticks": 0
+  },
+  "pooled": {
+    "decisions": [
+      {
+        "case": "uniform-multiset",
+        "factor": 1.25,
+        "native": "timeout",
+        "clock": {
+          "M0": "accept",
+          "ML4": "timeout"
+        }
+      },
+      {
+        "case": "uniform-multiset",
+        "factor": 1.5,
+        "native": "timeout",
+        "clock": {
+          "M0": "accept",
+          "ML4": "timeout"
+        }
+      },
+      {
+        "case": "uniform-multiset",
+        "factor": 2,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "uniform-multiset",
+        "factor": 3,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "uniform-fenwick",
+        "factor": 1.25,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "uniform-fenwick",
+        "factor": 1.5,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "uniform-fenwick",
+        "factor": 2,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "uniform-fenwick",
+        "factor": 3,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "clustered-multiset",
+        "factor": 1.25,
+        "native": "timeout",
+        "clock": {
+          "M0": "accept",
+          "ML4": "timeout"
+        }
+      },
+      {
+        "case": "clustered-multiset",
+        "factor": 1.5,
+        "native": "timeout",
+        "clock": {
+          "M0": "accept",
+          "ML4": "timeout"
+        }
+      },
+      {
+        "case": "clustered-multiset",
+        "factor": 2,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "clustered-multiset",
+        "factor": 3,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "clustered-fenwick",
+        "factor": 1.25,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "clustered-fenwick",
+        "factor": 1.5,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "clustered-fenwick",
+        "factor": 2,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      },
+      {
+        "case": "clustered-fenwick",
+        "factor": 3,
+        "native": "accept",
+        "clock": {
+          "M0": "accept",
+          "ML4": "accept"
+        }
+      }
+    ],
+    "outcomes": {
+      "M0": {
+        "false_accept": 4,
+        "agree": 12
+      },
+      "ML4": {
+        "agree": 16
+      }
+    }
+  },
+  "exploratory_reference_deadline": {
+    "decisions": [
+      {
+        "case": "uniform-multiset",
+        "factor": 1,
+        "native": "timeout",
+        "clock": {
+          "M0": "timeout",
+          "ML4": "timeout"
+        }
+      },
+      {
+        "case": "uniform-fenwick",
+        "factor": 1,
+        "native": "accept",
+        "clock": {
+          "M0": "timeout",
+          "ML4": "timeout"
+        }
+      },
+      {
+        "case": "clustered-multiset",
+        "factor": 1,
+        "native": "timeout",
+        "clock": {
+          "M0": "timeout",
+          "ML4": "timeout"
+        }
+      },
+      {
+        "case": "clustered-fenwick",
+        "factor": 1,
+        "native": "accept",
+        "clock": {
+          "M0": "timeout",
+          "ML4": "timeout"
+        }
+      }
+    ],
+    "outcomes": {
+      "M0": {
+        "agree": 2,
+        "false_timeout": 2
+      },
+      "ML4": {
+        "agree": 2,
+        "false_timeout": 2
+      }
+    }
+  },
+  "identical_four_counter_runs": {
+    "uniform-dsu": true,
+    "uniform-multiset": true,
+    "uniform-fenwick": true,
+    "clustered-dsu": true,
+    "clustered-multiset": true,
+    "clustered-fenwick": true
+  }
+}

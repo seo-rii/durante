@@ -21,7 +21,11 @@
  * capacity, as a hardware stream prefetcher would recognize it; the rest are
  * random misses. */
 enum {
+#ifdef DURANTE_ML4_FIVE
+  OUTER_LEVELS = 1,
+#else
   OUTER_LEVELS = 3,
+#endif
   OUTER_STREAMS = 16,
   OUTER_STREAM_RANGE = 2,
 };
@@ -42,7 +46,7 @@ typedef struct {
   /* Misses of accesses the caller marks as dependent loads: loads whose
    * address came from an earlier load, which cannot overlap with it. */
   uint64_t dependent_misses[OUTER_LEVELS];
-  uint64_t streams[OUTER_LEVELS][OUTER_STREAMS]; /* line + 1, MRU first; 0 = empty */
+  uint64_t recent_misses[OUTER_LEVELS][OUTER_STREAMS]; /* ring indexed by miss number */
 } outer_cache_t;
 
 /* Bytes of storage for the arrays of a cache whose largest capacity is lines. */
@@ -54,7 +58,7 @@ static inline size_t outer_table_slots(uint32_t lines) {
 }
 
 static inline size_t outer_storage_bytes(uint32_t lines) {
-  return (size_t)lines * (sizeof(uint64_t) + 2 * sizeof(uint32_t) + 1) +
+  return (size_t)lines * (sizeof(uint64_t) + 2 * sizeof(uint32_t) + (OUTER_LEVELS > 1)) +
          outer_table_slots(lines) * sizeof(uint32_t);
 }
 
@@ -68,8 +72,6 @@ static inline bool outer_init(outer_cache_t *cache, const uint32_t capacity[OUTE
     cache->capacity[i] = capacity[i];
     cache->boundary[i] = OUTER_NIL;
     cache->misses[i] = cache->stream_misses[i] = cache->dependent_misses[i] = 0;
-    for (unsigned s = 0; s < OUTER_STREAMS; ++s)
-      cache->streams[i][s] = 0;
   }
   uint32_t lines = capacity[OUTER_LEVELS - 1];
   size_t slots = outer_table_slots(lines);
@@ -152,36 +154,62 @@ static inline void outer_push_head(outer_cache_t *cache, uint32_t node) {
   cache->head = node;
   if (cache->tail == OUTER_NIL)
     cache->tail = node;
-  cache->zone[node] = 0;
+  if (OUTER_LEVELS > 1)
+    cache->zone[node] = 0;
 }
 
 static inline void outer_miss(outer_cache_t *cache, unsigned level, uint64_t line,
                               bool dependent) {
-  uint64_t *recent = cache->streams[level];
-  unsigned found = OUTER_STREAMS - 1;
-  bool stream = false;
-  for (unsigned s = 0; s < OUTER_STREAMS && recent[s]; ++s) {
-    uint64_t last = recent[s] - 1;
+  uint64_t *recent = cache->recent_misses[level];
+  uint64_t count = cache->misses[level];
+  unsigned used = count < OUTER_STREAMS ? (unsigned)count : OUTER_STREAMS;
+  for (unsigned s = 0; s < used; ++s) {
+    uint64_t last = recent[s];
     uint64_t distance = line > last ? line - last : last - line;
     if (distance && distance <= OUTER_STREAM_RANGE) {
-      found = s;
-      stream = true;
+      ++cache->stream_misses[level];
       break;
     }
   }
+  recent[count % OUTER_STREAMS] = line;
   ++cache->misses[level];
-  cache->stream_misses[level] += stream;
   cache->dependent_misses[level] += dependent;
-  for (unsigned s = found; s > 0; --s)
-    recent[s] = recent[s - 1];
-  recent[0] = line + 1;
+}
+
+static inline uint32_t outer_insert_line(outer_cache_t *cache, uint64_t line, uint32_t largest) {
+  uint32_t node;
+  if (cache->count == largest) {
+    /* The old last element of the largest capacity has left every cache. */
+    node = cache->tail;
+    outer_remove_slot(cache, node);
+    outer_unlink(cache, node);
+  } else {
+    node = cache->count++;
+  }
+  cache->line[node] = line;
+  outer_insert_slot(cache, node);
+  outer_push_head(cache, node);
+  return node;
 }
 
 static inline void outer_access(outer_cache_t *cache, uint64_t line, bool dependent) {
-  ++cache->accesses;
+  if (OUTER_LEVELS > 1)
+    ++cache->accesses;
   uint32_t node = outer_find(cache, line);
   if (node != OUTER_NIL && node == cache->head)
     return;
+  /* With a single fully associative capacity, membership itself is the
+   * miss test. Maintain only its hash table, LRU list and miss history. */
+  if (OUTER_LEVELS == 1) {
+    if (node == OUTER_NIL) {
+      outer_miss(cache, 0, line, dependent);
+      outer_insert_line(cache, line, cache->capacity[0]);
+    } else {
+      outer_unlink(cache, node);
+      outer_push_head(cache, node);
+    }
+    return;
+  }
   unsigned zone = node == OUTER_NIL ? OUTER_LEVELS : cache->zone[node];
   for (unsigned level = 0; level < zone; ++level)
     outer_miss(cache, level, line, dependent);
@@ -216,17 +244,7 @@ static inline void outer_access(outer_cache_t *cache, uint64_t line, bool depend
     /* The new node, inserted below, will be the only element in front. */
     to_new[level] = cache->prev[last] == OUTER_NIL;
   }
-  if (cache->count == largest) {
-    /* The old last element of the largest capacity has left every cache. */
-    node = cache->tail;
-    outer_remove_slot(cache, node);
-    outer_unlink(cache, node);
-  } else {
-    node = cache->count++;
-  }
-  cache->line[node] = line;
-  outer_insert_slot(cache, node);
-  outer_push_head(cache, node);
+  node = outer_insert_line(cache, line, largest);
   for (unsigned level = 0; level < OUTER_LEVELS; ++level) {
     if (to_new[level])
       cache->boundary[level] = node;

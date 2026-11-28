@@ -1,0 +1,18 @@
+{
+  "cpu": 1,
+  "cpuid": "x86-64-v2",
+  "inputs": ["uniform", "clustered"],
+  "solvers": ["dsu", "multiset", "fenwick"],
+  "count": 65536,
+  "queries": 73728,
+  "seed": 430253,
+  "max_price": 131072,
+  "rounds": ["native", "native", "probe", "native", "native", "probe", "native", "native", "native"],
+  "models": ["M0", "ML4"],
+  "weight_source": "milan/frozen.json#weights/dijkstra",
+  "factors": [1.25, 1.5, 2, 3],
+  "groups": {
+    "uniform": ["uniform-dsu", "uniform-multiset", "uniform-fenwick"],
+    "clustered": ["clustered-dsu", "clustered-multiset", "clustered-fenwick"]
+  }
+}

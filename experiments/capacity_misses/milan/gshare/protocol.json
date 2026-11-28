@@ -1,0 +1,13 @@
+{
+  "study": "exploratory transfer of frozen gshare models to the corrected Milan contest panel",
+  "panel_revision": "c026016e1c4fcb5456b2d4454fc11d719bdee8ef",
+  "training_archive_sha256": "ea412fb0779d6f5af1f83580e5ec9e1c117d21174b0babb9ec7b811ac3740c4e",
+  "predictor": "gshare-14bit-pcshift1-v1",
+  "classification": "The nine programs and the set-based Dijkstra discrepancy are already known. Freeze the published baseline and with_gshare fits without training on these nine binaries.",
+  "counter_collection": "Two independent processes per registered ELF/input, opposite case order. Use the same x86-64-v2 CPUID client as the Milan payload and the existing time_features -bpred client. Hash each executable, input and stdout. Local CPU time is excluded from accuracy evidence.",
+  "comparison": "Normalize each model and individual counter by the intended submission for that problem. Compare all registered 1.5x, 2x and 3x boundaries against the native intervals from each existing GCE boot. Equality passes. Compare nonnegative component upper bounds and the frozen miss penalty against the set-to-heap 2x boundary.",
+  "models": {
+    "baseline": {"instructions": 0.1361774120637705, "rep_bytes": 0.03486986763614238, "load_instructions": 0.0},
+    "with_gshare": {"instructions": 0.11400208036234295, "rep_bytes": 0.03515017240371441, "load_instructions": 0.0, "gshare_mispredicts": 6.92658480142496}
+  }
+}

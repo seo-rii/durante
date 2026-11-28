@@ -53,7 +53,7 @@ static void probe_access_data(uintptr_t base, uintptr_t index, uint64_t spec) {
  * basic block. Only a cross-line operand adds a second lookup here. */
 static void probe_read_slow(uintptr_t addr, unsigned bytes) {
   probe_cache.dependent = (bytes & PROBE_BYTES_DEPENDENT) != 0;
-  probe_cache.lines += l1d_touch_operand(&probe_cache, addr, (uint16_t)bytes);
+  l1d_account(&probe_cache, 0, l1d_touch_operand(&probe_cache, addr, (uint16_t)bytes));
   probe_cache.dependent = false;
 }
 
@@ -90,7 +90,8 @@ static void probe_read(void *ctx, instrlist_t *bb, instr_t *where, opnd_t mem,
   const reg_id_t addr = DR_REG_R10, scratch = DR_REG_R11;
   opnd_t address = opnd_create_reg(addr), temp = opnd_create_reg(scratch);
   instr_t *slow = INSTR_CREATE_label(ctx), *done = INSTR_CREATE_label(ctx);
-  ++probe_block_reads;
+  if (OUTER_LEVELS > 1)
+    ++probe_block_reads;
   dr_save_reg(ctx, bb, where, addr, SPILL_SLOT_1);
   dr_save_reg(ctx, bb, where, scratch, SPILL_SLOT_2);
 
@@ -199,6 +200,8 @@ static void probe_find_dependent(instrlist_t *bb) {
         opnd_t src = instr_get_src(ins, i);
         if (opnd_is_reg(src))
           sources |= probe_gpr_bit(opnd_get_reg(src));
+        else if (op == OP_lea)
+          sources |= probe_address_regs(src); /* LEA consumes its base and index without a load. */
         else if (loads && opnd_is_memory_reference(src) && (probe_address_regs(src) & loaded))
           dependent = true;
       }
@@ -400,7 +403,7 @@ static bool probe_instrument(void *ctx, instrlist_t *bb, instr_t *where, bool wr
   bool fused = probe_instrument_operands(ctx, bb, where, writes_memory);
   /* Signals and partial-block replays suppress the diagnostic report.
    * Every reported block reached all of its instrumented operands. */
-  if (where == probe_block_last && probe_block_reads) {
+  if (OUTER_LEVELS > 1 && where == probe_block_last && probe_block_reads) {
     opnd_t dst = opnd_create_rel_addr(&probe_read_refs, OPSZ_PTR);
     opnd_t reg = opnd_create_reg(DR_REG_R11);
     dr_save_reg(ctx, bb, where, DR_REG_R11, SPILL_SLOT_1);
@@ -414,7 +417,11 @@ static bool probe_instrument(void *ctx, instrlist_t *bb, instr_t *where, bool wr
 }
 
 static bool probe_outer_init(void) {
+#ifdef DURANTE_ML4_FIVE
+  static const uint32_t capacity[OUTER_LEVELS] = {32768};
+#else
   static const uint32_t capacity[OUTER_LEVELS] = {4096, 32768, 524288};
+#endif
   size_t bytes = outer_storage_bytes(capacity[OUTER_LEVELS - 1]);
   void *storage = dr_raw_mem_alloc(bytes, DR_MEMPROT_READ | DR_MEMPROT_WRITE, NULL);
   if (!storage || !outer_init(&probe_outer, capacity, storage))
@@ -425,6 +432,15 @@ static bool probe_outer_init(void) {
 }
 
 static void probe_exit(void) {
+#ifdef DURANTE_ML4_FIVE
+  dr_fprintf(STDERR,
+             "PROBE_ML4_FIVE capacity_lines=%u l1d_dependent=%llu dependent_2m=%llu "
+             "stream_2m=%llu skipped=%llu threads=%d\n",
+             probe_outer.capacity[0], (unsigned long long)probe_cache.dependent_misses,
+             (unsigned long long)probe_outer.dependent_misses[0],
+             (unsigned long long)probe_outer.stream_misses[0], (unsigned long long)probe_skipped,
+             probe_threads);
+#else
   dr_fprintf(STDERR, "PROBE_L1D refs=%llu lines=%llu misses=%llu skipped=%llu rep=%llu threads=%d\n",
              (unsigned long long)(probe_cache.refs + probe_read_refs),
              (unsigned long long)(probe_cache.lines + probe_read_refs),
@@ -445,6 +461,7 @@ static void probe_exit(void) {
                (unsigned long long)probe_cache.dependent_misses,
                (unsigned long long)probe_dependent_sites, (unsigned long long)probe_load_sites);
   }
+#endif
 }
 
 #endif

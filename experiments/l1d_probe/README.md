@@ -36,10 +36,15 @@ A stderr line beginning with `PROBE_OUTER` reports, per capacity, the misses, th
 stream misses (within two lines of one of the last 16 misses at that capacity) and the
 misses of dependent loads: loads whose address register holds a value loaded earlier
 in the same block, through register arithmetic or around a block that branches to its
-own start. `l1d_dependent` counts the dependent loads' L1D misses. The model test
+own start. `l1d_dependent` counts the dependent loads' L1D misses. A four-line assembly trace checks that LEA propagates a dependency through a loaded
+base or index and clears it when both are independent. The model test
 checks the counts, the full LRU order and every boundary against a literal
 stack-distance reference, also behind the L1D model and its bulk REP paths. See
 [docs/CAPACITY_MISSES.md](../../docs/CAPACITY_MISSES.md).
+
+### Five-feature client
+
+The experiment build also produces `libdurante_ml4_five.so`. It keeps the exact L1D replacement order, simulates one fully associative 2 MiB cache and tracks the last 16 misses at that capacity. Its terminal work report supplies the latency bound and REP byte count. One `PROBE_ML4_FIVE` line gives dependent L1D misses, dependent 2 MiB misses, 2 MiB stream misses and skipped operands. Run this research client with `-rep_bytes -latency_bound -probe_l1d -probe_outer`. The original client and this one use the same dependency and stream definitions. The [paired graph measurements](../capacity_misses/reduced_graph/) compare both diagnostics on the same input and executables.
 
 ## Compare clients
 

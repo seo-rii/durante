@@ -1,0 +1,233 @@
+{
+  "protocol": {
+    "programs": [
+      "reference",
+      "fast",
+      "block8",
+      "block2048",
+      "block4",
+      "slow",
+      "ordered_set"
+    ],
+    "reference": "reference",
+    "deadline_us": 65000,
+    "rounds": [
+      "native",
+      "probe",
+      "native",
+      "native",
+      "native",
+      "probe",
+      "native",
+      "native",
+      "native"
+    ],
+    "cpu": 1,
+    "cpuid": "x86-64-v2",
+    "platform": "Two independent N2D AMD Milan boots, SMT disabled",
+    "calibration": "Use only the Dijkstra ML4 coefficients frozen by the Durante Milan study. Anchor ML4 to fresh native and ML4 values of the original reference ELF on the same boot. Never fit on, or use native times from, another submission.",
+    "comparison": "Use all combinations of the submission's ML4 score, reference native CPU and reference ML4 score. Compare the resulting closed interval with 65 ms. For the original cheap clock apply its registered integer instruction and REP-byte coefficients to the same probe observations. Compare each clock against all native CPU observations; equality passes, crossing is indeterminate. Repeat on each boot and on the pooled observations. Count both disagreement directions, excluding the calibration reference. Report the earlier live v13 outcomes separately from these simulated verdicts."
+  },
+  "cases": {
+    "reference": {
+      "stdin": "inputs/graph",
+      "stdin_sha256": "6e9dbe24b653a8fb261668e8675e6dea82187a510c5c94f4014482e94fb8f708",
+      "expected_sha256": "59c0af841dc79f04e14f03779fece88d8ec15672a36fa1bdbed5388d4b6f465d",
+      "elf_sha256": "3329d2981760ac275e2ffd17ed4ddc22b409fb6046b7bd05703510602597a091"
+    },
+    "fast": {
+      "stdin": "inputs/graph",
+      "stdin_sha256": "6e9dbe24b653a8fb261668e8675e6dea82187a510c5c94f4014482e94fb8f708",
+      "expected_sha256": "59c0af841dc79f04e14f03779fece88d8ec15672a36fa1bdbed5388d4b6f465d",
+      "elf_sha256": "102fd8cf4ba07043d07e644d2c79f8a06ffdd2bcbb191f1bad75c0b13f92a57b"
+    },
+    "block8": {
+      "stdin": "inputs/graph",
+      "stdin_sha256": "6e9dbe24b653a8fb261668e8675e6dea82187a510c5c94f4014482e94fb8f708",
+      "expected_sha256": "59c0af841dc79f04e14f03779fece88d8ec15672a36fa1bdbed5388d4b6f465d",
+      "elf_sha256": "5f0c09a7480bef14d8d157e2617b8cb2bb7d8b640aed781fcdd100fa18106f9c"
+    },
+    "block2048": {
+      "stdin": "inputs/graph",
+      "stdin_sha256": "6e9dbe24b653a8fb261668e8675e6dea82187a510c5c94f4014482e94fb8f708",
+      "expected_sha256": "59c0af841dc79f04e14f03779fece88d8ec15672a36fa1bdbed5388d4b6f465d",
+      "elf_sha256": "222bce6027054a9da318d140cdb4cb26f800723bd64655a7f3108169a363d78e"
+    },
+    "block4": {
+      "stdin": "inputs/graph",
+      "stdin_sha256": "6e9dbe24b653a8fb261668e8675e6dea82187a510c5c94f4014482e94fb8f708",
+      "expected_sha256": "59c0af841dc79f04e14f03779fece88d8ec15672a36fa1bdbed5388d4b6f465d",
+      "elf_sha256": "69f29cf93a472768e5a8d52734ddb7cdcf5f6f08865299ecb443737c4b6afeb1"
+    },
+    "slow": {
+      "stdin": "inputs/graph",
+      "stdin_sha256": "6e9dbe24b653a8fb261668e8675e6dea82187a510c5c94f4014482e94fb8f708",
+      "expected_sha256": "59c0af841dc79f04e14f03779fece88d8ec15672a36fa1bdbed5388d4b6f465d",
+      "elf_sha256": "5a74732188a6ef89c1463f15b6a97dcb07582f5aa4c710573814e0b2c7268fc1"
+    },
+    "ordered_set": {
+      "stdin": "inputs/graph",
+      "stdin_sha256": "6e9dbe24b653a8fb261668e8675e6dea82187a510c5c94f4014482e94fb8f708",
+      "expected_sha256": "59c0af841dc79f04e14f03779fece88d8ec15672a36fa1bdbed5388d4b6f465d",
+      "elf_sha256": "62571551e82f88b9e84d721634e0ff9740303b20018046356daa841b047b8f51"
+    }
+  },
+  "input": "22000 175000 31 303217\n",
+  "expected_stdout": "985955\n",
+  "aonohako_revision": "ff46df539edaedef38401dc548d61e10a022e487",
+  "existing_live": {
+    "primary": {
+      "fast": {
+        "native": {
+          "Accepted": 3
+        },
+        "clock": {
+          "Accepted": 2
+        },
+        "clock_termination": {
+          "stdout": 2
+        }
+      },
+      "block8": {
+        "native": {
+          "Accepted": 3
+        },
+        "clock": {
+          "Time Limit Exceeded": 2
+        },
+        "clock_termination": {
+          "durante_work_clock": 2
+        }
+      },
+      "block2048": {
+        "native": {
+          "Accepted": 3
+        },
+        "clock": {
+          "Time Limit Exceeded": 2
+        },
+        "clock_termination": {
+          "durante_work_clock": 2
+        }
+      },
+      "block4": {
+        "native": {
+          "Time Limit Exceeded": 3
+        },
+        "clock": {
+          "Time Limit Exceeded": 2
+        },
+        "clock_termination": {
+          "durante_work_clock": 2
+        }
+      },
+      "slow": {
+        "native": {
+          "Time Limit Exceeded": 3
+        },
+        "clock": {
+          "Time Limit Exceeded": 2
+        },
+        "clock_termination": {
+          "durante_work_clock": 2
+        }
+      },
+      "ordered_set": {
+        "native": {
+          "Accepted": 3
+        },
+        "clock": {
+          "Accepted": 2
+        },
+        "clock_termination": {
+          "stdout": 2
+        }
+      }
+    },
+    "repeat": {
+      "fast": {
+        "native": {
+          "Accepted": 3
+        },
+        "clock": {
+          "Accepted": 2
+        },
+        "clock_termination": {
+          "stdout": 2
+        }
+      },
+      "block8": {
+        "native": {
+          "Accepted": 3
+        },
+        "clock": {
+          "Time Limit Exceeded": 2
+        },
+        "clock_termination": {
+          "durante_work_clock": 2
+        }
+      },
+      "block2048": {
+        "native": {
+          "Accepted": 3
+        },
+        "clock": {
+          "Time Limit Exceeded": 2
+        },
+        "clock_termination": {
+          "durante_work_clock": 2
+        }
+      },
+      "block4": {
+        "native": {
+          "Time Limit Exceeded": 3
+        },
+        "clock": {
+          "Time Limit Exceeded": 2
+        },
+        "clock_termination": {
+          "durante_work_clock": 2
+        }
+      },
+      "slow": {
+        "native": {
+          "Time Limit Exceeded": 3
+        },
+        "clock": {
+          "Time Limit Exceeded": 2
+        },
+        "clock_termination": {
+          "durante_work_clock": 2
+        }
+      },
+      "ordered_set": {
+        "native": {
+          "Accepted": 3
+        },
+        "clock": {
+          "Accepted": 2
+        },
+        "clock_termination": {
+          "stdout": 2
+        }
+      }
+    }
+  },
+  "original_binding": "work-clock-v1:sha256:45bbdab9d7b82b05a27bc55cae38ab7811e6699542f792634f374e2036aecb69",
+  "original_clock": {
+    "instruction_ns_numerator": 1139371945900000,
+    "rep_byte_ns_numerator": 1139371945900000,
+    "ns_denominator": 4752214584908649
+  },
+  "ml4": {
+    "latency_x16": 1.9610536920428108e-11,
+    "rep_bytes": 2.2231881518169566e-11,
+    "l1d_misses": 5.696914949612691e-11,
+    "random_2m": 3.6329907111055703e-09,
+    "random_32m": 6.462605458925904e-09,
+    "stream_2m": 1.0698559144892158e-08,
+    "l1d_dependent": 4.7700178852992235e-09,
+    "dependent_2m": 7.817536652521212e-08
+  },
+  "corrected_probe_sha256": "09898f86e63751526b5870309351dc8fc1a7ee7e16b459cd7849b59d7243355a"
+}

@@ -5,7 +5,9 @@ cannot tell working sets apart once they all miss a 32 KiB L1D
 ([crossed memory study](CPP20_CROSSED_MEMORY.md)). This study adds exact misses
 at larger cache capacities and misses of dependent loads to the research cache
 probe, then tests on programs no model has seen whether they improve CPU-time
-predictions. Neither predeclared round met its decision rule. The added
+predictions. Neither round met its stated decision rule. Each plan and its results first
+appeared together in the repository. The commit history provides no independent
+public timestamp for a plan frozen before measurement. The added
 counters move errors in the right direction for memory-latency-bound programs,
 and the remaining dominant error is cross-block pointer chasing.
 
@@ -19,13 +21,16 @@ and the remaining dominant error is cross-block pointer chasing.
   boundary node per capacity gives every capacity exactly in O(levels) per miss
   (`outer.h`). Being fully associative, the counts depend only on the sequence of
   distinct lines, not on how virtual addresses map to sets.
-- **Stream misses**: a miss within two lines of one of the last 16 misses at the
-  same capacity, as a hardware stream prefetcher would recognize it. The rest are
-  random misses.
-- **Dependent misses** (L1D and each capacity): misses of loads whose address
-  register holds a value loaded earlier in the same block, through register
-  arithmetic, or around a block that branches to its own start (`p = p->next`).
-  The stack pointer is never treated as loaded.
+- **Stream misses.** The plan classifies a miss as a stream miss if its line is
+  within two lines of any of the last 16 miss addresses at that capacity. Both
+  archived rounds instead tracked up to 16 streams. A matching miss replaced
+  the previous address of its stream and promoted the stream. This can change
+  both `outer_stream` and the derived random-miss counts.
+- **Dependent misses.** The round-2 probe tracked addresses derived from an
+  earlier load within a block, including loops that branch back to the same
+  block. Its handling of x86 `LEA` omitted dependencies carried through the
+  base or index of an effective address. Consequently the archived dependent
+  counts can miss even some within-block chains.
 
 `cache_test.c` checks every count, the whole LRU order and every boundary
 against a literal stack-distance reference, alone and behind the L1D model,
@@ -40,7 +45,7 @@ working when the client began handling blocks without drmgr: per-block read
 references were never charged and the probe's assembly control had failed
 since. The client now passes the block start, and all three probe tests pass.
 
-## Round 1 (predeclared, failed)
+## Round 1 (decision rule failed)
 
 [predeclared.txt](../experiments/capacity_misses/predeclared.txt) fitted four
 models on 14 synthetic kernels and scored 22 held-out programs (the crossed
@@ -57,14 +62,19 @@ largest misses were a linked list (-84%) and a latency-bound gcd loop (-62%).
 This motivated the dependent-load counter and the latency bound in round 2. The
 round-1 cases were then used only for calibration.
 
-## Round 2 (predeclared, did not meet the rule)
+## Round 2 (decision rule failed)
 
 [predeclared-v2.txt](../experiments/capacity_misses/predeclared-v2.txt)
 calibrated on the 36 round-1 cases and scored 49 contest solution variants that
 no model had seen ([corpus](JUDGE_DISAGREEMENT.md)), 42 of them within about 15x
 of the intended solution. Native time is the median of 15 interleaved rounds on
-one pinned CPU of a 4-vCPU Intel Xeon guest; counters come from one probe run
-(every case of both rounds repeated exactly).
+one pinned CPU of a 4-vCPU Intel Xeon guest. Round 1 recorded two probe runs
+for each of its 36 cases. Every pair agreed on all recorded counters. Round 2
+recorded one probe run for each of its 85 cases, so counter repeatability is
+unknown for all 85. The archived round-2 JSON records their `probe_repeatable` field as
+`true` because the old collector compared each sample with itself. The analysis
+now derives `probe_repeatable` from the sample list and reports `null` when
+fewer than two samples are available.
 
 | Model | Features | Within 20% (all 42) | Stable within 20% | Median error | Worst |
 |---|---|---:|---:|---:|---:|
@@ -111,7 +121,20 @@ time.
 - Repeat round 2 on a dedicated host: the noise here leaves most cases outside
   the stability gate.
 
-## Reproduce
+## Replay and collect
+
+The published scores describe the archived stream and dependency counters.
+Changes to the research probe apply to new collections only. A later two-guest Milan study collected four corrected counter observations per program on a nine-program contest panel. [Repeated Milan measurements](../experiments/capacity_misses/milan/README.md) Replay the
+historical scores directly from their recorded measurements.
+
+```sh
+python3 -B experiments/capacity_misses/analyze.py experiments/capacity_misses/results/v1/results.json
+python3 -B experiments/capacity_misses/analyze_v2.py experiments/capacity_misses/results/v2/results.json
+```
+
+The [ordered predecessor study](../experiments/capacity_misses/predecessor/README.md) tests transfer to three new C++20 solvers on two query orderings, using the previously frozen Dijkstra weights. Its replay checks each raw process receipt and scheduler trace.
+
+The following commands collect a new dataset with two probe measurements per case.
 
 ```sh
 cmake -S experiments/l1d_probe -B build/l1d -DCMAKE_BUILD_TYPE=Release \
@@ -119,7 +142,7 @@ cmake -S experiments/l1d_probe -B build/l1d -DCMAKE_BUILD_TYPE=Release \
 cmake --build build/l1d && ctest --test-dir build/l1d
 python3 -B experiments/capacity_misses/collect.py --sdk "$sdk" --client build/l1d/libdurante_l1d.so \
   --plan experiments/capacity_misses/plan-v2.json --predeclared experiments/capacity_misses/predeclared-v2.txt \
-  --latency-bound --rounds 15 --probe-runs 1 --output-dir NEW_DIR
+  --latency-bound --rounds 15 --probe-runs 2 --output-dir NEW_DIR
 python3 -B experiments/capacity_misses/analyze_v2.py NEW_DIR/results.json
 ```
 

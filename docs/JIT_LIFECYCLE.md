@@ -148,10 +148,10 @@ with compressed class pointers disabled (the flags before CDS was kept):
 | `sort_bs` | 0.57 | 7.47 | 4.56 |
 | `deep_dfs` | 0.60 | 7.64 | 3.84 |
 
-With class data sharing kept (`-XX:CompressedClassSpaceSize=64m`, now in the
-corpus and aonohako flags), the geometric mean over the seven problems fell
-from 6.80 s with the whole-region runtime and the old flags to 3.14 s
-(14.7x to 6.8x the old flags' native time).
+With class data sharing kept as well (`-XX:CompressedClassSpaceSize=64m`, the
+corpus's `java-cds` cells and aonohako's `java21_cds` profile), the geometric
+mean over the seven problems fell from 6.80 s with the whole-region runtime and
+the default flags to 3.14 s (14.7x to 6.8x the default flags' native time).
 
 Node, PyPy, PHP's tracing JIT and CPython changed within noise on `bfs_grid`,
 `dijkstra` and `sort_bs` (PyPy `dijkstra` fell from 3.57 to 2.94 s). Peak RSS
