@@ -1,0 +1,13 @@
+{
+  "baseline": "Original Dijkstra ML4 absolute predicted nanoseconds plus 6.92658480142496 ns per recorded gshare misprediction",
+  "candidate": "baseline + (10/496 ns) * loop_recurrence_cycles_x16; charge each solver and its reference before taking the ratio",
+  "coefficient_ns": "10/496",
+  "basis": "One physical cycle at 3.1 GHz per 16 recorded units. Incremental diagnostic, without fitting.",
+  "development_observation": "The long maximum-subarray prefix/Kadane recurrence count ratio was already compared with native timing. All outcomes from the archived suites are historical.",
+  "panels": ["milan", "order_statistics_transfer", "range_distinct", "dijkstra_relaxation", "string_matching", "lcs_layout", "maxsub_floor"],
+  "scope": "All registered groups, alternate solvers, inputs, and both boots in the listed archives. Report and explain any missing-field exclusion. Supplemental measurements of the same ELF/input are not new independent families.",
+  "deadlines": ["1", "5/4", "3/2", "2", "3"],
+  "reference": "Compare exact candidate/reference ratios with the ratio of the two native sample medians; classify decisive thresholds using all native sample pairs; equality is accepted.",
+  "outputs": "Per boot, family and pooled: paired baseline and candidate threshold outcomes, false accepts, false timeouts, native-mixed decisions, case count, median and worst absolute relative error and count within 20 percent. Separate each family including maximum subarray, which motivated the change. Report any new false decision.",
+  "criterion": "On each boot, strictly reduce the pooled median absolute relative error without any new false decision on an individually decisive case/deadline. Also report each family and case regardless of outcome."
+}
