@@ -1,0 +1,94 @@
+{
+  "cpu": 1,
+  "cpuid": "x86-64-v2",
+  "groups": {
+    "uniform": [
+      "uniform-dsu",
+      "uniform-multiset",
+      "uniform-fenwick"
+    ],
+    "clustered": [
+      "clustered-dsu",
+      "clustered-multiset",
+      "clustered-fenwick"
+    ],
+    "shuffled": [
+      "shuffled-merge",
+      "shuffled-fenwick",
+      "shuffled-segtree"
+    ],
+    "runs": [
+      "runs-merge",
+      "runs-fenwick",
+      "runs-segtree"
+    ]
+  },
+  "training_examples": [
+    "uniform",
+    "clustered"
+  ],
+  "holdout": [
+    "shuffled",
+    "runs"
+  ],
+  "factors": [
+    1,
+    1.25,
+    1.5,
+    2,
+    3
+  ],
+  "models": [
+    "ML4",
+    "gshare",
+    "ML4_plus_misses"
+  ],
+  "modes": {
+    "native": [],
+    "outer": [
+      "-rep_bytes",
+      "-latency_bound",
+      "-probe_l1d",
+      "-probe_outer"
+    ],
+    "flat": [
+      "-rep_bytes",
+      "-latency_bound",
+      "-probe_l1d",
+      "-probe_outer"
+    ],
+    "branch": [
+      "-rep_bytes",
+      "-latency_bound"
+    ]
+  },
+  "clients": {
+    "native": "original.so",
+    "outer": "original.so",
+    "flat": "flat.so",
+    "branch": "original.so"
+  },
+  "rounds": [
+    "native",
+    "branch",
+    "native",
+    "flat",
+    "native",
+    "outer",
+    "native",
+    "flat",
+    "native",
+    "branch",
+    "native",
+    "native"
+  ],
+  "inputs": {
+    "n": 262144,
+    "seed": 20261129,
+    "max_rank": 262144,
+    "run": 512
+  },
+  "models_source": "Use the exact decimal values frozen in predecessor/frozen.json (Dijkstra ML4 seconds per counter), and milan/gshare/protocol.json with_gshare (ns per count). Full ML4 in ns is its weighted sum in seconds times 1e9. gshare uses its entire original independently fitted instruction/REP/load/miss weight vector. ML4_plus_misses adds only the original 6.92658480142496 ns times each simulated miss to the ML4 score in ns. This additive transfer could double-count existing costs; it is a hypothesis, not an independently trained joint fit. No parameter selection or fitting on any of these cases.",
+  "comparison": "For each model and each input divide submission score by that model’s intended-solver score. Compare all score endpoint pairs to the inclusive registered factor and all native submission/reference CPU endpoint pairs independently. Preserve per-boot and pooled disagreements and indeterminacy, median ratio errors, ±20% counts, and maxima. The primary candidate is ML4_plus_misses vs frozen ML4; standalone gshare is a secondary control. Require removal of both historical Fenwick 1x false timeouts on each new boot with decisive native and model outcomes. On the inversion holdout report all comparisons including 1x, both error directions and indecision; improvement requires no lost previously correct native-decisive verdict and lower median absolute relative-ratio error on both boots.",
+  "provenance": "Copy all six exact #118 ELF/input pairs. Hold out six inversion-count combinations on two inputs with identical rank multisets, merge counting as the reference. Inversion counting has appeared in Aonohako; the new solver implementations, input shapes and cross-model comparison are new here. Verify every stdout, sealed records, CPU1 exec trace, repeated branch count and full cache equivalence between the deployed and flat research client. Report each instrumentation arm/native cost; a combined ML4_plus_misses collection uses two completed passes. No real verdict deployment."
+}
