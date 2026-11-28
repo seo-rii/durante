@@ -2656,6 +2656,18 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
       memory_operand_bytes_enabled = true;
     } else if (strcmp(argv[i], "-protect_meter") == 0 && !protect_meter) {
       protect_meter = true;
+    } else if (strcmp(argv[i], "-protect_file") == 0 && i + 1 < argc &&
+               protect_files < PROTECT_MAX_FILES) {
+      char *end;
+      const char *text = argv[++i];
+      protect_file_dev[protect_files] = strtoull(text, &end, 10);
+      if (end == text || *end != ':')
+        fail("-protect_file takes DEV:INO");
+      text = end + 1;
+      protect_file_ino[protect_files] = strtoull(text, &end, 10);
+      if (end == text || *end)
+        fail("-protect_file takes DEV:INO");
+      ++protect_files;
     } else if (strcmp(argv[i], "-disallow_cpu_feature") == 0 && i + 1 < argc) {
       const char *feature = argv[++i];
       if (strcmp(feature, "avx") == 0 && !deny_avx)
@@ -2681,6 +2693,8 @@ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
 #endif
   if (live_work_require_eligible && !live_path)
     fail("-live_work_require_eligible requires -live_work_v1");
+  if (protect_files && !protect_meter)
+    fail("-protect_file requires -protect_meter");
   if (protect_meter) {
     if (memory_operand_bytes_enabled)
       fail("-protect_meter is incompatible with -memory_operand_bytes");

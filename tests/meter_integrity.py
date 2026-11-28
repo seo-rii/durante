@@ -54,6 +54,7 @@ MODES = {
     "syscall-mmap-fixed": (DEFENDED, "memory_map"),
     "syscall-mprotect": (DEFENDED, "memory_map"),
     "file-records": (OPEN, "protected_file"),
+    "file-report": (OPEN, "protected_file"),
 }
 INTEGRITY_PREFIX = "integrity violation: "
 
@@ -69,6 +70,9 @@ def run_case(args, work, mode, protect):
     if protect:
         command.append("--protect-meter")
     command += ["--", str(work / "meter-attack"), mode]
+    if mode == "file-report":
+        # The strongest case: the submission knows the report's absolute path.
+        command.append(str(report))
     row = run_bounded(command, case, 20000)
     envelope = json.loads(report.read_text()) if report.is_file() else None
     reached = isinstance(row.get("guest"), dict) and row["guest"].get("reached") is True

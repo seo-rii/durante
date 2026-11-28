@@ -51,6 +51,11 @@ static ptr_uint_t protect_window;
 static uint32_t protect_window_key; /* bswap32 of the window's upper half */
 static int protect_min_dr_fd = INT32_MAX;
 static uint64_t protect_outdir_dev, protect_outdir_ino;
+/* Files the supervisor owns, such as the final report, given as device and
+ * inode by -protect_file. A descriptor for any of them is a violation. */
+enum { PROTECT_MAX_FILES = 4 };
+static uint64_t protect_file_dev[PROTECT_MAX_FILES], protect_file_ino[PROTECT_MAX_FILES];
+static unsigned protect_files;
 static size_t protect_outdir_length;
 static uint64_t protect_scatter_sites;
 
@@ -892,6 +897,9 @@ static void protect_check_opened(void *ctx, int fd, int flags) {
     vector = "device";
   if (live_work && st.st_dev == live_dev && st.st_ino == live_ino)
     vector = "protected_file";
+  for (unsigned i = 0; !vector && i < protect_files; ++i)
+    if ((uint64_t)st.st_dev == protect_file_dev[i] && (uint64_t)st.st_ino == protect_file_ino[i])
+      vector = "protected_file";
   if (!vector && (uint64_t)st.st_dev == protect_outdir_dev) {
     char link[64], path[sizeof(outdir) + 8];
     dr_snprintf(link, sizeof(link), "/proc/self/fd/%d", fd);

@@ -302,5 +302,20 @@ int main(int argc, char **argv) {
     return 0;
   }
 
+  /* --- Files: plant a forged final report through a relative path. The
+   * supervisor holds the report open; without protection it refuses to
+   * publish over the change, but the forged bytes stay in the file. --- */
+  if (!strcmp(mode, "file-report")) {
+    int fd = open(argc > 2 ? argv[2] : "report.json", O_RDWR | O_NOFOLLOW | O_CLOEXEC);
+    if (fd < 0)
+      FAIL("open report\n");
+    static const char forged[] = "{\"measurement\":{\"valid\":true,\"complete\":true,"
+                                 "\"instructions\":1}}\n";
+    ssize_t n = write(fd, forged, sizeof(forged) - 1);
+    close(fd);
+    reached(mode, n == (ssize_t)(sizeof(forged) - 1), (uint64_t)n);
+    return 0;
+  }
+
   FAIL("unknown mode %s\n", mode);
 }

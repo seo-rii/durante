@@ -458,6 +458,11 @@ pub fn run(options: Options) -> Result<i32, String> {
     })?;
     verify_report_path(&output, &options.report, 0)
         .map_err(|_| "report must be a new or explicitly supplied empty private file".to_owned())?;
+    // Under meter protection the client refuses any descriptor for the report.
+    let report_identity = output
+        .metadata()
+        .map(|m| (m.dev(), m.ino()))
+        .map_err(|_| "cannot inspect report file".to_owned())?;
     let started = Instant::now();
     let mut result = json!({"schema":1,"authority":"diagnostic_only",
         "integrity_verified":false,"measurement_contract":durante::report::measurement_contract(),
@@ -486,7 +491,7 @@ pub fn run(options: Options) -> Result<i32, String> {
         result["meter_protection"] = json!({"version": 1});
         result["security"]["counter_integrity"] = json!("protected_in_process_v1");
     }
-    let outcome = execute(&options, drrun, client, &mut result);
+    let outcome = execute(&options, drrun, client, report_identity, &mut result);
     result["execution"]["wall_time_ms"] =
         json!(started.elapsed().as_millis().min(u64::MAX as u128) as u64);
     let exit = match outcome {
@@ -589,6 +594,7 @@ fn execute(
     options: &Options,
     drrun: PathBuf,
     client: PathBuf,
+    report_identity: (u64, u64),
     result: &mut Value,
 ) -> Result<i32, &'static str> {
     let mut records = Records::create(options.records_dir.as_deref(), options.keep_records)
@@ -646,7 +652,10 @@ fn execute(
         command.arg("-memory_operand_bytes");
     }
     if options.protect_meter {
-        command.arg("-protect_meter");
+        command.arg("-protect_meter").arg("-protect_file").arg(format!(
+            "{}:{}",
+            report_identity.0, report_identity.1
+        ));
     }
     command
         .arg("--")

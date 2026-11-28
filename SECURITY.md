@@ -54,7 +54,8 @@ allocation falls back outside it; the client audits the whole address space
 against this invariant before the first application instruction. The first and
 last 16 MiB of the window stay `PROT_NONE` as guard regions. The per-process
 record files and the live page are additionally protected by inode, device and
-path checks.
+path checks, and the final report by the device and inode the runner passes with
+`-protect_file`.
 
 **What it stops.** Every application store is range-checked before it executes
 with a flag- and register-preserving inline sequence (`lea; bswap; mov ecx,ecx;
