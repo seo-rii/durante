@@ -14,6 +14,8 @@ import statistics
 
 from analyze import fit, predict
 
+from repeatability import probe_repeatable
+
 MODELS = {
     "M0": ["instructions", "rep_bytes"],
     "ML": ["latency_x16", "rep_bytes"],
@@ -59,6 +61,7 @@ def main():
                        "native_min_s": min(times), "native_max_s": max(times),
                        "native_spread": (max(times) - min(times)) / median,
                        "stable": (max(times) - min(times)) / median <= STABLE_SPREAD,
+                       "probe_repeatable": probe_repeatable(case["probe"]),
                        "features": features(case["probe"][0])}
     calibration = {n: c for n, c in cases.items() if c["role"] == "calibration"}
     heldout = {n: c for n, c in cases.items() if c["role"] == "heldout"}

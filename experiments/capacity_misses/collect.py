@@ -2,7 +2,7 @@
 """Collect counters and native CPU times for the capacity-miss study.
 
 Builds every case of plan.json, checks its output against an independent oracle,
-runs the cache probe twice per case and times the native program in interleaved
+runs the cache probe the requested number of times and times the native program in interleaved
 rounds. The design is in predeclared.txt. Writes results.json into a new output
 directory.
 
@@ -20,6 +20,8 @@ import resource
 import subprocess
 import sys
 import time
+
+from repeatability import probe_repeatable
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
@@ -164,6 +166,8 @@ def main():
     parser.add_argument("--probe-timeout", type=float, default=900)
     parser.add_argument("--probe-runs", type=int, default=2)
     args = parser.parse_args()
+    if args.probe_runs < 1:
+        parser.error("--probe-runs must be positive")
     args.drrun = (args.sdk / "bin64/drrun").resolve()
     args.client = args.client.resolve()
     out = args.output_dir.resolve()
@@ -188,9 +192,7 @@ def main():
     for name, case in cases.items():
         case["probe"] = [probe(args, case, built, out, name, attempt, timer)
                          for attempt in range(1, args.probe_runs + 1)]
-        keys = ("instructions", "movs_bytes", "stos_bytes", "l1d_misses", "outer_misses", "outer_stream",
-                "outer_dependent", "l1d_dependent", "latency_bound_x16")
-        case["probe_repeatable"] = all(run.get(k) == case["probe"][0].get(k) for run in case["probe"] for k in keys)
+        case["probe_repeatable"] = probe_repeatable(case["probe"])
         print(f"probe {name}: repeatable={case['probe_repeatable']} cpu={case['probe'][0]['probe_cpu_s']}s",
               flush=True)
     order = list(cases)
