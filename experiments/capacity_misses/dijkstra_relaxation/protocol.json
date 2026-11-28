@@ -1,0 +1,83 @@
+{
+  "cpu": 1,
+  "cpuid": "x86-64-v2",
+  "factors": [
+    1,
+    1.25,
+    1.5,
+    2,
+    3
+  ],
+  "models": [
+    "ML4",
+    "ML4_plus_misses",
+    "dependent",
+    "ML4_plus_3_3"
+  ],
+  "unanimity_models": [
+    "ML4",
+    "ML4_plus_misses",
+    "dependent"
+  ],
+  "model_definitions": {
+    "ML4": "Use the frozen Dijkstra ML4 weights in order_statistics_transfer/frozen.json (frozen commit b410405414138ea67f79d40ed7d8a6db1541aa3c), seconds per count times 10^9 in ns.",
+    "ML4_plus_misses": "ML4 ns plus 6.92658480142496 ns per simulated gshare misprediction, unchanged from that same registration.",
+    "dependent": "latency_bound_x16 + 700 * l1d_dependent in original counter units with no scaling of the latency word (witness in #125 commit e3f7ccd7084b28c23936fd0d06b445aaa72f8729). A positive constant scale cancels in relative deadlines.",
+    "ML4_plus_3_3": "ML4 ns plus exactly 33/10 ns per gshare misprediction. Chosen from the retrospective feasible interval (3.07892785,3.54116450) ns/miss on the two preceding development problems in #126 before collecting this third problem. Apply identically to submission and reference. Report individually. Exclude this candidate from the previously specified three-model unanimity."
+  },
+  "modes": {
+    "native": [],
+    "outer": [
+      "-rep_bytes",
+      "-latency_bound",
+      "-probe_l1d",
+      "-probe_outer"
+    ],
+    "flat": [
+      "-rep_bytes",
+      "-latency_bound",
+      "-probe_l1d",
+      "-probe_outer"
+    ],
+    "branch": [
+      "-rep_bytes",
+      "-latency_bound"
+    ]
+  },
+  "clients": {
+    "native": "original.so",
+    "outer": "original.so",
+    "flat": "flat.so",
+    "branch": "original.so"
+  },
+  "rounds": [
+    "native",
+    "branch",
+    "native",
+    "flat",
+    "native",
+    "outer",
+    "native",
+    "flat",
+    "native",
+    "branch",
+    "native",
+    "outer",
+    "native"
+  ],
+  "groups": {
+    "once": [
+      "once-ref",
+      "once-heap",
+      "once-set"
+    ],
+    "many": [
+      "many-ref",
+      "many-heap",
+      "many-set"
+    ]
+  },
+  "inputs": "Layered DAG with 24 center vertices and 6144 targets. The directed edge list and decimal byte widths are identical; center path lengths increase by vertex ID. The first graph improves each target once; the second improves each target 24 times, with identical final shortest distances and expected output. Only edge weights change.",
+  "hypothesis": "Increasing the number of tentative improvements while holding topology, final distances and original solvers fixed changes the ordered set / getchar heap native time ratio: lazy heaps must drain 23 extra entries per target while the indexed set contains one entry per target. Predict the native set/getchar-heap ratio decreases on many versus once. Compare signs and relative-ratio errors of each frozen model. This pair bundles staleness, op mix, memory locality and weight parsing, and does not isolate any one counter.",
+  "evaluation": "For both boots and the pool report all 20 relative-deadline verdicts and timing ratios against the original contest-dijkstra reference, exactly as range_distinct. Preserve mixed endpoints. Separately compare the ordered set directly to the getchar heap on both orders, and report the direction on each boot and pooled. For each of the four models additionally abstain whenever the registered L1D unsupported-operand ratio skipped/(refs + skipped), l1d[3]/(l1d[0]+l1d[3]), reaches 1/100 on either reference or submission on any cache repeat; report coverage, errors on issued native-decisive decisions, and abstentions. This optional flag was selected using the old Milan graph. Do not fit coefficients, use native timing for scoring, or change any deployed policy."
+}
