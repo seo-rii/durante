@@ -124,8 +124,7 @@ time.
 ## Replay and collect
 
 The published scores describe the archived stream and dependency counters.
-Changes to the research probe apply to new collections only. No paired dataset
-from the corrected counter implementation is available here. Replay the
+Changes to the research probe apply to new collections only. A later two-guest Milan study collected four corrected counter observations per program on a nine-program contest panel. [Repeated Milan measurements](../experiments/capacity_misses/milan/README.md) Replay the
 historical scores directly from their recorded measurements.
 
 ```sh
