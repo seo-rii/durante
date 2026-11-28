@@ -27,8 +27,19 @@ def checked(path, digest):
     return data
 
 
+def parent_files():
+    parent = json.loads((MILAN / "registration.json").read_bytes())
+    hashes = {item["path"]: item["sha256"] for item in parent["files"]}
+    original = dict(payload=hashes, archive_sha256=parent["archive_sha256"], expected_rows=parent["expected_rows"])
+    if (len(hashes) != len(parent["files"]) or parent["freeze_commit"] != "eb28afa52558cd2772cf79a88e2136b812a94421"
+            or sha((json.dumps(original, indent=2) + "\n").encode()) != parent["original_registration_sha256"]
+            or parent["original_registration_sha256"] != "2f97caa72e03bd53da15ae8bf71216bf34c3820ababb9fdd57a997544a997c5d"):
+        raise ValueError("different registered Milan probe payload")
+    return hashes
+
+
 def prepare(args):
-    old = json.loads((MILAN / "registration.json").read_bytes())["payload"]
+    old = parent_files()
     frozen = json.loads((MILAN / "frozen.json").read_bytes())
     protocol = json.loads((HERE / "protocol.json").read_bytes())
     study = args.aonohako / "docs/durante"

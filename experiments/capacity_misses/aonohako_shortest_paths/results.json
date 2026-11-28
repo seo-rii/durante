@@ -1,0 +1,781 @@
+{
+  "pooled": {
+    "cases": {
+      "block2048": {
+        "anchored_cheap_secondary_ns": [
+          75816322.926,
+          83301945.125
+        ],
+        "cheap_ns": [
+          80026508,
+          80026508
+        ],
+        "counters_identical": true,
+        "ml4_ns": [
+          46819013.433,
+          51441625.461
+        ],
+        "native_ns": [
+          29426000,
+          32792000
+        ],
+        "native_samples": 14,
+        "probe_native_cpu_ratio": 274.021,
+        "probe_samples": 4,
+        "verdicts": {
+          "ML4": "accept",
+          "anchored_cheap_secondary": "timeout",
+          "cheap": "timeout",
+          "native": "accept"
+        }
+      },
+      "block4": {
+        "anchored_cheap_secondary_ns": [
+          176471900.739,
+          193895615.403
+        ],
+        "cheap_ns": [
+          186271629,
+          186271629
+        ],
+        "counters_identical": true,
+        "ml4_ns": [
+          100604424.606,
+          110537466.528
+        ],
+        "native_ns": [
+          87201000,
+          90748000
+        ],
+        "native_samples": 14,
+        "probe_native_cpu_ratio": 85.12,
+        "probe_samples": 4,
+        "verdicts": {
+          "ML4": "timeout",
+          "anchored_cheap_secondary": "timeout",
+          "cheap": "timeout",
+          "native": "timeout"
+        }
+      },
+      "block8": {
+        "anchored_cheap_secondary_ns": [
+          94137206.945,
+          103431716.871
+        ],
+        "cheap_ns": [
+          99364776,
+          99364776
+        ],
+        "counters_identical": true,
+        "ml4_ns": [
+          56601724.471,
+          62190219.254
+        ],
+        "native_ns": [
+          48858000,
+          50958000
+        ],
+        "native_samples": 14,
+        "probe_native_cpu_ratio": 85.167,
+        "probe_samples": 4,
+        "verdicts": {
+          "ML4": "accept",
+          "anchored_cheap_secondary": "timeout",
+          "cheap": "timeout",
+          "native": "accept"
+        }
+      },
+      "fast": {
+        "anchored_cheap_secondary_ns": [
+          11191872.851,
+          12296887.294
+        ],
+        "cheap_ns": [
+          11813373,
+          11813373
+        ],
+        "counters_identical": true,
+        "ml4_ns": [
+          12502976.702,
+          13737441.212
+        ],
+        "native_ns": [
+          10759000,
+          12734000
+        ],
+        "native_samples": 14,
+        "probe_native_cpu_ratio": 75.017,
+        "probe_samples": 4,
+        "verdicts": {
+          "ML4": "accept",
+          "anchored_cheap_secondary": "accept",
+          "cheap": "accept",
+          "native": "accept"
+        }
+      },
+      "ordered_set": {
+        "anchored_cheap_secondary_ns": [
+          17725275.957,
+          19475357.128
+        ],
+        "cheap_ns": [
+          18709585,
+          18709585
+        ],
+        "counters_identical": true,
+        "ml4_ns": [
+          17493633.852,
+          19220844.152
+        ],
+        "native_ns": [
+          21918000,
+          23605000
+        ],
+        "native_samples": 14,
+        "probe_native_cpu_ratio": 57.029,
+        "probe_samples": 4,
+        "verdicts": {
+          "ML4": "accept",
+          "anchored_cheap_secondary": "accept",
+          "cheap": "accept",
+          "native": "accept"
+        }
+      },
+      "reference": {
+        "anchored_cheap_secondary_ns": [
+          14372000.0,
+          15791000.0
+        ],
+        "cheap_ns": [
+          15170097,
+          15170097
+        ],
+        "counters_identical": true,
+        "ml4_ns": [
+          14372000.0,
+          15791000.0
+        ],
+        "native_ns": [
+          14372000,
+          15791000
+        ],
+        "native_samples": 14,
+        "probe_native_cpu_ratio": 65.377,
+        "probe_samples": 4,
+        "verdicts": {
+          "ML4": "accept",
+          "anchored_cheap_secondary": "accept",
+          "cheap": "accept",
+          "native": "accept"
+        }
+      },
+      "slow": {
+        "anchored_cheap_secondary_ns": [
+          1330309937.716,
+          1461656291.851
+        ],
+        "cheap_ns": [
+          1404183885,
+          1404183885
+        ],
+        "counters_identical": true,
+        "ml4_ns": [
+          714898573.556,
+          785483118.218
+        ],
+        "native_ns": [
+          698154000,
+          722101000
+        ],
+        "native_samples": 14,
+        "probe_native_cpu_ratio": 52.186,
+        "probe_samples": 4,
+        "verdicts": {
+          "ML4": "timeout",
+          "anchored_cheap_secondary": "timeout",
+          "cheap": "timeout",
+          "native": "timeout"
+        }
+      }
+    },
+    "excluding_anchor": {
+      "ML4": {
+        "agree": 6
+      },
+      "anchored_cheap_secondary": {
+        "agree": 4,
+        "false_timeout": 2
+      },
+      "cheap": {
+        "agree": 4,
+        "false_timeout": 2
+      }
+    }
+  },
+  "primary": {
+    "cases": {
+      "block2048": {
+        "anchored_cheap_secondary_ns": [
+          76422980.116,
+          83301945.125
+        ],
+        "cheap_ns": [
+          80026508,
+          80026508
+        ],
+        "counters_identical": true,
+        "ml4_ns": [
+          47193643.724,
+          51441625.461
+        ],
+        "native_ns": [
+          29426000,
+          32792000
+        ],
+        "native_samples": 7,
+        "probe_native_cpu_ratio": 274.493,
+        "probe_samples": 2,
+        "verdicts": {
+          "ML4": "accept",
+          "anchored_cheap_secondary": "timeout",
+          "cheap": "timeout",
+          "native": "accept"
+        }
+      },
+      "block4": {
+        "anchored_cheap_secondary_ns": [
+          177883970.638,
+          193895615.403
+        ],
+        "cheap_ns": [
+          186271629,
+          186271629
+        ],
+        "counters_identical": true,
+        "ml4_ns": [
+          101409428.003,
+          110537466.528
+        ],
+        "native_ns": [
+          87201000,
+          90398000
+        ],
+        "native_samples": 7,
+        "probe_native_cpu_ratio": 84.891,
+        "probe_samples": 2,
+        "verdicts": {
+          "ML4": "timeout",
+          "anchored_cheap_secondary": "timeout",
+          "cheap": "timeout",
+          "native": "timeout"
+        }
+      },
+      "block8": {
+        "anchored_cheap_secondary_ns": [
+          94890461.802,
+          103431716.871
+        ],
+        "cheap_ns": [
+          99364776,
+          99364776
+        ],
+        "counters_identical": true,
+        "ml4_ns": [
+          57054632.786,
+          62190219.254
+        ],
+        "native_ns": [
+          48943000,
+          50958000
+        ],
+        "native_samples": 7,
+        "probe_native_cpu_ratio": 84.862,
+        "probe_samples": 2,
+        "verdicts": {
+          "ML4": "accept",
+          "anchored_cheap_secondary": "timeout",
+          "cheap": "timeout",
+          "native": "accept"
+        }
+      },
+      "fast": {
+        "anchored_cheap_secondary_ns": [
+          11281426.523,
+          12296887.294
+        ],
+        "cheap_ns": [
+          11813373,
+          11813373
+        ],
+        "counters_identical": true,
+        "ml4_ns": [
+          12603021.394,
+          13737441.212
+        ],
+        "native_ns": [
+          10759000,
+          12734000
+        ],
+        "native_samples": 7,
+        "probe_native_cpu_ratio": 75.612,
+        "probe_samples": 2,
+        "verdicts": {
+          "ML4": "accept",
+          "anchored_cheap_secondary": "accept",
+          "cheap": "accept",
+          "native": "accept"
+        }
+      },
+      "ordered_set": {
+        "anchored_cheap_secondary_ns": [
+          17867107.764,
+          19475357.128
+        ],
+        "cheap_ns": [
+          18709585,
+          18709585
+        ],
+        "counters_identical": true,
+        "ml4_ns": [
+          17633612.135,
+          19220844.152
+        ],
+        "native_ns": [
+          22158000,
+          23605000
+        ],
+        "native_samples": 7,
+        "probe_native_cpu_ratio": 56.107,
+        "probe_samples": 2,
+        "verdicts": {
+          "ML4": "accept",
+          "anchored_cheap_secondary": "accept",
+          "cheap": "accept",
+          "native": "accept"
+        }
+      },
+      "reference": {
+        "anchored_cheap_secondary_ns": [
+          14487000.0,
+          15791000.0
+        ],
+        "cheap_ns": [
+          15170097,
+          15170097
+        ],
+        "counters_identical": true,
+        "ml4_ns": [
+          14487000.0,
+          15791000.0
+        ],
+        "native_ns": [
+          14487000,
+          15791000
+        ],
+        "native_samples": 7,
+        "probe_native_cpu_ratio": 64.853,
+        "probe_samples": 2,
+        "verdicts": {
+          "ML4": "accept",
+          "anchored_cheap_secondary": "accept",
+          "cheap": "accept",
+          "native": "accept"
+        }
+      },
+      "slow": {
+        "anchored_cheap_secondary_ns": [
+          1340954638.721,
+          1461656291.851
+        ],
+        "cheap_ns": [
+          1404183885,
+          1404183885
+        ],
+        "counters_identical": true,
+        "ml4_ns": [
+          720618955.964,
+          785483118.218
+        ],
+        "native_ns": [
+          698154000,
+          721913000
+        ],
+        "native_samples": 7,
+        "probe_native_cpu_ratio": 52.703,
+        "probe_samples": 2,
+        "verdicts": {
+          "ML4": "timeout",
+          "anchored_cheap_secondary": "timeout",
+          "cheap": "timeout",
+          "native": "timeout"
+        }
+      }
+    },
+    "excluding_anchor": {
+      "ML4": {
+        "agree": 6
+      },
+      "anchored_cheap_secondary": {
+        "agree": 4,
+        "false_timeout": 2
+      },
+      "cheap": {
+        "agree": 4,
+        "false_timeout": 2
+      }
+    },
+    "steal_ticks": 0
+  },
+  "prior_live_v13": {
+    "primary": {
+      "block2048": {
+        "clock": {
+          "Time Limit Exceeded": 2
+        },
+        "clock_termination": {
+          "durante_work_clock": 2
+        },
+        "native": {
+          "Accepted": 3
+        }
+      },
+      "block4": {
+        "clock": {
+          "Time Limit Exceeded": 2
+        },
+        "clock_termination": {
+          "durante_work_clock": 2
+        },
+        "native": {
+          "Time Limit Exceeded": 3
+        }
+      },
+      "block8": {
+        "clock": {
+          "Time Limit Exceeded": 2
+        },
+        "clock_termination": {
+          "durante_work_clock": 2
+        },
+        "native": {
+          "Accepted": 3
+        }
+      },
+      "fast": {
+        "clock": {
+          "Accepted": 2
+        },
+        "clock_termination": {
+          "stdout": 2
+        },
+        "native": {
+          "Accepted": 3
+        }
+      },
+      "ordered_set": {
+        "clock": {
+          "Accepted": 2
+        },
+        "clock_termination": {
+          "stdout": 2
+        },
+        "native": {
+          "Accepted": 3
+        }
+      },
+      "slow": {
+        "clock": {
+          "Time Limit Exceeded": 2
+        },
+        "clock_termination": {
+          "durante_work_clock": 2
+        },
+        "native": {
+          "Time Limit Exceeded": 3
+        }
+      }
+    },
+    "repeat": {
+      "block2048": {
+        "clock": {
+          "Time Limit Exceeded": 2
+        },
+        "clock_termination": {
+          "durante_work_clock": 2
+        },
+        "native": {
+          "Accepted": 3
+        }
+      },
+      "block4": {
+        "clock": {
+          "Time Limit Exceeded": 2
+        },
+        "clock_termination": {
+          "durante_work_clock": 2
+        },
+        "native": {
+          "Time Limit Exceeded": 3
+        }
+      },
+      "block8": {
+        "clock": {
+          "Time Limit Exceeded": 2
+        },
+        "clock_termination": {
+          "durante_work_clock": 2
+        },
+        "native": {
+          "Accepted": 3
+        }
+      },
+      "fast": {
+        "clock": {
+          "Accepted": 2
+        },
+        "clock_termination": {
+          "stdout": 2
+        },
+        "native": {
+          "Accepted": 3
+        }
+      },
+      "ordered_set": {
+        "clock": {
+          "Accepted": 2
+        },
+        "clock_termination": {
+          "stdout": 2
+        },
+        "native": {
+          "Accepted": 3
+        }
+      },
+      "slow": {
+        "clock": {
+          "Time Limit Exceeded": 2
+        },
+        "clock_termination": {
+          "durante_work_clock": 2
+        },
+        "native": {
+          "Time Limit Exceeded": 3
+        }
+      }
+    }
+  },
+  "repeat": {
+    "cases": {
+      "block2048": {
+        "anchored_cheap_secondary_ns": [
+          75816322.926,
+          80896417.484
+        ],
+        "cheap_ns": [
+          80026508,
+          80026508
+        ],
+        "counters_identical": true,
+        "ml4_ns": [
+          46819013.433,
+          49956134.915
+        ],
+        "native_ns": [
+          29582000,
+          32051000
+        ],
+        "native_samples": 7,
+        "probe_native_cpu_ratio": 274.474,
+        "probe_samples": 2,
+        "verdicts": {
+          "ML4": "accept",
+          "anchored_cheap_secondary": "timeout",
+          "cheap": "timeout",
+          "native": "accept"
+        }
+      },
+      "block4": {
+        "anchored_cheap_secondary_ns": [
+          176471900.739,
+          188296451.283
+        ],
+        "cheap_ns": [
+          186271629,
+          186271629
+        ],
+        "counters_identical": true,
+        "ml4_ns": [
+          100604424.606,
+          107345453.056
+        ],
+        "native_ns": [
+          88067000,
+          90748000
+        ],
+        "native_samples": 7,
+        "probe_native_cpu_ratio": 85.387,
+        "probe_samples": 2,
+        "verdicts": {
+          "ML4": "timeout",
+          "anchored_cheap_secondary": "timeout",
+          "cheap": "timeout",
+          "native": "timeout"
+        }
+      },
+      "block8": {
+        "anchored_cheap_secondary_ns": [
+          94137206.945,
+          100444897.614
+        ],
+        "cheap_ns": [
+          99364776,
+          99364776
+        ],
+        "counters_identical": true,
+        "ml4_ns": [
+          56601724.471,
+          60394339.323
+        ],
+        "native_ns": [
+          48858000,
+          50429000
+        ],
+        "native_samples": 7,
+        "probe_native_cpu_ratio": 86.28,
+        "probe_samples": 2,
+        "verdicts": {
+          "ML4": "accept",
+          "anchored_cheap_secondary": "timeout",
+          "cheap": "timeout",
+          "native": "accept"
+        }
+      },
+      "fast": {
+        "anchored_cheap_secondary_ns": [
+          11191872.851,
+          11941787.515
+        ],
+        "cheap_ns": [
+          11813373,
+          11813373
+        ],
+        "counters_identical": true,
+        "ml4_ns": [
+          12502976.702,
+          13340742.258
+        ],
+        "native_ns": [
+          10846000,
+          11069000
+        ],
+        "native_samples": 7,
+        "probe_native_cpu_ratio": 73.422,
+        "probe_samples": 2,
+        "verdicts": {
+          "ML4": "accept",
+          "anchored_cheap_secondary": "accept",
+          "cheap": "accept",
+          "native": "accept"
+        }
+      },
+      "ordered_set": {
+        "anchored_cheap_secondary_ns": [
+          17725275.957,
+          18912963.178
+        ],
+        "cheap_ns": [
+          18709585,
+          18709585
+        ],
+        "counters_identical": true,
+        "ml4_ns": [
+          17493633.852,
+          18665799.827
+        ],
+        "native_ns": [
+          21918000,
+          23579000
+        ],
+        "native_samples": 7,
+        "probe_native_cpu_ratio": 58.706,
+        "probe_samples": 2,
+        "verdicts": {
+          "ML4": "accept",
+          "anchored_cheap_secondary": "accept",
+          "cheap": "accept",
+          "native": "accept"
+        }
+      },
+      "reference": {
+        "anchored_cheap_secondary_ns": [
+          14372000.0,
+          15335000.0
+        ],
+        "cheap_ns": [
+          15170097,
+          15170097
+        ],
+        "counters_identical": true,
+        "ml4_ns": [
+          14372000.0,
+          15335000.0
+        ],
+        "native_ns": [
+          14372000,
+          15335000
+        ],
+        "native_samples": 7,
+        "probe_native_cpu_ratio": 66.025,
+        "probe_samples": 2,
+        "verdicts": {
+          "ML4": "accept",
+          "anchored_cheap_secondary": "accept",
+          "cheap": "accept",
+          "native": "accept"
+        }
+      },
+      "slow": {
+        "anchored_cheap_secondary_ns": [
+          1330309937.716,
+          1419447738.302
+        ],
+        "cheap_ns": [
+          1404183885,
+          1404183885
+        ],
+        "counters_identical": true,
+        "ml4_ns": [
+          714898573.556,
+          762800558.411
+        ],
+        "native_ns": [
+          699050000,
+          722101000
+        ],
+        "native_samples": 7,
+        "probe_native_cpu_ratio": 52.175,
+        "probe_samples": 2,
+        "verdicts": {
+          "ML4": "timeout",
+          "anchored_cheap_secondary": "timeout",
+          "cheap": "timeout",
+          "native": "timeout"
+        }
+      }
+    },
+    "excluding_anchor": {
+      "ML4": {
+        "agree": 6
+      },
+      "anchored_cheap_secondary": {
+        "agree": 4,
+        "false_timeout": 2
+      },
+      "cheap": {
+        "agree": 4,
+        "false_timeout": 2
+      }
+    },
+    "steal_ticks": 0
+  }
+}
