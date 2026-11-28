@@ -75,7 +75,7 @@ problems (minimum of repeats):
 | C++ (clang++) | 2.7x | 2.8x |
 | Rust | 2.2x | 2.6x |
 | Go | 3.2x | 3.3x |
-| Java | 17.1x | 18.2x |
+| Java | 9.3x | 10.0x |
 | Node | 7.9x | 8.1x |
 | PyPy | 3.7x | 3.7x |
 | CPython | 4.5x | 5.0x |
@@ -85,7 +85,12 @@ problems (minimum of repeats):
 | PHP with JIT | 6.3x | 5.9x |
 | Lua | 4.3x | 4.5x |
 
-Java's figure is mostly JVM start-up under the runtime, about 9 s per run.
+The Java row was measured again after two changes (OpenJDK 21, same CPUs):
+the corpus flags keep class data sharing (`-XX:CompressedClassSpaceSize=64m`
+instead of `-XX:-UseCompressedClassPointers`, which turned off the JDK's CDS
+archive), and the runtime flushes only the written pages of the JVM's code
+cache ([JIT_LIFECYCLE.md](JIT_LIFECYCLE.md#writes-to-a-large-code-cache)). It was
+17.1x and 18.2x before, about 9 s of CPU per run; a run now takes 2.6-4.7 s.
 
 The corpus showed two problems, both fixed with it:
 
