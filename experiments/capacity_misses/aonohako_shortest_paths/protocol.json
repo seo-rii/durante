@@ -1,0 +1,11 @@
+{
+  "programs": ["reference", "fast", "block8", "block2048", "block4", "slow", "ordered_set"],
+  "reference": "reference",
+  "deadline_us": 65000,
+  "rounds": ["native", "probe", "native", "native", "native", "probe", "native", "native", "native"],
+  "cpu": 1,
+  "cpuid": "x86-64-v2",
+  "platform": "Two independent N2D AMD Milan boots, SMT disabled",
+  "calibration": "Use only the Dijkstra ML4 coefficients frozen by the Durante Milan study. Anchor ML4 to fresh native and ML4 values of the original reference ELF on the same boot. Never fit on, or use native times from, another submission.",
+  "comparison": "Use all combinations of the submission's ML4 score, reference native CPU and reference ML4 score. Compare the resulting closed interval with 65 ms. For the original cheap clock apply its registered integer instruction and REP-byte coefficients to the same probe observations. Compare each clock against all native CPU observations; equality passes, crossing is indeterminate. Repeat on each boot and on the pooled observations. Count both disagreement directions, excluding the calibration reference. Report the earlier live v13 outcomes separately from these simulated verdicts."
+}
