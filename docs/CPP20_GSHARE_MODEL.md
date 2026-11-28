@@ -7,6 +7,8 @@ estimates on two programs that were held out from model selection.
 
 The v8 Cloud Run study tests a load/branch interaction against an additive control on three new programs. [V8 prediction and live boundary results](CPP20_V8_CLOCK.md)
 
+The Milan contest transfer applies these same coefficients to nine C++20 implementations. [Two-boot branch-counter comparison](../experiments/capacity_misses/milan/gshare/README.md)
+
 ## Protocol
 
 Both models fit the same 15 family/scale medians from integer, REP copy, sort,
