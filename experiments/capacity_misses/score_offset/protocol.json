@@ -1,0 +1,10 @@
+{
+  "development_problem": "string_matching",
+  "score": "ML4 with the original Dijkstra weights in nanoseconds plus 6.92658480142496 nanoseconds per simulated gshare miss",
+  "offset_ns": 7000000,
+  "definition": "Use (T_solver + offset_ns) / (T_reference + offset_ns). The baseline uses zero.",
+  "derivation": "For each alternative and input on each of the two literal-matching boots, solve for the score offset matching median native solver/reference CPU. Among finite positive crossings take the median, rounded to the nearest whole millisecond. Report all crossings, including the excluded negative values.",
+  "archival_transfer": "Apply the fixed 7000000 ns offset to both boots of BFS grid, Fenwick range sum, Dijkstra (contest plus layered), predecessor, inversions and range-distinct. These public archives were available during method selection.",
+  "prospective_transfer": "Register this same candidate on the new LCS layout graph-free panel before collecting its native times or counters.",
+  "deadlines": ["1", "5/4", "3/2", "2", "3"]
+}
