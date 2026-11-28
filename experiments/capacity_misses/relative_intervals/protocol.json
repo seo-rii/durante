@@ -1,0 +1,13 @@
+{
+  "model": "ML4_plus_misses",
+  "branch_miss_ns": "6.92658480142496",
+  "calibration_families": ["predecessor", "inversions", "range_distinct"],
+  "graph_control": "historical contest Dijkstra, same registered original heap, alternate heap and set",
+  "historical_validation": "hold out one entire calibration family at a time, including both input orders and boots; also test the historical Dijkstra graph using all three calibration families",
+  "prospective_test": "Two new layered Dijkstra inputs with few or many successful relaxations, original three registered ELFs, each on two independent pinned Milan boots. Score both alternatives against the intended solution at each deadline.",
+  "prospective_calibrations": ["three calibration families", "three calibration families plus historical contest Dijkstra"],
+  "interval": "For each case within each boot compute min(solver)/max(reference) and max(solver)/min(reference) separately for native and model observations. Across training cases take the minimum native lower / model upper and the maximum native upper / model lower. Multiply a target model interval by the low and high factors respectively. Include no holdout timings in these factors.",
+  "thresholds": ["1", "1.25", "1.5", "2", "3"],
+  "classification": "Accept if upper <= threshold, timeout if lower > threshold, otherwise abstain. Score each boot separately. Report native mixed, issued on mixed, false accepts, false timeouts, abstentions and decision coverage in each problem family. A repeated deadline or guest boot is not a new independent problem.",
+  "success_condition": "A prospective interval has a useful result on this panel only when it issues at least one decision on native-decisive cells, makes no wrong issued decisions, and issues no decisions on native-mixed cells. Report coverage even if it fails. No production decision uses this rule."
+}
