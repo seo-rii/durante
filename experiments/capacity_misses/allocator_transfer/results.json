@@ -1,0 +1,946 @@
+{
+  "new_cost_equality_ns": {
+    "bfs_grid": "45160424043473995469964771/2751488000000000000000000",
+    "dijkstra": "5813320558638043143941827/90847000000000000000000"
+  },
+  "peak_cost_equality_ns": "7372354534096572784501827/31240625000000000000000",
+  "peak_cost_ns": 236,
+  "deadlines": [
+    "1",
+    "5/4",
+    "3/2",
+    "2",
+    "3"
+  ],
+  "counts": {
+    "dijkstra": {
+      "primary": {
+        "baseline_outcomes": {
+          "correct": 8,
+          "native_mixed": 1,
+          "false_accept": 1
+        },
+        "candidate_outcomes": {
+          "correct": 9,
+          "native_mixed": 1
+        }
+      },
+      "repeat": {
+        "baseline_outcomes": {
+          "correct": 6,
+          "native_mixed": 4
+        },
+        "candidate_outcomes": {
+          "correct": 6,
+          "native_mixed": 4
+        }
+      }
+    },
+    "predecessor": {
+      "primary": {
+        "baseline_outcomes": {
+          "correct": 18,
+          "false_accept": 2
+        },
+        "candidate_outcomes": {
+          "correct": 18,
+          "false_timeout": 2
+        }
+      },
+      "repeat": {
+        "baseline_outcomes": {
+          "correct": 18,
+          "false_accept": 2
+        },
+        "candidate_outcomes": {
+          "correct": 18,
+          "false_timeout": 2
+        }
+      }
+    },
+    "inversions": {
+      "primary": {
+        "baseline_outcomes": {
+          "correct": 20
+        },
+        "candidate_outcomes": {
+          "correct": 20
+        }
+      },
+      "repeat": {
+        "baseline_outcomes": {
+          "correct": 20
+        },
+        "candidate_outcomes": {
+          "correct": 20
+        }
+      }
+    },
+    "range_distinct": {
+      "primary": {
+        "baseline_outcomes": {
+          "correct": 19,
+          "false_accept": 1
+        },
+        "candidate_outcomes": {
+          "correct": 19,
+          "false_accept": 1
+        }
+      },
+      "repeat": {
+        "baseline_outcomes": {
+          "correct": 19,
+          "false_accept": 1
+        },
+        "candidate_outcomes": {
+          "correct": 19,
+          "false_accept": 1
+        }
+      }
+    },
+    "dijkstra_relaxation": {
+      "primary": {
+        "baseline_outcomes": {
+          "native_mixed": 1,
+          "correct": 19
+        },
+        "candidate_outcomes": {
+          "native_mixed": 1,
+          "correct": 19
+        }
+      },
+      "repeat": {
+        "baseline_outcomes": {
+          "correct": 20
+        },
+        "candidate_outcomes": {
+          "correct": 20
+        }
+      }
+    }
+  },
+  "cases": {
+    "dijkstra": {
+      "primary": {
+        "dijkstra--vecvec_getchar_pq": {
+          "native": [
+            "106985/72766",
+            "127641/69340"
+          ],
+          "baseline": "40798585803057385395939440/30471886153703970757123751",
+          "candidate": "52006225803057385395939440/30472889153703970757123751",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "native_mixed",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "native_mixed",
+            "correct",
+            "correct"
+          ]
+        },
+        "dijkstra--set_decrease_key": {
+          "native": [
+            "76449/36383",
+            "169843/69340"
+          ],
+          "baseline": "46199063239214795945243848/30471886153703970757123751",
+          "candidate": "60946644239214795945243848/30472889153703970757123751",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "false_accept",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        }
+      },
+      "repeat": {
+        "dijkstra--vecvec_getchar_pq": {
+          "native": [
+            "108268/81393",
+            "167425/69688"
+          ],
+          "baseline": "40798585803057385395939440/30471886153703970757123751",
+          "candidate": "52006225803057385395939440/30472889153703970757123751",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "native_mixed",
+            "native_mixed",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "native_mixed",
+            "native_mixed",
+            "correct"
+          ]
+        },
+        "dijkstra--set_decrease_key": {
+          "native": [
+            "158198/81393",
+            "114563/34844"
+          ],
+          "baseline": "46199063239214795945243848/30471886153703970757123751",
+          "candidate": "60946644239214795945243848/30472889153703970757123751",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "native_mixed",
+            "native_mixed"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "native_mixed",
+            "native_mixed"
+          ]
+        }
+      }
+    },
+    "predecessor": {
+      "primary": {
+        "uniform-multiset": {
+          "native": [
+            "34225/22254",
+            "37414/21871"
+          ],
+          "baseline": "14459677972334518002538325/10739989359278765323995172",
+          "candidate": "22194459972334518002538325/10741641359278765323995172",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "false_accept",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "false_timeout",
+            "correct"
+          ]
+        },
+        "uniform-fenwick": {
+          "native": [
+            "9566/11127",
+            "19264/21871"
+          ],
+          "baseline": "9910582254312299223245497/10739989359278765323995172",
+          "candidate": "3304078084770766407748499/3580547119759588441331724",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        },
+        "clustered-multiset": {
+          "native": [
+            "31909/19728",
+            "33267/19252"
+          ],
+          "baseline": "13686545329173399908388833/9821653558452861587140848",
+          "candidate": "21421327329173399908388833/9823305558452861587140848",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "false_accept",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "false_timeout",
+            "correct"
+          ]
+        },
+        "clustered-fenwick": {
+          "native": [
+            "17975/19728",
+            "9099/9626"
+          ],
+          "baseline": "1527251348146352105883409/1636942259742143597856808",
+          "candidate": "4582580044439056317650227/4911652779226430793570424",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        }
+      },
+      "repeat": {
+        "uniform-multiset": {
+          "native": [
+            "34089/22250",
+            "37855/21829"
+          ],
+          "baseline": "14459677972334518002538325/10739989359278765323995172",
+          "candidate": "22194459972334518002538325/10741641359278765323995172",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "false_accept",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "false_timeout",
+            "correct"
+          ]
+        },
+        "uniform-fenwick": {
+          "native": [
+            "19091/22250",
+            "234/263"
+          ],
+          "baseline": "9910582254312299223245497/10739989359278765323995172",
+          "candidate": "3304078084770766407748499/3580547119759588441331724",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        },
+        "clustered-multiset": {
+          "native": [
+            "32713/19607",
+            "18302/9629"
+          ],
+          "baseline": "13686545329173399908388833/9821653558452861587140848",
+          "candidate": "21421327329173399908388833/9823305558452861587140848",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "false_accept",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "false_timeout",
+            "correct"
+          ]
+        },
+        "clustered-fenwick": {
+          "native": [
+            "17898/19607",
+            "9114/9629"
+          ],
+          "baseline": "1527251348146352105883409/1636942259742143597856808",
+          "candidate": "4582580044439056317650227/4911652779226430793570424",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        }
+      }
+    },
+    "inversions": {
+      "primary": {
+        "shuffled-fenwick": {
+          "native": [
+            "21782/35839",
+            "2716/3951"
+          ],
+          "baseline": "11700344423016633132751197/19796554771375091185345718",
+          "candidate": "11701996423016633132751197/19798206771375091185345718",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        },
+        "shuffled-segtree": {
+          "native": [
+            "31933/35839",
+            "10838/11853"
+          ],
+          "baseline": "18543596460338501070644601/19796554771375091185345718",
+          "candidate": "18545248460338501070644601/19798206771375091185345718",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        },
+        "runs-fenwick": {
+          "native": [
+            "9249/13420",
+            "4690/6607"
+          ],
+          "baseline": "11626007596016399749523417/15727784698331137435763630",
+          "candidate": "11627659596016399749523417/15729436698331137435763630",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        },
+        "runs-segtree": {
+          "native": [
+            "6175/5368",
+            "32579/26428"
+          ],
+          "baseline": "17944054340692634757800101/15727784698331137435763630",
+          "candidate": "17945706340692634757800101/15729436698331137435763630",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        }
+      },
+      "repeat": {
+        "shuffled-fenwick": {
+          "native": [
+            "21999/37178",
+            "12661/17920"
+          ],
+          "baseline": "11700344423016633132751197/19796554771375091185345718",
+          "candidate": "11701996423016633132751197/19798206771375091185345718",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        },
+        "shuffled-segtree": {
+          "native": [
+            "32383/37178",
+            "1229/1280"
+          ],
+          "baseline": "18543596460338501070644601/19796554771375091185345718",
+          "candidate": "18545248460338501070644601/19798206771375091185345718",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        },
+        "runs-fenwick": {
+          "native": [
+            "18838/26775",
+            "19263/26563"
+          ],
+          "baseline": "11626007596016399749523417/15727784698331137435763630",
+          "candidate": "11627659596016399749523417/15729436698331137435763630",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        },
+        "runs-segtree": {
+          "native": [
+            "31069/26775",
+            "32168/26563"
+          ],
+          "baseline": "17944054340692634757800101/15727784698331137435763630",
+          "candidate": "17945706340692634757800101/15729436698331137435763630",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        }
+      }
+    },
+    "range_distinct": {
+      "primary": {
+        "shuffled-mo": {
+          "native": [
+            "13017/9587",
+            "3367/2316"
+          ],
+          "baseline": "6660202361227197092440491/5187760019041966062289867",
+          "candidate": "6661972361227197092440491/5189648019041966062289867",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        },
+        "shuffled-bitset": {
+          "native": [
+            "10789/9587",
+            "3655/3088"
+          ],
+          "baseline": "6246310995945702034075423/5187760019041966062289867",
+          "candidate": "6248198995945702034075423/5189648019041966062289867",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        },
+        "runs-mo": {
+          "native": [
+            "12442/9389",
+            "4374/3095"
+          ],
+          "baseline": "6377712482827727051822419/5131693927987274374354535",
+          "candidate": "6379482482827727051822419/5133581927987274374354535",
+          "baseline_outcomes": [
+            "correct",
+            "false_accept",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "false_accept",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        },
+        "runs-bitset": {
+          "native": [
+            "10832/9389",
+            "3704/3095"
+          ],
+          "baseline": "6236561268980080613599962/5131693927987274374354535",
+          "candidate": "6238449268980080613599962/5133581927987274374354535",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        }
+      },
+      "repeat": {
+        "shuffled-mo": {
+          "native": [
+            "12995/9257",
+            "13230/9187"
+          ],
+          "baseline": "6660202361227197092440491/5187760019041966062289867",
+          "candidate": "6661972361227197092440491/5189648019041966062289867",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        },
+        "shuffled-bitset": {
+          "native": [
+            "10707/9257",
+            "10816/9187"
+          ],
+          "baseline": "6246310995945702034075423/5187760019041966062289867",
+          "candidate": "6248198995945702034075423/5189648019041966062289867",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        },
+        "runs-mo": {
+          "native": [
+            "12392/9511",
+            "12498/9161"
+          ],
+          "baseline": "6377712482827727051822419/5131693927987274374354535",
+          "candidate": "6379482482827727051822419/5133581927987274374354535",
+          "baseline_outcomes": [
+            "correct",
+            "false_accept",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "false_accept",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        },
+        "runs-bitset": {
+          "native": [
+            "10783/9511",
+            "11104/9161"
+          ],
+          "baseline": "6236561268980080613599962/5131693927987274374354535",
+          "candidate": "6238449268980080613599962/5133581927987274374354535",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        }
+      }
+    },
+    "dijkstra_relaxation": {
+      "primary": {
+        "once-heap": {
+          "native": [
+            "3911/6659",
+            "5792/5679"
+          ],
+          "baseline": "1532961657944445322744071/2852871033916059025456958",
+          "candidate": "1537327657944445322744071/2854877033916059025456958",
+          "baseline_outcomes": [
+            "native_mixed",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "native_mixed",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        },
+        "once-set": {
+          "native": [
+            "4323/6659",
+            "4963/5679"
+          ],
+          "baseline": "807584545489796945697063/1426435516958029512728479",
+          "candidate": "1173443545489796945697063/1427438516958029512728479",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        },
+        "many-heap": {
+          "native": [
+            "6929/8345",
+            "11203/11450"
+          ],
+          "baseline": "10017097016937538620597005/10926306254702151784735961",
+          "candidate": "10021463016937538620597005/10928312254702151784735961",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        },
+        "many-set": {
+          "native": [
+            "25394/25035",
+            "6472/5725"
+          ],
+          "baseline": "11461107554982687878311387/10926306254702151784735961",
+          "candidate": "12192825554982687878311387/10928312254702151784735961",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        }
+      },
+      "repeat": {
+        "once-heap": {
+          "native": [
+            "3841/5838",
+            "379/504"
+          ],
+          "baseline": "1532961657944445322744071/2852871033916059025456958",
+          "candidate": "1537327657944445322744071/2854877033916059025456958",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        },
+        "once-set": {
+          "native": [
+            "2146/2919",
+            "261/308"
+          ],
+          "baseline": "807584545489796945697063/1426435516958029512728479",
+          "candidate": "1173443545489796945697063/1427438516958029512728479",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        },
+        "many-heap": {
+          "native": [
+            "20418/24655",
+            "2128/2257"
+          ],
+          "baseline": "10017097016937538620597005/10926306254702151784735961",
+          "candidate": "10021463016937538620597005/10928312254702151784735961",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        },
+        "many-set": {
+          "native": [
+            "25128/24655",
+            "2557/2257"
+          ],
+          "baseline": "11461107554982687878311387/10926306254702151784735961",
+          "candidate": "12192825554982687878311387/10928312254702151784735961",
+          "baseline_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ],
+          "candidate_outcomes": [
+            "correct",
+            "correct",
+            "correct",
+            "correct",
+            "correct"
+          ]
+        }
+      }
+    }
+  }
+}
