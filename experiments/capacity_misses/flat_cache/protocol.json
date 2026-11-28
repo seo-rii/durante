@@ -1,0 +1,48 @@
+{
+  "programs": [
+    "reference",
+    "block8",
+    "block2048"
+  ],
+  "modes": {
+    "native": [],
+    "outer": [
+      "-rep_bytes",
+      "-latency_bound",
+      "-probe_l1d",
+      "-probe_outer"
+    ],
+    "flat_outer": [
+      "-rep_bytes",
+      "-latency_bound",
+      "-probe_l1d",
+      "-probe_outer"
+    ]
+  },
+  "clients": {
+    "native": "original.so",
+    "outer": "original.so",
+    "flat_outer": "flat.so"
+  },
+  "rounds": [
+    "native",
+    "outer",
+    "flat_outer",
+    "outer",
+    "flat_outer",
+    "native",
+    "flat_outer",
+    "native",
+    "outer",
+    "native",
+    "flat_outer",
+    "outer",
+    "flat_outer",
+    "outer",
+    "native"
+  ],
+  "cpu": 1,
+  "cpuid": "x86-64-v2",
+  "comparison": "Compare five process user+system CPU samples per arm, program and boot with the complete order reversed on a second new n2d-standard-4 Milan boot. Report within-boot and pooled medians, all cross-pair speedup bounds, ratios to native, and CPU1 exec traces.",
+  "validation": "Require the registered original ELF, stdin and stdout in all arms. Check every instruction, latency, REP and cache diagnostic field and all eight frozen ML4 features between the original and flat full-cache clients. Report confidence separately for same-boot and cross-boot equality. A discrepancy in shared counter values or native behavior for a fixture disqualifies the tested candidate."
+}

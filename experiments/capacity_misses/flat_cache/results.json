@@ -1,0 +1,410 @@
+{
+  "primary": {
+    "steal_ticks": 0,
+    "cases": {
+      "reference": {
+        "median_cpu_us": {
+          "native": 14947,
+          "outer": 953552,
+          "flat_outer": 527377
+        },
+        "cpu_us_ranges": {
+          "native": [
+            14494,
+            15546
+          ],
+          "outer": [
+            939847,
+            975727
+          ],
+          "flat_outer": [
+            504388,
+            541007
+          ]
+        },
+        "original_over_flat": 1.8081,
+        "all_pair_speedup": [
+          1.7372,
+          1.9345
+        ],
+        "flat_over_native": 35.2831,
+        "original_over_native": 63.7955,
+        "different_counter_fields": [],
+        "all_eight_ml4_equal": true,
+        "ml4_counts": {
+          "latency_x16": 253084540,
+          "rep_bytes": 1984,
+          "l1d_misses": 1322161,
+          "random_2m": 89521,
+          "random_32m": 2260,
+          "stream_2m": 91792,
+          "l1d_dependent": 427878,
+          "dependent_2m": 11659
+        },
+        "original_matches_earlier_graph": true
+      },
+      "block8": {
+        "median_cpu_us": {
+          "native": 49491,
+          "outer": 4222629,
+          "flat_outer": 1003219
+        },
+        "cpu_us_ranges": {
+          "native": [
+            48819,
+            50537
+          ],
+          "outer": [
+            4216982,
+            4341312
+          ],
+          "flat_outer": [
+            982468,
+            1027787
+          ]
+        },
+        "original_over_flat": 4.2091,
+        "all_pair_speedup": [
+          4.103,
+          4.4188
+        ],
+        "flat_over_native": 20.2707,
+        "original_over_native": 85.3211,
+        "different_counter_fields": [],
+        "all_eight_ml4_equal": true,
+        "ml4_counts": {
+          "latency_x16": 1657757292,
+          "rep_bytes": 1984,
+          "l1d_misses": 1173280,
+          "random_2m": 87026,
+          "random_32m": 2244,
+          "stream_2m": 83922,
+          "l1d_dependent": 439303,
+          "dependent_2m": 9933
+        },
+        "original_matches_earlier_graph": true
+      },
+      "block2048": {
+        "median_cpu_us": {
+          "native": 29830,
+          "outer": 8205234,
+          "flat_outer": 1131678
+        },
+        "cpu_us_ranges": {
+          "native": [
+            29625,
+            30213
+          ],
+          "outer": [
+            8156256,
+            8228986
+          ],
+          "flat_outer": [
+            1119936,
+            1141925
+          ]
+        },
+        "original_over_flat": 7.2505,
+        "all_pair_speedup": [
+          7.1425,
+          7.3477
+        ],
+        "flat_over_native": 37.9376,
+        "original_over_native": 275.0665,
+        "different_counter_fields": [],
+        "all_eight_ml4_equal": true,
+        "ml4_counts": {
+          "latency_x16": 1335124812,
+          "rep_bytes": 1984,
+          "l1d_misses": 1212659,
+          "random_2m": 86959,
+          "random_32m": 2241,
+          "stream_2m": 83796,
+          "l1d_dependent": 437354,
+          "dependent_2m": 9890
+        },
+        "original_matches_earlier_graph": true
+      }
+    }
+  },
+  "repeat": {
+    "steal_ticks": 0,
+    "cases": {
+      "reference": {
+        "median_cpu_us": {
+          "native": 14730,
+          "outer": 969668,
+          "flat_outer": 522492
+        },
+        "cpu_us_ranges": {
+          "native": [
+            14421,
+            16089
+          ],
+          "outer": [
+            946085,
+            1043414
+          ],
+          "flat_outer": [
+            510149,
+            560581
+          ]
+        },
+        "original_over_flat": 1.8559,
+        "all_pair_speedup": [
+          1.6877,
+          2.0453
+        ],
+        "flat_over_native": 35.4713,
+        "original_over_native": 65.8295,
+        "different_counter_fields": [],
+        "all_eight_ml4_equal": true,
+        "ml4_counts": {
+          "latency_x16": 253084540,
+          "rep_bytes": 1984,
+          "l1d_misses": 1322161,
+          "random_2m": 89521,
+          "random_32m": 2260,
+          "stream_2m": 91792,
+          "l1d_dependent": 427878,
+          "dependent_2m": 11659
+        },
+        "original_matches_earlier_graph": true
+      },
+      "block8": {
+        "median_cpu_us": {
+          "native": 50075,
+          "outer": 4245395,
+          "flat_outer": 1014025
+        },
+        "cpu_us_ranges": {
+          "native": [
+            49234,
+            52924
+          ],
+          "outer": [
+            4224895,
+            4272780
+          ],
+          "flat_outer": [
+            989572,
+            1023302
+          ]
+        },
+        "original_over_flat": 4.1867,
+        "all_pair_speedup": [
+          4.1287,
+          4.3178
+        ],
+        "flat_over_native": 20.2501,
+        "original_over_native": 84.7807,
+        "different_counter_fields": [],
+        "all_eight_ml4_equal": true,
+        "ml4_counts": {
+          "latency_x16": 1657757292,
+          "rep_bytes": 1984,
+          "l1d_misses": 1173280,
+          "random_2m": 87026,
+          "random_32m": 2244,
+          "stream_2m": 83922,
+          "l1d_dependent": 439303,
+          "dependent_2m": 9933
+        },
+        "original_matches_earlier_graph": true
+      },
+      "block2048": {
+        "median_cpu_us": {
+          "native": 30145,
+          "outer": 8218741,
+          "flat_outer": 1132949
+        },
+        "cpu_us_ranges": {
+          "native": [
+            29461,
+            32239
+          ],
+          "outer": [
+            8203844,
+            8249600
+          ],
+          "flat_outer": [
+            1123088,
+            1180339
+          ]
+        },
+        "original_over_flat": 7.2543,
+        "all_pair_speedup": [
+          6.9504,
+          7.3455
+        ],
+        "flat_over_native": 37.5833,
+        "original_over_native": 272.6403,
+        "different_counter_fields": [],
+        "all_eight_ml4_equal": true,
+        "ml4_counts": {
+          "latency_x16": 1335124812,
+          "rep_bytes": 1984,
+          "l1d_misses": 1212659,
+          "random_2m": 86959,
+          "random_32m": 2241,
+          "stream_2m": 83796,
+          "l1d_dependent": 437354,
+          "dependent_2m": 9890
+        },
+        "original_matches_earlier_graph": true
+      }
+    }
+  },
+  "pooled": {
+    "reference": {
+      "median_cpu_us": {
+        "native": 14838.5,
+        "outer": 957439.0,
+        "flat_outer": 524395.0
+      },
+      "cpu_us_ranges": {
+        "native": [
+          14421,
+          16089
+        ],
+        "outer": [
+          939847,
+          1043414
+        ],
+        "flat_outer": [
+          504388,
+          560581
+        ]
+      },
+      "original_over_flat": 1.8258,
+      "all_pair_speedup": [
+        1.6766,
+        2.0687
+      ],
+      "flat_over_native": 35.3402,
+      "original_over_native": 64.524,
+      "different_counter_fields": [],
+      "all_eight_ml4_equal": true,
+      "ml4_counts": {
+        "latency_x16": 253084540,
+        "rep_bytes": 1984,
+        "l1d_misses": 1322161,
+        "random_2m": 89521,
+        "random_32m": 2260,
+        "stream_2m": 91792,
+        "l1d_dependent": 427878,
+        "dependent_2m": 11659
+      },
+      "original_matches_earlier_graph": true
+    },
+    "block8": {
+      "median_cpu_us": {
+        "native": 49598.5,
+        "outer": 4244313.0,
+        "flat_outer": 1011223.5
+      },
+      "cpu_us_ranges": {
+        "native": [
+          48819,
+          52924
+        ],
+        "outer": [
+          4216982,
+          4341312
+        ],
+        "flat_outer": [
+          982468,
+          1027787
+        ]
+      },
+      "original_over_flat": 4.1972,
+      "all_pair_speedup": [
+        4.103,
+        4.4188
+      ],
+      "flat_over_native": 20.3882,
+      "original_over_native": 85.5734,
+      "different_counter_fields": [],
+      "all_eight_ml4_equal": true,
+      "ml4_counts": {
+        "latency_x16": 1657757292,
+        "rep_bytes": 1984,
+        "l1d_misses": 1173280,
+        "random_2m": 87026,
+        "random_32m": 2244,
+        "stream_2m": 83922,
+        "l1d_dependent": 439303,
+        "dependent_2m": 9933
+      },
+      "original_matches_earlier_graph": true
+    },
+    "block2048": {
+      "median_cpu_us": {
+        "native": 29864.0,
+        "outer": 8212823.0,
+        "flat_outer": 1132313.5
+      },
+      "cpu_us_ranges": {
+        "native": [
+          29461,
+          32239
+        ],
+        "outer": [
+          8156256,
+          8249600
+        ],
+        "flat_outer": [
+          1119936,
+          1180339
+        ]
+      },
+      "original_over_flat": 7.2531,
+      "all_pair_speedup": [
+        6.9101,
+        7.3661
+      ],
+      "flat_over_native": 37.9157,
+      "original_over_native": 275.0075,
+      "different_counter_fields": [],
+      "all_eight_ml4_equal": true,
+      "ml4_counts": {
+        "latency_x16": 1335124812,
+        "rep_bytes": 1984,
+        "l1d_misses": 1212659,
+        "random_2m": 86959,
+        "random_32m": 2241,
+        "stream_2m": 83796,
+        "l1d_dependent": 437354,
+        "dependent_2m": 9890
+      },
+      "original_matches_earlier_graph": true
+    }
+  },
+  "receipt_hashes": {
+    "block8": {
+      "normalized_work": [
+        "2f78013a008906f085c61157ba3cc8603a1bf92e19311b2b2efb2d6e6b4f1188"
+      ],
+      "cache_stderr": [
+        "0f623acdf4dda0f6863475fb5ae0cf252113c524eaaa39ffbd8a63e9b3c44bf5"
+      ]
+    },
+    "block2048": {
+      "normalized_work": [
+        "250b9058e0d6cecf370433a03c623dd5172105381d9f08d5a4127c6edee3febf"
+      ],
+      "cache_stderr": [
+        "940db3cdda35300a958f8a0b6b1499578ff4c934422a56a386b6b0aca824bc5c"
+      ]
+    },
+    "reference": {
+      "normalized_work": [
+        "4380f63295ec95a840c90d893203003c150f15deeb55e0642590426f2b22dd72"
+      ],
+      "cache_stderr": [
+        "44daa2a4124b59f624b629dd11001aaf9f0921cc1d178cb8e2fa635b221c1fa5"
+      ]
+    }
+  },
+  "counter_equivalent": true
+}
