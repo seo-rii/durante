@@ -1,0 +1,71 @@
+{
+  "cpu": 1,
+  "cpuid": "x86-64-v2",
+  "modes": {
+    "native": [],
+    "outer": [
+      "-rep_bytes",
+      "-latency_bound",
+      "-probe_l1d",
+      "-probe_outer"
+    ],
+    "flat": [
+      "-rep_bytes",
+      "-latency_bound",
+      "-probe_l1d",
+      "-probe_outer"
+    ],
+    "branch": [
+      "-rep_bytes",
+      "-latency_bound"
+    ]
+  },
+  "clients": {
+    "native": "original.so",
+    "outer": "original.so",
+    "flat": "flat.so",
+    "branch": "original.so"
+  },
+  "rounds": [
+    "native",
+    "branch",
+    "native",
+    "flat",
+    "native",
+    "outer",
+    "native",
+    "flat",
+    "native",
+    "branch",
+    "native",
+    "outer",
+    "native"
+  ],
+  "factors": [
+    1,
+    1.25,
+    1.5,
+    2,
+    3
+  ],
+  "groups": {
+    "short": [
+      "short-roll",
+      "short-delta",
+      "short-table"
+    ],
+    "long": [
+      "long-roll",
+      "long-delta",
+      "long-table"
+    ]
+  },
+  "inputs": "Signed weights on a path, two prefixes of a seeded xorshift32 stream. Programs construct the same array and output the maximum weight of a subset containing no adjacent vertices, allowing the empty subset.",
+  "models": {
+    "baseline": "ML4_ns + 6.92658480142496 ns per gshare miss",
+    "recurrence": "baseline_ns + (10/496 ns) * loop_recurrence_cycles_x16. This additive diagnostic may overlap with the static bound already in ML4. No fitting."
+  },
+  "success": "Separately on each independent boot, strictly reduce the median absolute solver/reference ratio error across all four comparisons and introduce zero newly incorrect native-determinate decisions at the five registered inclusive thresholds. Report mixed native outcomes separately. No recalibration or training.",
+  "model_registration": "e622190c47f7c1ace7e1cbbed241ea075180503f",
+  "recurrence_ns_per_x16": "10/496"
+}
