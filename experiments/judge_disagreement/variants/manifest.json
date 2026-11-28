@@ -1,0 +1,631 @@
+{
+ "flags": "g++ -std=c++20 -O2 -static -no-pie -march=x86-64 -mtune=generic",
+ "ratio_note": "ratio = rough native CPU time (user+sys) relative to the intended sol.cpp on the 'full' input: geometric mean of two check.py runs (best of 3 and best of 5), listed in ratio_runs, on one core of an Intel Xeon (Emerald Rapids, 2 MB L2, large shared L3) while other jobs ran on the remaining cores. Run-to-run spread is 10-30%, so treat it as a classification only.",
+ "too_slow_note": "The variant with too_slow=true is meant to be rejected by any reasonable time limit (target 15-40x).",
+ "problems": {
+  "bfs_grid": {
+   "intended": "tests/contest/bfs_grid/sol.cpp",
+   "variants": [
+    {
+     "name": "queue_pair_vecvec",
+     "path": "experiments/judge_disagreement/variants/bfs_grid/queue_pair_vecvec.cpp",
+     "ratio": 0.98,
+     "too_slow": false,
+     "bound": "same as intended",
+     "description": "Textbook BFS with std::queue<pair<int,int>> (deque) and vector<vector<int>> dist; no div/mod per pop.",
+     "ratio_runs": [
+      1.02,
+      0.95
+     ]
+    },
+    {
+     "name": "list_queue",
+     "path": "experiments/judge_disagreement/variants/bfs_grid/list_queue.cpp",
+     "ratio": 1.59,
+     "too_slow": false,
+     "bound": "allocation",
+     "description": "Queue is a std::list<pair<int,int>> (one heap node per cell) plus a bit-packed vector<vector<bool>> visited array.",
+     "ratio_runs": [
+      1.74,
+      1.45
+     ]
+    },
+    {
+     "name": "pq_instead_of_bfs",
+     "path": "experiments/judge_disagreement/variants/bfs_grid/pq_instead_of_bfs.cpp",
+     "ratio": 2.3,
+     "too_slow": false,
+     "bound": "branchy / heap",
+     "description": "Dijkstra with a binary heap of (dist,r,c) tuples on the unit-weight grid instead of a FIFO queue.",
+     "ratio_runs": [
+      2.32,
+      2.22
+     ]
+    },
+    {
+     "name": "bitset_frontier_sweep",
+     "path": "experiments/judge_disagreement/variants/bfs_grid/bitset_frontier_sweep.cpp",
+     "ratio": 4.3,
+     "too_slow": false,
+     "bound": "compute / sequential",
+     "description": "Bit-parallel BFS: every level recomputes the frontier for the whole grid with 64-bit word ops (~4000 full sweeps, no queue).",
+     "ratio_runs": [
+      4.37,
+      4.14
+     ]
+    },
+    {
+     "name": "unordered_map_dist",
+     "path": "experiments/judge_disagreement/variants/bfs_grid/unordered_map_dist.cpp",
+     "ratio": 6.1,
+     "too_slow": false,
+     "bound": "memory latency / hashing",
+     "description": "Distances in an unordered_map<int,int> keyed by cell id (count + operator[] per neighbour) instead of a flat array.",
+     "ratio_runs": [
+      6.18,
+      6.01
+     ]
+    },
+    {
+     "name": "hash_seen_and_dist",
+     "path": "experiments/judge_disagreement/variants/bfs_grid/hash_seen_and_dist.cpp",
+     "ratio": 14.0,
+     "too_slow": false,
+     "bound": "memory latency / hashing",
+     "description": "Two hash tables: unordered_set<long long> visited plus unordered_map<long long,int> dist, 64-bit keys.",
+     "ratio_runs": [
+      13.39,
+      14.29
+     ]
+    },
+    {
+     "name": "map_pair_dist",
+     "path": "experiments/judge_disagreement/variants/bfs_grid/map_pair_dist.cpp",
+     "ratio": 38.0,
+     "too_slow": true,
+     "bound": "pointer chasing",
+     "description": "TOO SLOW: std::map<pair<int,int>,int> distances, a red-black-tree walk over millions of nodes per lookup.",
+     "ratio_runs": [
+      38.29,
+      38.1
+     ]
+    }
+   ]
+  },
+  "dijkstra": {
+   "intended": "tests/contest/dijkstra/sol.cpp",
+   "variants": [
+    {
+     "name": "bellman_ford_edges",
+     "path": "experiments/judge_disagreement/variants/dijkstra/bellman_ford_edges.cpp",
+     "ratio": 0.65,
+     "too_slow": false,
+     "bound": "sequential sweeps",
+     "description": "Bellman-Ford over the raw edge list with early exit: a few sequential passes over all edges with random dist reads/writes, no heap.",
+     "ratio_runs": [
+      0.63,
+      0.67
+     ]
+    },
+    {
+     "name": "vecvec_getchar_pq",
+     "path": "experiments/judge_disagreement/variants/dijkstra/vecvec_getchar_pq.cpp",
+     "ratio": 1.37,
+     "too_slow": false,
+     "bound": "allocation / indirection",
+     "description": "Same lazy binary-heap Dijkstra, but vector<vector<pair>> adjacency grown by push_back, vector<bool> done, getchar_unlocked reader.",
+     "ratio_runs": [
+      1.49,
+      1.26
+     ]
+    },
+    {
+     "name": "set_decrease_key",
+     "path": "experiments/judge_disagreement/variants/dijkstra/set_decrease_key.cpp",
+     "ratio": 2.0,
+     "too_slow": false,
+     "bound": "pointer chasing",
+     "description": "std::set<pair<ll,int>> as an indexed priority queue (erase + reinsert on improvement), vector<vector<pair>> adjacency.",
+     "ratio_runs": [
+      2.05,
+      1.89
+     ]
+    },
+    {
+     "name": "scanf_vecvec_pq",
+     "path": "experiments/judge_disagreement/variants/dijkstra/scanf_vecvec_pq.cpp",
+     "ratio": 2.3,
+     "too_slow": false,
+     "bound": "I/O (libc parsing)",
+     "description": "Standard lazy binary-heap Dijkstra with scanf input for all 1.8M numbers and vector<vector<pair>> adjacency.",
+     "ratio_runs": [
+      2.31,
+      2.26
+     ]
+    },
+    {
+     "name": "cin_synced",
+     "path": "experiments/judge_disagreement/variants/dijkstra/cin_synced.cpp",
+     "ratio": 3.6,
+     "too_slow": false,
+     "bound": "I/O (iostream synced with stdio)",
+     "description": "The intended CSR + heap algorithm, but cin left synchronised with stdio (no sync_with_stdio(false)).",
+     "ratio_runs": [
+      3.77,
+      3.49
+     ]
+    },
+    {
+     "name": "map_adj_umap_dist",
+     "path": "experiments/judge_disagreement/variants/dijkstra/map_adj_umap_dist.cpp",
+     "ratio": 9.1,
+     "too_slow": false,
+     "bound": "pointer chasing / hashing",
+     "description": "std::map<int,vector<pair>> adjacency plus unordered_map dist and unordered_set done (tree + hash lookups instead of arrays).",
+     "ratio_runs": [
+      10.48,
+      7.91
+     ]
+    },
+    {
+     "name": "maps_everywhere_synced",
+     "path": "experiments/judge_disagreement/variants/dijkstra/maps_everywhere_synced.cpp",
+     "ratio": 19.0,
+     "too_slow": true,
+     "bound": "pointer chasing + synced I/O",
+     "description": "TOO SLOW: std::map adjacency, std::map dist, std::set done, std::set as the PQ, and cin synced with stdio.",
+     "ratio_runs": [
+      19.6,
+      18.44
+     ]
+    }
+   ]
+  },
+  "lcs": {
+   "intended": "tests/contest/lcs/sol.cpp",
+   "variants": [
+    {
+     "name": "one_row_branchless",
+     "path": "experiments/judge_disagreement/variants/lcs/one_row_branchless.cpp",
+     "ratio": 1.18,
+     "too_slow": false,
+     "bound": "compute",
+     "description": "Single DP row updated in place with a saved diagonal and branch-free max, scanf into char buffers.",
+     "ratio_runs": [
+      1.18,
+      1.19
+     ]
+    },
+    {
+     "name": "full_table_short",
+     "path": "experiments/judge_disagreement/variants/lcs/full_table_short.cpp",
+     "ratio": 1.23,
+     "too_slow": false,
+     "bound": "memory bandwidth",
+     "description": "Full (n+1)x(m+1) uint16_t table in one flat 128 MB array instead of two rolling rows (streaming writes).",
+     "ratio_runs": [
+      1.36,
+      1.11
+     ]
+    },
+    {
+     "name": "column_major_table",
+     "path": "experiments/judge_disagreement/variants/lcs/column_major_table.cpp",
+     "ratio": 2.7,
+     "too_slow": false,
+     "bound": "TLB / cache-hostile stride",
+     "description": "Full vector<vector<uint16_t>> table filled column by column: the inner loop strides across 8000 rows (a new page per access).",
+     "ratio_runs": [
+      2.83,
+      2.67
+     ]
+    },
+    {
+     "name": "memo_recursion",
+     "path": "experiments/judge_disagreement/variants/lcs/memo_recursion.cpp",
+     "ratio": 4.1,
+     "too_slow": false,
+     "bound": "recursion / call overhead",
+     "description": "Top-down memoised recursion lcs(i,j) over a vector<vector<short>> memo (recursion depth up to n+m).",
+     "ratio_runs": [
+      4.09,
+      4.04
+     ]
+    },
+    {
+     "name": "hunt_szymanski",
+     "path": "experiments/judge_disagreement/variants/lcs/hunt_szymanski.cpp",
+     "ratio": 4.4,
+     "too_slow": false,
+     "bound": "branchy binary search",
+     "description": "Hunt-Szymanski: LIS over all ~16M matching (i,j) pairs, one lower_bound on the threshold vector per pair.",
+     "ratio_runs": [
+      4.44,
+      4.33
+     ]
+    },
+    {
+     "name": "lis_of_sorted_pairs",
+     "path": "experiments/judge_disagreement/variants/lcs/lis_of_sorted_pairs.cpp",
+     "ratio": 9.0,
+     "too_slow": false,
+     "bound": "sort / memory (128-190 MB)",
+     "description": "Materialises all ~16M matching pairs in a vector, std::sorts them by (i asc, j desc), then patience-sorting LIS.",
+     "ratio_runs": [
+      8.93,
+      9.15
+     ]
+    },
+    {
+     "name": "hash_rows_copied",
+     "path": "experiments/judge_disagreement/variants/lcs/hash_rows_copied.cpp",
+     "ratio": 19.0,
+     "too_slow": true,
+     "bound": "hashing + allocation",
+     "description": "TOO SLOW: each DP row is a fresh unordered_map<int,int> 'sparse array', copied into prev (prev = cur) every row.",
+     "ratio_runs": [
+      18.75,
+      19.69
+     ]
+    }
+   ]
+  },
+  "fenwick": {
+   "intended": "tests/contest/fenwick/sol.cpp",
+   "variants": [
+    {
+     "name": "segtree_bottom_up",
+     "path": "experiments/judge_disagreement/variants/fenwick/segtree_bottom_up.cpp",
+     "ratio": 1.41,
+     "too_slow": false,
+     "bound": "same as intended",
+     "description": "Iterative bottom-up segment tree (2n array) with an fread reader and a hand-rolled integer writer.",
+     "ratio_runs": [
+      1.6,
+      1.25
+     ]
+    },
+    {
+     "name": "range_bit_template",
+     "path": "experiments/judge_disagreement/variants/fenwick/range_bit_template.cpp",
+     "ratio": 1.91,
+     "too_slow": false,
+     "bound": "extra work (constant factor)",
+     "description": "Generic range-add/range-sum two-BIT template used for point updates: O(n log n) build, both trees touched per operation.",
+     "ratio_runs": [
+      1.97,
+      1.85
+     ]
+    },
+    {
+     "name": "sqrt_decomposition",
+     "path": "experiments/judge_disagreement/variants/fenwick/sqrt_decomposition.cpp",
+     "ratio": 2.6,
+     "too_slow": false,
+     "bound": "worse complexity, sequential",
+     "description": "Square-root decomposition: O(sqrt n) per query summing partial blocks element-wise and whole blocks via block sums.",
+     "ratio_runs": [
+      2.75,
+      2.52
+     ]
+    },
+    {
+     "name": "fenwick_cin_endl",
+     "path": "experiments/judge_disagreement/variants/fenwick/fenwick_cin_endl.cpp",
+     "ratio": 4.6,
+     "too_slow": false,
+     "bound": "syscalls (flush per line)",
+     "description": "The intended Fenwick tree, but cin/cout (sync off) with endl after each answer: one write(2) per query.",
+     "ratio_runs": [
+      4.57,
+      4.63
+     ]
+    },
+    {
+     "name": "segtree_recursive",
+     "path": "experiments/judge_disagreement/variants/fenwick/segtree_recursive.cpp",
+     "ratio": 5.0,
+     "too_slow": false,
+     "bound": "recursion + scanf/printf",
+     "description": "Classic recursive top-down segment tree (4n array) with scanf input and a printf per answer.",
+     "ratio_runs": [
+      4.58,
+      5.42
+     ]
+    },
+    {
+     "name": "pointer_segtree",
+     "path": "experiments/judge_disagreement/variants/fenwick/pointer_segtree.cpp",
+     "ratio": 9.3,
+     "too_slow": false,
+     "bound": "pointer chasing / allocation",
+     "description": "Segment tree of heap-allocated nodes linked by pointers (new per node), cin input.",
+     "ratio_runs": [
+      8.64,
+      10.0
+     ]
+    },
+    {
+     "name": "map_fenwick",
+     "path": "experiments/judge_disagreement/variants/fenwick/map_fenwick.cpp",
+     "ratio": 49.0,
+     "too_slow": true,
+     "bound": "pointer chasing",
+     "description": "TOO SLOW: the intended Fenwick tree stored in a std::map<int,long long> used as a sparse array.",
+     "ratio_runs": [
+      48.88,
+      49.11
+     ]
+    }
+   ]
+  },
+  "kmp": {
+   "intended": "tests/contest/kmp/sol.cpp",
+   "variants": [
+    {
+     "name": "shift_and_bitap",
+     "path": "experiments/judge_disagreement/variants/kmp/shift_and_bitap.cpp",
+     "ratio": 0.83,
+     "too_slow": false,
+     "bound": "compute / branch-free",
+     "description": "Shift-And (bitap): one shift/OR/AND per text character on a 64-bit state, KMP fallback for patterns longer than 64.",
+     "ratio_runs": [
+      0.85,
+      0.81
+     ]
+    },
+    {
+     "name": "kmp_automaton",
+     "path": "experiments/judge_disagreement/variants/kmp/kmp_automaton.cpp",
+     "ratio": 1.53,
+     "too_slow": false,
+     "bound": "load-latency chain",
+     "description": "KMP compiled into a 256-column DFA: one dependent table load per character (no fallback loop); fread input.",
+     "ratio_runs": [
+      1.54,
+      1.52
+     ]
+    },
+    {
+     "name": "rolling_hash",
+     "path": "experiments/judge_disagreement/variants/kmp/rolling_hash.cpp",
+     "ratio": 2.0,
+     "too_slow": false,
+     "bound": "compute (128-bit multiply)",
+     "description": "Rabin-Karp with a hash modulo 2^61-1 (128-bit multiplies), every hash hit confirmed with memcmp.",
+     "ratio_runs": [
+      2.06,
+      1.94
+     ]
+    },
+    {
+     "name": "z_function",
+     "path": "experiments/judge_disagreement/variants/kmp/z_function.cpp",
+     "ratio": 2.6,
+     "too_slow": false,
+     "bound": "memory bandwidth (80 MB array)",
+     "description": "Z-function over pattern + '#' + text: a 20M-entry int array and a second pass to collect matches.",
+     "ratio_runs": [
+      2.72,
+      2.51
+     ]
+    },
+    {
+     "name": "kmp_cin_synced",
+     "path": "experiments/judge_disagreement/variants/kmp/kmp_cin_synced.cpp",
+     "ratio": 3.2,
+     "too_slow": false,
+     "bound": "I/O (iostream synced with stdio)",
+     "description": "The intended KMP, but cin left synchronised with stdio, so the 20 MB text is read through stdio char by char.",
+     "ratio_runs": [
+      3.15,
+      3.35
+     ]
+    },
+    {
+     "name": "substr_compare",
+     "path": "experiments/judge_disagreement/variants/kmp/substr_compare.cpp",
+     "ratio": 5.5,
+     "too_slow": false,
+     "bound": "allocation",
+     "description": "Brute force with t.substr(i, m) == p at every position: one heap-allocated 24-char temporary per text position.",
+     "ratio_runs": [
+      6.2,
+      4.88
+     ]
+    },
+    {
+     "name": "hash_from_scratch",
+     "path": "experiments/judge_disagreement/variants/kmp/hash_from_scratch.cpp",
+     "ratio": 25.0,
+     "too_slow": true,
+     "bound": "compute (O(n*m) modmul)",
+     "description": "TOO SLOW: 'Rabin-Karp' recomputing each window's hash mod 1e9+7 from scratch (O(n*m)), hits verified exactly.",
+     "ratio_runs": [
+      23.85,
+      25.78
+     ]
+    }
+   ]
+  },
+  "sort_bs": {
+   "intended": "tests/contest/sort_bs/sol.cpp",
+   "variants": [
+    {
+     "name": "offline_two_pointer",
+     "path": "experiments/judge_disagreement/variants/sort_bs/offline_two_pointer.cpp",
+     "ratio": 0.78,
+     "too_slow": false,
+     "bound": "same as intended (sort-heavy)",
+     "description": "Offline: sort values and (query, index) pairs, two-pointer sweep, answers printed in input order with printf.",
+     "ratio_runs": [
+      0.88,
+      0.69
+     ]
+    },
+    {
+     "name": "merge_sort_vectors",
+     "path": "experiments/judge_disagreement/variants/sort_bs/merge_sort_vectors.cpp",
+     "ratio": 1.03,
+     "too_slow": false,
+     "bound": "allocation",
+     "description": "Hand-written recursive merge sort copying both halves into fresh vectors at every level, hand-written binary search, printf.",
+     "ratio_runs": [
+      1.15,
+      0.92
+     ]
+    },
+    {
+     "name": "list_sort",
+     "path": "experiments/judge_disagreement/variants/sort_bs/list_sort.cpp",
+     "ratio": 1.78,
+     "too_slow": false,
+     "bound": "pointer chasing",
+     "description": "Values in a std::list sorted with list::sort (merge sort over scattered nodes), copied to a vector for upper_bound.",
+     "ratio_runs": [
+      1.82,
+      1.75
+     ]
+    },
+    {
+     "name": "cin_endl",
+     "path": "experiments/judge_disagreement/variants/sort_bs/cin_endl.cpp",
+     "ratio": 1.94,
+     "too_slow": false,
+     "bound": "syscalls (flush per line)",
+     "description": "Same sort + upper_bound with cin/cout (sync off) and endl after every answer: one write(2) per query.",
+     "ratio_runs": [
+      1.86,
+      2.02
+     ]
+    },
+    {
+     "name": "cin_synced",
+     "path": "experiments/judge_disagreement/variants/sort_bs/cin_synced.cpp",
+     "ratio": 3.3,
+     "too_slow": false,
+     "bound": "I/O (iostream synced with stdio)",
+     "description": "Same sort + upper_bound with cin/cout left synchronised with stdio ('\\n', no endl).",
+     "ratio_runs": [
+      3.35,
+      3.18
+     ]
+    },
+    {
+     "name": "pbds_order_tree",
+     "path": "experiments/judge_disagreement/variants/sort_bs/pbds_order_tree.cpp",
+     "ratio": 4.9,
+     "too_slow": false,
+     "bound": "pointer chasing",
+     "description": "__gnu_pbds order-statistics red-black tree over (value, index) pairs; order_of_key per query.",
+     "ratio_runs": [
+      4.82,
+      4.97
+     ]
+    },
+    {
+     "name": "sqrt_sorted_blocks",
+     "path": "experiments/judge_disagreement/variants/sort_bs/sqrt_sorted_blocks.cpp",
+     "ratio": 26.0,
+     "too_slow": true,
+     "bound": "worse complexity, branchy",
+     "description": "TOO SLOW: sqrt-decomposition template with sorted blocks of size sqrt(n log n); each query binary-searches all ~160 blocks.",
+     "ratio_runs": [
+      24.85,
+      26.81
+     ]
+    }
+   ]
+  },
+  "deep_dfs": {
+   "intended": "tests/contest/deep_dfs/sol.cpp",
+   "variants": [
+    {
+     "name": "bfs_order_reverse",
+     "path": "experiments/judge_disagreement/variants/deep_dfs/bfs_order_reverse.cpp",
+     "ratio": 0.83,
+     "too_slow": false,
+     "bound": "memory latency, no recursion",
+     "description": "No DFS: BFS from the root records order/parents/depths, subtree sizes accumulated over the reversed order.",
+     "ratio_runs": [
+      0.77,
+      0.9
+     ]
+    },
+    {
+     "name": "stack_pairs_vecvec",
+     "path": "experiments/judge_disagreement/variants/deep_dfs/stack_pairs_vecvec.cpp",
+     "ratio": 1.59,
+     "too_slow": false,
+     "bound": "explicit stack + allocation",
+     "description": "Iterative preorder with std::stack<pair<int,int>> over vector<vector<int>> adjacency, sizes summed in reverse preorder.",
+     "ratio_runs": [
+      1.36,
+      1.87
+     ]
+    },
+    {
+     "name": "vecvec_recursive_scanf",
+     "path": "experiments/judge_disagreement/variants/deep_dfs/vecvec_recursive_scanf.cpp",
+     "ratio": 1.91,
+     "too_slow": false,
+     "bound": "recursion + scanf",
+     "description": "Recursive DFS (depth 1e6) over vector<vector<int>> adjacency with scanf input.",
+     "ratio_runs": [
+      1.73,
+      2.1
+     ]
+    },
+    {
+     "name": "set_adjacency",
+     "path": "experiments/judge_disagreement/variants/deep_dfs/set_adjacency.cpp",
+     "ratio": 2.9,
+     "too_slow": false,
+     "bound": "pointer chasing / allocation",
+     "description": "Recursive DFS over vector<set<int>> adjacency: every neighbour is a separately allocated tree node.",
+     "ratio_runs": [
+      2.66,
+      3.15
+     ]
+    },
+    {
+     "name": "umap_adjacency",
+     "path": "experiments/judge_disagreement/variants/deep_dfs/umap_adjacency.cpp",
+     "ratio": 3.4,
+     "too_slow": false,
+     "bound": "hashing / allocation",
+     "description": "Recursive DFS over unordered_map<int, vector<int>> adjacency: a hash lookup plus a heap vector per vertex.",
+     "ratio_runs": [
+      3.17,
+      3.59
+     ]
+    },
+    {
+     "name": "multimap_adjacency",
+     "path": "experiments/judge_disagreement/variants/deep_dfs/multimap_adjacency.cpp",
+     "ratio": 8.6,
+     "too_slow": false,
+     "bound": "pointer chasing",
+     "description": "Both edge directions in one std::multimap<int,int>; recursive DFS enumerates neighbours with equal_range (tree search per vertex).",
+     "ratio_runs": [
+      8.1,
+      9.16
+     ]
+    },
+    {
+     "name": "map_of_sets",
+     "path": "experiments/judge_disagreement/variants/deep_dfs/map_of_sets.cpp",
+     "ratio": 20.0,
+     "too_slow": true,
+     "bound": "pointer chasing + synced I/O",
+     "description": "TOO SLOW: 'graph as a map of sets' (map<int,set<int>>), std::map of subtree sizes, recursive DFS, cin synced with stdio.",
+     "ratio_runs": [
+      19.32,
+      20.31
+     ]
+    }
+   ]
+  }
+ },
+ "maxrss_note": "Peak RSS of the full run is in check.py's output (_build/check/results.json); deep_dfs/map_of_sets peaks at ~370 MB, everything else <= 220 MB."
+}
