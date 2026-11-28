@@ -1,0 +1,941 @@
+{
+  "pooled": {
+    "block2048": {
+      "cpu_us": {
+        "l1d": [
+          8054336,
+          8073694.0,
+          8102655
+        ],
+        "latency": [
+          275937,
+          278451.0,
+          281307
+        ],
+        "native": [
+          29486,
+          29983.5,
+          30520
+        ],
+        "outer": [
+          8172554,
+          8189667.5,
+          8240738
+        ],
+        "rep": [
+          175100,
+          178168.5,
+          181294
+        ]
+      },
+      "distinct_readings_per_counter": {
+        "instructions": 1,
+        "l1d_lines": 1,
+        "l1d_misses": 1,
+        "l1d_refs": 1,
+        "l1d_rep": 1,
+        "l1d_skipped": 1,
+        "latency_x16": 1,
+        "movs_bytes": 1,
+        "movs_entries": 1,
+        "outer": 1,
+        "rep_bytes": 1,
+        "rep_entries": 1,
+        "stos_bytes": 1,
+        "stos_entries": 1,
+        "unsupported_rep_entries": 1,
+        "version": 1
+      },
+      "l1d_line_hit_percent": [
+        98.503,
+        98.503
+      ],
+      "over_native": {
+        "l1d": 269.271,
+        "latency": 9.287,
+        "native": 1.0,
+        "outer": 273.139,
+        "rep": 5.942
+      },
+      "samples": {
+        "l1d": 10,
+        "latency": 10,
+        "native": 10,
+        "outer": 10,
+        "rep": 10
+      },
+      "stages": {
+        "l1d": {
+          "delta_range_us": [
+            7773029,
+            7826718
+          ],
+          "delta_us": 7795243.0,
+          "percent_excess_over_native": 95.534,
+          "percent_full_cpu": 95.184
+        },
+        "latency": {
+          "delta_range_us": [
+            94643,
+            106207
+          ],
+          "delta_us": 100282.5,
+          "percent_excess_over_native": 1.229,
+          "percent_full_cpu": 1.225
+        },
+        "outer": {
+          "delta_range_us": [
+            69899,
+            186402
+          ],
+          "delta_us": 115973.5,
+          "percent_excess_over_native": 1.421,
+          "percent_full_cpu": 1.416
+        },
+        "rep": {
+          "delta_range_us": [
+            144580,
+            151808
+          ],
+          "delta_us": 148185.0,
+          "percent_excess_over_native": 1.816,
+          "percent_full_cpu": 1.809
+        }
+      }
+    },
+    "block8": {
+      "cpu_us": {
+        "l1d": [
+          4107072,
+          4114565.5,
+          4137723
+        ],
+        "latency": [
+          413805,
+          415489.5,
+          416692
+        ],
+        "native": [
+          49010,
+          49632.5,
+          50882
+        ],
+        "outer": [
+          4205394,
+          4228285.5,
+          4392615
+        ],
+        "rep": [
+          254097,
+          256151.5,
+          259755
+        ]
+      },
+      "distinct_readings_per_counter": {
+        "instructions": 1,
+        "l1d_lines": 1,
+        "l1d_misses": 1,
+        "l1d_refs": 1,
+        "l1d_rep": 1,
+        "l1d_skipped": 1,
+        "latency_x16": 1,
+        "movs_bytes": 1,
+        "movs_entries": 1,
+        "outer": 1,
+        "rep_bytes": 1,
+        "rep_entries": 1,
+        "stos_bytes": 1,
+        "stos_entries": 1,
+        "unsupported_rep_entries": 1,
+        "version": 1
+      },
+      "l1d_line_hit_percent": [
+        98.439,
+        98.439
+      ],
+      "over_native": {
+        "l1d": 82.901,
+        "latency": 8.371,
+        "native": 1.0,
+        "outer": 85.192,
+        "rep": 5.161
+      },
+      "samples": {
+        "l1d": 10,
+        "latency": 10,
+        "native": 10,
+        "outer": 10,
+        "rep": 10
+      },
+      "stages": {
+        "l1d": {
+          "delta_range_us": [
+            3690380,
+            3723918
+          ],
+          "delta_us": 3699076.0,
+          "percent_excess_over_native": 88.523,
+          "percent_full_cpu": 87.484
+        },
+        "latency": {
+          "delta_range_us": [
+            154050,
+            162595
+          ],
+          "delta_us": 159338.0,
+          "percent_excess_over_native": 3.813,
+          "percent_full_cpu": 3.768
+        },
+        "outer": {
+          "delta_range_us": [
+            67671,
+            285543
+          ],
+          "delta_us": 113720.0,
+          "percent_excess_over_native": 2.721,
+          "percent_full_cpu": 2.69
+        },
+        "rep": {
+          "delta_range_us": [
+            203215,
+            210745
+          ],
+          "delta_us": 206519.0,
+          "percent_excess_over_native": 4.942,
+          "percent_full_cpu": 4.884
+        }
+      }
+    },
+    "reference": {
+      "cpu_us": {
+        "l1d": [
+          853295,
+          860085.5,
+          879443
+        ],
+        "latency": [
+          77241,
+          79197.5,
+          82404
+        ],
+        "native": [
+          14471,
+          14649.0,
+          15534
+        ],
+        "outer": [
+          933634,
+          948574.0,
+          1018287
+        ],
+        "rep": [
+          64912,
+          67839.5,
+          69016
+        ]
+      },
+      "distinct_readings_per_counter": {
+        "instructions": 1,
+        "l1d_lines": 1,
+        "l1d_misses": 1,
+        "l1d_refs": 1,
+        "l1d_rep": 1,
+        "l1d_skipped": 1,
+        "latency_x16": 1,
+        "movs_bytes": 1,
+        "movs_entries": 1,
+        "outer": 1,
+        "rep_bytes": 1,
+        "rep_entries": 1,
+        "stos_bytes": 1,
+        "stos_entries": 1,
+        "unsupported_rep_entries": 1,
+        "version": 1
+      },
+      "l1d_line_hit_percent": [
+        92.757,
+        92.757
+      ],
+      "over_native": {
+        "l1d": 58.713,
+        "latency": 5.406,
+        "native": 1.0,
+        "outer": 64.753,
+        "rep": 4.631
+      },
+      "samples": {
+        "l1d": 10,
+        "latency": 10,
+        "native": 10,
+        "outer": 10,
+        "rep": 10
+      },
+      "stages": {
+        "l1d": {
+          "delta_range_us": [
+            770891,
+            802202
+          ],
+          "delta_us": 780888.0,
+          "percent_excess_over_native": 83.614,
+          "percent_full_cpu": 82.322
+        },
+        "latency": {
+          "delta_range_us": [
+            8225,
+            17492
+          ],
+          "delta_us": 11358.0,
+          "percent_excess_over_native": 1.216,
+          "percent_full_cpu": 1.197
+        },
+        "outer": {
+          "delta_range_us": [
+            54191,
+            164992
+          ],
+          "delta_us": 88488.5,
+          "percent_excess_over_native": 9.475,
+          "percent_full_cpu": 9.329
+        },
+        "rep": {
+          "delta_range_us": [
+            49378,
+            54545
+          ],
+          "delta_us": 53190.5,
+          "percent_excess_over_native": 5.695,
+          "percent_full_cpu": 5.607
+        }
+      }
+    }
+  },
+  "primary": {
+    "cases": {
+      "block2048": {
+        "cpu_us": {
+          "l1d": [
+            8065631,
+            8076311,
+            8084537
+          ],
+          "latency": [
+            276236,
+            278862,
+            281307
+          ],
+          "native": [
+            29496,
+            29673,
+            30124
+          ],
+          "outer": [
+            8180208,
+            8192211,
+            8240738
+          ],
+          "rep": [
+            175980,
+            177801,
+            178326
+          ]
+        },
+        "distinct_readings_per_counter": {
+          "instructions": 1,
+          "l1d_lines": 1,
+          "l1d_misses": 1,
+          "l1d_refs": 1,
+          "l1d_rep": 1,
+          "l1d_skipped": 1,
+          "latency_x16": 1,
+          "movs_bytes": 1,
+          "movs_entries": 1,
+          "outer": 1,
+          "rep_bytes": 1,
+          "rep_entries": 1,
+          "stos_bytes": 1,
+          "stos_entries": 1,
+          "unsupported_rep_entries": 1,
+          "version": 1
+        },
+        "l1d_line_hit_percent": [
+          98.503,
+          98.503
+        ],
+        "over_native": {
+          "l1d": 272.177,
+          "latency": 9.398,
+          "native": 1.0,
+          "outer": 276.083,
+          "rep": 5.992
+        },
+        "samples": {
+          "l1d": 5,
+          "latency": 5,
+          "native": 5,
+          "outer": 5,
+          "rep": 5
+        },
+        "stages": {
+          "l1d": {
+            "delta_range_us": [
+              7784324,
+              7808301
+            ],
+            "delta_us": 7797449,
+            "percent_excess_over_native": 95.527,
+            "percent_full_cpu": 95.181
+          },
+          "latency": {
+            "delta_range_us": [
+              97910,
+              105327
+            ],
+            "delta_us": 101061,
+            "percent_excess_over_native": 1.238,
+            "percent_full_cpu": 1.234
+          },
+          "outer": {
+            "delta_range_us": [
+              95671,
+              175107
+            ],
+            "delta_us": 115900,
+            "percent_excess_over_native": 1.42,
+            "percent_full_cpu": 1.415
+          },
+          "rep": {
+            "delta_range_us": [
+              145856,
+              148830
+            ],
+            "delta_us": 148128,
+            "percent_excess_over_native": 1.815,
+            "percent_full_cpu": 1.808
+          }
+        }
+      },
+      "block8": {
+        "cpu_us": {
+          "l1d": [
+            4111868,
+            4125309,
+            4137723
+          ],
+          "latency": [
+            413805,
+            415582,
+            416692
+          ],
+          "native": [
+            49010,
+            50132,
+            50882
+          ],
+          "outer": [
+            4213461,
+            4228754,
+            4392615
+          ],
+          "rep": [
+            254690,
+            255388,
+            259755
+          ]
+        },
+        "distinct_readings_per_counter": {
+          "instructions": 1,
+          "l1d_lines": 1,
+          "l1d_misses": 1,
+          "l1d_refs": 1,
+          "l1d_rep": 1,
+          "l1d_skipped": 1,
+          "latency_x16": 1,
+          "movs_bytes": 1,
+          "movs_entries": 1,
+          "outer": 1,
+          "rep_bytes": 1,
+          "rep_entries": 1,
+          "stos_bytes": 1,
+          "stos_entries": 1,
+          "unsupported_rep_entries": 1,
+          "version": 1
+        },
+        "l1d_line_hit_percent": [
+          98.439,
+          98.439
+        ],
+        "over_native": {
+          "l1d": 82.289,
+          "latency": 8.29,
+          "native": 1.0,
+          "outer": 84.352,
+          "rep": 5.094
+        },
+        "samples": {
+          "l1d": 5,
+          "latency": 5,
+          "native": 5,
+          "outer": 5,
+          "rep": 5
+        },
+        "stages": {
+          "l1d": {
+            "delta_range_us": [
+              3695176,
+              3723918
+            ],
+            "delta_us": 3709727,
+            "percent_excess_over_native": 88.779,
+            "percent_full_cpu": 87.726
+          },
+          "latency": {
+            "delta_range_us": [
+              154050,
+              162002
+            ],
+            "delta_us": 160194,
+            "percent_excess_over_native": 3.834,
+            "percent_full_cpu": 3.788
+          },
+          "outer": {
+            "delta_range_us": [
+              75738,
+              280747
+            ],
+            "delta_us": 103445,
+            "percent_excess_over_native": 2.476,
+            "percent_full_cpu": 2.446
+          },
+          "rep": {
+            "delta_range_us": [
+              203808,
+              210745
+            ],
+            "delta_us": 205256,
+            "percent_excess_over_native": 4.912,
+            "percent_full_cpu": 4.854
+          }
+        }
+      },
+      "reference": {
+        "cpu_us": {
+          "l1d": [
+            853295,
+            859840,
+            863707
+          ],
+          "latency": [
+            77241,
+            78761,
+            79958
+          ],
+          "native": [
+            14471,
+            14773,
+            14954
+          ],
+          "outer": [
+            933634,
+            950459,
+            1018287
+          ],
+          "rep": [
+            64912,
+            67261,
+            68113
+          ]
+        },
+        "distinct_readings_per_counter": {
+          "instructions": 1,
+          "l1d_lines": 1,
+          "l1d_misses": 1,
+          "l1d_refs": 1,
+          "l1d_rep": 1,
+          "l1d_skipped": 1,
+          "latency_x16": 1,
+          "movs_bytes": 1,
+          "movs_entries": 1,
+          "outer": 1,
+          "rep_bytes": 1,
+          "rep_entries": 1,
+          "stos_bytes": 1,
+          "stos_entries": 1,
+          "unsupported_rep_entries": 1,
+          "version": 1
+        },
+        "l1d_line_hit_percent": [
+          92.757,
+          92.757
+        ],
+        "over_native": {
+          "l1d": 58.203,
+          "latency": 5.331,
+          "native": 1.0,
+          "outer": 64.338,
+          "rep": 4.553
+        },
+        "samples": {
+          "l1d": 5,
+          "latency": 5,
+          "native": 5,
+          "outer": 5,
+          "rep": 5
+        },
+        "stages": {
+          "l1d": {
+            "delta_range_us": [
+              773337,
+              786466
+            ],
+            "delta_us": 781079,
+            "percent_excess_over_native": 83.477,
+            "percent_full_cpu": 82.179
+          },
+          "latency": {
+            "delta_range_us": [
+              9128,
+              15046
+            ],
+            "delta_us": 11500,
+            "percent_excess_over_native": 1.229,
+            "percent_full_cpu": 1.21
+          },
+          "outer": {
+            "delta_range_us": [
+              69927,
+              164992
+            ],
+            "delta_us": 90619,
+            "percent_excess_over_native": 9.685,
+            "percent_full_cpu": 9.534
+          },
+          "rep": {
+            "delta_range_us": [
+              49958,
+              53642
+            ],
+            "delta_us": 52488,
+            "percent_excess_over_native": 5.61,
+            "percent_full_cpu": 5.522
+          }
+        }
+      }
+    },
+    "steal_ticks": 0
+  },
+  "repeat": {
+    "cases": {
+      "block2048": {
+        "cpu_us": {
+          "l1d": [
+            8054336,
+            8073149,
+            8102655
+          ],
+          "latency": [
+            275937,
+            278040,
+            280536
+          ],
+          "native": [
+            29486,
+            30277,
+            30520
+          ],
+          "outer": [
+            8172554,
+            8188335,
+            8191256
+          ],
+          "rep": [
+            175100,
+            180899,
+            181294
+          ]
+        },
+        "distinct_readings_per_counter": {
+          "instructions": 1,
+          "l1d_lines": 1,
+          "l1d_misses": 1,
+          "l1d_refs": 1,
+          "l1d_rep": 1,
+          "l1d_skipped": 1,
+          "latency_x16": 1,
+          "movs_bytes": 1,
+          "movs_entries": 1,
+          "outer": 1,
+          "rep_bytes": 1,
+          "rep_entries": 1,
+          "stos_bytes": 1,
+          "stos_entries": 1,
+          "unsupported_rep_entries": 1,
+          "version": 1
+        },
+        "l1d_line_hit_percent": [
+          98.503,
+          98.503
+        ],
+        "over_native": {
+          "l1d": 266.643,
+          "latency": 9.183,
+          "native": 1.0,
+          "outer": 270.447,
+          "rep": 5.975
+        },
+        "samples": {
+          "l1d": 5,
+          "latency": 5,
+          "native": 5,
+          "outer": 5,
+          "rep": 5
+        },
+        "stages": {
+          "l1d": {
+            "delta_range_us": [
+              7773800,
+              7826718
+            ],
+            "delta_us": 7795109,
+            "percent_excess_over_native": 95.551,
+            "percent_full_cpu": 95.198
+          },
+          "latency": {
+            "delta_range_us": [
+              94643,
+              105436
+            ],
+            "delta_us": 97141,
+            "percent_excess_over_native": 1.191,
+            "percent_full_cpu": 1.186
+          },
+          "outer": {
+            "delta_range_us": [
+              69899,
+              136920
+            ],
+            "delta_us": 115186,
+            "percent_excess_over_native": 1.412,
+            "percent_full_cpu": 1.407
+          },
+          "rep": {
+            "delta_range_us": [
+              144580,
+              151808
+            ],
+            "delta_us": 150622,
+            "percent_excess_over_native": 1.846,
+            "percent_full_cpu": 1.839
+          }
+        }
+      },
+      "block8": {
+        "cpu_us": {
+          "l1d": [
+            4107072,
+            4113630,
+            4126744
+          ],
+          "latency": [
+            414780,
+            415088,
+            416028
+          ],
+          "native": [
+            49228,
+            49486,
+            50536
+          ],
+          "outer": [
+            4205394,
+            4227817,
+            4245187
+          ],
+          "rep": [
+            254097,
+            256915,
+            258340
+          ]
+        },
+        "distinct_readings_per_counter": {
+          "instructions": 1,
+          "l1d_lines": 1,
+          "l1d_misses": 1,
+          "l1d_refs": 1,
+          "l1d_rep": 1,
+          "l1d_skipped": 1,
+          "latency_x16": 1,
+          "movs_bytes": 1,
+          "movs_entries": 1,
+          "outer": 1,
+          "rep_bytes": 1,
+          "rep_entries": 1,
+          "stos_bytes": 1,
+          "stos_entries": 1,
+          "unsupported_rep_entries": 1,
+          "version": 1
+        },
+        "l1d_line_hit_percent": [
+          98.439,
+          98.439
+        ],
+        "over_native": {
+          "l1d": 83.127,
+          "latency": 8.388,
+          "native": 1.0,
+          "outer": 85.435,
+          "rep": 5.192
+        },
+        "samples": {
+          "l1d": 5,
+          "latency": 5,
+          "native": 5,
+          "outer": 5,
+          "rep": 5
+        },
+        "stages": {
+          "l1d": {
+            "delta_range_us": [
+              3691044,
+              3711964
+            ],
+            "delta_us": 3698542,
+            "percent_excess_over_native": 88.517,
+            "percent_full_cpu": 87.481
+          },
+          "latency": {
+            "delta_range_us": [
+              156440,
+              161931
+            ],
+            "delta_us": 158173,
+            "percent_excess_over_native": 3.786,
+            "percent_full_cpu": 3.741
+          },
+          "outer": {
+            "delta_range_us": [
+              78650,
+              138115
+            ],
+            "delta_us": 114187,
+            "percent_excess_over_native": 2.733,
+            "percent_full_cpu": 2.701
+          },
+          "rep": {
+            "delta_range_us": [
+              203561,
+              209112
+            ],
+            "delta_us": 207429,
+            "percent_excess_over_native": 4.964,
+            "percent_full_cpu": 4.906
+          }
+        }
+      },
+      "reference": {
+        "cpu_us": {
+          "l1d": [
+            858530,
+            869909,
+            879443
+          ],
+          "latency": [
+            78691,
+            79528,
+            82404
+          ],
+          "native": [
+            14504,
+            14550,
+            15534
+          ],
+          "outer": [
+            939352,
+            946546,
+            962177
+          ],
+          "rep": [
+            67103,
+            68501,
+            69016
+          ]
+        },
+        "distinct_readings_per_counter": {
+          "instructions": 1,
+          "l1d_lines": 1,
+          "l1d_misses": 1,
+          "l1d_refs": 1,
+          "l1d_rep": 1,
+          "l1d_skipped": 1,
+          "latency_x16": 1,
+          "movs_bytes": 1,
+          "movs_entries": 1,
+          "outer": 1,
+          "rep_bytes": 1,
+          "rep_entries": 1,
+          "stos_bytes": 1,
+          "stos_entries": 1,
+          "unsupported_rep_entries": 1,
+          "version": 1
+        },
+        "l1d_line_hit_percent": [
+          92.757,
+          92.757
+        ],
+        "over_native": {
+          "l1d": 59.788,
+          "latency": 5.466,
+          "native": 1.0,
+          "outer": 65.055,
+          "rep": 4.708
+        },
+        "samples": {
+          "l1d": 5,
+          "latency": 5,
+          "native": 5,
+          "outer": 5,
+          "rep": 5
+        },
+        "stages": {
+          "l1d": {
+            "delta_range_us": [
+              776126,
+              800752
+            ],
+            "delta_us": 790381,
+            "percent_excess_over_native": 84.805,
+            "percent_full_cpu": 83.502
+          },
+          "latency": {
+            "delta_range_us": [
+              9675,
+              15301
+            ],
+            "delta_us": 11027,
+            "percent_excess_over_native": 1.183,
+            "percent_full_cpu": 1.165
+          },
+          "outer": {
+            "delta_range_us": [
+              59909,
+              103647
+            ],
+            "delta_us": 76637,
+            "percent_excess_over_native": 8.223,
+            "percent_full_cpu": 8.096
+          },
+          "rep": {
+            "delta_range_us": [
+              51569,
+              54512
+            ],
+            "delta_us": 53951,
+            "percent_excess_over_native": 5.789,
+            "percent_full_cpu": 5.7
+          }
+        }
+      }
+    },
+    "steal_ticks": 0
+  }
+}
