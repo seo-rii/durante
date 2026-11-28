@@ -1,0 +1,52 @@
+Capacity-miss time features: predeclared design (written before timing any held-out case)
+
+Question. Previous fits (instructions, REP bytes, loop recurrence, gshare misses,
+simulated L1D misses) cannot separate working sets that all miss a 32 KiB L1D:
+in docs/CPP20_CROSSED_MEMORY.md a 1 MiB and a 16 MiB random-read footprint
+differ by 66% in native CPU while every counter differs by at most 2.94%. Do
+exact misses of larger fully associative LRU capacities, split into stream and
+random misses, improve held-out CPU-time predictions?
+
+Counters. One probe run per case with experiments/l1d_probe built with
+DURANTE_L1D_PROBE and the options -rep_bytes -probe_l1d -probe_outer:
+instructions, MOVS bytes and STOS bytes from the terminal records; L1D misses
+from PROBE_L1D; misses and stream misses at 256 KiB, 2 MiB and 32 MiB from
+PROBE_OUTER. A miss is a stream miss when it is within two lines of one of the
+last 16 misses at the same capacity. random = misses - stream.
+
+Host and timing. This 4-vCPU Linux x86-64 guest (Intel Xeon @ 2.10GHz, 2 MiB L2
+per core, 260 MiB shared L3). Every native and probe run is pinned to CPU 1 with
+ASLR disabled (setarch -R) and an unlimited stack. A case's native time is the
+median of 9 user+system CPU readings of the program, taken in 9 interleaved
+rounds over all cases in a seeded shuffled order. A case is stable when
+(max - min) / median <= 10%. Every native run must reproduce the expected
+stdout; probe runs must too.
+
+Cases. Calibration: the 14 kernels in plan.json (integer, branch, independent
+random reads, dependent pointer chasing, sequential scans and random stores at
+16 KiB to 64 MiB). Held-out (22): the 9 cases of experiments/crossed_memory_corpus,
+the 3 of experiments/memory_cost_holdout, the 3 of experiments/branch_load_holdout
+and the 7 C++ contest problems of tests/contest with their full inputs. All
+C/C++ is built static with g++ -O2 -march=x86-64 -mtune=generic (C++20 for
+C++). No case is added, removed or resized after timing starts.
+
+Models. Each model predicts CPU seconds as a nonnegative weighted sum with zero
+intercept, fitted on the 14 calibration medians by minimizing the sum of squared
+relative errors (exact optimum over active sets). Weights are frozen before any
+held-out score is computed.
+  M0  instructions, REP bytes (MOVS + STOS)
+  M1  M0 + L1D misses
+  M2  M1 + random misses at 2 MiB, random misses at 32 MiB, stream misses at 2 MiB
+  M3  M0 + random misses at 256 KiB, 2 MiB and 32 MiB
+The primary candidate is M2.
+
+Scores on held-out cases. Signed relative error (prediction - native median) /
+native median. Report, for every model, the number within +/-20% (all cases and
+stable cases), the median and worst absolute error, and verdicts at two limits
+per case (0.8x and 1.25x the native median; native verdict TLE and AC): a
+prediction above a limit is TLE.
+
+Decision rule. M2 counts as an improvement only if, on stable held-out cases, it
+has more cases within +/-20% than both M0 and M1 and a worst absolute error no
+larger than M1's. Otherwise the result is reported as a failure of the feature
+set on this host. Results on one host qualify no production model.
