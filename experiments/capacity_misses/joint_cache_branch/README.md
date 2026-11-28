@@ -30,6 +30,6 @@ taskset -c 1 setarch x86_64 -R env DYNAMORIO_CONFIGDIR="$slot" LC_ALL=C \
   -- "$root/bin/random-kmp" < "$root/inputs/random" > "$slot/stdout" 2> "$slot/probe.txt"
 ```
 
-The full experiment uses the launcher in [guest.py](guest.py), verifies each executable, client, input and expected output, and records every child's CPU use. To rebuild the guest archive from the registered string-matching payload, run `python3 -B prepare.py PATH_TO_MATCHER_ARCHIVE NEW_ARCHIVE NEW_REGISTRATION NEW_PLAN` and compare the generated registration with [registration.json](registration.json).
+For an equality comparison across runs, keep the working directory, client installation path, output directory, environment and address-randomization settings identical. The full experiment uses the launcher in [guest.py](guest.py), verifies each executable, client, input and expected output, and records every child's CPU use. To rebuild the guest archive from the registered string-matching payload, run `python3 -B prepare.py PATH_TO_MATCHER_ARCHIVE NEW_ARCHIVE NEW_REGISTRATION NEW_PLAN` and compare the generated registration with [registration.json](registration.json).
 
 Run `python3 -B -m unittest` and `python3 -B replay.py --verify results.json` in this directory. The replay checks both new archives and their guest and disk teardown receipts, the two historical archives, the individual counters and the per-case CPU medians. [Results](results.json) · [Protocol](protocol.json) · [Guest receipts](evidence/cloud.json)
