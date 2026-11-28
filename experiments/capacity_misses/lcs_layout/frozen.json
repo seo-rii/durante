@@ -1,0 +1,139 @@
+{
+  "protocol": {
+    "cpu": 1,
+    "cpuid": "x86-64-v2",
+    "modes": {
+      "native": [],
+      "outer": [
+        "-rep_bytes",
+        "-latency_bound",
+        "-probe_l1d",
+        "-probe_outer"
+      ],
+      "flat": [
+        "-rep_bytes",
+        "-latency_bound",
+        "-probe_l1d",
+        "-probe_outer"
+      ],
+      "branch": [
+        "-rep_bytes",
+        "-latency_bound"
+      ]
+    },
+    "clients": {
+      "native": "original.so",
+      "outer": "original.so",
+      "flat": "flat.so",
+      "branch": "original.so"
+    },
+    "rounds": [
+      "native",
+      "branch",
+      "native",
+      "flat",
+      "native",
+      "outer",
+      "native",
+      "flat",
+      "native",
+      "branch",
+      "native",
+      "outer",
+      "native"
+    ],
+    "factors": [
+      1,
+      1.25,
+      1.5,
+      2,
+      3
+    ],
+    "groups": {
+      "wide": [
+        "wide-roll",
+        "wide-row",
+        "wide-column"
+      ],
+      "tall": [
+        "tall-roll",
+        "tall-row",
+        "tall-column"
+      ]
+    },
+    "inputs": "Fixed 1152- and 2304-byte strings over eight symbols, with input order reversed for the second shape. Rolling two rows is the reference. Full row-major and full column-major solvers use the same recurrence in the same logical traversal.",
+    "models": {
+      "baseline": "ML4_ns + 6.92658480142496 ns per gshare miss",
+      "candidate": "baseline + 7000000 ns, for each solver and its reference before division"
+    },
+    "intercept_ns": 7000000,
+    "success": "On each independent boot, candidate must strictly lower the median absolute relative error of the four solver/reference median CPU ratios and must not increase either the false accept or false timeout count across the five deadlines. Native mixed cells are reported separately and excluded from both error counts. Pooling is descriptive."
+  },
+  "cases": {
+    "wide-roll": {
+      "stdin": "inputs/wide",
+      "stdin_sha256": "fcea68173558861c53ce3813981791c4b68906543de704b5bab12d288232d582",
+      "expected_sha256": "a493b40fb098067da902804a322dea2f619106ea665e4f6a9ee1d1fed204e8e3",
+      "elf_sha256": "4b69b12d6f99f9727269360ebb9652f7606d7757a9ee3819d293fa9b33498016"
+    },
+    "wide-row": {
+      "stdin": "inputs/wide",
+      "stdin_sha256": "fcea68173558861c53ce3813981791c4b68906543de704b5bab12d288232d582",
+      "expected_sha256": "a493b40fb098067da902804a322dea2f619106ea665e4f6a9ee1d1fed204e8e3",
+      "elf_sha256": "ec38d747e2d72bb5f529ebbcdcc70bd3f872afbc14981cadca73214956f203c4"
+    },
+    "wide-column": {
+      "stdin": "inputs/wide",
+      "stdin_sha256": "fcea68173558861c53ce3813981791c4b68906543de704b5bab12d288232d582",
+      "expected_sha256": "a493b40fb098067da902804a322dea2f619106ea665e4f6a9ee1d1fed204e8e3",
+      "elf_sha256": "2d0c0d2d7ea89e3431e4a44ed03fbd27c8215ecda7e5a6f673d6d808eea11893"
+    },
+    "tall-roll": {
+      "stdin": "inputs/tall",
+      "stdin_sha256": "d18194e7b945d78c5917e9d9b12809410a16d39ec4cb472f4754e9f0ede43905",
+      "expected_sha256": "a493b40fb098067da902804a322dea2f619106ea665e4f6a9ee1d1fed204e8e3",
+      "elf_sha256": "4b69b12d6f99f9727269360ebb9652f7606d7757a9ee3819d293fa9b33498016"
+    },
+    "tall-row": {
+      "stdin": "inputs/tall",
+      "stdin_sha256": "d18194e7b945d78c5917e9d9b12809410a16d39ec4cb472f4754e9f0ede43905",
+      "expected_sha256": "a493b40fb098067da902804a322dea2f619106ea665e4f6a9ee1d1fed204e8e3",
+      "elf_sha256": "ec38d747e2d72bb5f529ebbcdcc70bd3f872afbc14981cadca73214956f203c4"
+    },
+    "tall-column": {
+      "stdin": "inputs/tall",
+      "stdin_sha256": "d18194e7b945d78c5917e9d9b12809410a16d39ec4cb472f4754e9f0ede43905",
+      "expected_sha256": "a493b40fb098067da902804a322dea2f619106ea665e4f6a9ee1d1fed204e8e3",
+      "elf_sha256": "2d0c0d2d7ea89e3431e4a44ed03fbd27c8215ecda7e5a6f673d6d808eea11893"
+    }
+  },
+  "ml4": {
+    "latency_x16": 1.9610536920428108e-11,
+    "rep_bytes": 2.2231881518169566e-11,
+    "l1d_misses": 5.696914949612691e-11,
+    "random_2m": 3.6329907111055703e-09,
+    "random_32m": 6.462605458925904e-09,
+    "stream_2m": 1.0698559144892158e-08,
+    "l1d_dependent": 4.7700178852992235e-09,
+    "dependent_2m": 7.817536652521212e-08
+  },
+  "clients": {
+    "original.so": "09898f86e63751526b5870309351dc8fc1a7ee7e16b459cd7849b59d7243355a",
+    "flat.so": "4c4bb17cb4dc0efa4b85804c5f29fc0eb7272ac37e4a1be6a1d497fcadb33ebd",
+    "branch.so": "39263dad716da7d5eeadb5cd40fc3b0affd4d39cf93251f442d114a39933ad40"
+  },
+  "gshare_miss_ns": 6.92658480142496,
+  "compiler": "12.2.0",
+  "flags": [
+    "-std=c++20",
+    "-O2",
+    "-static",
+    "-s",
+    "-Wl,--build-id=none"
+  ],
+  "source_sha256": {
+    "prepare.py": "cdd29e20e82e7ea2ca157c2b8e4b890b3c9efee6285d17f904cfbfba1a1774f1",
+    "inputs.py": "9667bdef17305c1227c4408ec56a0824b3f34ab5763020a499ad66da19c847bd",
+    "lcs.cpp": "ecca17421b4d5e1c78d99dca55634924a56addafaffcd8a20f7922c40b946d23"
+  }
+}
