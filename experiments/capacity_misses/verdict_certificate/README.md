@@ -25,6 +25,28 @@ Every entry is negative. Its dot product with any nonnegative weights is at most
 
 The certificate limits this linear model. Other recorded events can change the sign of the combined vector. For example, the conditional-branch count gives +223,217,981 here. The separate historical set-Dijkstra ceiling likewise admits a 2.295× direct-call count ratio. Neither observation establishes an accurate price for a new feature. [Historical direct-call replay](../block_events/)
 
+## A broader certificate from two primary guests
+
+The feature vector can be extended by nine recorded predictor fields, in order, comprising loads, stores, conditional branches, direct jumps and calls, indirect branches, multiplies, divides, floating-point operations, and static critical-path cycles ×16. A second pair of historical primary-guest comparisons cannot both be satisfied even with arbitrary nonnegative prices on all 21 coordinates.
+
+| Solver | Reference | Deadline | Exact primary native range | Verdict |
+| --- | --- | ---: | --- | --- |
+| Dijkstra with ordered-set decrease-key | Heap Dijkstra | 2× | 76449/36383–169843/69340 | TLE |
+| Segment tree, natural-run inversions | Merge counting | 1× | 6175/5368–32579/26428 | TLE |
+
+The Dijkstra cache measurements and native CPU times came from its original Milan guest. Its predictor counts came from two archived local runs with the same binary, input and answer hashes. The verifier checks the local meter receipts and verifies the two full extended counter vectors agree. The inversion cache, predictor and native runs came from the same primary guest. This second result applies to the historically paired observations. The first certificate above uses all four same-guest archives independently of the historical Dijkstra predictor. [Original Milan predictor evidence](../milan/gshare/) · [Natural-run inversions](../order_statistics_transfer/)
+
+Write the strict timeout rows as `S_dijkstra − 2R_dijkstra` and `S_inversions − R_inversions`. Each must have a positive dot product with the weights. Their unweighted sum has the following entries in the original 12-coordinate order followed by the nine added fields.
+
+```text
+-242464371   -961473120   -1984   -4396697   -1784185      -50
+   -143735     -2313444 -152130    -648628  -35523312       -1
+ -36606218    -30354255 -12926286  -835781    -455175     -440
+      -377     -4216979 -3387249296
+```
+
+All 21 entries are negative. A separate direct-call counter, which distinguishes calls from unconditional jumps, remains outside this feature set. [Exact signed rows and source feature vectors](results.json)
+
 ## Reproduce
 
 Run `python3 -B -m unittest` and `python3 -B replay.py --verify results.json` in this directory. The proof uses integer arithmetic and rational native bounds. It requires no optimizer or new VM.

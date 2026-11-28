@@ -1,9 +1,10 @@
-"""Verify three incompatible reference-relative verdicts using original GCE archives."""
+"""Verify incompatible reference-relative verdicts using archived contest observations."""
 import argparse
 from fractions import Fraction
 import json
 from pathlib import Path
 import runpy
+import tarfile
 
 HERE = Path(__file__).resolve().parent
 CAP = HERE.parent
@@ -12,6 +13,8 @@ order = string["clock"]["previous"]
 read, require = string["read"], string["require"]
 FEATURES = ("instructions", "latency_x16", "rep_bytes", "l1d_misses", "random_2m", "random_32m",
             "stream_2m", "l1d_dependent", "dependent_2m", "gshare_misses", "recurrence_x16", "intercept")
+EXTRA = ("loads", "stores", "cond_branches", "direct_jumps_calls", "indirect_branches",
+         "muls", "divs", "fp_ops", "critical_path_cycles_x16")
 # Study, solver, registered reference, deadline factor, native decision, multiplier.
 CASES = (
     ("string_matching", "random-naive", "random-kmp", 1, "accept", 180),
@@ -20,8 +23,8 @@ CASES = (
 )
 
 
-def signed_row(candidate, reference, times, ref_times, factor, expected):
-    require(len(candidate) == len(reference) == len(FEATURES) and
+def signed_row(candidate, reference, times, ref_times, factor, expected, *, features=FEATURES):
+    require(len(candidate) == len(reference) == len(features) and
             all(type(v) is int and v >= 0 for v in candidate) and
             all(type(v) is int and v > 0 for v in reference), "invalid or zero reference feature")
     low, high = Fraction(min(times), max(ref_times)), Fraction(max(times), min(ref_times))
@@ -32,12 +35,12 @@ def signed_row(candidate, reference, times, ref_times, factor, expected):
                 row=[sign * (s - factor * r) for s, r in zip(candidate, reference, strict=True)])
 
 
-def certificate(rows):
+def certificate(rows, *, features=FEATURES):
     require(rows and all(type(r["multiplier"]) is int and r["multiplier"] > 0 for r in rows)
             and any(r["expected"] == "timeout" for r in rows), "positive multiplier on a strict verdict required")
     combined = [sum(r["multiplier"] * value for r, value in zip(rows, column, strict=True))
                 for column in zip(*(r["row"] for r in rows), strict=True)]
-    require(len(combined) == len(FEATURES) and all(v <= 0 for v in combined),
+    require(len(combined) == len(features) and all(v <= 0 for v in combined),
             "weighted sum does not prove impossibility")
     return combined
 
@@ -68,6 +71,74 @@ def observations(folder, plan, reg, module, phase, host, names):
     return result
 
 
+def extra_vector(raw):
+    values = [raw[k] for k in EXTRA]
+    require(all(type(v) is int and 0 <= v <= raw["instructions"] for v in values[:-1]) and
+            type(values[-1]) is int and values[-1] >= 0, "invalid extended feature counts")
+    return values
+
+
+def verdict_row(study, solver, ref, measured, factor, expected, multiplier, features):
+    vector, times = measured[solver]
+    anchor, ref_times = measured[ref]
+    row = signed_row(vector, anchor, times, ref_times, factor, expected, features=features)
+    return dict(study=study, solver=solver, reference=ref, factor=factor, multiplier=multiplier,
+                candidate_features=vector, reference_features=anchor, **row)
+
+
+def historical_primary():
+    # The original Milan guests predate these predictor diagnostics. The archived
+    # local runs used the same ELFs and inputs and have their own meter receipts.
+    folder = CAP / "milan"
+    milan, gshare = order["milan"], order["gshare"]
+    plan, reg = read(folder / "frozen.json"), read(folder / "registration.json")
+    reg["payload"] = {r["path"]: r["sha256"] for r in reg["files"]}
+    primary = folder / "evidence/primary.tar.gz"
+    data, _ = milan.read_boot(primary, "primary", plan, reg, read(folder / "evidence/cloud.json")["primary"])
+    records = folder / "gshare/records.json"
+    require(string["sha"](records.read_bytes()) == "574b5a7033fdf966ade97ffb05f66332fd346d4bf169edbddaa20a6c605f4ab6",
+            "different local predictor archive")
+    local = read(records)
+    gshare["evaluate"](local)
+    ref, solver = "contest-dijkstra", "dijkstra--set_decrease_key"
+    require(plan["protocol"]["groups"]["dijkstra"][0] == ref and
+            solver in plan["protocol"]["groups"]["dijkstra"][1:], "different Dijkstra reference")
+    paired = {}
+    for name in (ref, solver):
+        probes = [milan.features(sample) for sample in data[name]["probe"]]
+        require(all(p == probes[0] for p in probes), "different GCE cache counts across repetitions")
+        vectors = []
+        for record in (r for r in local["rows"] if r["case"] == name):
+            restored = gshare["restored"](record, plan["cases"][name])
+            raw = record["features"]
+            ordinary = dict(probes[0], gshare_misses=restored["gshare_mispredicts"],
+                            recurrence_x16=raw["loop_recurrence_cycles_x16"], intercept=1)
+            vectors.append([ordinary[k] for k in FEATURES] + extra_vector(raw))
+        require(len(vectors) == 2 and vectors[0] == vectors[1], "different local repetitions")
+        paired[name] = vectors[0], data[name]["native"]
+    extended = FEATURES + EXTRA
+    rows = [verdict_row("milan", solver, ref, paired, 2, "timeout", 1, extended)]
+
+    folder = CAP / "order_statistics_transfer"
+    reg, plan, _ = order["registered"]()
+    ref, solver = "runs-merge", "runs-segtree"
+    require(plan["protocol"]["groups"]["runs"][0] == ref and
+            solver in plan["protocol"]["groups"]["runs"][1:], "different inversion-counting reference")
+    host = read(folder / "evidence/cloud.json")["primary"]
+    measured = observations(folder, plan, reg, order, "primary", host, (ref, solver))
+    with tarfile.open(folder / "evidence/primary.tar.gz") as archive:
+        trials = list(map(json.loads, archive.extractfile("output/trials.jsonl")))
+        for name in (ref, solver):
+            source = [t["index"] for t in trials if t["arm"] == "branch" and t["case"] == name]
+            extra = [extra_vector(json.load(archive.extractfile(f"output/branch-{i:03d}.json"))) for i in source]
+            require(len(extra) == plan["protocol"]["rounds"].count("branch") and
+                    all(v == extra[0] for v in extra), "extended guest repetitions disagree")
+            base, times = measured[name]
+            measured[name] = base + extra[0], times
+    rows.append(verdict_row("order_statistics_transfer", solver, ref, measured, 1, "timeout", 1, extended))
+    return dict(features=list(extended), rows=rows, combined=certificate(rows, features=extended))
+
+
 def replay():
     boots = {phase: [] for phase in ("primary", "repeat")}
     hosts = []
@@ -85,15 +156,12 @@ def replay():
             for _, solver, ref, factor, expected, multiplier in cases:
                 require(any(group[0] == ref and solver in group[1:] for group in groups),
                         "incorrect reference for this solver and input")
-                vector, times = measured[solver]
-                anchor, ref_times = measured[ref]
-                r = signed_row(vector, anchor, times, ref_times, factor, expected)
-                rows.append(dict(study=study, solver=solver, reference=ref, factor=factor, multiplier=multiplier,
-                                 candidate_features=vector, reference_features=anchor, **r))
+                rows.append(verdict_row(study, solver, ref, measured, factor, expected, multiplier, FEATURES))
     for key in ("instance_id", "boot_disk_id", "boot_sha256"):
         require(len({host[key] for host in hosts}) == 4, "reused guest or disk")
     return dict(features=list(FEATURES), boots={phase: dict(rows=rows, combined=certificate(rows))
-                                               for phase, rows in boots.items()})
+                                               for phase, rows in boots.items()},
+                historical_primary=historical_primary())
 
 
 if __name__ == "__main__":
@@ -103,6 +171,6 @@ if __name__ == "__main__":
     result = replay()
     if args.verify:
         require(result == read(args.verify), "published certificate differs from the original archives")
-        print("Verified three decisive inequalities and their integer contradiction on each boot set.")
+        print("Verified the independent three-row boot certificates and the broader historical primary certificate.")
     else:
         print(json.dumps(result, indent=2))
