@@ -294,8 +294,11 @@ static bool probe_instrument_operands(void *ctx, instrlist_t *bb, instr_t *where
   return fused;
 }
 
-static bool probe_instrument(void *ctx, instrlist_t *bb, instr_t *where, bool writes_memory) {
-  if (drmgr_is_first_instr(ctx, where)) {
+static bool probe_instrument(void *ctx, instrlist_t *bb, instr_t *where, bool writes_memory,
+                             bool first_in_block) {
+  /* The client handles blocks without drmgr's instruction iteration, so the
+   * caller says which instruction starts the block. */
+  if (first_in_block) {
     probe_block_reads = 0;
     probe_block_last = instrlist_last_app(bb);
   }

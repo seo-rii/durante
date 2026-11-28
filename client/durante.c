@@ -2172,7 +2172,7 @@ static dr_emit_flags_t instrument_block(void *drcontext, void *tag,
   }
   bool checkpoint = instr_is_app(where) && instr_writes_memory(where);
 #ifdef DURANTE_L1D_PROBE
-  if (probe_l1d && probe_instrument(drcontext, bb, where, checkpoint) &&
+  if (probe_l1d && probe_instrument(drcontext, bb, where, checkpoint, first_in_block) &&
       !memory_operand_bytes_enabled)
     checkpoint = false;
 #endif
