@@ -1,0 +1,141 @@
+{
+  "protocol": {
+    "cpu": 1,
+    "cpuid": "x86-64-v2",
+    "modes": {
+      "native": [],
+      "outer": [
+        "-rep_bytes",
+        "-latency_bound",
+        "-probe_l1d",
+        "-probe_outer"
+      ],
+      "flat": [
+        "-rep_bytes",
+        "-latency_bound",
+        "-probe_l1d",
+        "-probe_outer"
+      ],
+      "branch": [
+        "-rep_bytes",
+        "-latency_bound"
+      ]
+    },
+    "clients": {
+      "native": "original.so",
+      "outer": "original.so",
+      "flat": "flat.so",
+      "branch": "original.so"
+    },
+    "rounds": [
+      "native",
+      "branch",
+      "native",
+      "flat",
+      "native",
+      "outer",
+      "native",
+      "flat",
+      "native",
+      "branch",
+      "native",
+      "outer",
+      "native"
+    ],
+    "factors": [
+      1,
+      1.25,
+      1.5,
+      2,
+      3
+    ],
+    "groups": {
+      "short": [
+        "short-kadane",
+        "short-prefix",
+        "short-divide"
+      ],
+      "long": [
+        "long-kadane",
+        "long-prefix",
+        "long-divide"
+      ]
+    },
+    "inputs": "A 32,768-element and a 2,097,152-element prefix of a single xorshift32 stream seeded 71362147. Elements are reduced modulo 1001 minus 500. Each executable constructs the array from N and seed then computes the maximum sum of a nonempty contiguous subarray, including generation and allocation in every score.",
+    "models": {
+      "baseline": "ML4_ns + 6.92658480142496 ns per gshare miss",
+      "global": "(Ts + 7000000 ns)/(Tr + 7000000 ns)",
+      "floor": "(Ts + c)/(Tr + c), c = max(0 ns, 7000000 ns - Tr); Ts and Tr are the solver and its own reference baseline scores."
+    },
+    "intercept_ns": 7000000,
+    "success": "On each independent boot the reference floor must strictly lower the median absolute relative error across the four solver/input comparisons against the baseline, without increasing false accepts or false timeouts across the five registered deadlines. Report native mixed cells separately. Report global-offset results, whether short/long references straddle 7ms, and each per-case ratio regardless of outcome. Pooled estimates are descriptive.",
+    "model_registration": "47f01b65aed66db0872e1aa4a02b2639ee7a968a"
+  },
+  "cases": {
+    "short-kadane": {
+      "stdin": "inputs/short",
+      "stdin_sha256": "d739413dfe188e5657a6a23b77d160f0ed1f53024067c2b705e2e54bdbf75464",
+      "expected_sha256": "121f5f4c9954fedfd20d01fa9043810024a9ab0cfe1f4949e6b9fd74f4ceaac6",
+      "elf_sha256": "1785a73775e21c01af00db62298610c872428e04afe827f69f0b066505b396bc"
+    },
+    "short-prefix": {
+      "stdin": "inputs/short",
+      "stdin_sha256": "d739413dfe188e5657a6a23b77d160f0ed1f53024067c2b705e2e54bdbf75464",
+      "expected_sha256": "121f5f4c9954fedfd20d01fa9043810024a9ab0cfe1f4949e6b9fd74f4ceaac6",
+      "elf_sha256": "5747e3d18620072a0aa9f4a3d75c062b933f36f36995b16e196cd1b56ee4001c"
+    },
+    "short-divide": {
+      "stdin": "inputs/short",
+      "stdin_sha256": "d739413dfe188e5657a6a23b77d160f0ed1f53024067c2b705e2e54bdbf75464",
+      "expected_sha256": "121f5f4c9954fedfd20d01fa9043810024a9ab0cfe1f4949e6b9fd74f4ceaac6",
+      "elf_sha256": "e9349f3a81ba897d6fecb688d5ecf013ba81b2c12e02f0969f6dd24ea230c7c3"
+    },
+    "long-kadane": {
+      "stdin": "inputs/long",
+      "stdin_sha256": "38f0de79f704cd6083c146379ddf8234e049802e8cec5092e2038d9f28bb422c",
+      "expected_sha256": "afac0c3be58a8d9b1d2e1d5c1fbd8a55431d5ba1a28619a3320ec0d5b13d5d3b",
+      "elf_sha256": "1785a73775e21c01af00db62298610c872428e04afe827f69f0b066505b396bc"
+    },
+    "long-prefix": {
+      "stdin": "inputs/long",
+      "stdin_sha256": "38f0de79f704cd6083c146379ddf8234e049802e8cec5092e2038d9f28bb422c",
+      "expected_sha256": "afac0c3be58a8d9b1d2e1d5c1fbd8a55431d5ba1a28619a3320ec0d5b13d5d3b",
+      "elf_sha256": "5747e3d18620072a0aa9f4a3d75c062b933f36f36995b16e196cd1b56ee4001c"
+    },
+    "long-divide": {
+      "stdin": "inputs/long",
+      "stdin_sha256": "38f0de79f704cd6083c146379ddf8234e049802e8cec5092e2038d9f28bb422c",
+      "expected_sha256": "afac0c3be58a8d9b1d2e1d5c1fbd8a55431d5ba1a28619a3320ec0d5b13d5d3b",
+      "elf_sha256": "e9349f3a81ba897d6fecb688d5ecf013ba81b2c12e02f0969f6dd24ea230c7c3"
+    }
+  },
+  "ml4": {
+    "latency_x16": 1.9610536920428108e-11,
+    "rep_bytes": 2.2231881518169566e-11,
+    "l1d_misses": 5.696914949612691e-11,
+    "random_2m": 3.6329907111055703e-09,
+    "random_32m": 6.462605458925904e-09,
+    "stream_2m": 1.0698559144892158e-08,
+    "l1d_dependent": 4.7700178852992235e-09,
+    "dependent_2m": 7.817536652521212e-08
+  },
+  "clients": {
+    "original.so": "09898f86e63751526b5870309351dc8fc1a7ee7e16b459cd7849b59d7243355a",
+    "flat.so": "4c4bb17cb4dc0efa4b85804c5f29fc0eb7272ac37e4a1be6a1d497fcadb33ebd",
+    "branch.so": "39263dad716da7d5eeadb5cd40fc3b0affd4d39cf93251f442d114a39933ad40"
+  },
+  "gshare_miss_ns": 6.92658480142496,
+  "compiler": "12.2.0",
+  "flags": [
+    "-std=c++20",
+    "-O2",
+    "-static",
+    "-s",
+    "-Wl,--build-id=none"
+  ],
+  "source_sha256": {
+    "prepare.py": "3f1c2c94e45fa7198fb1b96d38d94623a452490aa0cab9b4f04a8cc5c9915e31",
+    "inputs.py": "81df8513ac203f89f5afdd974c882c40066a222a8156ae612f6e7a72c569371e",
+    "maxsub.cpp": "6b1f444c4da0edc2c0990190803f303422b5ae9b688458675b47ceccf351795a"
+  }
+}

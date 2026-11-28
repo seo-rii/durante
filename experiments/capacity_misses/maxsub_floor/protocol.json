@@ -1,0 +1,72 @@
+{
+  "cpu": 1,
+  "cpuid": "x86-64-v2",
+  "modes": {
+    "native": [],
+    "outer": [
+      "-rep_bytes",
+      "-latency_bound",
+      "-probe_l1d",
+      "-probe_outer"
+    ],
+    "flat": [
+      "-rep_bytes",
+      "-latency_bound",
+      "-probe_l1d",
+      "-probe_outer"
+    ],
+    "branch": [
+      "-rep_bytes",
+      "-latency_bound"
+    ]
+  },
+  "clients": {
+    "native": "original.so",
+    "outer": "original.so",
+    "flat": "flat.so",
+    "branch": "original.so"
+  },
+  "rounds": [
+    "native",
+    "branch",
+    "native",
+    "flat",
+    "native",
+    "outer",
+    "native",
+    "flat",
+    "native",
+    "branch",
+    "native",
+    "outer",
+    "native"
+  ],
+  "factors": [
+    1,
+    1.25,
+    1.5,
+    2,
+    3
+  ],
+  "groups": {
+    "short": [
+      "short-kadane",
+      "short-prefix",
+      "short-divide"
+    ],
+    "long": [
+      "long-kadane",
+      "long-prefix",
+      "long-divide"
+    ]
+  },
+  "inputs": "A 32,768-element and a 2,097,152-element prefix of a single xorshift32 stream seeded 71362147. Elements are reduced modulo 1001 minus 500. Each executable constructs the array from N and seed then computes the maximum sum of a nonempty contiguous subarray, including generation and allocation in every score.",
+  "models": {
+    "baseline": "ML4_ns + 6.92658480142496 ns per gshare miss",
+    "global": "(Ts + 7000000 ns)/(Tr + 7000000 ns)",
+    "floor": "(Ts + c)/(Tr + c), c = max(0 ns, 7000000 ns - Tr); Ts and Tr are the solver and its own reference baseline scores."
+  },
+  "intercept_ns": 7000000,
+  "success": "On each independent boot the reference floor must strictly lower the median absolute relative error across the four solver/input comparisons against the baseline, without increasing false accepts or false timeouts across the five registered deadlines. Report native mixed cells separately. Report global-offset results, whether short/long references straddle 7ms, and each per-case ratio regardless of outcome. Pooled estimates are descriptive.",
+  "model_registration": "47f01b65aed66db0872e1aa4a02b2639ee7a968a"
+}
