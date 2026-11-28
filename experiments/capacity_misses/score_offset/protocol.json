@@ -6,5 +6,16 @@
   "derivation": "For each alternative and input on each of the two literal-matching boots, solve for the score offset matching median native solver/reference CPU. Among finite positive crossings take the median, rounded to the nearest whole millisecond. Report all crossings, including the excluded negative values.",
   "archival_transfer": "Apply the fixed 7000000 ns offset to both boots of BFS grid, Fenwick range sum, Dijkstra (contest plus layered), predecessor, inversions and range-distinct. These public archives were available during method selection.",
   "prospective_transfer": "Register this same candidate on the new LCS layout graph-free panel before collecting its native times or counters.",
-  "deadlines": ["1", "5/4", "3/2", "2", "3"]
+  "deadlines": [
+    "1",
+    "5/4",
+    "3/2",
+    "2",
+    "3"
+  ],
+  "exploratory_reference_floor": {
+    "threshold_ns": 7000000,
+    "score": "c = max(0, threshold_ns - T_reference); use (T_solver + c) / (T_reference + c). Each T is unmodified ML4 plus the existing gshare penalty.",
+    "selection": "Selected after observing the archival regressions of the global offset. The LCS trial registration predates this candidate."
+  }
 }
