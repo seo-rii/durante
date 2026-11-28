@@ -652,10 +652,10 @@ fn execute(
         command.arg("-memory_operand_bytes");
     }
     if options.protect_meter {
-        command.arg("-protect_meter").arg("-protect_file").arg(format!(
-            "{}:{}",
-            report_identity.0, report_identity.1
-        ));
+        command
+            .arg("-protect_meter")
+            .arg("-protect_file")
+            .arg(format!("{}:{}", report_identity.0, report_identity.1));
     }
     command
         .arg("--")
