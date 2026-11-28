@@ -11,6 +11,11 @@ returns to, so a signal there is delivered as promptly as in a clean callee.
 Leave a clean callee's signal alone while DR flushes for it: the flush
 completion callback and fragment deletion events run with DR's locks held.
 
+Track code in writable memory one page at a time (-page_granular_writable_code,
+on here).  DR otherwise made a whole writable OS region read-only once code ran
+from it and merged its executable areas, so a write to any page of a JIT's code
+cache flushed every block built from the cache.
+
 --- a/core/arch/x86/mangle.c
 +++ b/core/arch/x86/mangle.c
 @@ -3111,9 +3111,35 @@
@@ -889,3 +894,81 @@ diff --git a/core/unix/signal.c b/core/unix/signal.c
      fixup_siginfo(dcontext, sig, frame);
  
      /* We avoid querying memory as it incurs global contended locks. */
+diff --git a/core/optionsx.h b/core/optionsx.h
+--- a/core/optionsx.h
++++ b/core/optionsx.h
+@@ -1501,6 +1501,12 @@ OPTION_DEFAULT(uint, ro2sandbox_threshold, 10,
+ OPTION_DEFAULT(
+     uint, sandbox2ro_threshold, 20,
+     "#executions in a sandboxed region before switching to page prot, 0 to disable")
++/* Durante: on by default; JIT code caches otherwise lose all their blocks on
++ * every write to any of their pages.
++ */
++OPTION_DEFAULT(bool, page_granular_writable_code, true,
++               "track code in writable memory one page at a time, so that a write "
++               "flushes only the fragments of the pages it writes")
+ 
+ OPTION_COMMAND(
+     bool, sandbox_writable, false, "sandbox_writable",
+diff --git a/core/vmareas.c b/core/vmareas.c
+--- a/core/vmareas.c
++++ b/core/vmareas.c
+@@ -948,6 +948,12 @@ add_vm_area(vm_area_vector_t *v, app_pc start, app_pc end, uint vm_flags, uint f
+              /* never merge coarse-grain */
+              !TEST(FRAG_COARSE_GRAIN, v->buf[i].frag_flags) &&
+              !TEST(VECTOR_NEVER_MERGE_ADJACENT, v->flags) &&
++             /* With -page_granular_writable_code, a merged area would be flushed
++              * whole when any of its pages is written.
++              */
++             !(DYNAMO_OPTION(page_granular_writable_code) &&
++               TEST(VM_WRITABLE, vm_flags) &&
++               (v == executable_areas || TEST(VECTOR_FRAGMENT_LIST, v->flags))) &&
+              (v->should_merge_func == NULL ||
+               v->should_merge_func(true /*adjacent*/, data, v->buf[i].custom.client)))) {
+             ASSERT(!(start < v->buf[i].end && end > v->buf[i].start) ||
+@@ -7558,6 +7564,27 @@ allow_xfer_for_frag_flags(dcontext_t *dcontext, app_pc pc, uint src_flags, uint
+     return allow;
+ }
+ 
++/* With -page_granular_writable_code, a new executable area in writable memory
++ * covers only the page holding pc, and such areas are not merged (see
++ * add_vm_area()).  A write fault then flushes only the fragments of the pages
++ * it writes, rather than every fragment from the enclosing OS region: a JIT
++ * that writes new code next to code it is running keeps the rest.
++ */
++static void
++clip_writable_code_to_page(app_pc pc, app_pc *base_pc, size_t *size)
++{
++    app_pc start = (app_pc)PAGE_START(pc), end = start + PAGE_SIZE;
++    if (!DYNAMO_OPTION(page_granular_writable_code))
++        return;
++    if (start < *base_pc)
++        start = *base_pc;
++    if (end > *base_pc + *size)
++        end = *base_pc + *size;
++    ASSERT(start <= pc && pc < end);
++    *base_pc = start;
++    *size = end - start;
++}
++
+ /* check origins of code for several purposes:
+  * 1) we need list of areas where this thread's fragments come
+  *    from, for faster flushing on munmaps
+@@ -8175,6 +8202,9 @@ check_thread_vm_area(dcontext_t *dcontext, app_pc pc, app_pc tag, void **vmlist,
+             STATS_INC(num_ro2sandbox_other_sub);
+     }
+ 
++    if (area == NULL && TEST(MEMPROT_WRITE, prot))
++        clip_writable_code_to_page(pc, &base_pc, &size);
++
+     /* now that we know about new area, decide whether it's compatible to be
+      * in the same bb as previous areas, as dictated by old flags
+      * N.B.: we only care about FRAG_ flags here, not VM_ flags
+@@ -8333,6 +8363,7 @@ check_thread_vm_area(dcontext_t *dcontext, app_pc pc, app_pc tag, void **vmlist,
+                     prot |= (cur_prot & MEMPROT_WRITE);
+             }
+             if (TEST(MEMPROT_WRITE, prot) || becoming_writable) {
++                clip_writable_code_to_page(pc, &base_pc, &size);
+                 vm_flags |= VM_WRITABLE;
+                 STATS_INC(num_writable_code_regions);
+                 /* Now that new area bounds are finalized, see if it should be
