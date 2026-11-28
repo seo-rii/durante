@@ -46,7 +46,7 @@ import problems  # noqa: E402
 MODES = ("native", "durante", "budget-large", "budget-half", "latency")
 # Typical judge settings (aonohako's Java/Node defaults, with more heap so the
 # largest inputs fit). Deep recursion settings are per problem, below.
-JAVA_FLAGS = ("-XX:ReservedCodeCacheSize=64m", "-XX:-UseCompressedClassPointers", "-Xmx256m",
+JAVA_FLAGS = ("-XX:ReservedCodeCacheSize=64m", "-XX:CompressedClassSpaceSize=64m", "-Xmx256m",
               "-Xss16384k", "-XX:MaxDirectMemorySize=16m", "-XX:MaxMetaspaceSize=64m",
               "-Dfile.encoding=UTF-8", "-XX:+UseSerialGC", "-DONLINE_JUDGE=1")
 NODE_FLAGS = ("--disable-wasm-trap-handler", "--max-old-space-size=256", "--max-semi-space-size=1")
