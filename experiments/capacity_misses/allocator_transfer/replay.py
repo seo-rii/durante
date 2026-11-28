@@ -67,7 +67,7 @@ def measured_profiles():
     return loaded
 
 
-def original_panel(clocks):
+def original_panel(clocks, fixed_weight_group=None):
     milan, gshare = clocks["milan"], clocks["previous"]["gshare"]
     path = CAPACITY / "milan"
     reg, plan = read(path / "registration.json"), read(path / "frozen.json")
@@ -80,13 +80,35 @@ def original_panel(clocks):
     for phase, cloud in read(path / "evidence/cloud.json").items():
         data, _ = milan.read_boot(path / "evidence" / (phase + ".tar.gz"), phase, plan, reg, cloud)
         for group, names in plan["protocol"]["groups"].items():
-            weights = {k: Fraction(str(v))*10**9 for k, v in plan["weights"][group]["ML4"].items()}
+            weights = {k: Fraction(str(v))*10**9 for k, v in plan["weights"][fixed_weight_group or group]["ML4"].items()}
             samples = {}
             for n in names:
                 base, = {milan.predict(weights, milan.features(p)) for p in data[n]["probe"]}
                 miss, = misses[n]
                 samples[n] = (data[n]["native"], base, base + PENALTY * miss)
             yield group, phase, names, samples
+
+
+def registered_panel(study, module, plan, reg, clocks):
+    previous = clocks["previous"]
+    weights = {k: Fraction(str(v)) * 10**9 for k, v in plan["ml4"].items()}
+    clients = {arm: plan["clients"][name] for arm, name in plan["protocol"]["clients"].items()}
+    evidence = CAPACITY / study / "evidence"
+    for phase, cloud in read(evidence / "cloud.json").items():
+        panel, _ = previous["read_boot"](phase, cloud, reg, plan, evidence=evidence, freeze=module["FREEZE"],
+            client_by_arm=clients, diagnostic_by_arm={"outer": "outer", "flat": "outer", "branch": "latency"})
+        previous["read_branch"](evidence / (phase + ".tar.gz"), panel)
+        samples = {}
+        for n, arms in panel.items():
+            scores, _ = clocks["measured"](arms, weights, PENALTY)
+            base, = set(scores["ML4"])
+            hybrid, = set(scores["ML4_plus_misses"])
+            samples[n] = ([r["cpu_us"] for r in arms["native"]], base, hybrid)
+        for group, names in plan["protocol"]["groups"].items():
+            family = study
+            if study == "order_statistics_transfer":
+                family = "predecessor" if group in plan["protocol"]["training_examples"] else "inversions"
+            yield study, family, phase, names, samples
 
 
 def new_panels(clocks, graph):
@@ -97,24 +119,7 @@ def new_panels(clocks, graph):
             reg, plan, _ = registration
         else:
             plan, reg = registration
-        weights = {k: Fraction(str(v)) * 10**9 for k, v in plan["ml4"].items()}
-        clients = {arm: plan["clients"][name] for arm, name in plan["protocol"]["clients"].items()}
-        evidence = CAPACITY / study / "evidence"
-        for phase, cloud in read(evidence / "cloud.json").items():
-            panel, _ = previous["read_boot"](phase, cloud, reg, plan, evidence=evidence, freeze=module["FREEZE"],
-                client_by_arm=clients, diagnostic_by_arm={"outer": "outer", "flat": "outer", "branch": "latency"})
-            previous["read_branch"](evidence / (phase + ".tar.gz"), panel)
-            samples = {}
-            for n, arms in panel.items():
-                scores, _ = clocks["measured"](arms, weights, PENALTY)
-                base, = set(scores["ML4"])
-                hybrid, = set(scores["ML4_plus_misses"])
-                samples[n] = ([r["cpu_us"] for r in arms["native"]], base, hybrid)
-            for group, names in plan["protocol"]["groups"].items():
-                family = study
-                if study == "order_statistics_transfer":
-                    family = "predecessor" if group in plan["protocol"]["training_examples"] else "inversions"
-                yield study, family, phase, names, samples
+        yield from registered_panel(study, module, plan, reg, clocks)
 
 
 def equality_cost(score, ref_score, count, ref_count, limit=2):
