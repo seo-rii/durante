@@ -132,6 +132,8 @@ python3 -B experiments/capacity_misses/analyze.py experiments/capacity_misses/re
 python3 -B experiments/capacity_misses/analyze_v2.py experiments/capacity_misses/results/v2/results.json
 ```
 
+The [ordered predecessor study](../experiments/capacity_misses/predecessor/README.md) tests transfer to three new C++20 solvers on two query orderings, using the previously frozen Dijkstra weights. Its replay checks each raw process receipt and scheduler trace.
+
 The following commands collect a new dataset with two probe measurements per case.
 
 ```sh
