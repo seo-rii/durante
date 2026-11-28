@@ -1,0 +1,78 @@
+{
+  "cases": {
+    "reference": {
+      "stdin": "inputs/graph",
+      "stdin_sha256": "6e9dbe24b653a8fb261668e8675e6dea82187a510c5c94f4014482e94fb8f708",
+      "expected_sha256": "59c0af841dc79f04e14f03779fece88d8ec15672a36fa1bdbed5388d4b6f465d",
+      "elf_sha256": "3329d2981760ac275e2ffd17ed4ddc22b409fb6046b7bd05703510602597a091"
+    },
+    "block8": {
+      "stdin": "inputs/graph",
+      "stdin_sha256": "6e9dbe24b653a8fb261668e8675e6dea82187a510c5c94f4014482e94fb8f708",
+      "expected_sha256": "59c0af841dc79f04e14f03779fece88d8ec15672a36fa1bdbed5388d4b6f465d",
+      "elf_sha256": "5f0c09a7480bef14d8d157e2617b8cb2bb7d8b640aed781fcdd100fa18106f9c"
+    },
+    "block2048": {
+      "stdin": "inputs/graph",
+      "stdin_sha256": "6e9dbe24b653a8fb261668e8675e6dea82187a510c5c94f4014482e94fb8f708",
+      "expected_sha256": "59c0af841dc79f04e14f03779fece88d8ec15672a36fa1bdbed5388d4b6f465d",
+      "elf_sha256": "222bce6027054a9da318d140cdb4cb26f800723bd64655a7f3108169a363d78e"
+    }
+  },
+  "protocol": {
+    "programs": [
+      "reference",
+      "block8",
+      "block2048"
+    ],
+    "modes": {
+      "latency": [
+        "-rep_bytes",
+        "-latency_bound"
+      ],
+      "callback": [
+        "-rep_bytes",
+        "-latency_bound"
+      ],
+      "l1d": [
+        "-rep_bytes",
+        "-latency_bound",
+        "-probe_l1d"
+      ]
+    },
+    "clients": {
+      "latency": "original.so",
+      "callback": "callback.so",
+      "l1d": "original.so"
+    },
+    "rounds": [
+      "latency",
+      "l1d",
+      "callback",
+      "l1d",
+      "callback",
+      "latency",
+      "callback",
+      "latency",
+      "l1d",
+      "latency",
+      "l1d",
+      "callback",
+      "l1d",
+      "callback",
+      "latency"
+    ],
+    "cpu": 1,
+    "cpuid": "x86-64-v2",
+    "comparison": "Compare five complete runs per mode per original static graph ELF per new pinned boot. The second boot reverses the complete first schedule. All three arms execute the same client path; only callback selects the control ELF, which forces the existing non-flat accounting path. Its other code and compiler/toolchain are shared. Report user plus system CPU, ranges across all pairs, differences in medians, and shares of the L1D minus ordinary-latency difference. This partitions whole-mode costs; it is not a per-callback timer.",
+    "validation": "All outputs and eligible, uninterrupted terminal instruction/REP/latency counters must match. Require a single L1D line only in the L1D arm. Verify lifecycle and CPU1 via exec traces. These arms run to completion; no live-clock accuracy is inferred."
+  },
+  "clients": {
+    "original.so": "09898f86e63751526b5870309351dc8fc1a7ee7e16b459cd7849b59d7243355a",
+    "callback.so": "3d8760c8af6eca7254e07b8853c83aa1d88aa9e9fafef043a7ad8b6ef04efebb"
+  },
+  "build_inputs": {
+    "client/durante.c": "086b3887021ef3af93d884b914b701d4b3456280e0ef33c13cde3ad5e1487ae2",
+    "experiments/capacity_misses/graph_block_control/CMakeLists.txt": "30a179cfee12be0fb968f9fc92ea4fb6e2f7490e5f120fa79e5f037f05f8beab"
+  }
+}
