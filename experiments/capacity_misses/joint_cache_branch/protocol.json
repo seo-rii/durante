@@ -1,0 +1,16 @@
+{
+  "source_panel": "string_matching",
+  "cpu": 1,
+  "phases": ["primary", "repeat"],
+  "rounds": ["native", "flat", "branch", "joint", "native", "branch", "joint", "flat", "native", "joint", "flat", "branch", "native", "native"],
+  "modes": {
+    "native": [],
+    "flat": ["-rep_bytes", "-latency_bound", "-probe_l1d", "-probe_outer"],
+    "branch": ["-rep_bytes", "-latency_bound"],
+    "joint": ["-rep_bytes", "-latency_bound", "-probe_l1d", "-probe_outer"]
+  },
+  "clients": {"native":"original.so", "flat":"flat.so", "branch":"original.so", "joint":"flat.so"},
+  "counter_criterion": "Every joint run must have all flat counters identical to the separate cache run and all predictor counters identical to the separate branch run on the same ELF and input. Verify every repetition on both guests. Also compare the measured counters to the original string panel.",
+  "cpu_criterion": "On each of six cases and on both boots, median child CPU for one joint run must be strictly below the sum of the separate flat-cache and branch medians. Report CPU cost including process startup and every case regardless of outcome.",
+  "scope": "Registered single-process CPP20 literal-matching binaries with the x86-64-v2 dispatch profile. No judging authority."
+}

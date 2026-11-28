@@ -1,0 +1,108 @@
+{
+  "cases": {
+    "random-kmp": {
+      "stdin": "inputs/random",
+      "stdin_sha256": "4484261afd022fde3b779d8079089a798c0631d4686fabce48c81f3fb4cf4afc",
+      "expected_sha256": "56292515f7d3a7110811eb8de26b3f75f82a0766aa5a1fd66ebcfcb84fe6d5ff",
+      "elf_sha256": "6638bff7934cd9ee809d0576d45676b97882d61b241f97851cc0fa58cc4bd877"
+    },
+    "random-z": {
+      "stdin": "inputs/random",
+      "stdin_sha256": "4484261afd022fde3b779d8079089a798c0631d4686fabce48c81f3fb4cf4afc",
+      "expected_sha256": "56292515f7d3a7110811eb8de26b3f75f82a0766aa5a1fd66ebcfcb84fe6d5ff",
+      "elf_sha256": "533ddff5425ffa97681d38c72647fcabe1cfae8ade18ed0d1139c6ecdfa2a78e"
+    },
+    "random-naive": {
+      "stdin": "inputs/random",
+      "stdin_sha256": "4484261afd022fde3b779d8079089a798c0631d4686fabce48c81f3fb4cf4afc",
+      "expected_sha256": "56292515f7d3a7110811eb8de26b3f75f82a0766aa5a1fd66ebcfcb84fe6d5ff",
+      "elf_sha256": "1fc7b3f6dbec5345748e28ee694a2d9f1839784c8c45d4205e05df58dd5ba64f"
+    },
+    "periodic-kmp": {
+      "stdin": "inputs/periodic",
+      "stdin_sha256": "4a65c6d019281dd156b24b54394b4315ba5dd39937d49175f283aa714664273f",
+      "expected_sha256": "56292515f7d3a7110811eb8de26b3f75f82a0766aa5a1fd66ebcfcb84fe6d5ff",
+      "elf_sha256": "6638bff7934cd9ee809d0576d45676b97882d61b241f97851cc0fa58cc4bd877"
+    },
+    "periodic-z": {
+      "stdin": "inputs/periodic",
+      "stdin_sha256": "4a65c6d019281dd156b24b54394b4315ba5dd39937d49175f283aa714664273f",
+      "expected_sha256": "56292515f7d3a7110811eb8de26b3f75f82a0766aa5a1fd66ebcfcb84fe6d5ff",
+      "elf_sha256": "533ddff5425ffa97681d38c72647fcabe1cfae8ade18ed0d1139c6ecdfa2a78e"
+    },
+    "periodic-naive": {
+      "stdin": "inputs/periodic",
+      "stdin_sha256": "4a65c6d019281dd156b24b54394b4315ba5dd39937d49175f283aa714664273f",
+      "expected_sha256": "56292515f7d3a7110811eb8de26b3f75f82a0766aa5a1fd66ebcfcb84fe6d5ff",
+      "elf_sha256": "1fc7b3f6dbec5345748e28ee694a2d9f1839784c8c45d4205e05df58dd5ba64f"
+    }
+  },
+  "clients": {
+    "original.so": "09898f86e63751526b5870309351dc8fc1a7ee7e16b459cd7849b59d7243355a",
+    "flat.so": "4c4bb17cb4dc0efa4b85804c5f29fc0eb7272ac37e4a1be6a1d497fcadb33ebd",
+    "branch.so": "39263dad716da7d5eeadb5cd40fc3b0affd4d39cf93251f442d114a39933ad40"
+  },
+  "ml4": {
+    "latency_x16": 1.9610536920428108e-11,
+    "rep_bytes": 2.2231881518169566e-11,
+    "l1d_misses": 5.696914949612691e-11,
+    "random_2m": 3.6329907111055703e-09,
+    "random_32m": 6.462605458925904e-09,
+    "stream_2m": 1.0698559144892158e-08,
+    "l1d_dependent": 4.7700178852992235e-09,
+    "dependent_2m": 7.817536652521212e-08
+  },
+  "gshare_miss_ns": 6.92658480142496,
+  "protocol": {
+    "source_panel": "string_matching",
+    "cpu": 1,
+    "phases": [
+      "primary",
+      "repeat"
+    ],
+    "rounds": [
+      "native",
+      "flat",
+      "branch",
+      "joint",
+      "native",
+      "branch",
+      "joint",
+      "flat",
+      "native",
+      "joint",
+      "flat",
+      "branch",
+      "native",
+      "native"
+    ],
+    "modes": {
+      "native": [],
+      "flat": [
+        "-rep_bytes",
+        "-latency_bound",
+        "-probe_l1d",
+        "-probe_outer"
+      ],
+      "branch": [
+        "-rep_bytes",
+        "-latency_bound"
+      ],
+      "joint": [
+        "-rep_bytes",
+        "-latency_bound",
+        "-probe_l1d",
+        "-probe_outer"
+      ]
+    },
+    "clients": {
+      "native": "original.so",
+      "flat": "flat.so",
+      "branch": "original.so",
+      "joint": "flat.so"
+    },
+    "counter_criterion": "Every joint run must have all flat counters identical to the separate cache run and all predictor counters identical to the separate branch run on the same ELF and input. Verify every repetition on both guests. Also compare the measured counters to the original string panel.",
+    "cpu_criterion": "On each of six cases and on both boots, median child CPU for one joint run must be strictly below the sum of the separate flat-cache and branch medians. Report CPU cost including process startup and every case regardless of outcome.",
+    "scope": "Registered single-process CPP20 literal-matching binaries with the x86-64-v2 dispatch profile. No judging authority."
+  }
+}
