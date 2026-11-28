@@ -1,0 +1,82 @@
+{
+  "cpu": 1,
+  "cpuid": "x86-64-v2",
+  "factors": [
+    1,
+    1.25,
+    1.5,
+    2,
+    3
+  ],
+  "modes": {
+    "native": [],
+    "outer": [
+      "-rep_bytes",
+      "-latency_bound",
+      "-probe_l1d",
+      "-probe_outer"
+    ],
+    "flat": [
+      "-rep_bytes",
+      "-latency_bound",
+      "-probe_l1d",
+      "-probe_outer"
+    ],
+    "branch": [
+      "-rep_bytes",
+      "-latency_bound"
+    ]
+  },
+  "clients": {
+    "native": "original.so",
+    "outer": "original.so",
+    "flat": "flat.so",
+    "branch": "original.so"
+  },
+  "rounds": [
+    "native",
+    "branch",
+    "native",
+    "flat",
+    "native",
+    "outer",
+    "native",
+    "flat",
+    "native",
+    "branch",
+    "native",
+    "outer",
+    "native"
+  ],
+  "groups": {
+    "random": [
+      "random-kmp",
+      "random-z",
+      "random-naive"
+    ],
+    "periodic": [
+      "periodic-kmp",
+      "periodic-z",
+      "periodic-naive"
+    ]
+  },
+  "inputs": "1,048,576 bytes per text, 48-byte literal a^47 b. Random text uses the lower four bits of xorshift32(20261128) in alphabet a..p. Periodic background is all a. Both plant the same pattern beginning at 1024 then every 8192 bytes and require a literal overlapping-occurrence count from each program; independent bytes.find oracle.",
+  "model": "Use published Dijkstra ML4 weights and add 6.92658480142496 ns per simulated gshare miss identically to alternative and KMP. Compute all-pair exact lower and upper score ratios. Multiply these endpoints by the lower and upper historical factors respectively.",
+  "interval_source": {
+    "commit": "a9adee56e1ac0717473521d8e8d2fcfd73358288",
+    "path": "experiments/capacity_misses/relative_intervals/results.json",
+    "key": "layered_with_dijkstra",
+    "multipliers": [
+      "102518568428995454400195914326/110255227579224328858606154125",
+      "3490950693426788001848368285813/1609760159507200349916076639712"
+    ],
+    "training": [
+      "historical_dijkstra",
+      "inversions",
+      "predecessor",
+      "range_distinct"
+    ]
+  },
+  "evaluation": "Report each of the two boots separately, plus pooled descriptively. The native truth is accept if the largest possible submission/reference CPU ratio is <= threshold, timeout if its smallest ratio exceeds threshold and mixed otherwise. The interval issues accept if the adjusted upper endpoint <= threshold, timeout if its lower endpoint > threshold, otherwise abstains. Report every case and deadline with exact endpoints, direction, abstention, native-mixed and wrong decision counts; compare unadjusted ML4+gshare. No threshold or coefficient may be refit or selected on these results.",
+  "success": "On EACH boot the frozen historical interval must issue at least one correct timeout AND one correct accept, with zero wrong issued decisions and zero issued on native-mixed cells. In total each boot has four alternatives \u00d7 five deadlines = 20 cells. Report the criterion even if it fails. No judge policy is changed."
+}
