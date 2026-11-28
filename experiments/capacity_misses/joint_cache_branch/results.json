@@ -1,0 +1,271 @@
+{
+  "boots": {
+    "primary": {
+      "cases": {
+        "random-kmp": {
+          "different_fields": {
+            "cache": [],
+            "predictor": [],
+            "shared_work": [],
+            "historical_cache": [],
+            "historical_predictor": []
+          },
+          "cpu_median_us": {
+            "native": 4742,
+            "flat": 202396,
+            "branch": 320100,
+            "joint": 462441
+          },
+          "separate_cpu_us": 522496,
+          "joint_over_separate": "462441/522496",
+          "saved_percent": 11.494,
+          "joint_over_native": 97.52,
+          "counters_match": true,
+          "faster": true
+        },
+        "random-z": {
+          "different_fields": {
+            "cache": [],
+            "predictor": [],
+            "shared_work": [],
+            "historical_cache": [],
+            "historical_predictor": []
+          },
+          "cpu_median_us": {
+            "native": 6730,
+            "flat": 242596,
+            "branch": 424463,
+            "joint": 600350
+          },
+          "separate_cpu_us": 667059,
+          "joint_over_separate": "600350/667059",
+          "saved_percent": 10.0,
+          "joint_over_native": 89.205,
+          "counters_match": true,
+          "faster": true
+        },
+        "random-naive": {
+          "different_fields": {
+            "cache": [],
+            "predictor": [],
+            "shared_work": [],
+            "historical_cache": [],
+            "historical_predictor": []
+          },
+          "cpu_median_us": {
+            "native": 4094,
+            "flat": 196667,
+            "branch": 264491,
+            "joint": 404532
+          },
+          "separate_cpu_us": 461158,
+          "joint_over_separate": "202266/230579",
+          "saved_percent": 12.279,
+          "joint_over_native": 98.811,
+          "counters_match": true,
+          "faster": true
+        },
+        "periodic-kmp": {
+          "different_fields": {
+            "cache": [],
+            "predictor": [],
+            "shared_work": [],
+            "historical_cache": [],
+            "historical_predictor": []
+          },
+          "cpu_median_us": {
+            "native": 5233,
+            "flat": 213466,
+            "branch": 380525,
+            "joint": 531560
+          },
+          "separate_cpu_us": 593991,
+          "joint_over_separate": "531560/593991",
+          "saved_percent": 10.51,
+          "joint_over_native": 101.578,
+          "counters_match": true,
+          "faster": true
+        },
+        "periodic-z": {
+          "different_fields": {
+            "cache": [],
+            "predictor": [],
+            "shared_work": [],
+            "historical_cache": [],
+            "historical_predictor": []
+          },
+          "cpu_median_us": {
+            "native": 7654,
+            "flat": 322374,
+            "branch": 533396,
+            "joint": 775445
+          },
+          "separate_cpu_us": 855770,
+          "joint_over_separate": "155089/171154",
+          "saved_percent": 9.386,
+          "joint_over_native": 101.312,
+          "counters_match": true,
+          "faster": true
+        },
+        "periodic-naive": {
+          "different_fields": {
+            "cache": [],
+            "predictor": [],
+            "shared_work": [],
+            "historical_cache": [],
+            "historical_predictor": []
+          },
+          "cpu_median_us": {
+            "native": 20866,
+            "flat": 661055,
+            "branch": 4539674,
+            "joint": 4955979
+          },
+          "separate_cpu_us": 5200729,
+          "joint_over_separate": "4955979/5200729",
+          "saved_percent": 4.706,
+          "joint_over_native": 237.515,
+          "counters_match": true,
+          "faster": true
+        }
+      },
+      "steal_ticks": 0,
+      "counter_criterion": true,
+      "cpu_criterion": true
+    },
+    "repeat": {
+      "cases": {
+        "random-kmp": {
+          "different_fields": {
+            "cache": [],
+            "predictor": [],
+            "shared_work": [],
+            "historical_cache": [],
+            "historical_predictor": []
+          },
+          "cpu_median_us": {
+            "native": 4685,
+            "flat": 201732,
+            "branch": 320566,
+            "joint": 465845
+          },
+          "separate_cpu_us": 522298,
+          "joint_over_separate": "465845/522298",
+          "saved_percent": 10.809,
+          "joint_over_native": 99.433,
+          "counters_match": true,
+          "faster": true
+        },
+        "random-z": {
+          "different_fields": {
+            "cache": [],
+            "predictor": [],
+            "shared_work": [],
+            "historical_cache": [],
+            "historical_predictor": []
+          },
+          "cpu_median_us": {
+            "native": 6653,
+            "flat": 236115,
+            "branch": 424630,
+            "joint": 594262
+          },
+          "separate_cpu_us": 660745,
+          "joint_over_separate": "594262/660745",
+          "saved_percent": 10.062,
+          "joint_over_native": 89.322,
+          "counters_match": true,
+          "faster": true
+        },
+        "random-naive": {
+          "different_fields": {
+            "cache": [],
+            "predictor": [],
+            "shared_work": [],
+            "historical_cache": [],
+            "historical_predictor": []
+          },
+          "cpu_median_us": {
+            "native": 4035,
+            "flat": 195050,
+            "branch": 263697,
+            "joint": 405632
+          },
+          "separate_cpu_us": 458747,
+          "joint_over_separate": "405632/458747",
+          "saved_percent": 11.578,
+          "joint_over_native": 100.528,
+          "counters_match": true,
+          "faster": true
+        },
+        "periodic-kmp": {
+          "different_fields": {
+            "cache": [],
+            "predictor": [],
+            "shared_work": [],
+            "historical_cache": [],
+            "historical_predictor": []
+          },
+          "cpu_median_us": {
+            "native": 5211,
+            "flat": 212411,
+            "branch": 381565,
+            "joint": 531558
+          },
+          "separate_cpu_us": 593976,
+          "joint_over_separate": "88593/98996",
+          "saved_percent": 10.509,
+          "joint_over_native": 102.007,
+          "counters_match": true,
+          "faster": true
+        },
+        "periodic-z": {
+          "different_fields": {
+            "cache": [],
+            "predictor": [],
+            "shared_work": [],
+            "historical_cache": [],
+            "historical_predictor": []
+          },
+          "cpu_median_us": {
+            "native": 7660,
+            "flat": 319201,
+            "branch": 534634,
+            "joint": 772384
+          },
+          "separate_cpu_us": 853835,
+          "joint_over_separate": "772384/853835",
+          "saved_percent": 9.539,
+          "joint_over_native": 100.833,
+          "counters_match": true,
+          "faster": true
+        },
+        "periodic-naive": {
+          "different_fields": {
+            "cache": [],
+            "predictor": [],
+            "shared_work": [],
+            "historical_cache": [],
+            "historical_predictor": []
+          },
+          "cpu_median_us": {
+            "native": 20916,
+            "flat": 662779,
+            "branch": 4542315,
+            "joint": 4963312
+          },
+          "separate_cpu_us": 5205094,
+          "joint_over_separate": "2481656/2602547",
+          "saved_percent": 4.645,
+          "joint_over_native": 237.297,
+          "counters_match": true,
+          "faster": true
+        }
+      },
+      "steal_ticks": 0,
+      "counter_criterion": true,
+      "cpu_criterion": true
+    }
+  },
+  "passes_both": true
+}
