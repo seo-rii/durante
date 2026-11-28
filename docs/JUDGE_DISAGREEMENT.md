@@ -20,8 +20,8 @@ pointer-based containers, cache-hostile traversal and per-line system calls.
 Six were marked in range and one was marked too slow per problem. On the
 round-2 guest the in-range variants ran at 0.69–13.87 times the intended
 solution's native median, and the seven too-slow variants at 17.34–42.90 times.
-The manifest separately records preliminary full-tier timings. They differ the
-way contestants' solutions do: `std::map`, `std::set`, `unordered_map`,
+The manifest separately records preliminary full-tier timings. The submissions
+vary in their choice of `std::map`, `std::set`, `unordered_map`,
 `std::list` or a pbds tree instead of arrays; pointer-linked segment trees;
 column-major tables; recursion instead of an explicit stack; synced `cin`,
 `endl` after every answer; worse complexity classes (sqrt decomposition,
@@ -34,7 +34,9 @@ output against the problem's reference on both input tiers.
 The counters, native timings and models are those of round 2 of the
 [capacity-miss study](CAPACITY_MISSES.md). The archived raw file identifies
 the comparison plan and rule by SHA-256. The plan and the results first appear
-together in the upstream commit. M0 fits separate nonnegative coefficients for
+together in the same upstream commit. [Original study commit](https://github.com/seo-rii/durante/commit/a34ad3976e0fc38ec512e934e5df8ac10c030bad)
+
+M0 fits separate nonnegative coefficients for
 instructions and REP bytes on this guest. All model verdicts below are
 reconstructed from completed executions. For problem p and k in {1.5, 2, 3}
 the native limit is k times the
@@ -77,7 +79,8 @@ setting, the two primary candidates M4 and ML4 disagreed on six and four
 decisions. Both missed the study's separate accuracy criterion on the five
 stable in-range variants.
 
-Across all six settings M0 misjudged these variants:
+Across all six settings, M0 produced false accepts for 14 distinct variants
+and false timeouts for three.
 
 - **False accepts.**
   - BFS with a hash map for distances, DFS with set, hash-map, multimap or
