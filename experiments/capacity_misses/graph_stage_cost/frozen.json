@@ -1,0 +1,83 @@
+{
+  "protocol": {
+    "programs": [
+      "reference",
+      "block8",
+      "block2048"
+    ],
+    "modes": {
+      "native": [],
+      "rep": [
+        "-rep_bytes"
+      ],
+      "latency": [
+        "-rep_bytes",
+        "-latency_bound"
+      ],
+      "l1d": [
+        "-rep_bytes",
+        "-latency_bound",
+        "-probe_l1d"
+      ],
+      "outer": [
+        "-rep_bytes",
+        "-latency_bound",
+        "-probe_l1d",
+        "-probe_outer"
+      ]
+    },
+    "rounds": [
+      "native",
+      "outer",
+      "rep",
+      "l1d",
+      "latency",
+      "outer",
+      "rep",
+      "l1d",
+      "latency",
+      "native",
+      "rep",
+      "l1d",
+      "latency",
+      "native",
+      "outer",
+      "l1d",
+      "latency",
+      "native",
+      "outer",
+      "rep",
+      "latency",
+      "native",
+      "outer",
+      "rep",
+      "l1d"
+    ],
+    "cpu": 1,
+    "cpuid": "x86-64-v2",
+    "hypothesis": "Measure which complete instrumentation modes account for process CPU on the three known graph submissions. The earlier full versus five-feature results motivated the question.",
+    "comparisons": "Each boot has five trials per case per mode. In the repeat boot reverse the primary trial order. Report each CPU median, ratio to native, difference in consecutive mode medians and paired-mode range allowing all observations. Include process user and system CPU. Calculate fractions of full CPU and of full over native attributed to intervals descriptively; do not interpret whole-mode differences as individual callback costs.",
+    "checks": "Validate the original stdout SHA256 and process exit every time, and native/diagnostic exec on CPU1. Compare all shared instruction/REP counters across four instrumented modes and boots, latency across the three enabled modes, and all L1D counters between the L1D and outer modes. Report any observed discrepancies."
+  },
+  "cases": {
+    "reference": {
+      "stdin": "inputs/graph",
+      "stdin_sha256": "6e9dbe24b653a8fb261668e8675e6dea82187a510c5c94f4014482e94fb8f708",
+      "expected_sha256": "59c0af841dc79f04e14f03779fece88d8ec15672a36fa1bdbed5388d4b6f465d",
+      "elf_sha256": "3329d2981760ac275e2ffd17ed4ddc22b409fb6046b7bd05703510602597a091"
+    },
+    "block8": {
+      "stdin": "inputs/graph",
+      "stdin_sha256": "6e9dbe24b653a8fb261668e8675e6dea82187a510c5c94f4014482e94fb8f708",
+      "expected_sha256": "59c0af841dc79f04e14f03779fece88d8ec15672a36fa1bdbed5388d4b6f465d",
+      "elf_sha256": "5f0c09a7480bef14d8d157e2617b8cb2bb7d8b640aed781fcdd100fa18106f9c"
+    },
+    "block2048": {
+      "stdin": "inputs/graph",
+      "stdin_sha256": "6e9dbe24b653a8fb261668e8675e6dea82187a510c5c94f4014482e94fb8f708",
+      "expected_sha256": "59c0af841dc79f04e14f03779fece88d8ec15672a36fa1bdbed5388d4b6f465d",
+      "elf_sha256": "222bce6027054a9da318d140cdb4cb26f800723bd64655a7f3108169a363d78e"
+    }
+  },
+  "client_sha256": "09898f86e63751526b5870309351dc8fc1a7ee7e16b459cd7849b59d7243355a"
+}
