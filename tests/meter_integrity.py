@@ -64,6 +64,18 @@ MODES = {
 INTEGRITY_PREFIX = "integrity violation: "
 
 
+def outer_receipt(env):
+    """(requested, published) of the report's top-level protection fields."""
+    env = env or {}
+    published = (env.get("meter_protection") == {"version": 1}
+                 and env.get("security", {}).get("counter_integrity") == "protected_in_process_v1")
+    unpublished = ("meter_protection" not in env
+                   and env.get("security", {}).get("counter_integrity") == "application_mutable")
+    if not published and not unpublished:
+        return None
+    return env.get("meter_protection_requested") is True, published
+
+
 def run_case(args, work, mode, protect):
     tag = f"{mode}-{'protect' if protect else 'default'}"
     case = work / tag
@@ -130,15 +142,18 @@ def main():
                     honest_counts = {"default": dmeas.get("instructions"),
                                      "protect": protect_meas.get("instructions")}
                     row["counts"] = honest_counts
-                    protection = (protect_env or {}).get("meter_protection") == {"version": 1}
+                    protection = (outer_receipt(protect_env) == (True, True)
+                                  and outer_receipt(default_env) == (False, False))
                     row["passed"] = safe and equal and protection and default_reached and protect_reached
                 else:
                     # Under the mode the attempt is an integrity violation that
                     # names the expected vector and exposes no usable totals.
                     reason = protect_meas.get("reason") or ""
+                    # A violation keeps the request but publishes no receipt.
                     blocked = (protect_meas.get("valid") is False
                                and reason == INTEGRITY_PREFIX + vector
                                and not any(k in protect_meas for k in TOTALS)
+                               and outer_receipt(protect_env) == (True, False)
                                and not protect_reached)
                     if kind == OPEN:
                         # The route is reachable without the mode.

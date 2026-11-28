@@ -33,10 +33,15 @@ validated.
 
 `durante run --protect-meter` (client `-protect_meter`) enables software fault
 isolation of the meter against the measured application, without a hardware PMU
-or an out-of-process backend. A report then carries
+or an out-of-process backend. The report of such a run sets
+`meter_protection_requested: true`. Only a valid and complete terminal
+measurement whose images all carry the client's receipt also gets
 `security.counter_integrity: protected_in_process_v1` and a
-`meter_protection: {version: 1}` receipt; the runner rejects a tree whose images
-do not all carry the receipt. A detected attempt to change the counts is a
+`meter_protection: {version: 1}` receipt at the top level; the runner rejects a
+tree whose images do not all carry the receipt. A launch failure, an incomplete
+or invalid measurement, or an integrity violation keeps
+`counter_integrity: application_mutable` and has no top-level receipt, and
+`authority` stays `diagnostic_only` in every case. A detected attempt to change the counts is a
 sticky, fail-closed `integrity_violation`: the live page is invalidated, a
 record names the vector, the process exits before the attempt takes effect, and
 the measurement is invalid with no usable totals. This is still not a

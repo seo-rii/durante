@@ -488,8 +488,7 @@ pub fn run(options: Options) -> Result<i32, String> {
         result["work_budget"] = work_budget::unavailable(limit);
     }
     if options.protect_meter {
-        result["meter_protection"] = json!({"version": 1});
-        result["security"]["counter_integrity"] = json!("protected_in_process_v1");
+        result["meter_protection_requested"] = json!(true);
     }
     let outcome = execute(&options, drrun, client, report_identity, &mut result);
     result["execution"]["wall_time_ms"] =
@@ -501,6 +500,7 @@ pub fn run(options: Options) -> Result<i32, String> {
             1
         }
     };
+    publish_meter_receipt(&mut result, options.protect_meter);
     verify_report_path(&output, &options.report, 0)
         .map_err(|_| "final report path was replaced or linked".to_owned())?;
     serde_json::to_writer_pretty(&mut output, &result)
@@ -557,6 +557,21 @@ pub(crate) fn cpuid_profile_matches(report: &Value, expected: Option<&str>) -> b
         (None, None) => true,
         (Some(value), Some(expected)) => value == expected,
         _ => false,
+    }
+}
+
+/// The outer receipt describes the finalized measurement. A requested mode is
+/// also present on a setup failure, a partial run or a rejected collection, so
+/// it is recorded separately as `meter_protection_requested`.
+fn publish_meter_receipt(result: &mut Value, requested: bool) {
+    let measured = &result["measurement"];
+    if requested
+        && measured["valid"] == true
+        && measured["complete"] == true
+        && meter_protection_matches(measured, true)
+    {
+        result["meter_protection"] = json!({"version": 1});
+        result["security"]["counter_integrity"] = json!("protected_in_process_v1");
     }
 }
 
@@ -934,6 +949,33 @@ fn execute(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn outer_protection_receipt_requires_a_validated_terminal_measurement() {
+        for (requested, valid, complete, receipt, published) in [
+            (true, true, true, true, true),
+            (false, true, true, true, false),
+            (true, false, true, true, false),
+            (true, true, false, true, false),
+            (true, true, true, false, false),
+        ] {
+            let mut result = json!({
+                "security":{"counter_integrity":"application_mutable"},
+                "measurement":{"valid":valid,"complete":complete},
+            });
+            if receipt {
+                result["measurement"]["meter_protection"] = json!({"version":1});
+            }
+            publish_meter_receipt(&mut result, requested);
+            assert_eq!(result.get("meter_protection").is_some(), published);
+            let expected = if published {
+                "protected_in_process_v1"
+            } else {
+                "application_mutable"
+            };
+            assert_eq!(result["security"]["counter_integrity"], expected);
+        }
+    }
 
     #[test]
     fn cleanup_requires_a_matching_signal_for_each_effective_kill() {
