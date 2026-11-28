@@ -70,7 +70,10 @@ against the window; `ptrace`, `process_vm_writev`, `io_uring`, `userfaultfd`,
 `perf_event_open`, `bpf`, `seccomp` and opens of the record files or
 `/proc/*/mem` are refused; syscalls that cannot be checked fail with `EPERM`.
 Default mode (without the flag) is unchanged and emits byte-identical
-instrumentation. See `tests/meter_integrity.py` for the attack suite and
+instrumentation. Without the flag, the stock runtime refuses `mmap MAP_FIXED`
+and `mprotect` over its own memory for a dynamically linked program, but it lets
+a static program `mprotect` the client's data: the client is then loaded at its
+preferred low address. Only `-protect_meter` stops that. See `tests/meter_integrity.py` for the attack suite and
 `client/meter_protect.h` for the full design.
 
 Native CPU-feature restrictions use the same in-process DynamoRIO client.

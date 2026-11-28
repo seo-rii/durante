@@ -16,10 +16,15 @@ without --protect-meter and once with it.
     and the measurement is reported invalid with an integrity_violation reason
     naming the vector. The attack never prints its result.
   - A "dr_defended" route (mmap MAP_FIXED, mprotect over the runtime) the stock
-    runtime already refuses, so it does not reach even without the mode; with
-    the mode it is additionally reported as an explicit integrity violation.
+    runtime already refuses for this dynamically linked fixture, so it does not
+    reach even without the mode; with the mode it is additionally reported as an
+    explicit integrity violation. (A static program loads the client at its
+    preferred low address, where the stock runtime lets mprotect through; only
+    the mode stops it there.)
   - The honest control must pass under the mode with an instruction count
-    exactly equal to the count without it.
+    exactly equal to the count without it. It runs a static build of the
+    fixture, whose count does not depend on where ASLR places the loader and
+    libraries in either run.
 
 Pass for the suite means every mode matched its expectation.
 """
@@ -69,7 +74,8 @@ def run_case(args, work, mode, protect):
                "--records-dir", str(case / "records"), "--timeout-ms", "20000"]
     if protect:
         command.append("--protect-meter")
-    command += ["--", str(work / "meter-attack"), mode]
+    fixture = "meter-honest" if MODES[mode][0] == "control" else "meter-attack"
+    command += ["--", str(work / fixture), mode]
     if mode == "file-report":
         # The strongest case: the submission knows the report's absolute path.
         command.append(str(report))
@@ -96,9 +102,10 @@ def main():
     try:
         with tempfile.TemporaryDirectory(prefix="meter-integrity-", dir=args.output_dir) as directory:
             work = Path(directory).resolve()
-            subprocess.run(["gcc", "-std=c17", "-O2", "-Wall", "-Wextra", "-Werror",
-                            str(ROOT / "tests/meter_integrity.c"), "-o", str(work / "meter-attack")],
-                           check=True)
+            for name, flags in (("meter-attack", []), ("meter-honest", ["-static"])):
+                subprocess.run(["gcc", "-std=c17", "-O2", *flags, "-Wall", "-Wextra", "-Werror",
+                                str(ROOT / "tests/meter_integrity.c"), "-o", str(work / name)],
+                               check=True)
             honest_counts = {}
             for mode in selected:
                 kind, vector = MODES[mode]
