@@ -1,0 +1,308 @@
+{
+  "protocol": {
+    "groups": {
+      "bfs_grid": [
+        "contest-bfs_grid",
+        "bfs_grid--queue_pair_vecvec",
+        "bfs_grid--list_queue"
+      ],
+      "dijkstra": [
+        "contest-dijkstra",
+        "dijkstra--vecvec_getchar_pq",
+        "dijkstra--set_decrease_key"
+      ],
+      "fenwick": [
+        "contest-fenwick",
+        "fenwick--segtree_bottom_up",
+        "fenwick--range_bit_template"
+      ]
+    },
+    "models": [
+      "M0",
+      "M2",
+      "M4",
+      "ML4"
+    ],
+    "factors": [
+      1.5,
+      2,
+      3
+    ],
+    "rounds": [
+      "native",
+      "probe",
+      "native",
+      "native",
+      "native",
+      "probe",
+      "native",
+      "native",
+      "native"
+    ],
+    "cpu": 1,
+    "cpuid": "x86-64-v2",
+    "platform": "AMD Milan, n2d-standard-4, SMT disabled, two independent boots",
+    "question": "Do the four frozen Intel v2 models rank these known submissions against their intended solutions at 1.5x, 2x and 3x on Milan with corrected counters?",
+    "comparison": "No refitting on this panel. Leave the intended solution out of the 35 original calibration rows for its problem. Relative policies only. Test the complete observed range of variant/anchor pairs separately on each boot for both native and probe predictions. Equality is accepted; a mixed result is indeterminate. Report both error directions and exact repeatability, CPU overhead and sample counts. These results are diagnostic."
+  },
+  "cases": {
+    "contest-bfs_grid": {
+      "role": "calibration",
+      "binary": "contest-bfs_grid",
+      "args": [],
+      "meta": {
+        "problem": "bfs_grid",
+        "variant": "intended"
+      },
+      "stdin": "inputs/contest-bfs_grid.in",
+      "stdin_sha256": "24c87270746fa92698cc25c415efc1c6c339b8d801c74eabeaf8e5d33661710d",
+      "expected_sha256": "3ea24540da9d7ed9e8861b044f644cdd90c032a930a0d3200c5f8b1f4ff62ab3",
+      "elf_sha256": "1ab24663b28ea7f59a9220331a235ba04b87e28c0d43803212de5d6074eeadf8",
+      "source_sha256": "7455c182dd4f82865522192c36375e53a5966f5327e8433c4995eea568f9eb0d"
+    },
+    "bfs_grid--queue_pair_vecvec": {
+      "role": "heldout",
+      "binary": "bfs_grid--queue_pair_vecvec",
+      "args": [],
+      "meta": {
+        "problem": "bfs_grid",
+        "variant": "queue_pair_vecvec",
+        "too_slow": false,
+        "bound": "same as intended",
+        "description": "Textbook BFS with std::queue<pair<int,int>> (deque) and vector<vector<int>> dist; no div/mod per pop."
+      },
+      "stdin": "inputs/bfs_grid--queue_pair_vecvec.in",
+      "stdin_sha256": "24c87270746fa92698cc25c415efc1c6c339b8d801c74eabeaf8e5d33661710d",
+      "expected_sha256": "3ea24540da9d7ed9e8861b044f644cdd90c032a930a0d3200c5f8b1f4ff62ab3",
+      "elf_sha256": "99588034a5dd8cdd9adc421c08a58740358105c0b28966f9df54a998d26ea954",
+      "source_sha256": "e451f964d7584325cf2add153917e9a5ce3971f92a2b5f1c320d7afad5424ab5"
+    },
+    "bfs_grid--list_queue": {
+      "role": "heldout",
+      "binary": "bfs_grid--list_queue",
+      "args": [],
+      "meta": {
+        "problem": "bfs_grid",
+        "variant": "list_queue",
+        "too_slow": false,
+        "bound": "allocation",
+        "description": "Queue is a std::list<pair<int,int>> (one heap node per cell) plus a bit-packed vector<vector<bool>> visited array."
+      },
+      "stdin": "inputs/bfs_grid--list_queue.in",
+      "stdin_sha256": "24c87270746fa92698cc25c415efc1c6c339b8d801c74eabeaf8e5d33661710d",
+      "expected_sha256": "3ea24540da9d7ed9e8861b044f644cdd90c032a930a0d3200c5f8b1f4ff62ab3",
+      "elf_sha256": "3570e85c71132de2f2da5fd980b4d2b2a37d1a88f5b74ae35a800ce4bc0fbe5c",
+      "source_sha256": "5c04d587fe461c765bd2d4ed3ccf024ee35897fae0de4013768e842c8af3a16a"
+    },
+    "contest-dijkstra": {
+      "role": "calibration",
+      "binary": "contest-dijkstra",
+      "args": [],
+      "meta": {
+        "problem": "dijkstra",
+        "variant": "intended"
+      },
+      "stdin": "inputs/contest-dijkstra.in",
+      "stdin_sha256": "c7525331bcb46e0cce61b172840dc6dc4ce1ed6071ff30e13a92b3a3c2ea5d0c",
+      "expected_sha256": "8f41760d1d6db81f0e9ab1d5282fd44331a1736507fc7ad3280a29926f856953",
+      "elf_sha256": "b0f71689358f7944b4be9e02dfe6f6f3f083187e6e6ee9baadd981b924978db8",
+      "source_sha256": "87b51d74032df4f822436c96eeddaf8f58df1d7de5f0a14eb7f73eb348e94aa7"
+    },
+    "dijkstra--vecvec_getchar_pq": {
+      "role": "heldout",
+      "binary": "dijkstra--vecvec_getchar_pq",
+      "args": [],
+      "meta": {
+        "problem": "dijkstra",
+        "variant": "vecvec_getchar_pq",
+        "too_slow": false,
+        "bound": "allocation / indirection",
+        "description": "Same lazy binary-heap Dijkstra, but vector<vector<pair>> adjacency grown by push_back, vector<bool> done, getchar_unlocked reader."
+      },
+      "stdin": "inputs/dijkstra--vecvec_getchar_pq.in",
+      "stdin_sha256": "c7525331bcb46e0cce61b172840dc6dc4ce1ed6071ff30e13a92b3a3c2ea5d0c",
+      "expected_sha256": "8f41760d1d6db81f0e9ab1d5282fd44331a1736507fc7ad3280a29926f856953",
+      "elf_sha256": "62e4adcde3ff0255b55a4a566322f187b31d5788261bde977480d617701900d1",
+      "source_sha256": "d388a43870ad75fe992210e0b3fb363e7b6b96ef53ce56875e1d9ed772b6ef46"
+    },
+    "dijkstra--set_decrease_key": {
+      "role": "heldout",
+      "binary": "dijkstra--set_decrease_key",
+      "args": [],
+      "meta": {
+        "problem": "dijkstra",
+        "variant": "set_decrease_key",
+        "too_slow": false,
+        "bound": "pointer chasing",
+        "description": "std::set<pair<ll,int>> as an indexed priority queue (erase + reinsert on improvement), vector<vector<pair>> adjacency."
+      },
+      "stdin": "inputs/dijkstra--set_decrease_key.in",
+      "stdin_sha256": "c7525331bcb46e0cce61b172840dc6dc4ce1ed6071ff30e13a92b3a3c2ea5d0c",
+      "expected_sha256": "8f41760d1d6db81f0e9ab1d5282fd44331a1736507fc7ad3280a29926f856953",
+      "elf_sha256": "f877c31635271b6b4ffe3f422450d6046a26c57365edd8536354ee1be6967abb",
+      "source_sha256": "927733d9b9114603c5177f448b2d71399faa6ef719f8f7bbaca56ff2baa4ae11"
+    },
+    "contest-fenwick": {
+      "role": "calibration",
+      "binary": "contest-fenwick",
+      "args": [],
+      "meta": {
+        "problem": "fenwick",
+        "variant": "intended"
+      },
+      "stdin": "inputs/contest-fenwick.in",
+      "stdin_sha256": "1da8fc5c9ac150bf53354cb21acc97d230eefb4d1d193ebde4da050598726bff",
+      "expected_sha256": "0b31843d393526b5711f6ddad3ba7627bd9146625874b4ed48bf322cc9f2b356",
+      "elf_sha256": "7f3436ff2af78d1302f861627326313b8da7c552f652096497ae0bcce092c42c",
+      "source_sha256": "443b8ee03689d55a8fb986b372331e5b2ba765adce1431d0edefff32d2584627"
+    },
+    "fenwick--segtree_bottom_up": {
+      "role": "heldout",
+      "binary": "fenwick--segtree_bottom_up",
+      "args": [],
+      "meta": {
+        "problem": "fenwick",
+        "variant": "segtree_bottom_up",
+        "too_slow": false,
+        "bound": "same as intended",
+        "description": "Iterative bottom-up segment tree (2n array) with an fread reader and a hand-rolled integer writer."
+      },
+      "stdin": "inputs/fenwick--segtree_bottom_up.in",
+      "stdin_sha256": "1da8fc5c9ac150bf53354cb21acc97d230eefb4d1d193ebde4da050598726bff",
+      "expected_sha256": "0b31843d393526b5711f6ddad3ba7627bd9146625874b4ed48bf322cc9f2b356",
+      "elf_sha256": "b4ea0fffaa8e3e059e408a19df5cb454110a515db1aade50bd976375807d5fd5",
+      "source_sha256": "73f799376435c4278f82aad3b71167cc888bfacbf46fe1932d4dd52f49902ce2"
+    },
+    "fenwick--range_bit_template": {
+      "role": "heldout",
+      "binary": "fenwick--range_bit_template",
+      "args": [],
+      "meta": {
+        "problem": "fenwick",
+        "variant": "range_bit_template",
+        "too_slow": false,
+        "bound": "extra work (constant factor)",
+        "description": "Generic range-add/range-sum two-BIT template used for point updates: O(n log n) build, both trees touched per operation."
+      },
+      "stdin": "inputs/fenwick--range_bit_template.in",
+      "stdin_sha256": "1da8fc5c9ac150bf53354cb21acc97d230eefb4d1d193ebde4da050598726bff",
+      "expected_sha256": "0b31843d393526b5711f6ddad3ba7627bd9146625874b4ed48bf322cc9f2b356",
+      "elf_sha256": "a54fb9e6968420fc65e2bc7591d684b0c35b570710581c388efbc9757164cfcc",
+      "source_sha256": "a31818017c98f0b71097f97aa9cded759e8b9831da856f2fc4f3154036cc204f"
+    }
+  },
+  "weights": {
+    "bfs_grid": {
+      "M0": {
+        "instructions": 1.6289940501148304e-10,
+        "rep_bytes": 4.7199941760823125e-11
+      },
+      "M2": {
+        "instructions": 1.3434446157904774e-10,
+        "rep_bytes": 3.112686743968248e-11,
+        "l1d_misses": 5.705426401631746e-10,
+        "random_2m": 4.293125797187226e-09,
+        "random_32m": 5.956234270362775e-09,
+        "stream_2m": 7.535025895547362e-09
+      },
+      "M4": {
+        "instructions": 1.4171974333984614e-10,
+        "rep_bytes": 3.5709810071452325e-11,
+        "l1d_misses": 8.871366417604264e-11,
+        "random_2m": 4.288007478512835e-09,
+        "random_32m": 6.325445462544994e-09,
+        "stream_2m": 7.068065327591269e-09,
+        "l1d_dependent": 5.603116722577837e-09,
+        "dependent_2m": 7.474473371357928e-08
+      },
+      "ML4": {
+        "latency_x16": 1.9675904908544234e-11,
+        "rep_bytes": 2.1128933490574937e-11,
+        "l1d_misses": 3.5698314097958553e-11,
+        "random_2m": 3.881992068082026e-09,
+        "random_32m": 5.880582401212425e-09,
+        "stream_2m": 1.0586930116255336e-08,
+        "l1d_dependent": 4.5632687700123e-09,
+        "dependent_2m": 8.014125815243158e-08
+      }
+    },
+    "dijkstra": {
+      "M0": {
+        "instructions": 1.62822499603297e-10,
+        "rep_bytes": 4.768404675656566e-11
+      },
+      "M2": {
+        "instructions": 1.3386185944034157e-10,
+        "rep_bytes": 3.198285561835479e-11,
+        "l1d_misses": 6.038433762917317e-10,
+        "random_2m": 4.046057747160899e-09,
+        "random_32m": 6.49071299743524e-09,
+        "stream_2m": 7.648655641330393e-09
+      },
+      "M4": {
+        "instructions": 1.416045626227934e-10,
+        "rep_bytes": 3.631971096320013e-11,
+        "l1d_misses": 9.881617899082774e-11,
+        "random_2m": 4.137053411623833e-09,
+        "random_32m": 6.678771678547514e-09,
+        "stream_2m": 7.143408388421033e-09,
+        "l1d_dependent": 5.7371039821321e-09,
+        "dependent_2m": 7.359243884854514e-08
+      },
+      "ML4": {
+        "latency_x16": 1.9610536920428108e-11,
+        "rep_bytes": 2.2231881518169566e-11,
+        "l1d_misses": 5.696914949612691e-11,
+        "random_2m": 3.6329907111055703e-09,
+        "random_32m": 6.462605458925904e-09,
+        "stream_2m": 1.0698559144892158e-08,
+        "l1d_dependent": 4.7700178852992235e-09,
+        "dependent_2m": 7.817536652521212e-08
+      }
+    },
+    "fenwick": {
+      "M0": {
+        "instructions": 1.6408603019003913e-10,
+        "rep_bytes": 4.7281487040617996e-11
+      },
+      "M2": {
+        "instructions": 1.3494730728285036e-10,
+        "rep_bytes": 3.1262655884720496e-11,
+        "l1d_misses": 5.876217397537998e-10,
+        "random_2m": 4.229487197330784e-09,
+        "random_32m": 6.119880533007366e-09,
+        "stream_2m": 7.68590434341987e-09
+      },
+      "M4": {
+        "instructions": 1.420862094170402e-10,
+        "rep_bytes": 3.6023312581447704e-11,
+        "l1d_misses": 8.754621426875665e-11,
+        "random_2m": 4.252515452134675e-09,
+        "random_32m": 6.449076811871434e-09,
+        "stream_2m": 7.14583604876212e-09,
+        "l1d_dependent": 5.775384767239107e-09,
+        "dependent_2m": 7.521636090151888e-08
+      },
+      "ML4": {
+        "latency_x16": 1.9484389003894457e-11,
+        "rep_bytes": 2.2610987844456494e-11,
+        "l1d_misses": 5.6348677644464425e-11,
+        "random_2m": 3.804775319311853e-09,
+        "random_32m": 6.170820571118027e-09,
+        "stream_2m": 1.0595678991662548e-08,
+        "l1d_dependent": 4.832595970324395e-09,
+        "dependent_2m": 8.105513735564702e-08
+      }
+    }
+  },
+  "compiler": "g++ (Debian 12.2.0-14+deb12u1) 12.2.0",
+  "flags": [
+    "-O2",
+    "-static",
+    "-no-pie",
+    "-march=x86-64",
+    "-mtune=generic",
+    "-Wl,--build-id=none"
+  ],
+  "calibration_sha256": "47ccbf247c6718b54515821cdb0a9076721faf197e011b0dc43219749627165b"
+}
