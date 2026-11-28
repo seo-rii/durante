@@ -1,0 +1,2882 @@
+{
+ "schema": 1,
+ "source": "analyze_v2.py on results.json",
+ "models": {
+  "M0": {
+   "features": [
+    "instructions",
+    "rep_bytes"
+   ],
+   "weights_s_per_unit": {
+    "instructions": 1.645921723365064e-10,
+    "rep_bytes": 4.7014587820564796e-11
+   },
+   "calibration_worst_abs_error": 1.2416755811006266,
+   "in_range_all": {
+    "cases": 42,
+    "within_20pct": 9,
+    "median_abs_error": 0.3869525765345552,
+    "worst_abs_error": 1.2579141104413618
+   },
+   "in_range_stable": {
+    "cases": 5,
+    "within_20pct": 1,
+    "median_abs_error": 0.5855566482506748,
+    "worst_abs_error": 0.8869842223933874
+   },
+   "too_slow": {
+    "cases": 7,
+    "within_20pct": 1,
+    "median_abs_error": 0.8167211457503124,
+    "worst_abs_error": 1.2998238552568415
+   },
+   "verdicts": {
+    "A@1.5": {
+     "decisions": 42,
+     "ambiguous": 7,
+     "disagree": 9,
+     "false_tle": 0,
+     "false_ac": 9,
+     "rate": 0.21428571428571427
+    },
+    "A@2.0": {
+     "decisions": 42,
+     "ambiguous": 7,
+     "disagree": 5,
+     "false_tle": 0,
+     "false_ac": 5,
+     "rate": 0.11904761904761904
+    },
+    "A@3.0": {
+     "decisions": 43,
+     "ambiguous": 6,
+     "disagree": 7,
+     "false_tle": 1,
+     "false_ac": 6,
+     "rate": 0.16279069767441862
+    },
+    "R@1.5": {
+     "decisions": 42,
+     "ambiguous": 7,
+     "disagree": 7,
+     "false_tle": 0,
+     "false_ac": 7,
+     "rate": 0.16666666666666666
+    },
+    "R@2.0": {
+     "decisions": 42,
+     "ambiguous": 7,
+     "disagree": 6,
+     "false_tle": 1,
+     "false_ac": 5,
+     "rate": 0.14285714285714285
+    },
+    "R@3.0": {
+     "decisions": 43,
+     "ambiguous": 6,
+     "disagree": 5,
+     "false_tle": 2,
+     "false_ac": 3,
+     "rate": 0.11627906976744186
+    }
+   },
+   "rows": [
+    {
+     "case": "bfs_grid--queue_pair_vecvec",
+     "bound": "same as intended",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.0764547590961167,
+     "error": -0.3946814528631749
+    },
+    {
+     "case": "bfs_grid--list_queue",
+     "bound": "allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.17685519895213136,
+     "error": -0.07616540801034617
+    },
+    {
+     "case": "bfs_grid--pq_instead_of_bfs",
+     "bound": "branchy / heap",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.23330903762766783,
+     "error": -0.17384362904194425
+    },
+    {
+     "case": "bfs_grid--bitset_frontier_sweep",
+     "bound": "compute / sequential",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 1.2848389295773317,
+     "error": 1.2579141104413618
+    },
+    {
+     "case": "bfs_grid--unordered_map_dist",
+     "bound": "memory latency / hashing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.34480119103021883,
+     "error": -0.5452851307825357
+    },
+    {
+     "case": "bfs_grid--hash_seen_and_dist",
+     "bound": "memory latency / hashing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.6110689503853375,
+     "error": -0.6559863995493213
+    },
+    {
+     "case": "bfs_grid--map_pair_dist",
+     "bound": "pointer chasing",
+     "too_slow": true,
+     "stable": true,
+     "prediction_s": 0.8503803436882226,
+     "error": -0.8167211457503124
+    },
+    {
+     "case": "dijkstra--bellman_ford_edges",
+     "bound": "sequential sweeps",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.04448322653727258,
+     "error": -0.3760155628880672
+    },
+    {
+     "case": "dijkstra--vecvec_getchar_pq",
+     "bound": "allocation / indirection",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.06748448725778583,
+     "error": -0.571194911246897
+    },
+    {
+     "case": "dijkstra--set_decrease_key",
+     "bound": "pointer chasing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.07167771655014034,
+     "error": -0.6689877826825389
+    },
+    {
+     "case": "dijkstra--scanf_vecvec_pq",
+     "bound": "I/O (libc parsing)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.26741285151984645,
+     "error": -0.0287974536400314
+    },
+    {
+     "case": "dijkstra--cin_synced",
+     "bound": "I/O (iostream synced with stdio)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.7140387716115144,
+     "error": 0.9772566129592286
+    },
+    {
+     "case": "dijkstra--map_adj_umap_dist",
+     "bound": "pointer chasing / hashing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.310551137851239,
+     "error": -0.6896512095601278
+    },
+    {
+     "case": "dijkstra--maps_everywhere_synced",
+     "bound": "pointer chasing + synced I/O",
+     "too_slow": true,
+     "stable": false,
+     "prediction_s": 0.8241573369172199,
+     "error": -0.5981508046580155
+    },
+    {
+     "case": "lcs--one_row_branchless",
+     "bound": "compute",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.10814916384492274,
+     "error": -0.37922370020593554
+    },
+    {
+     "case": "lcs--full_table_short",
+     "bound": "memory bandwidth",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.12731394254206096,
+     "error": -0.3670004050054644
+    },
+    {
+     "case": "lcs--column_major_table",
+     "bound": "TLB / cache-hostile stride",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.1516452114595923,
+     "error": -0.7184633508846595
+    },
+    {
+     "case": "lcs--memo_recursion",
+     "bound": "recursion / call overhead",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.4785249885227192,
+     "error": -0.2519049421367055
+    },
+    {
+     "case": "lcs--hunt_szymanski",
+     "bound": "branchy binary search",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.3203118189375301,
+     "error": -0.49385823032704423
+    },
+    {
+     "case": "lcs--lis_of_sorted_pairs",
+     "bound": "sort / memory (128-190 MB)",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 1.3119948403806443,
+     "error": -0.06380237562462587
+    },
+    {
+     "case": "lcs--hash_rows_copied",
+     "bound": "hashing + allocation",
+     "too_slow": true,
+     "stable": false,
+     "prediction_s": 6.63903951240124,
+     "error": 1.2998238552568415
+    },
+    {
+     "case": "fenwick--segtree_bottom_up",
+     "bound": "same as intended",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.09059634859222827,
+     "error": -0.29865959162516054
+    },
+    {
+     "case": "fenwick--range_bit_template",
+     "bound": "extra work (constant factor)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.1349567157769337,
+     "error": -0.29496329615326833
+    },
+    {
+     "case": "fenwick--sqrt_decomposition",
+     "bound": "worse complexity, sequential",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.32223343100405577,
+     "error": 0.23812122878681236
+    },
+    {
+     "case": "fenwick--fenwick_cin_endl",
+     "bound": "syscalls (flush per line)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.3862364028642953,
+     "error": -0.23567943739218444
+    },
+    {
+     "case": "fenwick--segtree_recursive",
+     "bound": "recursion + scanf/printf",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.5595761601102106,
+     "error": 0.16953348362815482
+    },
+    {
+     "case": "fenwick--pointer_segtree",
+     "bound": "pointer chasing / allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.5159260738010472,
+     "error": -0.43339943836891515
+    },
+    {
+     "case": "fenwick--map_fenwick",
+     "bound": "pointer chasing",
+     "too_slow": true,
+     "stable": true,
+     "prediction_s": 0.7663729474923578,
+     "error": -0.8316831711508393
+    },
+    {
+     "case": "kmp--shift_and_bitap",
+     "bound": "compute / branch-free",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.05206839672327686,
+     "error": -0.18204758748799263
+    },
+    {
+     "case": "kmp--kmp_automaton",
+     "bound": "load-latency chain",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.08220282057037448,
+     "error": -0.28093474776393706
+    },
+    {
+     "case": "kmp--rolling_hash",
+     "bound": "compute (128-bit multiply)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.17855736858338112,
+     "error": 0.1777569032200222
+    },
+    {
+     "case": "kmp--z_function",
+     "bound": "memory bandwidth (80 MB array)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.1825077990428876,
+     "error": -0.04262723835786056
+    },
+    {
+     "case": "kmp--kmp_cin_synced",
+     "bound": "I/O (iostream synced with stdio)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.5828182339552183,
+     "error": 1.2535437063030677
+    },
+    {
+     "case": "kmp--substr_compare",
+     "bound": "allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.7820811896817726,
+     "error": 0.8720242564305799
+    },
+    {
+     "case": "kmp--hash_from_scratch",
+     "bound": "compute (O(n*m) modmul)",
+     "too_slow": true,
+     "stable": false,
+     "prediction_s": 1.6119444384102442,
+     "error": -0.11348964478954049
+    },
+    {
+     "case": "sort_bs--offline_two_pointer",
+     "bound": "same as intended (sort-heavy)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.25645322726780767,
+     "error": 0.4147972706689524
+    },
+    {
+     "case": "sort_bs--merge_sort_vectors",
+     "bound": "allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.298165472386037,
+     "error": 0.24839524694893644
+    },
+    {
+     "case": "sort_bs--list_sort",
+     "bound": "pointer chasing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.2996136324551383,
+     "error": -0.31328842761404196
+    },
+    {
+     "case": "sort_bs--cin_endl",
+     "bound": "syscalls (flush per line)",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 0.24026577776783836,
+     "error": -0.4467924640517267
+    },
+    {
+     "case": "sort_bs--cin_synced",
+     "bound": "I/O (iostream synced with stdio)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.6329912543241625,
+     "error": -0.07646716186389517
+    },
+    {
+     "case": "sort_bs--pbds_order_tree",
+     "bound": "pointer chasing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.27998592579242465,
+     "error": -0.7289854682520285
+    },
+    {
+     "case": "sort_bs--sqrt_sorted_blocks",
+     "bound": "worse complexity, branchy",
+     "too_slow": true,
+     "stable": true,
+     "prediction_s": 1.804392360908585,
+     "error": -0.647930586206917
+    },
+    {
+     "case": "deep_dfs--bfs_order_reverse",
+     "bound": "memory latency, no recursion",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.2561966149703351,
+     "error": -0.37081491848891646
+    },
+    {
+     "case": "deep_dfs--stack_pairs_vecvec",
+     "bound": "explicit stack + allocation",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 0.3537108229839791,
+     "error": -0.5855566482506748
+    },
+    {
+     "case": "deep_dfs--vecvec_recursive_scanf",
+     "bound": "recursion + scanf",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.37115332883305574,
+     "error": -0.5822377752793059
+    },
+    {
+     "case": "deep_dfs--set_adjacency",
+     "bound": "pointer chasing / allocation",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 0.39157650296591,
+     "error": -0.7182791384076996
+    },
+    {
+     "case": "deep_dfs--umap_adjacency",
+     "bound": "hashing / allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.43227755784979566,
+     "error": -0.7337857970768522
+    },
+    {
+     "case": "deep_dfs--multimap_adjacency",
+     "bound": "pointer chasing",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 0.4644438758474773,
+     "error": -0.8869842223933874
+    },
+    {
+     "case": "deep_dfs--map_of_sets",
+     "bound": "pointer chasing + synced I/O",
+     "too_slow": true,
+     "stable": false,
+     "prediction_s": 1.2821850034195739,
+     "error": -0.8565213869873857
+    }
+   ]
+  },
+  "ML": {
+   "features": [
+    "latency_x16",
+    "rep_bytes"
+   ],
+   "weights_s_per_unit": {
+    "latency_x16": 2.3083606314385534e-11,
+    "rep_bytes": 3.123382624076548e-11
+   },
+   "calibration_worst_abs_error": 0.9441151430462719,
+   "in_range_all": {
+    "cases": 42,
+    "within_20pct": 3,
+    "median_abs_error": 0.6010117155101575,
+    "worst_abs_error": 0.9148128028670162
+   },
+   "in_range_stable": {
+    "cases": 5,
+    "within_20pct": 0,
+    "median_abs_error": 0.7675016624347932,
+    "worst_abs_error": 0.9148128028670162
+   },
+   "too_slow": {
+    "cases": 7,
+    "within_20pct": 0,
+    "median_abs_error": 0.802377922932675,
+    "worst_abs_error": 0.9192619183511297
+   },
+   "verdicts": {
+    "A@1.5": {
+     "decisions": 42,
+     "ambiguous": 7,
+     "disagree": 16,
+     "false_tle": 0,
+     "false_ac": 16,
+     "rate": 0.38095238095238093
+    },
+    "A@2.0": {
+     "decisions": 42,
+     "ambiguous": 7,
+     "disagree": 14,
+     "false_tle": 0,
+     "false_ac": 14,
+     "rate": 0.3333333333333333
+    },
+    "A@3.0": {
+     "decisions": 43,
+     "ambiguous": 6,
+     "disagree": 11,
+     "false_tle": 0,
+     "false_ac": 11,
+     "rate": 0.2558139534883721
+    },
+    "R@1.5": {
+     "decisions": 42,
+     "ambiguous": 7,
+     "disagree": 6,
+     "false_tle": 0,
+     "false_ac": 6,
+     "rate": 0.14285714285714285
+    },
+    "R@2.0": {
+     "decisions": 42,
+     "ambiguous": 7,
+     "disagree": 5,
+     "false_tle": 1,
+     "false_ac": 4,
+     "rate": 0.11904761904761904
+    },
+    "R@3.0": {
+     "decisions": 43,
+     "ambiguous": 6,
+     "disagree": 4,
+     "false_tle": 1,
+     "false_ac": 3,
+     "rate": 0.09302325581395349
+    }
+   },
+   "rows": [
+    {
+     "case": "bfs_grid--queue_pair_vecvec",
+     "bound": "same as intended",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.04296793595330199,
+     "error": -0.6598081156462373
+    },
+    {
+     "case": "bfs_grid--list_queue",
+     "bound": "allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.09929149483285979,
+     "error": -0.48133321406182855
+    },
+    {
+     "case": "bfs_grid--pq_instead_of_bfs",
+     "bound": "branchy / heap",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.13096144775628066,
+     "error": -0.5362604230256738
+    },
+    {
+     "case": "bfs_grid--bitset_frontier_sweep",
+     "bound": "compute / sequential",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.7207808061315423,
+     "error": 0.2666655058740229
+    },
+    {
+     "case": "bfs_grid--unordered_map_dist",
+     "bound": "memory latency / hashing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.19376914324890748,
+     "error": -0.7444622787770909
+    },
+    {
+     "case": "bfs_grid--hash_seen_and_dist",
+     "bound": "memory latency / hashing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.34348178926121525,
+     "error": -0.8066299933281191
+    },
+    {
+     "case": "bfs_grid--map_pair_dist",
+     "bound": "pointer chasing",
+     "too_slow": true,
+     "stable": true,
+     "prediction_s": 0.48241520827492756,
+     "error": -0.8960271044580147
+    },
+    {
+     "case": "dijkstra--bellman_ford_edges",
+     "bound": "sequential sweeps",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.024954708304207415,
+     "error": -0.6499500862095496
+    },
+    {
+     "case": "dijkstra--vecvec_getchar_pq",
+     "bound": "allocation / indirection",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.03785828785805592,
+     "error": -0.7594435825969581
+    },
+    {
+     "case": "dijkstra--set_decrease_key",
+     "bound": "pointer chasing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.04035567520925506,
+     "error": -0.8136349457642892
+    },
+    {
+     "case": "dijkstra--scanf_vecvec_pq",
+     "bound": "I/O (libc parsing)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.1500159339037994,
+     "error": -0.45516508958386515
+    },
+    {
+     "case": "dijkstra--cin_synced",
+     "bound": "I/O (iostream synced with stdio)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.4006341985815399,
+     "error": 0.10940280838693399
+    },
+    {
+     "case": "dijkstra--map_adj_umap_dist",
+     "bound": "pointer chasing / hashing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.17450896520579057,
+     "error": -0.8256047405034013
+    },
+    {
+     "case": "dijkstra--maps_everywhere_synced",
+     "bound": "pointer chasing + synced I/O",
+     "too_slow": true,
+     "stable": false,
+     "prediction_s": 0.4694280203993038,
+     "error": -0.7711125487591356
+    },
+    {
+     "case": "lcs--one_row_branchless",
+     "bound": "compute",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.0606707816045952,
+     "error": -0.6517496578695688
+    },
+    {
+     "case": "lcs--full_table_short",
+     "bound": "memory bandwidth",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.07204402856717906,
+     "error": -0.6418001045743056
+    },
+    {
+     "case": "lcs--column_major_table",
+     "bound": "TLB / cache-hostile stride",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.08569275151194171,
+     "error": -0.8409072737481449
+    },
+    {
+     "case": "lcs--memo_recursion",
+     "bound": "recursion / call overhead",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.26906860913425806,
+     "error": -0.5793555163317615
+    },
+    {
+     "case": "lcs--hunt_szymanski",
+     "bound": "branchy binary search",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.1796918670803159,
+     "error": -0.7160593077659542
+    },
+    {
+     "case": "lcs--lis_of_sorted_pairs",
+     "bound": "sort / memory (128-190 MB)",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 0.7360151877421373,
+     "error": -0.4748030639598623
+    },
+    {
+     "case": "lcs--hash_rows_copied",
+     "bound": "hashing + allocation",
+     "too_slow": true,
+     "stable": false,
+     "prediction_s": 3.736922847916342,
+     "error": 0.29450416657995176
+    },
+    {
+     "case": "fenwick--segtree_bottom_up",
+     "bound": "same as intended",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.054374757750301844,
+     "error": -0.5790645495269877
+    },
+    {
+     "case": "fenwick--range_bit_template",
+     "bound": "extra work (constant factor)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.10966049371282596,
+     "error": -0.4271150377037376
+    },
+    {
+     "case": "fenwick--sqrt_decomposition",
+     "bound": "worse complexity, sequential",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.1829725634695803,
+     "error": -0.296962408861983
+    },
+    {
+     "case": "fenwick--fenwick_cin_endl",
+     "bound": "syscalls (flush per line)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.22508909179259518,
+     "error": -0.5545727435322942
+    },
+    {
+     "case": "fenwick--segtree_recursive",
+     "bound": "recursion + scanf/printf",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.3183143105825749,
+     "error": -0.3347121069793047
+    },
+    {
+     "case": "fenwick--pointer_segtree",
+     "bound": "pointer chasing / allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.29165844084810355,
+     "error": -0.6796947377140942
+    },
+    {
+     "case": "fenwick--map_fenwick",
+     "bound": "pointer chasing",
+     "too_slow": true,
+     "stable": true,
+     "prediction_s": 0.4328326111084777,
+     "error": -0.9049379120666214
+    },
+    {
+     "case": "kmp--shift_and_bitap",
+     "bound": "compute / branch-free",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.029469708182004097,
+     "error": -0.5370547122546759
+    },
+    {
+     "case": "kmp--kmp_automaton",
+     "bound": "load-latency chain",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.046436351160194345,
+     "error": -0.5938002330304294
+    },
+    {
+     "case": "kmp--rolling_hash",
+     "bound": "compute (128-bit multiply)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.10042870459519442,
+     "error": -0.33757648280305513
+    },
+    {
+     "case": "kmp--z_function",
+     "bound": "memory bandwidth (80 MB array)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.10313070513141952,
+     "error": -0.459012006612569
+    },
+    {
+     "case": "kmp--kmp_cin_synced",
+     "bound": "I/O (iostream synced with stdio)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.3271076462781698,
+     "error": 0.2648049333515186
+    },
+    {
+     "case": "kmp--substr_compare",
+     "bound": "allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.4389989650941767,
+     "error": 0.05080741238466028
+    },
+    {
+     "case": "kmp--hash_from_scratch",
+     "bound": "compute (O(n*m) modmul)",
+     "too_slow": true,
+     "stable": false,
+     "prediction_s": 2.985758909566052,
+     "error": 0.642057957098488
+    },
+    {
+     "case": "sort_bs--offline_two_pointer",
+     "bound": "same as intended (sort-heavy)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.14609357950568572,
+     "error": -0.1940331586037806
+    },
+    {
+     "case": "sort_bs--merge_sort_vectors",
+     "bound": "allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.16957133799570487,
+     "error": -0.29001822149772494
+    },
+    {
+     "case": "sort_bs--list_sort",
+     "bound": "pointer chasing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.17093300227061697,
+     "error": -0.6082231979898856
+    },
+    {
+     "case": "sort_bs--cin_endl",
+     "bound": "syscalls (flush per line)",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 0.13700287763412677,
+     "error": -0.6845533930885793
+    },
+    {
+     "case": "sort_bs--cin_synced",
+     "bound": "I/O (iostream synced with stdio)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.3573176146416997,
+     "error": -0.47867439161003367
+    },
+    {
+     "case": "sort_bs--pbds_order_tree",
+     "bound": "pointer chasing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.1580030666589167,
+     "error": -0.8470597155763591
+    },
+    {
+     "case": "sort_bs--sqrt_sorted_blocks",
+     "bound": "worse complexity, branchy",
+     "too_slow": true,
+     "stable": true,
+     "prediction_s": 1.0128336976660564,
+     "error": -0.802377922932675
+    },
+    {
+     "case": "deep_dfs--bfs_order_reverse",
+     "bound": "memory latency, no recursion",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.14380136340262634,
+     "error": -0.6468428259117991
+    },
+    {
+     "case": "deep_dfs--stack_pairs_vecvec",
+     "bound": "explicit stack + allocation",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 0.19842803117840135,
+     "error": -0.7675016624347932
+    },
+    {
+     "case": "deep_dfs--vecvec_recursive_scanf",
+     "bound": "recursion + scanf",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.208213087778408,
+     "error": -0.7656398151142597
+    },
+    {
+     "case": "deep_dfs--set_adjacency",
+     "bound": "pointer chasing / allocation",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 0.2196702671735276,
+     "error": -0.8419575830888794
+    },
+    {
+     "case": "deep_dfs--umap_adjacency",
+     "bound": "hashing / allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.2426702203264228,
+     "error": -0.8505537516249437
+    },
+    {
+     "case": "deep_dfs--multimap_adjacency",
+     "bound": "pointer chasing",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 0.3500809607906567,
+     "error": -0.9148128028670162
+    },
+    {
+     "case": "deep_dfs--map_of_sets",
+     "bound": "pointer chasing + synced I/O",
+     "too_slow": true,
+     "stable": false,
+     "prediction_s": 0.721509326870516,
+     "error": -0.9192619183511297
+    }
+   ]
+  },
+  "M1": {
+   "features": [
+    "instructions",
+    "rep_bytes",
+    "l1d_misses"
+   ],
+   "weights_s_per_unit": {
+    "instructions": 1.4156899274666952e-10,
+    "rep_bytes": 4.279296572794704e-11,
+    "l1d_misses": 1.0059872989805575e-09
+   },
+   "calibration_worst_abs_error": 1.2135154036181182,
+   "in_range_all": {
+    "cases": 42,
+    "within_20pct": 9,
+    "median_abs_error": 0.42527525867583227,
+    "worst_abs_error": 1.1687681734900348
+   },
+   "in_range_stable": {
+    "cases": 5,
+    "within_20pct": 1,
+    "median_abs_error": 0.6270976128936948,
+    "worst_abs_error": 0.8860205824701883
+   },
+   "too_slow": {
+    "cases": 7,
+    "within_20pct": 0,
+    "median_abs_error": 0.8234079049109544,
+    "worst_abs_error": 1.08531553789425
+   },
+   "verdicts": {
+    "A@1.5": {
+     "decisions": 42,
+     "ambiguous": 7,
+     "disagree": 9,
+     "false_tle": 0,
+     "false_ac": 9,
+     "rate": 0.21428571428571427
+    },
+    "A@2.0": {
+     "decisions": 42,
+     "ambiguous": 7,
+     "disagree": 6,
+     "false_tle": 0,
+     "false_ac": 6,
+     "rate": 0.14285714285714285
+    },
+    "A@3.0": {
+     "decisions": 43,
+     "ambiguous": 6,
+     "disagree": 7,
+     "false_tle": 0,
+     "false_ac": 7,
+     "rate": 0.16279069767441862
+    },
+    "R@1.5": {
+     "decisions": 42,
+     "ambiguous": 7,
+     "disagree": 5,
+     "false_tle": 0,
+     "false_ac": 5,
+     "rate": 0.11904761904761904
+    },
+    "R@2.0": {
+     "decisions": 42,
+     "ambiguous": 7,
+     "disagree": 4,
+     "false_tle": 1,
+     "false_ac": 3,
+     "rate": 0.09523809523809523
+    },
+    "R@3.0": {
+     "decisions": 43,
+     "ambiguous": 6,
+     "disagree": 5,
+     "false_tle": 2,
+     "false_ac": 3,
+     "rate": 0.11627906976744186
+    }
+   },
+   "rows": [
+    {
+     "case": "bfs_grid--queue_pair_vecvec",
+     "bound": "same as intended",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.07624395586921244,
+     "error": -0.3963504543033733
+    },
+    {
+     "case": "bfs_grid--list_queue",
+     "bound": "allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.1697664934055966,
+     "error": -0.11319452242213268
+    },
+    {
+     "case": "bfs_grid--pq_instead_of_bfs",
+     "bound": "branchy / heap",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.21201509443242358,
+     "error": -0.24924630959152852
+    },
+    {
+     "case": "bfs_grid--bitset_frontier_sweep",
+     "bound": "compute / sequential",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 1.2341115039064225,
+     "error": 1.1687681734900348
+    },
+    {
+     "case": "bfs_grid--unordered_map_dist",
+     "bound": "memory latency / hashing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.3288302616269106,
+     "error": -0.5663471783155158
+    },
+    {
+     "case": "bfs_grid--hash_seen_and_dist",
+     "bound": "memory latency / hashing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.5856819849286281,
+     "error": -0.6702785042058781
+    },
+    {
+     "case": "bfs_grid--map_pair_dist",
+     "bound": "pointer chasing",
+     "too_slow": true,
+     "stable": true,
+     "prediction_s": 0.8193550048597704,
+     "error": -0.8234079049109544
+    },
+    {
+     "case": "dijkstra--bellman_ford_edges",
+     "bound": "sequential sweeps",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.059046223498974745,
+     "error": -0.1717344401103292
+    },
+    {
+     "case": "dijkstra--vecvec_getchar_pq",
+     "bound": "allocation / indirection",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.06313337728594687,
+     "error": -0.5988424221559121
+    },
+    {
+     "case": "dijkstra--set_decrease_key",
+     "bound": "pointer chasing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.06898220295188061,
+     "error": -0.681435834544587
+    },
+    {
+     "case": "dijkstra--scanf_vecvec_pq",
+     "bound": "I/O (libc parsing)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.23510530271246743,
+     "error": -0.1461335258970028
+    },
+    {
+     "case": "dijkstra--cin_synced",
+     "bound": "I/O (iostream synced with stdio)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.6201484035953895,
+     "error": 0.7172632366414755
+    },
+    {
+     "case": "dijkstra--map_adj_umap_dist",
+     "bound": "pointer chasing / hashing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.2876468070421077,
+     "error": -0.71254061647595
+    },
+    {
+     "case": "dijkstra--maps_everywhere_synced",
+     "bound": "pointer chasing + synced I/O",
+     "too_slow": true,
+     "stable": false,
+     "prediction_s": 0.7460505885716012,
+     "error": -0.6362347148138968
+    },
+    {
+     "case": "lcs--one_row_branchless",
+     "bound": "compute",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.09800763626018162,
+     "error": -0.43743607785633
+    },
+    {
+     "case": "lcs--full_table_short",
+     "bound": "memory bandwidth",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.11678131956723264,
+     "error": -0.4193681657092367
+    },
+    {
+     "case": "lcs--column_major_table",
+     "bound": "TLB / cache-hostile stride",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.22452164163005608,
+     "error": -0.5831647433506684
+    },
+    {
+     "case": "lcs--memo_recursion",
+     "bound": "recursion / call overhead",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.4371602688066481,
+     "error": -0.3165718730842917
+    },
+    {
+     "case": "lcs--hunt_szymanski",
+     "bound": "branchy binary search",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.27597829067315666,
+     "error": -0.563912000200432
+    },
+    {
+     "case": "lcs--lis_of_sorted_pairs",
+     "bound": "sort / memory (128-190 MB)",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 1.1671723307656328,
+     "error": -0.16714309411275463
+    },
+    {
+     "case": "lcs--hash_rows_copied",
+     "bound": "hashing + allocation",
+     "too_slow": true,
+     "stable": false,
+     "prediction_s": 6.019805482171606,
+     "error": 1.08531553789425
+    },
+    {
+     "case": "fenwick--segtree_bottom_up",
+     "bound": "same as intended",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.0864487974083131,
+     "error": -0.3307673452629506
+    },
+    {
+     "case": "fenwick--range_bit_template",
+     "bound": "extra work (constant factor)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.14294231470022092,
+     "error": -0.2532451770459365
+    },
+    {
+     "case": "fenwick--sqrt_decomposition",
+     "bound": "worse complexity, sequential",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.31787831588602944,
+     "error": 0.22138751973422519
+    },
+    {
+     "case": "fenwick--fenwick_cin_endl",
+     "bound": "syscalls (flush per line)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.3411010102817962,
+     "error": -0.324997555509345
+    },
+    {
+     "case": "fenwick--segtree_recursive",
+     "bound": "recursion + scanf/printf",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.49031623599266233,
+     "error": 0.024777852307005806
+    },
+    {
+     "case": "fenwick--pointer_segtree",
+     "bound": "pointer chasing / allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.4607721217304043,
+     "error": -0.4939706360778547
+    },
+    {
+     "case": "fenwick--map_fenwick",
+     "bound": "pointer chasing",
+     "too_slow": true,
+     "stable": true,
+     "prediction_s": 0.7515437996688272,
+     "error": -0.834940064735561
+    },
+    {
+     "case": "kmp--shift_and_bitap",
+     "bound": "compute / branch-free",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.046599736922541976,
+     "error": -0.26795581126126
+    },
+    {
+     "case": "kmp--kmp_automaton",
+     "bound": "load-latency chain",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.07304218071615369,
+     "error": -0.3610670079675847
+    },
+    {
+     "case": "kmp--rolling_hash",
+     "bound": "compute (128-bit multiply)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.15539535689965575,
+     "error": 0.0249812470295483
+    },
+    {
+     "case": "kmp--z_function",
+     "bound": "memory bandwidth (80 MB array)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.16342994112819165,
+     "error": -0.1427030795755655
+    },
+    {
+     "case": "kmp--kmp_cin_synced",
+     "bound": "I/O (iostream synced with stdio)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.502989580507562,
+     "error": 0.9448756704065843
+    },
+    {
+     "case": "kmp--substr_compare",
+     "bound": "allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.6744981696532093,
+     "error": 0.6145087634988601
+    },
+    {
+     "case": "kmp--hash_from_scratch",
+     "bound": "compute (O(n*m) modmul)",
+     "too_slow": true,
+     "stable": false,
+     "prediction_s": 1.3882800214681155,
+     "error": -0.2364968756757727
+    },
+    {
+     "case": "sort_bs--offline_two_pointer",
+     "bound": "same as intended (sort-heavy)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.22236736697701895,
+     "error": 0.22675291411479842
+    },
+    {
+     "case": "sort_bs--merge_sort_vectors",
+     "bound": "allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.2618329801210409,
+     "error": 0.09627397586257226
+    },
+    {
+     "case": "sort_bs--list_sort",
+     "bound": "pointer chasing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.26795104808322645,
+     "error": -0.3858587673601624
+    },
+    {
+     "case": "sort_bs--cin_endl",
+     "bound": "syscalls (flush per line)",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 0.21115338402120798,
+     "error": -0.5138232154127935
+    },
+    {
+     "case": "sort_bs--cin_synced",
+     "bound": "I/O (iostream synced with stdio)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.5489524256487452,
+     "error": -0.1990796267756072
+    },
+    {
+     "case": "sort_bs--pbds_order_tree",
+     "bound": "pointer chasing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.27745744554724083,
+     "error": -0.7314329301654909
+    },
+    {
+     "case": "sort_bs--sqrt_sorted_blocks",
+     "bound": "worse complexity, branchy",
+     "too_slow": true,
+     "stable": true,
+     "prediction_s": 2.210872628928117,
+     "error": -0.5686189726241425
+    },
+    {
+     "case": "deep_dfs--bfs_order_reverse",
+     "bound": "memory latency, no recursion",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.2316157205994231,
+     "error": -0.43118235164242785
+    },
+    {
+     "case": "deep_dfs--stack_pairs_vecvec",
+     "bound": "explicit stack + allocation",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 0.31825727129974724,
+     "error": -0.6270976128936948
+    },
+    {
+     "case": "deep_dfs--vecvec_recursive_scanf",
+     "bound": "recursion + scanf",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.33137679088712807,
+     "error": -0.6270093930800241
+    },
+    {
+     "case": "deep_dfs--set_adjacency",
+     "bound": "pointer chasing / allocation",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 0.3558377634499499,
+     "error": -0.743991479195256
+    },
+    {
+     "case": "deep_dfs--umap_adjacency",
+     "bound": "hashing / allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.39246309548834635,
+     "error": -0.7583051716543542
+    },
+    {
+     "case": "deep_dfs--multimap_adjacency",
+     "bound": "pointer chasing",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 0.4684040013302201,
+     "error": -0.8860205824701883
+    },
+    {
+     "case": "deep_dfs--map_of_sets",
+     "bound": "pointer chasing + synced I/O",
+     "too_slow": true,
+     "stable": false,
+     "prediction_s": 1.2088635277137745,
+     "error": -0.864726180843381
+    }
+   ]
+  },
+  "M2": {
+   "features": [
+    "instructions",
+    "rep_bytes",
+    "l1d_misses",
+    "random_2m",
+    "random_32m",
+    "stream_2m"
+   ],
+   "weights_s_per_unit": {
+    "instructions": 1.356295539922634e-10,
+    "rep_bytes": 3.094657703415889e-11,
+    "l1d_misses": 5.808396266783687e-10,
+    "random_2m": 4.238344578750897e-09,
+    "random_32m": 6.0840154133978634e-09,
+    "stream_2m": 7.720720138740617e-09
+   },
+   "calibration_worst_abs_error": 1.0128211533710039,
+   "in_range_all": {
+    "cases": 42,
+    "within_20pct": 11,
+    "median_abs_error": 0.44478915564294125,
+    "worst_abs_error": 0.9919674279324379
+   },
+   "in_range_stable": {
+    "cases": 5,
+    "within_20pct": 1,
+    "median_abs_error": 0.5530375797443667,
+    "worst_abs_error": 0.8283758701835804
+   },
+   "too_slow": {
+    "cases": 7,
+    "within_20pct": 0,
+    "median_abs_error": 0.8039082947327023,
+    "worst_abs_error": 0.9489081428013131
+   },
+   "verdicts": {
+    "A@1.5": {
+     "decisions": 42,
+     "ambiguous": 7,
+     "disagree": 9,
+     "false_tle": 0,
+     "false_ac": 9,
+     "rate": 0.21428571428571427
+    },
+    "A@2.0": {
+     "decisions": 42,
+     "ambiguous": 7,
+     "disagree": 6,
+     "false_tle": 0,
+     "false_ac": 6,
+     "rate": 0.14285714285714285
+    },
+    "A@3.0": {
+     "decisions": 43,
+     "ambiguous": 6,
+     "disagree": 5,
+     "false_tle": 1,
+     "false_ac": 4,
+     "rate": 0.11627906976744186
+    },
+    "R@1.5": {
+     "decisions": 42,
+     "ambiguous": 7,
+     "disagree": 3,
+     "false_tle": 0,
+     "false_ac": 3,
+     "rate": 0.07142857142857142
+    },
+    "R@2.0": {
+     "decisions": 42,
+     "ambiguous": 7,
+     "disagree": 4,
+     "false_tle": 1,
+     "false_ac": 3,
+     "rate": 0.09523809523809523
+    },
+    "R@3.0": {
+     "decisions": 43,
+     "ambiguous": 6,
+     "disagree": 5,
+     "false_tle": 2,
+     "false_ac": 3,
+     "rate": 0.11627906976744186
+    }
+   },
+   "rows": [
+    {
+     "case": "bfs_grid--queue_pair_vecvec",
+     "bound": "same as intended",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.07277140683379396,
+     "error": -0.4238438158917386
+    },
+    {
+     "case": "bfs_grid--list_queue",
+     "bound": "allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.1597874805207338,
+     "error": -0.1653216713641436
+    },
+    {
+     "case": "bfs_grid--pq_instead_of_bfs",
+     "bound": "branchy / heap",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.20252336863039358,
+     "error": -0.28285687959974376
+    },
+    {
+     "case": "bfs_grid--bitset_frontier_sweep",
+     "bound": "compute / sequential",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 1.1335051612558187,
+     "error": 0.9919674279324379
+    },
+    {
+     "case": "bfs_grid--unordered_map_dist",
+     "bound": "memory latency / hashing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.3911326588690728,
+     "error": -0.484184392481573
+    },
+    {
+     "case": "bfs_grid--hash_seen_and_dist",
+     "bound": "memory latency / hashing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.7892004373710112,
+     "error": -0.5557036832487595
+    },
+    {
+     "case": "bfs_grid--map_pair_dist",
+     "bound": "pointer chasing",
+     "too_slow": true,
+     "stable": true,
+     "prediction_s": 0.9098296276581973,
+     "error": -0.8039082947327023
+    },
+    {
+     "case": "dijkstra--bellman_ford_edges",
+     "bound": "sequential sweeps",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.06944499985777818,
+     "error": -0.02586654522046641
+    },
+    {
+     "case": "dijkstra--vecvec_getchar_pq",
+     "bound": "allocation / indirection",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.0719622806642295,
+     "error": -0.5427424375438149
+    },
+    {
+     "case": "dijkstra--set_decrease_key",
+     "bound": "pointer chasing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.08214194736304031,
+     "error": -0.620663304579547
+    },
+    {
+     "case": "dijkstra--scanf_vecvec_pq",
+     "bound": "I/O (libc parsing)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.23671645656092832,
+     "error": -0.14028206172349897
+    },
+    {
+     "case": "dijkstra--cin_synced",
+     "bound": "I/O (iostream synced with stdio)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.6047315657258044,
+     "error": 0.6745722150324387
+    },
+    {
+     "case": "dijkstra--map_adj_umap_dist",
+     "bound": "pointer chasing / hashing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.3235866598797475,
+     "error": -0.6766241811541401
+    },
+    {
+     "case": "dijkstra--maps_everywhere_synced",
+     "bound": "pointer chasing + synced I/O",
+     "too_slow": true,
+     "stable": false,
+     "prediction_s": 0.7839351067532835,
+     "error": -0.6177626798452183
+    },
+    {
+     "case": "lcs--one_row_branchless",
+     "bound": "compute",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.09202892751967802,
+     "error": -0.4717538715176676
+    },
+    {
+     "case": "lcs--full_table_short",
+     "bound": "memory bandwidth",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.13886155123777133,
+     "error": -0.30958617776852887
+    },
+    {
+     "case": "lcs--column_major_table",
+     "bound": "TLB / cache-hostile stride",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.21395238033718422,
+     "error": -0.6027870867097431
+    },
+    {
+     "case": "lcs--memo_recursion",
+     "bound": "recursion / call overhead",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.4391848160984836,
+     "error": -0.3134068266190939
+    },
+    {
+     "case": "lcs--hunt_szymanski",
+     "bound": "branchy binary search",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.2642606784694363,
+     "error": -0.58242762349777
+    },
+    {
+     "case": "lcs--lis_of_sorted_pairs",
+     "bound": "sort / memory (128-190 MB)",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 1.2837670455469024,
+     "error": -0.0839448286673814
+    },
+    {
+     "case": "lcs--hash_rows_copied",
+     "bound": "hashing + allocation",
+     "too_slow": true,
+     "stable": false,
+     "prediction_s": 5.626030070313119,
+     "error": 0.9489081428013131
+    },
+    {
+     "case": "fenwick--segtree_bottom_up",
+     "bound": "same as intended",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.09412497834866093,
+     "error": -0.27134314153820427
+    },
+    {
+     "case": "fenwick--range_bit_template",
+     "bound": "extra work (constant factor)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.15606250174186562,
+     "error": -0.1847031013704792
+    },
+    {
+     "case": "fenwick--sqrt_decomposition",
+     "bound": "worse complexity, sequential",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.4618674777767511,
+     "error": 0.7746387373271002
+    },
+    {
+     "case": "fenwick--fenwick_cin_endl",
+     "bound": "syscalls (flush per line)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.3324471864989074,
+     "error": -0.3421225479062175
+    },
+    {
+     "case": "fenwick--segtree_recursive",
+     "bound": "recursion + scanf/printf",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.48368584416910954,
+     "error": 0.010920104604365894
+    },
+    {
+     "case": "fenwick--pointer_segtree",
+     "bound": "pointer chasing / allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.48648293493592676,
+     "error": -0.4657344953941439
+    },
+    {
+     "case": "fenwick--map_fenwick",
+     "bound": "pointer chasing",
+     "too_slow": true,
+     "stable": true,
+     "prediction_s": 0.8341350136545663,
+     "error": -0.816800735477699
+    },
+    {
+     "case": "kmp--shift_and_bitap",
+     "bound": "compute / branch-free",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.056164557970733435,
+     "error": -0.11770020625016211
+    },
+    {
+     "case": "kmp--kmp_automaton",
+     "bound": "load-latency chain",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.0852287156541697,
+     "error": -0.254465874839968
+    },
+    {
+     "case": "kmp--rolling_hash",
+     "bound": "compute (128-bit multiply)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.16039536795716128,
+     "error": 0.05796110994908768
+    },
+    {
+     "case": "kmp--z_function",
+     "bound": "memory bandwidth (80 MB array)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.19919104898772802,
+     "error": 0.04488731804257384
+    },
+    {
+     "case": "kmp--kmp_cin_synced",
+     "bound": "I/O (iostream synced with stdio)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.4931610712568239,
+     "error": 0.906872440799248
+    },
+    {
+     "case": "kmp--substr_compare",
+     "bound": "allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.6577195406096114,
+     "error": 0.5743466921261339
+    },
+    {
+     "case": "kmp--hash_from_scratch",
+     "bound": "compute (O(n*m) modmul)",
+     "too_slow": true,
+     "stable": false,
+     "prediction_s": 1.3415551617168398,
+     "error": -0.2621938358365796
+    },
+    {
+     "case": "sort_bs--offline_two_pointer",
+     "bound": "same as intended (sort-heavy)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.21647573889544494,
+     "error": 0.1942500697621986
+    },
+    {
+     "case": "sort_bs--merge_sort_vectors",
+     "bound": "allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.2512269645015045,
+     "error": 0.05186742743649281
+    },
+    {
+     "case": "sort_bs--list_sort",
+     "bound": "pointer chasing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.26791607739221207,
+     "error": -0.38593891984860934
+    },
+    {
+     "case": "sort_bs--cin_endl",
+     "bound": "syscalls (flush per line)",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 0.20083257715978609,
+     "error": -0.5375866834599251
+    },
+    {
+     "case": "sort_bs--cin_synced",
+     "bound": "I/O (iostream synced with stdio)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.5244557682874561,
+     "error": -0.23482019561154455
+    },
+    {
+     "case": "sort_bs--pbds_order_tree",
+     "bound": "pointer chasing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.338439550975542,
+     "error": -0.6724048318749031
+    },
+    {
+     "case": "sort_bs--sqrt_sorted_blocks",
+     "bound": "worse complexity, branchy",
+     "too_slow": true,
+     "stable": true,
+     "prediction_s": 1.8704203645186868,
+     "error": -0.635047334743122
+    },
+    {
+     "case": "deep_dfs--bfs_order_reverse",
+     "bound": "memory latency, no recursion",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.25974055905151366,
+     "error": -0.36211145944498935
+    },
+    {
+     "case": "deep_dfs--stack_pairs_vecvec",
+     "bound": "explicit stack + allocation",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 0.38146454719137274,
+     "error": -0.5530375797443667
+    },
+    {
+     "case": "deep_dfs--vecvec_recursive_scanf",
+     "bound": "recursion + scanf",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.4012754517178901,
+     "error": -0.5483329599587925
+    },
+    {
+     "case": "deep_dfs--set_adjacency",
+     "bound": "pointer chasing / allocation",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 0.4930418522361716,
+     "error": -0.6452795957853213
+    },
+    {
+     "case": "deep_dfs--umap_adjacency",
+     "bound": "hashing / allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.5115672851090644,
+     "error": -0.6849559395952052
+    },
+    {
+     "case": "deep_dfs--multimap_adjacency",
+     "bound": "pointer chasing",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 0.7052977710629372,
+     "error": -0.8283758701835804
+    },
+    {
+     "case": "deep_dfs--map_of_sets",
+     "bound": "pointer chasing + synced I/O",
+     "too_slow": true,
+     "stable": false,
+     "prediction_s": 1.5725999484828566,
+     "error": -0.8240234764637987
+    }
+   ]
+  },
+  "M4": {
+   "features": [
+    "instructions",
+    "rep_bytes",
+    "l1d_misses",
+    "random_2m",
+    "random_32m",
+    "stream_2m",
+    "l1d_dependent",
+    "dependent_2m"
+   ],
+   "weights_s_per_unit": {
+    "instructions": 1.4284059036049538e-10,
+    "rep_bytes": 3.567556919542693e-11,
+    "l1d_misses": 7.980897504047005e-11,
+    "random_2m": 4.262981693375922e-09,
+    "random_32m": 6.409167342769615e-09,
+    "stream_2m": 7.184291660254192e-09,
+    "l1d_dependent": 5.778472539797802e-09,
+    "dependent_2m": 7.512422031809766e-08
+   },
+   "calibration_worst_abs_error": 0.9688435749251332,
+   "in_range_all": {
+    "cases": 42,
+    "within_20pct": 11,
+    "median_abs_error": 0.39738219346928216,
+    "worst_abs_error": 1.2360788958931732
+   },
+   "in_range_stable": {
+    "cases": 5,
+    "within_20pct": 1,
+    "median_abs_error": 0.4289989305912067,
+    "worst_abs_error": 0.5185152944068324
+   },
+   "too_slow": {
+    "cases": 7,
+    "within_20pct": 0,
+    "median_abs_error": 0.7661770012258241,
+    "worst_abs_error": 1.0555201215320589
+   },
+   "verdicts": {
+    "A@1.5": {
+     "decisions": 42,
+     "ambiguous": 7,
+     "disagree": 6,
+     "false_tle": 1,
+     "false_ac": 5,
+     "rate": 0.14285714285714285
+    },
+    "A@2.0": {
+     "decisions": 42,
+     "ambiguous": 7,
+     "disagree": 5,
+     "false_tle": 0,
+     "false_ac": 5,
+     "rate": 0.11904761904761904
+    },
+    "A@3.0": {
+     "decisions": 43,
+     "ambiguous": 6,
+     "disagree": 4,
+     "false_tle": 1,
+     "false_ac": 3,
+     "rate": 0.09302325581395349
+    },
+    "R@1.5": {
+     "decisions": 42,
+     "ambiguous": 7,
+     "disagree": 4,
+     "false_tle": 1,
+     "false_ac": 3,
+     "rate": 0.09523809523809523
+    },
+    "R@2.0": {
+     "decisions": 42,
+     "ambiguous": 7,
+     "disagree": 6,
+     "false_tle": 2,
+     "false_ac": 4,
+     "rate": 0.14285714285714285
+    },
+    "R@3.0": {
+     "decisions": 43,
+     "ambiguous": 6,
+     "disagree": 3,
+     "false_tle": 1,
+     "false_ac": 2,
+     "rate": 0.06976744186046512
+    }
+   },
+   "rows": [
+    {
+     "case": "bfs_grid--queue_pair_vecvec",
+     "bound": "same as intended",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.10577700594734296,
+     "error": -0.16252716877920145
+    },
+    {
+     "case": "bfs_grid--list_queue",
+     "bound": "allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.20983246442747144,
+     "error": 0.09609720443109682
+    },
+    {
+     "case": "bfs_grid--pq_instead_of_bfs",
+     "bound": "branchy / heap",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.25515286809006094,
+     "error": -0.09649377630527678
+    },
+    {
+     "case": "bfs_grid--bitset_frontier_sweep",
+     "bound": "compute / sequential",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 1.1255335984324342,
+     "error": 0.9779585870054971
+    },
+    {
+     "case": "bfs_grid--unordered_map_dist",
+     "bound": "memory latency / hashing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.5302266035223971,
+     "error": -0.3007509053088606
+    },
+    {
+     "case": "bfs_grid--hash_seen_and_dist",
+     "bound": "memory latency / hashing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 1.0421247878978703,
+     "error": -0.41331481467422865
+    },
+    {
+     "case": "bfs_grid--map_pair_dist",
+     "bound": "pointer chasing",
+     "too_slow": true,
+     "stable": true,
+     "prediction_s": 1.0848959247034002,
+     "error": -0.7661770012258241
+    },
+    {
+     "case": "dijkstra--bellman_ford_edges",
+     "bound": "sequential sweeps",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.15940782840932843,
+     "error": 1.2360788958931732
+    },
+    {
+     "case": "dijkstra--vecvec_getchar_pq",
+     "bound": "allocation / indirection",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.07252735417450146,
+     "error": -0.5391518879735321
+    },
+    {
+     "case": "dijkstra--set_decrease_key",
+     "bound": "pointer chasing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.09433228581106655,
+     "error": -0.5643675525139972
+    },
+    {
+     "case": "dijkstra--scanf_vecvec_pq",
+     "bound": "I/O (libc parsing)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.26239532622961204,
+     "error": -0.04702033750894503
+    },
+    {
+     "case": "dijkstra--cin_synced",
+     "bound": "I/O (iostream synced with stdio)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.6477035018158313,
+     "error": 0.7935665164397779
+    },
+    {
+     "case": "dijkstra--map_adj_umap_dist",
+     "bound": "pointer chasing / hashing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.41697816922458425,
+     "error": -0.5832935233981602
+    },
+    {
+     "case": "dijkstra--maps_everywhere_synced",
+     "bound": "pointer chasing + synced I/O",
+     "too_slow": true,
+     "stable": false,
+     "prediction_s": 0.9159147205232692,
+     "error": -0.5534110090909462
+    },
+    {
+     "case": "lcs--one_row_branchless",
+     "bound": "compute",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.09428418614374594,
+     "error": -0.45880868494428795
+    },
+    {
+     "case": "lcs--full_table_short",
+     "bound": "memory bandwidth",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.1391632007118431,
+     "error": -0.30808638920566456
+    },
+    {
+     "case": "lcs--column_major_table",
+     "bound": "TLB / cache-hostile stride",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.1738369901707364,
+     "error": -0.6772632433698274
+    },
+    {
+     "case": "lcs--memo_recursion",
+     "bound": "recursion / call overhead",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.4484833383725236,
+     "error": -0.29887011751197734
+    },
+    {
+     "case": "lcs--hunt_szymanski",
+     "bound": "branchy binary search",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.2806734950157451,
+     "error": -0.5564928576823179
+    },
+    {
+     "case": "lcs--lis_of_sorted_pairs",
+     "bound": "sort / memory (128-190 MB)",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 1.3095386587195867,
+     "error": -0.06555502842884674
+    },
+    {
+     "case": "lcs--hash_rows_copied",
+     "bound": "hashing + allocation",
+     "too_slow": true,
+     "stable": false,
+     "prediction_s": 5.933793266033887,
+     "error": 1.0555201215320589
+    },
+    {
+     "case": "fenwick--segtree_bottom_up",
+     "bound": "same as intended",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.09369355581181779,
+     "error": -0.27468294565695034
+    },
+    {
+     "case": "fenwick--range_bit_template",
+     "bound": "extra work (constant factor)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.21797809675664154,
+     "error": 0.13875443666030118
+    },
+    {
+     "case": "fenwick--sqrt_decomposition",
+     "bound": "worse complexity, sequential",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.49450265352816675,
+     "error": 0.9000332495510903
+    },
+    {
+     "case": "fenwick--fenwick_cin_endl",
+     "bound": "syscalls (flush per line)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.34462277079191816,
+     "error": -0.3180283678447318
+    },
+    {
+     "case": "fenwick--segtree_recursive",
+     "bound": "recursion + scanf/printf",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.6268734504148631,
+     "error": 0.3101871425567874
+    },
+    {
+     "case": "fenwick--pointer_segtree",
+     "bound": "pointer chasing / allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.5056947169610666,
+     "error": -0.44463572361627896
+    },
+    {
+     "case": "fenwick--map_fenwick",
+     "bound": "pointer chasing",
+     "too_slow": true,
+     "stable": true,
+     "prediction_s": 0.8335529044361865,
+     "error": -0.8169285828632339
+    },
+    {
+     "case": "kmp--shift_and_bitap",
+     "bound": "compute / branch-free",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.05687171599127127,
+     "error": -0.10659132552160383
+    },
+    {
+     "case": "kmp--kmp_automaton",
+     "bound": "load-latency chain",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.08676104512851869,
+     "error": -0.24106189584829565
+    },
+    {
+     "case": "kmp--rolling_hash",
+     "bound": "compute (128-bit multiply)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.16664416452857228,
+     "error": 0.09917790966553407
+    },
+    {
+     "case": "kmp--z_function",
+     "bound": "memory bandwidth (80 MB array)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.20134091284913383,
+     "error": 0.05616475995433046
+    },
+    {
+     "case": "kmp--kmp_cin_synced",
+     "bound": "I/O (iostream synced with stdio)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.517129546508251,
+     "error": 0.9995497171877639
+    },
+    {
+     "case": "kmp--substr_compare",
+     "bound": "allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.6904096454944446,
+     "error": 0.6525951784687967
+    },
+    {
+     "case": "kmp--hash_from_scratch",
+     "bound": "compute (O(n*m) modmul)",
+     "too_slow": true,
+     "stable": false,
+     "prediction_s": 1.4106028483094541,
+     "error": -0.22422013915752537
+    },
+    {
+     "case": "sort_bs--offline_two_pointer",
+     "bound": "same as intended (sort-heavy)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.22762900996020047,
+     "error": 0.2557802662411412
+    },
+    {
+     "case": "sort_bs--merge_sort_vectors",
+     "bound": "allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.26152660489884894,
+     "error": 0.09499120704260586
+    },
+    {
+     "case": "sort_bs--list_sort",
+     "bound": "pointer chasing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.31366258007437353,
+     "error": -0.28108837439577744
+    },
+    {
+     "case": "sort_bs--cin_endl",
+     "bound": "syscalls (flush per line)",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 0.20911554842499097,
+     "error": -0.5185152944068324
+    },
+    {
+     "case": "sort_bs--cin_synced",
+     "bound": "I/O (iostream synced with stdio)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.5499450265777316,
+     "error": -0.1976314242185876
+    },
+    {
+     "case": "sort_bs--pbds_order_tree",
+     "bound": "pointer chasing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.3297631820386778,
+     "error": -0.6808031899639457
+    },
+    {
+     "case": "sort_bs--sqrt_sorted_blocks",
+     "bound": "worse complexity, branchy",
+     "too_slow": true,
+     "stable": true,
+     "prediction_s": 1.6401131306357406,
+     "error": -0.6799844197043141
+    },
+    {
+     "case": "deep_dfs--bfs_order_reverse",
+     "bound": "memory latency, no recursion",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.6509047750236221,
+     "error": 0.5985362413028432
+    },
+    {
+     "case": "deep_dfs--stack_pairs_vecvec",
+     "bound": "explicit stack + allocation",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 0.5279080480552801,
+     "error": -0.3814495722643356
+    },
+    {
+     "case": "deep_dfs--vecvec_recursive_scanf",
+     "bound": "recursion + scanf",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.4099719351827486,
+     "error": -0.5385443847331607
+    },
+    {
+     "case": "deep_dfs--set_adjacency",
+     "bound": "pointer chasing / allocation",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 0.7794603539294541,
+     "error": -0.43921496611056254
+    },
+    {
+     "case": "deep_dfs--umap_adjacency",
+     "bound": "hashing / allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.8973510764702989,
+     "error": -0.4473744999554754
+    },
+    {
+     "case": "deep_dfs--multimap_adjacency",
+     "bound": "pointer chasing",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 2.3465568737878373,
+     "error": -0.4289989305912067
+    },
+    {
+     "case": "deep_dfs--map_of_sets",
+     "bound": "pointer chasing + synced I/O",
+     "too_slow": true,
+     "stable": false,
+     "prediction_s": 1.7606189319536663,
+     "error": -0.802983842638347
+    }
+   ]
+  },
+  "ML4": {
+   "features": [
+    "latency_x16",
+    "rep_bytes",
+    "l1d_misses",
+    "random_2m",
+    "random_32m",
+    "stream_2m",
+    "l1d_dependent",
+    "dependent_2m"
+   ],
+   "weights_s_per_unit": {
+    "latency_x16": 1.9684195028200586e-11,
+    "rep_bytes": 2.1416374520743796e-11,
+    "l1d_misses": 5.60693679886497e-11,
+    "random_2m": 3.831173690206135e-09,
+    "random_32m": 6.00874029396571e-09,
+    "stream_2m": 1.0867534835935378e-08,
+    "l1d_dependent": 4.8128985872910504e-09,
+    "dependent_2m": 8.086571818869604e-08
+   },
+   "calibration_worst_abs_error": 0.8506658762318717,
+   "in_range_all": {
+    "cases": 42,
+    "within_20pct": 7,
+    "median_abs_error": 0.4982169090163023,
+    "worst_abs_error": 0.996914882085687
+   },
+   "in_range_stable": {
+    "cases": 5,
+    "within_20pct": 0,
+    "median_abs_error": 0.5169114746517492,
+    "worst_abs_error": 0.729575969569727
+   },
+   "too_slow": {
+    "cases": 7,
+    "within_20pct": 1,
+    "median_abs_error": 0.8204055442241613,
+    "worst_abs_error": 0.8765326998191696
+   },
+   "verdicts": {
+    "A@1.5": {
+     "decisions": 42,
+     "ambiguous": 7,
+     "disagree": 12,
+     "false_tle": 0,
+     "false_ac": 12,
+     "rate": 0.2857142857142857
+    },
+    "A@2.0": {
+     "decisions": 42,
+     "ambiguous": 7,
+     "disagree": 10,
+     "false_tle": 0,
+     "false_ac": 10,
+     "rate": 0.23809523809523808
+    },
+    "A@3.0": {
+     "decisions": 43,
+     "ambiguous": 6,
+     "disagree": 8,
+     "false_tle": 1,
+     "false_ac": 7,
+     "rate": 0.18604651162790697
+    },
+    "R@1.5": {
+     "decisions": 42,
+     "ambiguous": 7,
+     "disagree": 4,
+     "false_tle": 1,
+     "false_ac": 3,
+     "rate": 0.09523809523809523
+    },
+    "R@2.0": {
+     "decisions": 42,
+     "ambiguous": 7,
+     "disagree": 4,
+     "false_tle": 2,
+     "false_ac": 2,
+     "rate": 0.09523809523809523
+    },
+    "R@3.0": {
+     "decisions": 43,
+     "ambiguous": 6,
+     "disagree": 5,
+     "false_tle": 2,
+     "false_ac": 3,
+     "rate": 0.11627906976744186
+    }
+   },
+   "rows": [
+    {
+     "case": "bfs_grid--queue_pair_vecvec",
+     "bound": "same as intended",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.07219149581883945,
+     "error": -0.4284351702716484
+    },
+    {
+     "case": "bfs_grid--list_queue",
+     "bound": "allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.13431099747826786,
+     "error": -0.2984026124748331
+    },
+    {
+     "case": "bfs_grid--pq_instead_of_bfs",
+     "bound": "branchy / heap",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.15827453705864863,
+     "error": -0.43954371214665344
+    },
+    {
+     "case": "bfs_grid--bitset_frontier_sweep",
+     "bound": "compute / sequential",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.6222122060818864,
+     "error": 0.09344579111041158
+    },
+    {
+     "case": "bfs_grid--unordered_map_dist",
+     "bound": "memory latency / hashing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.41088332279370066,
+     "error": -0.4581377290793629
+    },
+    {
+     "case": "bfs_grid--hash_seen_and_dist",
+     "bound": "memory latency / hashing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.8571427875638832,
+     "error": -0.5174541657463699
+    },
+    {
+     "case": "bfs_grid--map_pair_dist",
+     "bound": "pointer chasing",
+     "too_slow": true,
+     "stable": true,
+     "prediction_s": 0.775781154803832,
+     "error": -0.8327991912603812
+    },
+    {
+     "case": "dijkstra--bellman_ford_edges",
+     "bound": "sequential sweeps",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.14235806502900655,
+     "error": 0.996914882085687
+    },
+    {
+     "case": "dijkstra--vecvec_getchar_pq",
+     "bound": "allocation / indirection",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.047936023570800845,
+     "error": -0.6954083571350452
+    },
+    {
+     "case": "dijkstra--set_decrease_key",
+     "bound": "pointer chasing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.06923499572563856,
+     "error": -0.6802684215661766
+    },
+    {
+     "case": "dijkstra--scanf_vecvec_pq",
+     "bound": "I/O (libc parsing)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.16088984657375666,
+     "error": -0.4156727031337149
+    },
+    {
+     "case": "dijkstra--cin_synced",
+     "bound": "I/O (iostream synced with stdio)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.3703298539647523,
+     "error": 0.025486544764853035
+    },
+    {
+     "case": "dijkstra--map_adj_umap_dist",
+     "bound": "pointer chasing / hashing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.30842871067959876,
+     "error": -0.6917722538109166
+    },
+    {
+     "case": "dijkstra--maps_everywhere_synced",
+     "bound": "pointer chasing + synced I/O",
+     "too_slow": true,
+     "stable": false,
+     "prediction_s": 0.6136539090991501,
+     "error": -0.7007897417835821
+    },
+    {
+     "case": "lcs--one_row_branchless",
+     "bound": "compute",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.05205982100292233,
+     "error": -0.7011765796314785
+    },
+    {
+     "case": "lcs--full_table_short",
+     "bound": "memory bandwidth",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.10468263012049533,
+     "error": -0.4795223433808553
+    },
+    {
+     "case": "lcs--column_major_table",
+     "bound": "TLB / cache-hostile stride",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.11881296812113512,
+     "error": -0.7794179941831835
+    },
+    {
+     "case": "lcs--memo_recursion",
+     "bound": "recursion / call overhead",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.2680424495998576,
+     "error": -0.5809597478654881
+    },
+    {
+     "case": "lcs--hunt_szymanski",
+     "bound": "branchy binary search",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.15549198501227282,
+     "error": -0.7542988306671837
+    },
+    {
+     "case": "lcs--lis_of_sorted_pairs",
+     "bound": "sort / memory (128-190 MB)",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 0.883654133610279,
+     "error": -0.36945262649401245
+    },
+    {
+     "case": "lcs--hash_rows_copied",
+     "bound": "hashing + allocation",
+     "too_slow": true,
+     "stable": false,
+     "prediction_s": 3.3244662901074964,
+     "error": 0.1516254521011432
+    },
+    {
+     "case": "fenwick--segtree_bottom_up",
+     "bound": "same as intended",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.061955737763966845,
+     "error": -0.5203773319814297
+    },
+    {
+     "case": "fenwick--range_bit_template",
+     "bound": "extra work (constant factor)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.20502682393766028,
+     "error": 0.07109479744674103
+    },
+    {
+     "case": "fenwick--sqrt_decomposition",
+     "bound": "worse complexity, sequential",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.4527201102761009,
+     "error": 0.7394917016679509
+    },
+    {
+     "case": "fenwick--fenwick_cin_endl",
+     "bound": "syscalls (flush per line)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.2033606170784047,
+     "error": -0.5975710727809095
+    },
+    {
+     "case": "fenwick--segtree_recursive",
+     "bound": "recursion + scanf/printf",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.4185041614402865,
+     "error": -0.1253118614886344
+    },
+    {
+     "case": "fenwick--pointer_segtree",
+     "bound": "pointer chasing / allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.32108806477551405,
+     "error": -0.6473745230697524
+    },
+    {
+     "case": "fenwick--map_fenwick",
+     "bound": "pointer chasing",
+     "too_slow": true,
+     "stable": true,
+     "prediction_s": 0.5621660020894494,
+     "error": -0.8765326998191696
+    },
+    {
+     "case": "kmp--shift_and_bitap",
+     "bound": "compute / branch-free",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.04282658775953436,
+     "error": -0.32722893382449136
+    },
+    {
+     "case": "kmp--kmp_automaton",
+     "bound": "load-latency chain",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.06294945276439698,
+     "error": -0.44935266434803506
+    },
+    {
+     "case": "kmp--rolling_hash",
+     "bound": "compute (128-bit multiply)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.10333517878061031,
+     "error": -0.318405501156863
+    },
+    {
+     "case": "kmp--z_function",
+     "bound": "memory bandwidth (80 MB array)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.15290890496154408,
+     "error": -0.19789279477142546
+    },
+    {
+     "case": "kmp--kmp_cin_synced",
+     "bound": "I/O (iostream synced with stdio)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.296050506952724,
+     "error": 0.14471840073281964
+    },
+    {
+     "case": "kmp--substr_compare",
+     "bound": "allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.3920458193259128,
+     "error": -0.06158172183000622
+    },
+    {
+     "case": "kmp--hash_from_scratch",
+     "bound": "compute (O(n*m) modmul)",
+     "too_slow": true,
+     "stable": false,
+     "prediction_s": 2.5637567685369356,
+     "error": 0.4099722480449824
+    },
+    {
+     "case": "sort_bs--offline_two_pointer",
+     "bound": "same as intended (sort-heavy)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.13132910374880535,
+     "error": -0.2754855943022351
+    },
+    {
+     "case": "sort_bs--merge_sort_vectors",
+     "bound": "allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.1484446574959115,
+     "error": -0.37847396155606294
+    },
+    {
+     "case": "sort_bs--list_sort",
+     "bound": "pointer chasing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.20315216451230253,
+     "error": -0.5343771871036518
+    },
+    {
+     "case": "sort_bs--cin_endl",
+     "bound": "syscalls (flush per line)",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 0.11744894235229358,
+     "error": -0.729575969569727
+    },
+    {
+     "case": "sort_bs--cin_synced",
+     "bound": "I/O (iostream synced with stdio)",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.30532238329178696,
+     "error": -0.5545353189926686
+    },
+    {
+     "case": "sort_bs--pbds_order_tree",
+     "bound": "pointer chasing",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.2371468772816844,
+     "error": -0.7704518549634602
+    },
+    {
+     "case": "sort_bs--sqrt_sorted_blocks",
+     "bound": "worse complexity, branchy",
+     "too_slow": true,
+     "stable": true,
+     "prediction_s": 0.9204402636745738,
+     "error": -0.8204055442241613
+    },
+    {
+     "case": "deep_dfs--bfs_order_reverse",
+     "bound": "memory latency, no recursion",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.5713230703764298,
+     "error": 0.40309407540602826
+    },
+    {
+     "case": "deep_dfs--stack_pairs_vecvec",
+     "bound": "explicit stack + allocation",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 0.4012707757153668,
+     "error": -0.5298306004787959
+    },
+    {
+     "case": "deep_dfs--vecvec_recursive_scanf",
+     "bound": "recursion + scanf",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.2803989092821472,
+     "error": -0.6843890030051291
+    },
+    {
+     "case": "deep_dfs--set_adjacency",
+     "bound": "pointer chasing / allocation",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 0.6714664803651743,
+     "error": -0.5169114746517492
+    },
+    {
+     "case": "deep_dfs--umap_adjacency",
+     "bound": "hashing / allocation",
+     "too_slow": false,
+     "stable": false,
+     "prediction_s": 0.7750472141479968,
+     "error": -0.5226942213504672
+    },
+    {
+     "case": "deep_dfs--multimap_adjacency",
+     "bound": "pointer chasing",
+     "too_slow": false,
+     "stable": true,
+     "prediction_s": 2.3432354357275007,
+     "error": -0.429807155060689
+    },
+    {
+     "case": "deep_dfs--map_of_sets",
+     "bound": "pointer chasing + synced I/O",
+     "too_slow": true,
+     "stable": false,
+     "prediction_s": 1.3239764175930864,
+     "error": -0.8518448589314035
+    }
+   ]
+  }
+ },
+ "decision": {
+  "M4": false,
+  "ML4": false
+ }
+}
