@@ -1,6 +1,9 @@
+from pathlib import Path
+import runpy
 import unittest
 
-from inputs import BASE, answer, edges, encode
+dataset = runpy.run_path(str(Path(__file__).with_name("inputs.py")))
+BASE, answer, edges, encode = (dataset[name] for name in ("BASE", "answer", "edges", "encode"))
 
 
 class GraphTest(unittest.TestCase):
