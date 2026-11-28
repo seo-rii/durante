@@ -1,0 +1,136 @@
+{
+  "protocol": {
+    "cpu": 1,
+    "cpuid": "x86-64-v2",
+    "inputs": [
+      "uniform",
+      "clustered"
+    ],
+    "solvers": [
+      "dsu",
+      "multiset",
+      "fenwick"
+    ],
+    "count": 65536,
+    "queries": 73728,
+    "seed": 430253,
+    "max_price": 131072,
+    "rounds": [
+      "native",
+      "native",
+      "probe",
+      "native",
+      "native",
+      "probe",
+      "native",
+      "native",
+      "native"
+    ],
+    "models": [
+      "M0",
+      "ML4"
+    ],
+    "weight_source": "milan/frozen.json#weights/dijkstra",
+    "factors": [
+      1.25,
+      1.5,
+      2,
+      3
+    ],
+    "groups": {
+      "uniform": [
+        "uniform-dsu",
+        "uniform-multiset",
+        "uniform-fenwick"
+      ],
+      "clustered": [
+        "clustered-dsu",
+        "clustered-multiset",
+        "clustered-fenwick"
+      ]
+    }
+  },
+  "cases": {
+    "uniform-dsu": {
+      "elf_sha256": "f2c45a69228bde4e479bcaab81b038e60663c0250849dd7d4343ce94e768f2a5",
+      "stdin": "inputs/uniform",
+      "stdin_sha256": "534a5461d0dcc1cf3f8361b52a63f616c50c060e78c3c2cb9222eac727661d08",
+      "expected_sha256": "94378024c46839d7daae89c081af9a6cc9417b41c43b481b427e31a372aa0e15"
+    },
+    "uniform-multiset": {
+      "elf_sha256": "ef16735d2aa46d6d66b78c1a869692dee5d05df32c1f15a19954a89cd0100b33",
+      "stdin": "inputs/uniform",
+      "stdin_sha256": "534a5461d0dcc1cf3f8361b52a63f616c50c060e78c3c2cb9222eac727661d08",
+      "expected_sha256": "94378024c46839d7daae89c081af9a6cc9417b41c43b481b427e31a372aa0e15"
+    },
+    "uniform-fenwick": {
+      "elf_sha256": "b3217f393095e261058a54283c577244c9b85ee9ac359cc928324df586bdeedf",
+      "stdin": "inputs/uniform",
+      "stdin_sha256": "534a5461d0dcc1cf3f8361b52a63f616c50c060e78c3c2cb9222eac727661d08",
+      "expected_sha256": "94378024c46839d7daae89c081af9a6cc9417b41c43b481b427e31a372aa0e15"
+    },
+    "clustered-dsu": {
+      "elf_sha256": "f2c45a69228bde4e479bcaab81b038e60663c0250849dd7d4343ce94e768f2a5",
+      "stdin": "inputs/clustered",
+      "stdin_sha256": "7d8d0d63fd681ee70b2226687eff696ed49f8b5ac7bb38a244ac3382984226d6",
+      "expected_sha256": "8e3b532b4187deb6d6a06b039663606da11420651d363c50782be7653aec7da3"
+    },
+    "clustered-multiset": {
+      "elf_sha256": "ef16735d2aa46d6d66b78c1a869692dee5d05df32c1f15a19954a89cd0100b33",
+      "stdin": "inputs/clustered",
+      "stdin_sha256": "7d8d0d63fd681ee70b2226687eff696ed49f8b5ac7bb38a244ac3382984226d6",
+      "expected_sha256": "8e3b532b4187deb6d6a06b039663606da11420651d363c50782be7653aec7da3"
+    },
+    "clustered-fenwick": {
+      "elf_sha256": "b3217f393095e261058a54283c577244c9b85ee9ac359cc928324df586bdeedf",
+      "stdin": "inputs/clustered",
+      "stdin_sha256": "7d8d0d63fd681ee70b2226687eff696ed49f8b5ac7bb38a244ac3382984226d6",
+      "expected_sha256": "8e3b532b4187deb6d6a06b039663606da11420651d363c50782be7653aec7da3"
+    }
+  },
+  "weights": {
+    "uniform": {
+      "M0": {
+        "instructions": 1.62822499603297e-10,
+        "rep_bytes": 4.768404675656566e-11
+      },
+      "ML4": {
+        "latency_x16": 1.9610536920428108e-11,
+        "rep_bytes": 2.2231881518169566e-11,
+        "l1d_misses": 5.696914949612691e-11,
+        "random_2m": 3.6329907111055703e-09,
+        "random_32m": 6.462605458925904e-09,
+        "stream_2m": 1.0698559144892158e-08,
+        "l1d_dependent": 4.7700178852992235e-09,
+        "dependent_2m": 7.817536652521212e-08
+      }
+    },
+    "clustered": {
+      "M0": {
+        "instructions": 1.62822499603297e-10,
+        "rep_bytes": 4.768404675656566e-11
+      },
+      "ML4": {
+        "latency_x16": 1.9610536920428108e-11,
+        "rep_bytes": 2.2231881518169566e-11,
+        "l1d_misses": 5.696914949612691e-11,
+        "random_2m": 3.6329907111055703e-09,
+        "random_32m": 6.462605458925904e-09,
+        "stream_2m": 1.0698559144892158e-08,
+        "l1d_dependent": 4.7700178852992235e-09,
+        "dependent_2m": 7.817536652521212e-08
+      }
+    }
+  },
+  "compiler": "g++ (Debian 12.2.0-14+deb12u1) 12.2.0",
+  "flags": [
+    "-std=c++20",
+    "-O2",
+    "-static",
+    "-s",
+    "-Wl,--build-id=none"
+  ],
+  "solver_sha256": "b2571a40a258538bc718af8f2043ebd470ffc843ff8639d5dff27cb149a2fd51",
+  "preparer_sha256": "87a5be8ebb5fe097030e1d8c39c7a8c7c2ff57f9772851a7341f76a3b92c5df2",
+  "probe_sha256": "09898f86e63751526b5870309351dc8fc1a7ee7e16b459cd7849b59d7243355a"
+}
